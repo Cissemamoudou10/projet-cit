@@ -1,0 +1,13 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Accès refusé — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<div class="mt-8 max-w-lg">
+  <h1 class="font-titre text-xl font-semibold">Accès refusé</h1>
+  <p class="mt-2 text-sm text-gris-lecture">
+    Votre profil ne vous donne pas accès à cette fonctionnalité. Adressez-vous
+    à l'administrateur si vous pensez qu'il s'agit d'une erreur.
+  </p>
+</div>
+{% endblock %}

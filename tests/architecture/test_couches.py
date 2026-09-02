@@ -36,6 +36,15 @@ ATTRIBUTS_DERIVES = [
     "volume_cumule",
 ]
 
+# § 11.2 du dossier des cas d'utilisation — neuf domaines, source :
+# docs/suivi/HABILITATIONS.md. noyau n'y figure pas : c'est l'application
+# technique, elle ne porte aucune opération soumise à une habilitation.
+DOMAINES_CATALOGUE = {
+    "administration", "referentiel", "organisation",
+    "instructeurs_qualifications", "lieux_calendrier",
+    "programme", "programme_validation", "evaluations", "suivi",
+}
+
 
 def fichiers(motif):
     if not SRC.exists():
@@ -98,6 +107,68 @@ def test_aucune_note_en_flottant():
             if "FloatField" in ligne:
                 fautifs.append("%s ligne %d" % (chemin.relative_to(RACINE), i))
     assert not fautifs, "FloatField employé — utiliser DecimalField :\n" + "\n".join(fautifs)
+
+
+def est_dataclass(noeud):
+    """Un porte-données (`@dataclass`) n'est pas un service : il n'agit pas,
+    il ne fait que transporter un lot de valeurs entre deux méthodes.
+    """
+    for decorateur in noeud.decorator_list:
+        cible = decorateur.func if isinstance(decorateur, ast.Call) else decorateur
+        if isinstance(cible, ast.Name) and cible.id == "dataclass":
+            return True
+        if isinstance(cible, ast.Attribute) and cible.attr == "dataclass":
+            return True
+    return False
+
+
+def test_toute_classe_de_service_declare_un_domaine():
+    """Prompt 03, § 2.4 : chaque service se range dans un domaine du
+    catalogue par construction, pas par vigilance. noyau exclu — voir
+    DOMAINES_CATALOGUE.
+    """
+    fautifs = []
+    for chemin in fichiers("services.py") + fichiers("services/*.py"):
+        if application_de(chemin.relative_to(SRC)) == "noyau":
+            continue
+        arbre = ast.parse(chemin.read_text(encoding="utf-8"))
+        for noeud in ast.walk(arbre):
+            if not isinstance(noeud, ast.ClassDef) or est_dataclass(noeud):
+                continue
+            domaine = None
+            for element in noeud.body:
+                if not isinstance(element, ast.Assign):
+                    continue
+                for cible in element.targets:
+                    if (isinstance(cible, ast.Name) and cible.id == "DOMAINE"
+                            and isinstance(element.value, ast.Constant)):
+                        domaine = element.value.value
+            if domaine is None:
+                fautifs.append("%s ligne %d : %s sans DOMAINE"
+                               % (chemin.relative_to(RACINE), noeud.lineno, noeud.name))
+            elif domaine not in DOMAINES_CATALOGUE:
+                fautifs.append("%s ligne %d : %s, domaine %r hors catalogue"
+                               % (chemin.relative_to(RACINE), noeud.lineno, noeud.name, domaine))
+    assert not fautifs, "Service sans domaine valide du catalogue :\n" + "\n".join(fautifs)
+
+
+def test_aucun_controle_de_profil_ecrit_en_dur():
+    """Prompt 03, § 2.5 : les droits reposent sur le catalogue d'habilitations
+    (`noyau.Habilitation`, codes en `_lecture`/`_ecriture`), jamais sur une
+    permission de modèle Django générée automatiquement (`add_`, `change_`,
+    `delete_`, `view_`) — signe d'un contrôle de profil resté écrit en dur au
+    lieu de passer par `a_permission`/`verifier_habilitation`.
+    """
+    motif = re.compile(r"""["'][a-z_]+\.(add|change|delete|view)_[a-z_]+["']""")
+    fautifs = []
+    for chemin in fichiers("*.py"):
+        texte = chemin.read_text(encoding="utf-8")
+        for i, ligne in enumerate(texte.splitlines(), 1):
+            if ligne.lstrip().startswith("#"):
+                continue
+            if motif.search(ligne):
+                fautifs.append("%s ligne %d : %s" % (chemin.relative_to(RACINE), i, ligne.strip()))
+    assert not fautifs, "Contrôle de profil écrit en dur (permission de modèle) :\n" + "\n".join(fautifs)
 
 
 def test_ordre_des_dependances_entre_applications():

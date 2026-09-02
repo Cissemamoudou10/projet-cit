@@ -1,12 +1,14 @@
-"""Habilitation — RG-02."""
+"""Habilitation — RG-02.
 
-import pytest
+`verifier_habilitation` (lève et journalise) vit désormais dans
+`administration` — voir docs/suivi/DECISIONS.md, D-09 — et se teste là-bas.
+"""
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
-from noyau.exceptions import ErreurHabilitation
-from noyau.habilitations import verifier_habilitation
+from noyau.habilitations import a_permission
 
 
 def test_initialiser_habilitations_est_idempotente(db):
@@ -20,13 +22,12 @@ def test_initialiser_habilitations_est_idempotente(db):
     assert Group.objects.count() == 5
 
 
-def test_verifier_habilitation_leve_erreur_habilitation(db):
+def test_a_permission_est_silencieuse_et_retourne_un_booleen(db):
     modele_utilisateur = get_user_model()
     utilisateur = modele_utilisateur.objects.create_user(
         username="essai",
         password="x",
         grade="Lt",
-        profil=modele_utilisateur.Profil.ADMINISTRATEUR,
+        profil=modele_utilisateur.Profil.CELLULE_PEDAGOGIQUE,
     )
-    with pytest.raises(ErreurHabilitation):
-        verifier_habilitation(utilisateur, "administration.permission_inexistante")
+    assert a_permission(utilisateur, "noyau.permission_inexistante") is False

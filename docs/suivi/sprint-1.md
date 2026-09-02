@@ -10,8 +10,8 @@
 
 Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 
-- [ ] **US-ADM-01** — S'authentifier au système · 3 pts · Must
-- [ ] **US-ADM-02** — Gérer les comptes utilisateurs · 5 pts · Must
+- [x] **US-ADM-01** — S'authentifier au système · 3 pts · Must
+- [x] **US-ADM-02** — Gérer les comptes utilisateurs · 5 pts · Must
 - [ ] **US-ADM-03** — Restreindre l'accès selon le profil · 5 pts · Must
 - [ ] **US-ADM-04** — Journaliser les actions sensibles · 3 pts · Must
 - [ ] **US-REF-00** — Gérer les types de formation · 2 pts · Must
@@ -30,7 +30,7 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 
 - [x] Squelette Django : sept applications, réglages, base PostgreSQL
 - [x] Extension `btree_gist` installée et migration initiale
-- [x] Tailwind précompilé, CSS versionné (`app/noyau/static/css/application.css`, 9 591 octets, 77 classes)
+- [x] Tailwind précompilé, CSS versionné (`app/noyau/static/css/application.css`, 14 759 octets après US-ADM-02)
 - [x] Tests d'architecture en place et passants (confirmé par un vrai `pytest`, 28/28 — voir docs/suivi/PROBLEMES.md)
 - [ ] **Test d'installation hors ligne** — dépendances natives de WeasyPrint
 - [ ] Jeu de données d'essai fictif, couvrant les douze situations de la règle `tests.md`

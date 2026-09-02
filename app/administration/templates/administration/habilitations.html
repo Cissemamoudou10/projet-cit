@@ -1,0 +1,102 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Habilitations — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">Habilitations</h1>
+  <p class="text-sm text-gris-lecture">
+    Droits d'accès par profil — un croisement lecture / écriture par domaine.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+            border-l-marine-900 bg-sable px-4 py-3">
+  <!-- arbitraire : border-l-[3px], filet d'accent latéral, § 2.5 -->
+  <svg class="mt-px h-4 w-4 shrink-0 text-marine-900" aria-hidden="true">
+    <use href="{% static 'icones/planche.svg' %}#information"></use>
+  </svg>
+  <div>
+    <p class="font-titre text-base font-semibold text-marine-900">Référence</p>
+    <p class="text-xs text-gris-lecture">
+      La matrice du dossier de conception (§ 11.2) fait foi. Une case surlignée
+      en ambre signale un croisement qui s'en écarte.
+    </p>
+  </div>
+</div>
+
+<form method="post" class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% csrf_token %}
+  <div class="overflow-auto">
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" rowspan="2"
+              class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                     font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+            Domaine</th>
+          {% for colonne in matrice.0.colonnes %}
+            <th scope="colgroup" colspan="2"
+                class="sticky top-0 z-10 border-l border-marine-700 bg-marine-900 px-3 py-2
+                       text-center font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              {{ colonne.groupe }}</th>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for colonne in matrice.0.colonnes %}
+            <th scope="col"
+                class="sticky top-8 z-10 border-l border-marine-700 bg-marine-900 px-2 py-1.5
+                       text-center font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              L</th>
+            <th scope="col"
+                class="sticky top-8 z-10 bg-marine-900 px-2 py-1.5 text-center
+                       font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              É</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in matrice %}
+          {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
+          <tr class="{% cycle bande %} h-ligne border-t border-gris-trait">
+            <th scope="row" class="px-3 text-left font-medium">{{ ligne.libelle }}</th>
+            {% for colonne in ligne.colonnes %}
+              <td class="border-l border-gris-trait px-2 text-center {% if colonne.ecart %}bg-etat-attention-fond{% endif %}">
+                <label class="sr-only" for="id-{{ colonne.slug }}-{{ ligne.code }}-lecture">
+                  Lecture — {{ colonne.groupe }}, {{ ligne.libelle }}</label>
+                <input type="checkbox" id="id-{{ colonne.slug }}-{{ ligne.code }}-lecture"
+                       name="{{ colonne.slug }}-{{ ligne.code }}-lecture"
+                       {% if colonne.lecture %}checked{% endif %}
+                       class="h-3.5 w-3.5 accent-marine-900">
+              </td>
+              <td class="px-2 text-center {% if colonne.ecart %}bg-etat-attention-fond{% endif %}">
+                <label class="sr-only" for="id-{{ colonne.slug }}-{{ ligne.code }}-ecriture">
+                  Écriture — {{ colonne.groupe }}, {{ ligne.libelle }}</label>
+                <input type="checkbox" id="id-{{ colonne.slug }}-{{ ligne.code }}-ecriture"
+                       name="{{ colonne.slug }}-{{ ligne.code }}-ecriture"
+                       {% if colonne.ecriture %}checked{% endif %}
+                       class="h-3.5 w-3.5 accent-marine-900">
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex items-center justify-between border-t border-gris-trait bg-fond-bande px-5 py-2.5">
+    <p class="text-xs text-gris-lecture">
+      Cocher l'écriture coche la lecture. Décocher la lecture retire aussi l'écriture.
+    </p>
+    <button type="submit"
+            class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900 px-3.5 py-1.5
+                   text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700">
+      Enregistrer
+    </button>
+  </div>
+</form>
+{% endblock %}

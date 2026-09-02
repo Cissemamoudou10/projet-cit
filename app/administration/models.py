@@ -73,6 +73,8 @@ class TypeAction(models.TextChoices):
     CHANGEMENT_PROFIL = "changement_profil", "Changement de profil"
     DESACTIVATION_COMPTE = "desactivation_compte", "Désactivation de compte"
     REACTIVATION_COMPTE = "reactivation_compte", "Réactivation de compte"
+    ACCES_REFUSE = "acces_refuse", "Accès refusé"
+    MODIFICATION_HABILITATIONS = "modification_habilitations", "Modification des habilitations"
 
 
 class EntreeJournal(ModeleHorodate):

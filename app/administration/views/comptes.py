@@ -16,9 +16,9 @@ from administration.forms import (
     FormulaireCompte,
     FormulaireCreationCompte,
 )
+from administration.habilitations import exige_habilitation
 from administration.services.comptes import PERMISSION_GESTION_COMPTES, ServiceCompte
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
-from noyau.habilitations import exige_habilitation
 
 
 def _compte_ou_404(pk):

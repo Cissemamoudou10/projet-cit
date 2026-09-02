@@ -23,6 +23,22 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-16 — Requête par croisement dans la vue de configuration des habilitations
+**Date** 2026-09-02 · **Story** US-ADM-03 · **État** : résolu
+**Symptôme** — Relecture (`relecteur-conception`) : `ServiceMatriceHabilitations.modifier_croisement` refaisait un `Group.objects.get()` et jusqu'à deux `Permission.objects.get()` à chaque croisement modifié. La soumission de l'écran de configuration (§ 6) peut porter jusqu'à 45 croisements en un seul aller-retour — jusqu'à 90 requêtes superflues dans le pire cas, alors que les cinq groupes et les dix-huit permissions du catalogue sont un ensemble fixe et petit.
+**Cause** — `modifier_croisement` conçue pour un seul croisement à la fois, puis appelée en boucle depuis `_traiter_soumission` (`views/habilitations.py`) sans préchargement — violation de « Aucune requête dans une boucle » (`.claude/rules/python.md`).
+**Résolution** — `modifier_croisement` remplacée par `ServiceMatriceHabilitations.appliquer_changements(agissant, changements)` : précharge une fois les cinq groupes (avec `prefetch_related`) et les dix-huit permissions, applique chaque croisement en mémoire contre cet état préchargé, dans la même transaction atomique. Une seconde relecture a signalé qu'il restait, côté écriture, un `.add()`/`.remove()` M2M par permission modifiée à l'intérieur de la boucle — corrigé à son tour : `_marquer_permissions` n'écrit plus rien pendant la boucle, elle accumule les ajouts/retraits par groupe dans `_ContextePermissions.a_ajouter`/`a_retirer` ; `_ecrire_permissions_en_attente` les applique une seule fois par groupe (au plus dix requêtes d'écriture pour 45 croisements sur cinq groupes) après la boucle. Chaque changement réel continue de générer sa propre entrée de journal (§ 6 : ancien/nouveau par croisement) — seules les requêtes répétées disparaissent, pas le grain de journalisation ni le blocage individuel du garde-fou administrateur. Les paramètres sont regroupés dans deux dataclasses (`CroisementModifie`, `_ContextePermissions`) pour rester sous la limite de cinq paramètres par fonction.
+**Risque concerné** — aucun.
+**Leçon** — pour un service dont la méthode publique est naturellement appelée en boucle depuis une vue (soumission d'un tableau dense), concevoir d'emblée une méthode de traitement par lot plutôt qu'une méthode unitaire appelée N fois — lectures **et** écritures, les deux sens de la règle « aucune requête dans une boucle ».
+
+## P-15 — Nouvelles valeurs `TypeAction` utilisées avant leur migration
+**Date** 2026-09-02 · **Story** US-ADM-03 · **État** : résolu
+**Symptôme** — `manage.py initialiser_habilitations --reinitialiser` réel : `CheckViolation` sur `ck_entree_journal_type_action`, la valeur `modification_habilitations` n'étant pas encore admise en base.
+**Cause** — `ACCES_REFUSE` et `MODIFICATION_HABILITATIONS` ajoutées à `TypeAction` (`administration/models.py`) sans regénérer la migration qui met à jour la contrainte `CHECK` — même oubli que P-15 aurait pu prévenir s'il avait déjà existé (il ne l'était pas encore) ; `manage.py migrate` avait pourtant averti (« models... have changes that are not yet reflected in a migration »), averti mais pas lu avant de lancer la commande suivante.
+**Résolution** — `administration/migrations/0005_entree_journal_types_action_habilitations.py` générée et appliquée avant de rejouer `--reinitialiser`.
+**Risque concerné** — aucun.
+**Leçon** — lire la sortie de `migrate` avant d'enchaîner une autre commande, pas seulement son code de sortie : l'avertissement était là, explicite, avant l'échec.
+
 ## P-14 — Tri par colonne absent de la liste des comptes, exigé par le prompt
 **Date** 2026-09-02 · **Story** US-ADM-02 · **État** : résolu
 **Symptôme** — trouvé par le relecteur, pas par l'exécution : `§7.1` du prompt demande explicitement « en-tête figé et tri (§3.09) », mais `liste_comptes.html` n'avait que des en-têtes statiques et `ServiceCompte.lister` triait toujours sur `username`, sans paramètre. Aucun test ne le couvrait, aucune trace dans `docs/suivi/` ne le signalait comme écart assumé — un oubli, pas une décision.

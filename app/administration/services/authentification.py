@@ -23,6 +23,13 @@ MESSAGE_COMPTE_VERROUILLE = "Ce compte est temporairement verrouillé. Réessaye
 
 
 class ServiceAuthentification:
+    """Aucune permission ici : l'authentification est ouverte avant même
+    qu'un profil ne soit connu. `DOMAINE` reste déclaré (§ 2.4) pour la
+    cohérence architecturale — l'app propriétaire est `administration`.
+    """
+
+    DOMAINE = "administration"
+
     @staticmethod
     def authentifier(identifiant, mot_de_passe):
         """Ordre des contrôles : compte inexistant, désactivé puis verrouillé

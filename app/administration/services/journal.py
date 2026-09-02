@@ -10,6 +10,14 @@ from noyau.services.base import ServiceBase
 
 
 class ServiceJournal:
+    """Aucune permission vérifiée ici : le journal est écrit par les autres
+    services, jamais consulté directement par un utilisateur dans cette
+    story. `DOMAINE` reste déclaré (§ 2.4) — l'app propriétaire est
+    `administration`.
+    """
+
+    DOMAINE = "administration"
+
     @staticmethod
     @transaction.atomic
     def enregistrer(type_action, identifiant_saisi, detail="", auteur=None, cible=""):

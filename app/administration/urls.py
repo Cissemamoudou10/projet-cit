@@ -1,6 +1,6 @@
 from django.urls import path
 
-from administration.views import authentification, comptes
+from administration.views import authentification, comptes, habilitations
 
 app_name = "administration"
 
@@ -17,4 +17,5 @@ urlpatterns = [
     path("comptes/<int:pk>/modifier/", comptes.vue_modifier_compte, name="modifier_compte"),
     path("comptes/<int:pk>/desactiver/", comptes.vue_desactiver_compte, name="desactiver_compte"),
     path("comptes/<int:pk>/reactiver/", comptes.vue_reactiver_compte, name="reactiver_compte"),
+    path("habilitations/", habilitations.vue_habilitations, name="habilitations"),
 ]

@@ -36,3 +36,54 @@ class ModeleHorodate(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Habilitation(models.Model):
+    """Porte le catalogue des dix-huit permissions du domaine — RG-02, RG-02
+    bis. Modèle sans table : `managed = False` et `default_permissions = ()`
+    sont l'idiome Django pour des permissions qui ne portent sur aucune
+    ligne. Aucune migration de table n'en résulte.
+
+    Fondé sur les neuf domaines de docs/conception (§ 11.2 du dossier des
+    cas d'utilisation), pas sur des permissions de modèle : sept des neuf
+    domaines n'ont encore aucun modèle avant le sprint 2. Voir
+    docs/suivi/DECISIONS.md pour le détail des noms de domaine composés
+    (`instructeurs_qualifications`, `lieux_calendrier`).
+
+    Vérifiable par `utilisateur.has_perm("noyau.<domaine>_lecture")` ou
+    `"noyau.<domaine>_ecriture"` — toujours préfixé `noyau.`, ce modèle
+    vivant ici.
+    """
+
+    class Meta:
+        managed = False
+        default_permissions = ()
+        permissions = [
+            ("administration_lecture", "Lecture sur Administration"),
+            ("administration_ecriture", "Écriture sur Administration"),
+            ("referentiel_lecture", "Lecture sur Référentiel"),
+            ("referentiel_ecriture", "Écriture sur Référentiel"),
+            ("organisation_lecture", "Lecture sur Organisation"),
+            ("organisation_ecriture", "Écriture sur Organisation"),
+            (
+                "instructeurs_qualifications_lecture",
+                "Lecture sur Instructeurs et qualifications",
+            ),
+            (
+                "instructeurs_qualifications_ecriture",
+                "Écriture sur Instructeurs et qualifications",
+            ),
+            ("lieux_calendrier_lecture", "Lecture sur Lieux et calendrier"),
+            ("lieux_calendrier_ecriture", "Écriture sur Lieux et calendrier"),
+            ("programme_lecture", "Lecture sur Génération et modification du programme"),
+            ("programme_ecriture", "Écriture sur Génération et modification du programme"),
+            ("programme_validation_lecture", "Lecture sur Validation du programme"),
+            ("programme_validation_ecriture", "Écriture sur Validation du programme"),
+            ("evaluations_lecture", "Lecture sur Évaluations"),
+            ("evaluations_ecriture", "Écriture sur Évaluations"),
+            ("suivi_lecture", "Lecture sur Suivi"),
+            ("suivi_ecriture", "Écriture sur Suivi"),
+        ]
+
+    def __str__(self):
+        return "Catalogue des habilitations"

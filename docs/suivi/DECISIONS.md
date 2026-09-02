@@ -31,6 +31,41 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-12 — `GROUPES`/`MATRICE` déplacées vers `administration/constantes.py`
+**Date** 2026-09-02 · **Story** US-ADM-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Relecture (`relecteur-conception`) : `services/matrice_habilitations.py` importait `GROUPES`/`MATRICE` depuis `management/commands/initialiser_habilitations.py` — un service qui dépend d'une commande d'administration est à l'envers du sens naturel des couches (la commande est un point d'entrée, censé consommer des constantes, pas les définir).
+**Décision** — `GROUPES` et `MATRICE` déménagées dans `administration/constantes.py`, conformément à `.claude/rules/python.md` (« `constantes.py` : valeurs de domaine »). La commande et le service l'importent désormais tous deux depuis ce module commun.
+**Alternative écartée** — Laisser la dépendance en l'état : aucun test d'architecture ne l'interdit (les deux modules sont dans la même application), mais la charge de compréhension future ne le justifiait pas.
+**Impact sur les livrables** — aucun sur la conception.
+**Reporté au livrable** — non applicable.
+
+## D-11 — Noms de domaine composés : `instructeurs_qualifications`, `lieux_calendrier`
+**Date** 2026-09-02 · **Story** US-ADM-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le catalogue (§ 2.1 du prompt) demande des codes de domaine dérivés de § 11.2, sur le motif `referentiel`, `programme_validation`. Deux lignes de la matrice portent un libellé à deux notions : « Instructeurs et qualifications », « Lieux et calendrier ».
+**Décision** — Codes composés, dérivés littéralement du libellé : `instructeurs_qualifications`, `lieux_calendrier`. Pas de raccourci (`instructeurs` seul, `lieux` seul) qui aurait pu laisser croire à un domaine plus étroit que ce que la ligne couvre réellement.
+**Alternative écartée** — Scinder chaque ligne en deux domaines distincts (`instructeurs`/`qualifications`, `lieux`/`calendrier`) : aurait doublé le catalogue à 22 permissions sans que la matrice § 11.2 ne distingue jamais les deux à l'intérieur d'une même ligne — aucune cellule ne les sépare.
+**Impact sur les livrables** — aucun sur la conception ; fixe la terminologie du catalogue pour toutes les stories des sprints 2 à 4.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-10 — Un seul attribut de classe pour § 2.4, pas deux
+**Date** 2026-09-02 · **Story** US-ADM-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.4 du prompt annonce « chaque classe de service porte deux attributs de classe », mais n'en montre qu'un (`DOMAINE`), et le test d'architecture décrit à la même section ne vérifie que la présence d'un domaine.
+**Décision** — Un seul attribut implanté : `DOMAINE`. Écart signalé, pas résolu par une invention de ma part — c'est la même famille d'incohérence que les comptes d'icônes de la charte (§ 1.11, `docs/suivi/CHARTE-INTEGRATION.md`) : un texte d'introduction qui ne correspond pas exactement à ce qui suit.
+**Alternative écartée** — Ajouter un second attribut de mon invention (ex. un niveau minimal requis) : rien dans le prompt ne le définit, l'inventer aurait été plus risqué que de le signaler.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non applicable.
+
+## D-09 — Le mécanisme d'habilitation qui journalise vit dans `administration`, pas `noyau`
+**Date** 2026-09-02 · **Story** US-ADM-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.2 exige que `verifier_habilitation` journalise désormais chaque refus (RG-26). Journaliser passe par `ServiceJournal`, qui vit dans `administration`. Or `verifier_habilitation` (et les deux mécanismes de présentation qui en dépendent, `exige_habilitation` et `HabilitationMixin`) vivait dans `noyau`, qui ne doit dépendre d'aucune application — même mur que l'intergiciel d'US-ADM-02 (D-08). La commande `initialiser_habilitations` du socle, elle aussi posée dans `noyau`, doit désormais journaliser son option `--reinitialiser` (§ 5) : même contrainte, même conclusion.
+**Décision** — Répartition en deux temps, cohérente avec D-08 :
+- `noyau/habilitations.py` ne garde que `a_permission(utilisateur, permission)` — silencieuse, sans journal, utilisable partout y compris par le processeur de contexte du noyau lui-même.
+- `administration/habilitations.py` (nouveau) porte `verifier_habilitation`, `exige_habilitation`, `HabilitationMixin` — les trois exigent le journal.
+- La commande `initialiser_habilitations` déménage de `noyau/management/commands/` vers `administration/management/commands/` — `noyau/management/` est retiré, devenu vide.
+**Alternative écartée** — Un registre d'injection : `noyau` exposerait un point d'enregistrement vide, qu'`administration` remplirait au démarrage (`AppConfig.ready()`). Respecte la lettre du prompt (ces symboles restent nommément dans `noyau`), mais introduit un état global mutable pour un gain resté conceptuel — le projet demande la simplicité avant la habileté (« cleverness »).
+**Impact sur les livrables** — aucun sur la conception ; à noter pour toute story future qui présumerait que ces trois symboles vivent encore dans `noyau`.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
 ## D-08 — L'intergiciel de changement de mot de passe vit dans `administration`, pas `noyau`
 **Date** 2026-09-02 · **Story** US-ADM-02 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Le prompt place l'intergiciel dans `app/noyau/middleware.py` et veut qu'il consulte « une méthode du service » (§ 2.2 : « il redirige, il ne décide pas »). Mais la règle (`ServiceCompte.doit_changer_mot_de_passe`) vit dans `administration`, et `noyau` ne doit dépendre d'aucune application — invariant testé par `tests/architecture/test_couches.py::test_ordre_des_dependances_entre_applications`.

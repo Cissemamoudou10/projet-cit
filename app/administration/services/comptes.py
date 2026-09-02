@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError as ErreurValidationDjango
 from django.db import IntegrityError, models, transaction
 
 from administration.exceptions import ErreurIdentifiantExistant
+from administration.habilitations import verifier_habilitation
 from administration.models import Profil, TypeAction, Utilisateur
 from administration.services.garde_fous import (
     interdire_autodesactivation,
@@ -17,14 +18,17 @@ from administration.services.garde_fous import (
 )
 from administration.services.journal import ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
-from noyau.habilitations import verifier_habilitation
 from noyau.pagination import paginer
 from noyau.services.base import ServiceBase
 
-PERMISSION_GESTION_COMPTES = "administration.change_utilisateur"
+# Domaine P1 de la matrice § 11.2 — noyau.Habilitation porte le catalogue,
+# voir docs/suivi/DECISIONS.md pour la reprise depuis administration.change_utilisateur.
+PERMISSION_GESTION_COMPTES = "noyau.administration_ecriture"
 
 
 class ServiceCompte:
+    DOMAINE = "administration"
+
     @staticmethod
     def creer(agissant, donnees):
         verifier_habilitation(agissant, PERMISSION_GESTION_COMPTES)

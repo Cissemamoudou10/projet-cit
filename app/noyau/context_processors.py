@@ -3,16 +3,18 @@
 `rubrique_active` et `fil_ariane` retombent sur des listes/valeurs vides : la
 navigation se remplira story par story, chaque vue pouvant surcharger ces
 clés dans son propre contexte. `rubriques` porte désormais *Administration*
-pour les utilisateurs habilités — la permission est une chaîne littérale,
-pas un import de `administration` (`noyau` ne dépend d'aucune application) :
-`has_perm` est une méthode native de tout modèle utilisateur Django.
+pour les utilisateurs habilités, filtrée par `a_permission` — silencieuse,
+aucune tentative refusée à journaliser pour un simple masquage de menu
+(Prompt 03, § 2.2).
 """
 
 from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
-PERMISSION_ADMINISTRATION = "administration.change_utilisateur"
+from noyau.habilitations import a_permission
+
+PERMISSION_ADMINISTRATION = "noyau.administration_ecriture"
 
 
 def contexte_application(request):
@@ -29,7 +31,7 @@ def contexte_application(request):
 
 
 def _rubriques(request):
-    if not (request.user.is_authenticated and request.user.has_perm(PERMISSION_ADMINISTRATION)):
+    if not a_permission(request.user, PERMISSION_ADMINISTRATION):
         return []
     return [
         {

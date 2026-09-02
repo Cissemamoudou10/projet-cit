@@ -31,7 +31,7 @@ def utilisateur(db, mot_de_passe):
 @pytest.fixture
 def groupes_habilitation(db):
     """Les groupes et leurs permissions n'existent qu'après cette commande —
-    voir app/noyau/management/commands/initialiser_habilitations.py.
+    voir app/administration/management/commands/initialiser_habilitations.py.
     """
     call_command("initialiser_habilitations")
 
