@@ -1,0 +1,101 @@
+@startuml CLS-05
+title Vue thématique — Évaluations et suivi
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide circle
+
+class ElementReferentiel <<vue P2>>
+class Session <<vue P3>>
+class Brigade <<vue P3>>
+class Stagiaire <<vue P3>>
+class Instructeur <<vue P4>>
+class Lieu <<vue P4>>
+class Seance <<vue P5>>
+
+class Evaluation {
+  type : TypeEvaluation
+  perimetre : PerimetreEvaluation
+  date : date
+  heureDebut : heure [0..1]
+  heureFin : heure [0..1]
+  notesVerrouillees : booleen
+}
+class Sujet {
+  reference : texte
+  retenu : booleen
+  dateDepot : date
+}
+class OrganisationEpreuve {
+  effectifAttendu : entier
+}
+class Surveillance {
+  nomLibre : texte [0..1]
+}
+class Note {
+  valeur : decimal [0..1]
+  absent : booleen
+  horodatage : horodatage
+}
+class ProcesVerbal {
+  numero : texte [0..1]
+  type : TypeProcesVerbal
+  dateGeneration : horodatage
+  gabarit : texte
+}
+note bottom of ProcesVerbal
+  Un seul procès-verbal par fin de formation,
+  portant le classement de tous les stagiaires
+  de la session, toutes brigades confondues
+  (RG-57). Sa génération verrouille les notes
+  de toutes les évaluations qu'il couvre.
+end note
+
+ElementReferentiel "1" -- "0..*" Evaluation
+Session "0..1" -- "0..*" Evaluation : périmètre session >
+Brigade "0..1" -- "0..*" Evaluation : périmètre brigade >
+Evaluation "1" -- "0..2" Sujet
+Evaluation "1" -- "0..*" OrganisationEpreuve
+Brigade "1" -- "0..*" OrganisationEpreuve
+Lieu "0..1" -- "0..*" OrganisationEpreuve
+OrganisationEpreuve "1" -- "1..*" Surveillance
+Instructeur "0..1" -- "0..*" Surveillance
+Evaluation "1" -- "0..*" Note
+Stagiaire "1" -- "0..*" Note
+Session "1" -- "0..*" ProcesVerbal
+Evaluation "0..*" -- "0..1" ProcesVerbal : verrouille <
+Seance "0..1" -- "0..1" Evaluation : contrôle programmé >
+
+note right of Evaluation
+  Deux types seulement : formative (contrôle)
+  et certificative (examen final). Le périmètre
+  est explicite : exactement un des deux
+  rattachements — session ou brigade — est
+  renseigné. Une évaluation porte sur un seul
+  module (RG-52).
+  Le type d'un même module peut varier selon la
+  formation : le PFE est formatif partout, sauf
+  pour le stage Analyste où il est certificatif.
+end note
+
+note bottom of Sujet
+  Le sujet retenu est choisi par la commission
+  d'examen, acteur métier hors système. La
+  cellule examens enregistre une décision prise
+  ailleurs : la sélection est horodatée et
+  rattachée à l'agent qui la saisit.
+end note
+
+note bottom of Surveillance
+  Un surveillant est soit un instructeur
+  référencé, dont la disponibilité est
+  contrôlée, soit une personne extérieure
+  au système, enregistrée par son seul nom.
+end note
+
+note bottom of OrganisationEpreuve
+  Une épreuve certificative se déroule
+  simultanément pour toutes les brigades de
+  la session, chacune dans une salle dédiée
+  avec ses propres surveillants.
+end note
+@enduml

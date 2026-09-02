@@ -1,0 +1,34 @@
+@startuml UC-04
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Cellule pédagogique" as CP
+actor "Cellule planification" as CPL
+actor "Direction de Formation" as DF
+
+rectangle "P4 — Ressources : instructeurs, qualifications, lieux, calendrier" {
+  usecase "CU-P4-01\nGérer les instructeurs" as C1
+  usecase "CU-P4-02\nÉtablir la matrice\nde qualification" as C2
+  usecase "CU-P4-03\nEnregistrer une période\nd'indisponibilité" as C3
+  usecase "CU-P4-04\nConsulter la charge\nd'un instructeur" as C4
+  usecase "CU-P4-05\nÉlaborer le calendrier\nacadémique annuel" as C5
+  usecase "CU-P4-06\nGérer les lieux\nd'enseignement" as C6
+}
+
+CP --> C1
+CP --> C2
+CPL --> C3
+CP --> C4
+CPL --> C4
+DF --> C4
+CPL --> C5
+CPL --> C6
+
+note right of C3
+  Saisie déléguée : l'instructeur transmet
+  son indisponibilité hors système, selon les
+  canaux en vigueur. La cellule planification
+  la saisit et en répond (RG-23).
+end note
+@enduml

@@ -1,0 +1,57 @@
+@startuml UC-05
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Cellule planification" as CPL
+actor "Cellule pédagogique" as CP
+actor "Direction de Formation" as DF
+
+rectangle "P5 — Planification : séances, programmes, états de validation" {
+  usecase "CU-P5-01\nGénérer le programme\nhebdomadaire d'une brigade" as C1
+  usecase "CU-P5-02\nContrôler les contraintes dures" as C2
+  usecase "CU-P5-03\nModifier manuellement\nune affectation" as C3
+  usecase "CU-P5-04\nRegrouper plusieurs brigades\nsur une même séance" as C4
+  usecase "CU-P5-05\nSignaler les écarts\nde volume horaire" as C5
+  usecase "CU-P5-06\nOptimiser l'affectation\nsous contraintes" as C6
+  usecase "CU-P5-07\nTraiter une indisponibilité\ndéclarée" as C7
+  usecase "CU-P5-08\nSuggérer un remplaçant" as C8
+  usecase "CU-P5-09\nDupliquer un programme\nhebdomadaire" as C9
+  usecase "CU-P5-10\nSoumettre un programme\nà validation" as C10
+  usecase "CU-P5-11\nValider ou rejeter\nun programme" as C11
+  usecase "CU-P5-12\nAfficher un programme validé" as C12
+  usecase "CU-P5-13\nConsulter l'historique\ndes validations" as C13
+}
+
+CPL --> C1
+CPL --> C3
+CPL --> C4
+CPL --> C7
+CPL --> C9
+CPL --> C10
+CP --> C5
+CP --> C11
+CP --> C13
+CPL --> C12
+DF --> C12
+
+C1 ..> C2 : <<include>>
+C3 ..> C2 : <<include>>
+C4 ..> C2 : <<include>>
+C9 ..> C2 : <<include>>
+C6 ..> C1 : <<extend>>
+C8 ..> C7 : <<extend>>
+C11 ..> C10 : <<extend>>
+
+note right of C6
+  Priorité Should. Repli heuristique
+  inscrit aux critères d'acceptation :
+  l'abandon de l'optimisation ne
+  compromet pas CU-P5-01.
+end note
+
+note right of C12
+  Aucun affichage sans validation
+  de la cellule pédagogique (RG-40).
+end note
+@enduml

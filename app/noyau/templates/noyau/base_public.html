@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}Gestion des activités de formation{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/polices.css' %}">
+  <link rel="stylesheet" href="{% static 'css/application.css' %}">
+  <link rel="stylesheet" href="{% static 'css/impression.css' %}" media="print">
+</head>
+<!-- pas d'utilisateur avant l'entrée : ni en-tête, ni navigation, ni fil
+     d'Ariane — voir Prompt 01, § 7.1. La largeur minimale de base.html est
+     omise : imposée par la grille de programme, sans objet ici. -->
+<body class="bg-fond-page font-corps text-base text-encre antialiased">
+  <main class="px-6 pb-12 pt-4">
+    {% include "noyau/ossature/messages.html" %}
+    {% block contenu %}{% endblock %}
+  </main>
+  {% include "noyau/ossature/pied.html" %}
+</body>
+</html>

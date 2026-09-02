@@ -1,0 +1,205 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}
+  {% if creation %}Créer un compte{% else %}Modifier un compte{% endif %} — {{ block.super }}
+{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">
+    {% if creation %}Créer un compte{% else %}Modifier le compte {{ compte.username }}{% endif %}
+  </h1>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<form method="post" class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="mx-5 mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+                border-l-etat-ecart bg-etat-ecart-fond px-4 py-3">
+      <svg class="mt-px h-4 w-4 shrink-0 text-etat-ecart" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+      </svg>
+      <p class="text-xs text-gris-lecture">{{ form.non_field_errors|first }}</p>
+    </div>
+  {% endif %}
+
+  <div class="grid grid-cols-2 gap-6 px-5 py-4">
+    <fieldset class="rounded border border-gris-trait px-4 pb-4 pt-3.5">
+      <legend class="px-1.5 font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+        Identité
+      </legend>
+      <div class="grid gap-3">
+        <div>
+          <label for="{{ form.grade.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+            Grade <span class="text-etat-ecart">— obligatoire</span>
+          </label>
+          {% if form.grade.errors %}
+            <input type="text" id="{{ form.grade.id_for_label }}" name="{{ form.grade.html_name }}"
+                   value="{{ form.grade.value|default_if_none:'' }}"
+                   aria-invalid="true" aria-describedby="{{ form.grade.id_for_label }}-erreur"
+                   class="h-controle w-full animate-secousse rounded border border-etat-ecart
+                          bg-etat-ecart-fond px-2.5 text-sm outline-none focus:ring-2 focus:ring-focus-ecart">
+            <p id="{{ form.grade.id_for_label }}-erreur"
+               class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+              <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+                <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+              </svg>
+              {{ form.grade.errors|first }}
+            </p>
+          {% else %}
+            <input type="text" id="{{ form.grade.id_for_label }}" name="{{ form.grade.html_name }}"
+                   value="{{ form.grade.value|default_if_none:'' }}"
+                   class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                          text-encre outline-none hover:border-marine-700
+                          focus:border-marine-700 focus:ring-2 focus:ring-focus">
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="{{ form.prenom.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Prénom</label>
+          <input type="text" id="{{ form.prenom.id_for_label }}" name="{{ form.prenom.html_name }}"
+                 value="{{ form.prenom.value|default_if_none:'' }}"
+                 class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                        text-encre outline-none hover:border-marine-700
+                        focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        </div>
+
+        <div>
+          <label for="{{ form.nom.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+            Nom <span class="text-etat-ecart">— obligatoire</span>
+          </label>
+          {% if form.nom.errors %}
+            <input type="text" id="{{ form.nom.id_for_label }}" name="{{ form.nom.html_name }}"
+                   value="{{ form.nom.value|default_if_none:'' }}"
+                   aria-invalid="true" aria-describedby="{{ form.nom.id_for_label }}-erreur"
+                   class="h-controle w-full animate-secousse rounded border border-etat-ecart
+                          bg-etat-ecart-fond px-2.5 text-sm outline-none focus:ring-2 focus:ring-focus-ecart">
+            <p id="{{ form.nom.id_for_label }}-erreur"
+               class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+              <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+                <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+              </svg>
+              {{ form.nom.errors|first }}
+            </p>
+          {% else %}
+            <input type="text" id="{{ form.nom.id_for_label }}" name="{{ form.nom.html_name }}"
+                   value="{{ form.nom.value|default_if_none:'' }}"
+                   class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                          text-encre outline-none hover:border-marine-700
+                          focus:border-marine-700 focus:ring-2 focus:ring-focus">
+          {% endif %}
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="rounded border border-gris-trait px-4 pb-4 pt-3.5">
+      <legend class="px-1.5 font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+        Accès
+      </legend>
+      <div class="grid gap-3">
+        <div>
+          <label for="{{ form.identifiant.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+            Identifiant <span class="text-etat-ecart">— obligatoire</span>
+          </label>
+          {% if form.identifiant.errors %}
+            <input type="text" id="{{ form.identifiant.id_for_label }}"
+                   name="{{ form.identifiant.html_name }}"
+                   value="{{ form.identifiant.value|default_if_none:'' }}"
+                   aria-invalid="true" aria-describedby="{{ form.identifiant.id_for_label }}-erreur"
+                   class="h-controle w-full animate-secousse rounded border border-etat-ecart
+                          bg-etat-ecart-fond px-2.5 text-sm outline-none focus:ring-2 focus:ring-focus-ecart">
+            <p id="{{ form.identifiant.id_for_label }}-erreur"
+               class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+              <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+                <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+              </svg>
+              {{ form.identifiant.errors|first }}
+            </p>
+          {% else %}
+            <input type="text" id="{{ form.identifiant.id_for_label }}"
+                   name="{{ form.identifiant.html_name }}"
+                   value="{{ form.identifiant.value|default_if_none:'' }}"
+                   class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                          text-encre outline-none hover:border-marine-700
+                          focus:border-marine-700 focus:ring-2 focus:ring-focus">
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="{{ form.profil.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Profil</label>
+          <select id="{{ form.profil.id_for_label }}" name="{{ form.profil.html_name }}"
+                  class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                         outline-none hover:border-marine-700
+                         focus:border-marine-700 focus:ring-2 focus:ring-focus">
+            {% for valeur, libelle in form.profil.field.choices %}
+              <option value="{{ valeur }}" {% if valeur == form.profil.value %}selected{% endif %}>
+                {{ libelle }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {% if creation %}
+          <div>
+            <label for="{{ form.mot_de_passe.id_for_label }}"
+                   class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+              Mot de passe initial <span class="text-etat-ecart">— obligatoire</span>
+            </label>
+            {% if form.mot_de_passe.errors %}
+              <input type="password" id="{{ form.mot_de_passe.id_for_label }}"
+                     name="{{ form.mot_de_passe.html_name }}"
+                     aria-invalid="true" aria-describedby="{{ form.mot_de_passe.id_for_label }}-erreur"
+                     class="h-controle w-full animate-secousse rounded border border-etat-ecart
+                            bg-etat-ecart-fond px-2.5 text-sm outline-none focus:ring-2 focus:ring-focus-ecart">
+              <p id="{{ form.mot_de_passe.id_for_label }}-erreur"
+                 class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+                <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+                  <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+                </svg>
+                {{ form.mot_de_passe.errors|first }}
+              </p>
+            {% else %}
+              <input type="password" id="{{ form.mot_de_passe.id_for_label }}"
+                     name="{{ form.mot_de_passe.html_name }}"
+                     class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                            text-encre outline-none hover:border-marine-700
+                            focus:border-marine-700 focus:ring-2 focus:ring-focus">
+            {% endif %}
+          </div>
+
+          <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
+                      border-l-marine-900 bg-sable px-4 py-3">
+            <svg class="mt-px h-4 w-4 shrink-0 text-marine-900" aria-hidden="true">
+              <use href="{% static 'icones/planche.svg' %}#information"></use>
+            </svg>
+            <p class="text-xs text-gris-lecture">
+              L'utilisateur devra changer ce mot de passe dès sa première connexion.</p>
+          </div>
+        {% endif %}
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="flex items-center justify-between border-t border-gris-trait bg-fond-bande px-5 py-2.5">
+    <p class="text-xs text-gris-lecture">Les champs sans mention sont obligatoires, hors prénom.</p>
+    <div class="flex gap-2">
+      <a href="{% url 'administration:liste_comptes' %}"
+         class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900 px-3.5 py-1.5
+                     text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        {% if creation %}Créer le compte{% else %}Enregistrer{% endif %}
+      </button>
+    </div>
+  </div>
+</form>
+{% endblock %}

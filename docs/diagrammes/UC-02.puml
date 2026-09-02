@@ -1,0 +1,42 @@
+@startuml UC-02
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Cellule pédagogique" as CP
+actor "Cellule planification" as CPL
+actor "Cellule examens" as CE
+actor "Direction de Formation" as DF
+
+rectangle "P2 — Référentiel de formation" {
+  usecase "CU-P2-01\nGérer les types de formation" as C1
+  usecase "CU-P2-02\nGérer les formations" as C2
+  usecase "CU-P2-03\nGérer le catalogue des matières" as C3
+  usecase "CU-P2-04\nComposer le référentiel\nd'une formation" as C4
+  usecase "CU-P2-05\nDéclarer la catégorie\nde lieu requise" as C5
+  usecase "CU-P2-06\nAssocier les objectifs\npédagogiques à une matière" as C6
+  usecase "CU-P2-07\nDéclarer les prérequis\ndu référentiel" as C7
+  usecase "CU-P2-08\nConsulter le référentiel" as C8
+  usecase "CU-P2-09\nConsulter l'historique\ndes modifications" as C9
+}
+
+CP --> C1
+CP --> C2
+CP --> C3
+CP --> C4
+CP --> C6
+CP --> C7
+CP --> C8
+CP --> C9
+CPL --> C8
+CE --> C8
+DF --> C8
+
+C4 ..> C5 : <<include>>
+C7 ..> C4 : <<extend>>
+
+note right of C4
+  Le référentiel appartient à la formation.
+  Aucune matière n'est rattachée à une brigade (RG-05).
+end note
+@enduml

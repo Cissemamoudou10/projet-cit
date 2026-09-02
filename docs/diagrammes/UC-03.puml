@@ -1,0 +1,47 @@
+@startuml UC-03
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Cellule pédagogique" as CP
+actor "Cellule planification" as CPL
+actor "Cellule examens" as CE
+actor "Direction de Formation" as DF
+
+rectangle "P3 — Organisation : sessions, brigades, stagiaires" {
+  usecase "CU-P3-01\nOuvrir une session de formation" as C1
+  usecase "CU-P3-02\nConstituer les brigades\nd'une session" as C2
+  usecase "CU-P3-03\nAffecter une salle attitrée\nà une brigade" as C3
+  usecase "CU-P3-04\nConsulter la composition\nd'une session" as C4
+  usecase "CU-P3-05\nEnregistrer les stagiaires\nd'une session" as C5
+  usecase "CU-P3-06\nAffecter les stagiaires\naux brigades" as C6
+  usecase "CU-P3-07\nConsulter la liste\ndes stagiaires" as C7
+  usecase "CU-P3-08\nDésigner les chefs de module" as C8
+  usecase "CU-P3-09\nClôturer une session" as C9
+}
+
+CP --> C1
+CP --> C2
+CPL --> C3
+CP --> C4
+CP --> C5
+CP --> C6
+CP --> C8
+CP --> C9
+CE --> C7
+DF --> C4
+
+C5 ..> C6 : <<extend>>
+
+note right of C2
+  Constitution manuelle (RG-12).
+  Le système enregistré le découpage,
+  il ne le calcule pas.
+end note
+
+note right of C3
+  La salle attitrée est affectée par la
+  cellule planification, détentrice du
+  catalogue des lieux (terrain, 23/08).
+end note
+@enduml

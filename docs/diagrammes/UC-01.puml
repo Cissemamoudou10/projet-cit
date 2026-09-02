@@ -1,0 +1,30 @@
+@startuml UC-01
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Utilisateur authentifié" as U
+actor "Administrateur" as ADM
+actor "Client applicatif autorisé" as API
+
+ADM --|> U
+
+rectangle "P1 — Administration et sécurité" {
+  usecase "CU-P1-01\nS'authentifier au système" as C1
+  usecase "CU-P1-02\nGérer les comptes utilisateurs" as C2
+  usecase "CU-P1-03\nConsulter le journal\ndes actions sensibles" as C3
+  usecase "CU-P1-04\nConsulter les données\npar interface de programmation" as C4
+}
+
+U --> C1
+ADM --> C2
+ADM --> C3
+API --> C4
+
+note right of C2
+  Le contrôle d'accès selon le profil (US-ADM-03)
+  n'est pas un cas d'utilisation : c'est une
+  contrainte transversale (RG-02) appliquée à
+  tous les cas d'utilisation du système.
+end note
+@enduml

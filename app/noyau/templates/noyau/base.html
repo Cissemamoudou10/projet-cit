@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}Gestion des activités de formation{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/polices.css' %}">
+  <link rel="stylesheet" href="{% static 'css/application.css' %}">
+  <link rel="stylesheet" href="{% static 'css/impression.css' %}" media="print">
+</head>
+<body class="min-w-[1280px] bg-fond-page font-corps text-base text-encre antialiased">
+  <!-- arbitraire : min-w-[1280px], largeur minimale imposée par la grille de programme -->
+  {% include "noyau/ossature/entete.html" %}
+  {% include "noyau/ossature/fil_ariane.html" %}
+  {% block entete_page %}{% endblock %}
+  <main class="px-6 pb-12 pt-4">
+    {% include "noyau/ossature/messages.html" %}
+    {% block contenu %}{% endblock %}
+  </main>
+  {% include "noyau/ossature/pied.html" %}
+</body>
+</html>

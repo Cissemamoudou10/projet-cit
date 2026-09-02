@@ -1,0 +1,368 @@
+@startuml CLS-00
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+hide circle
+
+package "P1 — Administration et sécurité" #F4F6FA {
+  class Utilisateur {
+    identifiant : texte {unique}
+    empreinteMotDePasse : texte
+    nom : texte
+    prenom : texte
+    grade : texte
+    profil : Profil
+    actif : booleen
+    dernierAcces : horodatage
+    echecsConsecutifs : entier
+    verrouilleJusqua : horodatage [0..1]
+  }
+  class EntreeJournal <<immuable>> {
+    horodatage : horodatage
+    nature : texte
+    objetType : texte
+    objetIdentifiant : texte
+    valeurAvant : texte [0..1]
+    valeurApres : texte [0..1]
+  }
+}
+
+package "P2 — Référentiel de formation" #F4F6FA {
+  class TypeFormation {
+    code : texte {unique}
+    intitule : texte
+  }
+  class Formation {
+    intitule : texte
+    specialite : texte
+    dureeTheorique : entier
+    archivee : booleen
+  }
+  class Matiere <<catalogue>> {
+    code : texte {unique}
+    intitule : texte
+    dateDesignationChef : date [0..1]
+    archivee : booleen
+  }
+  class ElementReferentiel <<classe d'association>> {
+    volumeHorairePrescrit : entier
+    coefficient : decimal = 1
+    categorieLieuRequise : CategorieLieu
+    poidsFormatif : decimal
+    poidsCertificatif : decimal
+    /volumeProgramme : entier
+    /volumeRealise : entier
+    /volumeRestant : entier
+  }
+  class ObjectifPedagogique {
+    libelle : texte
+    ordre : entier
+  }
+}
+
+package "P3 — Organisation" #F4F6FA {
+  class Session {
+    intitule : texte
+    dateDebut : date
+    dateFin : date
+    effectifAttendu : entier
+    etat : EtatSession
+    dateCloture : date [0..1]
+  }
+  class Brigade {
+    designation : texte
+    effectifPrevisionnel : entier
+    /effectifReel : entier
+  }
+  class Stagiaire {
+    matricule : texte
+    nom : texte
+    prenom : texte
+    grade : texte
+    unite : texte
+    radie : booleen
+    motifRadiation : texte [0..1]
+    dateRadiation : date [0..1]
+  }
+  class AffectationBrigade <<historisee>> {
+    dateEffet : date
+    dateFin : date [0..1]
+  }
+}
+
+package "P4 — Ressources, calendrier et grille horaire" #F4F6FA {
+  class Instructeur {
+    matricule : texte {unique}
+    nom : texte
+    prenom : texte
+    grade : texte
+    statut : StatutInstructeur
+    archive : booleen
+    /chargeHebdomadaire : decimal
+  }
+  class Qualification <<classe d'association>> {
+    dateAcquisition : date [0..1]
+  }
+  class Indisponibilite {
+    dateHeureDebut : horodatage
+    dateHeureFin : horodatage
+    motif : texte
+    horodatageSaisie : horodatage
+  }
+  class Lieu {
+    code : texte {unique}
+    intitule : texte
+    typologie : CategorieLieu
+    capacite : entier [0..1]
+    modePartage : ModePartage [0..1]
+    archive : booleen
+  }
+  class GrilleHoraire {
+    intitule : texte
+    active : booleen
+    dateActivation : horodatage [0..1]
+  }
+  class CreneauType {
+    jourSemaine : JourSemaine
+    ordre : entier
+    heureDebut : heure
+    heureFin : heure
+  }
+  class PeriodeCalendrier {
+    intitule : texte
+    dateHeureDebut : horodatage
+    dateHeureFin : horodatage
+    effet : EffetPeriode
+    /portee : Portee
+  }
+  class NatureEvenement <<parametrable>> {
+    libelle : texte
+    effetParDefaut : EffetPeriode
+  }
+}
+
+package "P5 — Planification" #F4F6FA {
+  class ProgrammeHebdomadaire <<centre entier>> {
+    lundiDeSemaine : date {unique}
+    etat : EtatProgramme
+    dateSoumission : horodatage [0..1]
+    dateValidation : horodatage [0..1]
+    motifRejet : texte [0..1]
+    dateSignature : date [0..1]
+    signataire : texte [0..1]
+    dateAffichage : horodatage [0..1]
+  }
+  class Seance {
+    dateHeureDebut : horodatage
+    dateHeureFin : horodatage
+    verrouillee : booleen
+    /dureeHeures : decimal
+    /estRegroupee : booleen
+  }
+  class LigneProgramme {
+    /volumeCumule : entier
+  }
+  class NonExecution {
+    motif : texte
+    dateDeclaration : horodatage
+  }
+  class Avenant {
+    motif : texte
+    dateDeclaration : horodatage
+    natureModification : texte
+  }
+}
+
+package "P6 — Évaluations et suivi" #F4F6FA {
+  class Evaluation {
+    type : TypeEvaluation
+    perimetre : PerimetreEvaluation
+    date : date
+    heureDebut : heure [0..1]
+    heureFin : heure [0..1]
+    notesVerrouillees : booleen
+  }
+  class Sujet {
+    reference : texte
+    retenu : booleen
+    dateDepot : date
+  }
+  class OrganisationEpreuve {
+    effectifAttendu : entier
+  }
+  class Surveillance {
+    nomLibre : texte [0..1]
+  }
+  class Note {
+    valeur : decimal [0..1]
+    absent : booleen
+    horodatage : horodatage
+  }
+  class ProcesVerbal {
+    numero : texte [0..1]
+    type : TypeProcesVerbal
+    dateGeneration : horodatage
+    gabarit : texte
+  }
+}
+
+package "Domaines de valeurs" #FBFBF8 {
+  enum Profil {
+    PEDAGOGIQUE
+    PLANIFICATION
+    EXAMENS
+    DIRECTION_FORMATION
+    ADMINISTRATEUR
+  }
+  enum CategorieLieu {
+    SALLE_ATTITREE
+    LIEU_PARTAGE
+    SANS_LIEU
+  }
+  enum EtatSession {
+    OUVERTE
+    CLOTUREE
+  }
+  enum StatutInstructeur {
+    MILITAIRE_DU_CENTRE
+    VACATAIRE
+    CIVIL
+  }
+  enum ModePartage {
+    SIMULTANE
+    SEQUENTIEL
+  }
+  enum JourSemaine {
+    LUNDI
+    MARDI
+    MERCREDI
+    JEUDI
+    VENDREDI
+    SAMEDI
+    DIMANCHE
+  }
+  enum EffetPeriode {
+    BLOQUANT
+    INFORMATIF
+  }
+  enum Portee {
+    CENTRE
+    SESSIONS
+    BRIGADES
+  }
+  enum EtatProgramme {
+    BROUILLON
+    SOUMIS
+    VALIDE
+    REJETE
+    AFFICHE
+  }
+  enum TypeEvaluation {
+    FORMATIVE
+    CERTIFICATIVE
+  }
+  enum PerimetreEvaluation {
+    BRIGADE
+    SESSION
+  }
+  enum TypeProcesVerbal {
+    EVALUATION
+    FIN_DE_FORMATION
+  }
+}
+
+' ---------------- P1
+Utilisateur "1" -- "0..*" EntreeJournal : produit >
+
+' ---------------- P2
+TypeFormation "1" -- "0..*" Formation : classe >
+Formation "1" -- "0..*" Matiere
+(Formation, Matiere) .. ElementReferentiel
+ElementReferentiel "0..*" -- "0..*" ElementReferentiel : requiert >
+ElementReferentiel "1" -- "0..*" ObjectifPedagogique
+
+' ---------------- P3
+Formation "1" -- "0..*" Session : instancie >
+Session "1" -- "1..*" Brigade
+Session "1" -- "0..*" Stagiaire
+Stagiaire "1" -- "1..*" AffectationBrigade
+Brigade "1" -- "0..*" AffectationBrigade
+
+' ---------------- P4
+Instructeur "0..*" -- "0..*" Matiere
+(Instructeur, Matiere) .. Qualification
+Matiere "0..*" -- "0..1" Instructeur : chef de module >
+Instructeur "1" -- "0..*" Indisponibilite
+Utilisateur "1" -- "0..*" Indisponibilite : saisie par >
+Brigade "0..*" -- "0..1" Lieu : salle attitrée >
+GrilleHoraire "1" -- "1..*" CreneauType
+Utilisateur "0..1" -- "0..*" GrilleHoraire : activée par >
+NatureEvenement "1" -- "0..*" PeriodeCalendrier
+PeriodeCalendrier "0..*" -- "0..*" Session : cible >
+PeriodeCalendrier "0..*" -- "0..*" Brigade : cible >
+
+' ---------------- P5
+ProgrammeHebdomadaire "1" -- "0..*" Seance
+Seance "1" -- "1..*" LigneProgramme
+Brigade "1" -- "0..*" LigneProgramme
+ElementReferentiel "1" -- "0..*" Seance
+Instructeur "1" -- "0..*" Seance
+Lieu "0..1" -- "0..*" Seance
+CreneauType "0..1" -- "0..*" Seance : issue de >
+LigneProgramme "1" -- "0..1" NonExecution
+Seance "1" -- "0..*" Avenant
+Utilisateur "1" -- "0..*" Avenant : déclaré par >
+Utilisateur "1" -- "0..*" NonExecution : déclarée par >
+
+' ---------------- P6
+ElementReferentiel "1" -- "0..*" Evaluation
+Session "0..1" -- "0..*" Evaluation : périmètre session >
+Brigade "0..1" -- "0..*" Evaluation : périmètre brigade >
+Evaluation "1" -- "0..2" Sujet
+Evaluation "1" -- "0..*" OrganisationEpreuve
+Brigade "1" -- "0..*" OrganisationEpreuve
+Lieu "0..1" -- "0..*" OrganisationEpreuve
+OrganisationEpreuve "1" -- "1..*" Surveillance
+Instructeur "0..1" -- "0..*" Surveillance
+Evaluation "1" -- "0..*" Note
+Stagiaire "1" -- "0..*" Note
+Session "1" -- "0..*" ProcesVerbal
+Evaluation "0..*" -- "0..1" ProcesVerbal : verrouille <
+Seance "0..1" -- "0..1" Evaluation : contrôle programmé >
+
+note top of ElementReferentiel
+  Pivot du modèle. Le référentiel appartient
+  à la formation, jamais à la brigade (RG-05).
+  Volume, coefficient et catégorie de lieu sont
+  propres au couple formation-matière (RG-08).
+  Les deux poids règlent la part du formatif et
+  du certificatif dans la note du module.
+end note
+
+note bottom of Seance
+  Une séance peut couvrir plusieurs créneaux
+  consécutifs : elle porte ses heures réelles,
+  le créneau type n'est qu'une référence.
+  Une séance regroupée porte plusieurs lignes ;
+  la charge instructeur n'est comptée qu'une
+  fois, le volume l'est par brigade (RG-40).
+  Après affichage, une modification ne fait pas
+  retomber le programme à brouillon : elle porte
+  un avenant daté et motivé (RG-42).
+end note
+
+note bottom of Evaluation
+  Contrainte : exactement un des deux
+  rattachements — session ou brigade —
+  est renseigné, selon le périmètre.
+  Deux sujets si certificative, dont un retenu
+  par la commission d'examen ; un seul sujet
+  si formative (RG-50).
+end note
+
+note bottom of PeriodeCalendrier
+  Portée dérivée : aucune cible = centre entier.
+  Cibles multiples possibles, sessions et
+  brigades indépendamment (RG-30).
+end note
+@enduml

@@ -1,0 +1,56 @@
+@startuml ARC-01
+title Architecture en couches — ARC-01
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam nodesep 12
+skinparam ranksep 40
+
+rectangle "**COUCHE PRÉSENTATION**\n\nGabarits Django + Tailwind précompilé\nVues et formulaires\nAPI REST (Django REST Framework)" as PRES #EEF2F9
+
+rectangle "**COUCHE SERVICES** — logique métier\n\nServiceReferentiel · ServiceRessources\nServiceGeneration · ServiceContraintes\nServiceValidation · ServiceEvaluation\nServiceSuivi · ServiceDocument" as SERV #E8F0E8
+
+rectangle "**COUCHE DOMAINE** — modèles\n\nadministration · referentiel · organisation\nressources · planification · evaluations\nnoyau (horodatage, habilitation, gabarits)" as DOM #FAF4E8
+
+database "**PostgreSQL**\nextension btree_gist" as DB
+
+rectangle "Solveur\nOR-Tools CP-SAT\n+ repli heuristique" as SOLV #FDE8E8
+
+PRES -down-> SERV : appelle
+SERV -down-> DOM : lit et écrit
+DOM -down-> DB : ORM Django
+SERV .right.> SOLV : délègue si activé
+
+note right of PRES
+  Aucune règle métier dans cette couche.
+  Une règle qui ne vit que dans un formulaire
+  est contournée dès qu'une donnée entre
+  par un autre chemin.
+end note
+
+note right of SERV
+  ServiceContraintes est l'implantation UNIQUE
+  des six contraintes dures RG-34 à RG-39.
+  Appelée par la génération, la modification
+  manuelle, le regroupement et la duplication.
+end note
+
+note right of SOLV
+  Priorité Should. Son abandon au jalon J2
+  ne touche que ServiceGeneration : le repli
+  heuristique est inscrit aux critères
+  d'acceptation.
+end note
+
+note right of DB
+  Six contraintes portées en base (BNF-11).
+  Sept restent en couche services : elles ne
+  sont pas exprimables en SQL déclaratif.
+end note
+
+note left of SERV
+  **Dépendances strictement descendantes.**
+  Aucune couche n'appelle celle du dessus.
+  Le domaine ignore les services,
+  les services ignorent la présentation.
+end note
+@enduml

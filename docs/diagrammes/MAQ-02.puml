@@ -1,0 +1,36 @@
+@startsalt MAQ-02
+{
+{* <b>Référentiel</b> | Sessions | Ressources | Planification | Évaluations | Suivi | ^Lt NIANGALY — Pédagogique^ }
+--
+<b>Référentiel de la formation : Analyste en informatique</b>   (type OFF)
+{+
+  Durée théorique déclarée | "12 mois  " | Volume total prescrit | <color:#0F6E56>468 h calculées</color> | Modules déclarés | "10  " | Modules rattachés | <color:#B03030>7 — écart de 3</color>
+  .| .| .| .| .| .| .| <color:#B03030>Avertissement, non bloquant (RG-65)</color>
+}
+--
+{#
+ <b>Matière</b> | <b>Volume prescrit</b> | <b>Coeff.</b> | <b>Catégorie de lieu</b> | <b>Poids formatif</b> | <b>Poids certificatif</b> | <b>Prérequis</b> | .
+ Algorithmique          | "60 " | "3 " | ^Salle attitrée^  | "40 %" | "60 %" | — | [ x ]
+ Langage C              | "40 " | "2 " | ^Salle attitrée^  | "40 %" | "60 %" | Algorithmique | [ x ]
+ Réseaux et architectures| "40 " | "3 " | ^Salle attitrée^ | "40 %" | "60 %" | — | [ x ]
+ Administration réseaux | "48 " | "3 " | ^Lieu partagé^    | "40 %" | "60 %" | Réseaux et architectures | [ x ]
+ Plate-forme J2EE       | "30 " | "2 " | ^Salle attitrée^  | "40 %" | "60 %" | Langage C | [ x ]
+ Sécurité militaire     | "16 " | "1 " | ^Sans lieu^       | "100 %" | "0 %" | — | [ x ]
+ Projet de fin de stage | "80 " | "4 " | ^Salle attitrée^  | "0 %" | "100 %" | Algorithmique, Langage C | [ x ]
+}
+{
+  [ Ajouter une matière du catalogue ] | [ Créer une matière ] | [ Déclarer un prérequis ] | [ Consulter le graphe de progression ]
+}
+--
+{+
+  <b>Objectifs pédagogiques — Projet de fin de stage</b>
+  {T
+  + Conduire une étude d'analyse complète
+  ++ Recueillir et formaliser un besoin
+  ++ Produire un modèle du domaine
+  + Soutenir devant un jury
+  }
+  <color:#0F6E56>Évaluation certificative pour cette formation — formative dans les autres formations qui portent ce module.</color>
+}
+}
+@endsalt

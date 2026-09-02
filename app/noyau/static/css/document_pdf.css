@@ -1,0 +1,40 @@
+/* --------------------------------------------------------------------------
+   Impression — constructions réservées à WeasyPrint (mise en page CSS
+   paginée), NON chargées par base.html.
+
+   Aucun navigateur n'interprète @page nommée, position: running() ou les
+   boîtes de marge @top-left/@bottom-left/@bottom-right — voir
+   docs/suivi/CHARTE-INTEGRATION.md. Ce fichier n'a d'effet qu'à travers
+   WeasyPrint, quand ServiceDocument produira les documents officiels
+   (§ 3.44-3.46) au sprint 4. Il complète impression.css, qui reste chargé
+   par le navigateur pour l'aperçu avant impression — il ne le remplace pas.
+   -------------------------------------------------------------------------- */
+
+/* Page paysage nommée, pour le programme hebdomadaire et le suivi. */
+@page paysage {
+  size: A4 landscape;
+  margin: 12mm;
+}
+[data-impression="paysage"] {
+  page: paysage;
+}
+
+/* En-tête répété via un élément positionné en continu (running element),
+   et pied de page numéroté — tous deux portés par les boîtes de marge de
+   la page, propres à la mise en page CSS paginée. */
+[data-impression="entete"] {
+  position: running(entete);
+}
+@page {
+  @top-left {
+    content: element(entete);
+  }
+  @bottom-left {
+    content: attr(data-reference);
+    font-size: 8pt;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " / " counter(pages);
+    font-size: 8pt;
+  }
+}

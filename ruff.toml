@@ -1,0 +1,35 @@
+line-length = 100
+target-version = "py312"
+# `extend-exclude`, pas `exclude` : `exclude` remplacerait les exclusions par
+# défaut de ruff (.venv, node_modules, .git...) au lieu de les compléter.
+extend-exclude = ["**/migrations/*"]
+
+[lint]
+select = [
+    "E", "W",   # style
+    "F",        # erreurs
+    "I",        # tri des imports
+    "N",        # nommage
+    "UP",       # tournures modernes
+    "B",        # pièges courants
+    "DJ",       # règles Django
+    "C4",       # compréhensions
+    "SIM",      # simplifications
+    "RET",      # retours
+    "ARG",      # arguments inutilisés
+    "PTH",      # chemins
+]
+ignore = [
+    "E501",     # longueur gérée par le formateur
+    "DJ001",    # null=True sur un champ texte : justifié dans certains cas du domaine
+    "N818",     # suffixe "Error" anglais : le code est en français (BNF-08), ErreurMetier et non MetierError
+]
+
+[lint.per-file-ignores]
+"**/tests/**" = ["ARG"]
+"**/settings*.py" = ["F403", "F405"]
+"**/management/commands/*.py" = ["ARG002"]  # BaseCommand.handle(self, *args, **options) : signature imposée par Django
+"**/context_processors.py" = ["ARG001"]     # processeur de contexte : signature (request) imposée par Django, même sans usage
+
+[lint.isort]
+known-first-party = ["noyau", "administration", "referentiel", "organisation", "ressources", "planification", "evaluations"]

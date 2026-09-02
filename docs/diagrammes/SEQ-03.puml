@@ -1,0 +1,128 @@
+@startuml SEQ-03
+autonumber
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+
+actor "Cellule examens" as CE
+participant "IU Évaluation" as IU
+participant "ServiceEvaluation" as SE
+participant "ServiceReferentiel" as SR
+participant "ServiceRessources" as SRE
+participant "Évaluation" as EV
+participant "Journal" as JN
+
+CE -> IU : créer évaluation(module, type, périmètre, date)
+IU -> SE : créer(module, type, périmètre, date)
+activate SE
+SE -> SR : moduleDuRéférentiel(périmètre, module)
+SR --> SE : appartenance confirmée (RG-52)
+
+alt type = formative (contrôle)
+  SE -> SE : vérifier le créneau au programme
+  note right of SE
+    Périmètre brigade par défaut. Date décidée
+    par l'instructeur, qui informe les cellules.
+    Une séance verrouillée est insérée au
+    programme hebdomadaire (RG-52 bis).
+    Date passée admise par exception, avec motif.
+  end note
+else type = certificative (examen final)
+  SE -> SE : vérifier la date au regard de la session
+  note right of SE
+    Périmètre session par défaut. La date est
+    celle notifiée par le 3e bureau (RG-49).
+    Une formation de sept modules donne sept
+    évaluations certificatives.
+  end note
+end
+
+note over SE
+  Contrainte : exactement un des deux
+  rattachements — session ou brigade —
+  est renseigné, selon le périmètre (RG-52).
+end note
+
+SE -> EV : enregistrer(évaluation)
+SE --> IU : évaluation créée
+deactivate SE
+
+opt type = certificative
+  CE -> IU : enregistrer les deux sujets
+  IU -> SE : enregistrerSujets(évaluation, sujet1, sujet2)
+  activate SE
+  SE -> SE : vérifier le nombre de sujets (RG-50)
+  SE -> EV : rattacher les sujets
+  deactivate SE
+
+  note over CE
+    La commission d'examen se réunit hors
+    système et retient un sujet. La cellule
+    examens enregistre une décision prise
+    ailleurs (RG-50 bis).
+  end note
+  CE -> IU : enregistrer le sujet retenu
+  IU -> SE : sélectionnerSujet(évaluation, sujet)
+  activate SE
+  SE -> EV : marquer le sujet retenu
+  SE -> JN : consigner(selection, agent, date) (RG-51)
+  deactivate SE
+
+  note over CE
+    Épreuve de périmètre session : chaque brigade
+    compose dans une salle dédiée, avec ses propres
+    surveillants, sur le même sujet et à la même
+    date (RG-53 bis). Le multi-salles est le cas
+    nominal, non une exception.
+  end note
+  CE -> IU : organiser l'épreuve(brigade, créneau, lieu, surveillants)
+  IU -> SRE : vérifierDisponibilité(lieu, créneau, effectif)
+  activate SRE
+  SRE --> IU : verdict lieu (RG-53)
+  deactivate SRE
+
+  loop pour chaque surveillant
+    alt surveillant = instructeur référencé
+      IU -> SRE : vérifierDisponibilité(instructeur, créneau)
+      SRE --> IU : verdict
+    else surveillant extérieur au système
+      IU -> IU : enregistrer le nom sans contrôle
+      note right of IU
+        Le système ne connait pas cette
+        personne : aucune vérification
+        de disponibilité possible.
+      end note
+    end
+  end
+  IU -> EV : enregistrer l'organisation de la brigade
+end
+
+CE -> IU : saisir les notes
+IU -> SE : saisirNotes(évaluation, notes)
+activate SE
+loop pour chaque note
+  SE -> SE : vérifier l'échelle (RG-54)
+end
+SE --> IU : récapitulatif de vérification
+deactivate SE
+IU --> CE : notes saisies, manquantes, valeurs extremes, moyenne
+CE -> IU : confirmer la saisie
+IU -> SE : enregistrerNotes(évaluation)
+activate SE
+SE -> EV : rattacher les notes
+SE -> JN : consigner(saisie, agent, horodatage)
+deactivate SE
+
+CE -> IU : générer le procès-verbal
+IU -> SE : générerPV(session, type de document)
+activate SE
+SE -> SE : vérifier l'absence de notes manquantes
+SE -> SR : coefficients des modules(formation)
+SR --> SE : coefficients (RG-56)
+SE -> SE : calculer les moyennes pondérées puis le classement de session (RG-57)
+SE -> SE : produire le document depuis le gabarit (RG-58)
+SE -> EV : verrouiller les notes (RG-59)
+SE -> JN : consigner(génération du PV, agent, date)
+SE --> IU : document et liste des admis et ajournes
+deactivate SE
+IU --> CE : procès-verbal produit
+@enduml

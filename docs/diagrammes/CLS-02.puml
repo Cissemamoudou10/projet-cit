@@ -1,0 +1,70 @@
+@startuml CLS-02
+title Vue thématique — Organisation : sessions, brigades, stagiaires
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide circle
+
+class Formation <<vue P2>>
+class ElementReferentiel <<vue P2>>
+class Matiere <<vue P2>>
+class Lieu <<vue P4>>
+class Instructeur <<vue P4>>
+
+class Session {
+  intitule : texte
+  dateDebut : date
+  dateFin : date
+  effectifAttendu : entier
+  etat : EtatSession
+  dateCloture : date [0..1]
+}
+class Brigade {
+  designation : texte
+  effectifPrevisionnel : entier
+  /effectifReel : entier
+}
+class Stagiaire {
+  matricule : texte
+  nom : texte
+  prenom : texte
+  grade : texte
+  unite : texte
+  radie : booleen
+  motifRadiation : texte [0..1]
+  dateRadiation : date [0..1]
+}
+class AffectationBrigade <<historisee>> {
+  dateEffet : date
+  dateFin : date [0..1]
+}
+
+Formation "1" -- "0..*" Session : instancie >
+Session "1" -- "1..*" Brigade
+Session "1" -- "0..*" Stagiaire
+Stagiaire "1" -- "1..*" AffectationBrigade
+Brigade "1" -- "0..*" AffectationBrigade
+Brigade "0..*" -- "0..1" Lieu : salle attitrée >
+Matiere "0..*" -- "0..1" Instructeur : chef de module >
+
+note right of Brigade
+  Outil de séparation d'effectifs, non
+  spécialité pédagogique. Toutes les brigades
+  d'une session suivent le même référentiel ;
+  seul l'ordre de déroulement diffère (RG-16).
+  La désignation n'est unique qu'au sein
+  du type de formation.
+end note
+
+note bottom of Matiere
+  Le chef de module est désigné pour une
+  matière du catalogue, non pour un couple
+  formation-matière ni pour une session.
+  Il doit être qualifié pour cette matière.
+end note
+
+note bottom of AffectationBrigade
+  Un stagiaire appartient à une seule brigade
+  à la fois (RG-20). Un changement est daté :
+  l'affectation est historisée, non remplacée.
+end note
+@enduml

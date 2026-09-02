@@ -1,0 +1,79 @@
+@startuml SEQ-01
+autonumber
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+
+actor "Cellule planification" as CPL
+participant "IU Programme" as IU
+participant "ServiceGeneration" as SG
+participant "ServiceCalendrier\n(ServiceRessources)" as SC
+participant "ServiceReferentiel" as SR
+participant "ServiceRessources" as SRE
+participant "ServiceContraintes" as SCT
+participant "Programme" as PG
+
+CPL -> IU : choisir semaine et sessions
+IU -> SG : générerProgramme(semaine, sessions)
+activate SG
+
+SG -> SC : créneauxOuverts(semaine, brigades)
+note right of SC
+  Applique la portée des périodes :
+  centre, session ou brigade (RG-30)
+end note
+SC --> SG : créneaux disponibles
+
+SG -> SRE : affectationsExistantes(semaine, centre entier)
+note right of SRE
+  Toutes sessions actives confondues.
+  Sans cela, RG-34 n'est pas vérifiable.
+end note
+SRE --> SG : séances, indisponibilités, lieux occupés
+
+loop pour chaque brigade sélectionnée
+  SG -> SR : matièresProgrammables(brigade)
+  note right of SR
+    Écarte : volume épuisé et
+    prérequis non achevés
+    (RG-10, RG-39)
+  end note
+  SR --> SG : matières et volumes restants
+
+  loop pour chaque créneau ouvert
+    SG -> SRE : instructeursQualifiésDisponibles(matière, créneau)
+    SRE --> SG : instructeurs éligibles
+    SG -> SRE : lieuxDisponibles(categorieRequise, créneau, effectif)
+    SRE --> SG : lieux éligibles
+
+    SG -> SCT : vérifier(brigade, matière, créneau, instructeur, lieu)
+    activate SCT
+    SCT --> SG : verdict et règles violées
+    deactivate SCT
+
+    alt affectation acceptée
+      SG -> SG : retenir l'affectation
+      opt matière partageable et lieu partagé
+        SG -> SCT : vérifier(regroupement, brigades, capacite cumulée)
+        SCT --> SG : verdict
+        SG -> SG : rattacher les lignes a une séance commune (RG-40)
+      end
+    else contrainte violée ou aucune ressource
+      SG -> SG : laisser le créneau non pourvu et conserver le motif
+    end
+  end
+end
+
+opt durée de résolution atteinte (BNF-04)
+  SG -> SG : interrompre et conserver la meilleure solution admissible
+end
+
+SG -> PG : enregistrer(état = brouillon)
+note right of PG
+  Une ligne par brigade (RG-32).
+  Aucune diffusion (RG-31).
+end note
+PG --> SG : programme enregistré
+SG --> IU : programme, volumes restants, créneaux non pourvus motivés
+deactivate SG
+IU --> CPL : présenter le programme brouillon
+@enduml

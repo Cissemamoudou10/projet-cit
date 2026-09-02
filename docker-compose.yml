@@ -1,0 +1,39 @@
+# Base de données de développement.
+#
+# Ce fichier sert au poste de développement uniquement. Le poste de déploiement
+# du CIT reste sur une installation classique : la conteneurisation n'y est
+# qu'une option de repli, à décider au jalon C1 selon le résultat du test
+# d'installation hors ligne.
+#
+#   docker compose up -d       démarrer
+#   docker compose down        arrêter, données conservées
+#   docker compose down -v     arrêter et effacer les données
+#   docker compose logs -f     suivre les journaux
+
+services:
+  base:
+    image: postgres:16
+    container_name: pfe_cit_base
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pfe_cit
+      POSTGRES_USER: pfe_cit
+      POSTGRES_PASSWORD: developpement_local
+      # Tri respectant les accents : Émile se classe avec les E, non après Z.
+      # Le fournisseur ICU est fourni par l'image ; vérifier au premier lancement.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=fr-FR --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - donnees_pfe_cit:/var/lib/postgresql/data
+      # Rôles pfe_cit_migration (propriétaire de la base) et pfe_cit_app
+      # (rôle applicatif restreint) — voir docs/suivi/DECISIONS.md.
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pfe_cit -d pfe_cit"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  donnees_pfe_cit:

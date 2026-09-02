@@ -1,0 +1,14 @@
+<nav class="flex gap-px font-titre text-sm font-medium" aria-label="Navigation principale">
+  {% for rubrique in rubriques %}
+    {% if rubrique.slug == rubrique_active %}
+      <a href="{{ rubrique.url }}" aria-current="page"
+         class="bg-blanc px-3 py-1.5 font-semibold text-marine-900">{{ rubrique.libelle }}</a>
+    {% else %}
+      <a href="{{ rubrique.url }}"
+         class="px-3 py-1.5 text-gris-trait transition-colors duration-survol
+                hover:bg-marine-700 hover:text-blanc
+                focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                focus-visible:outline-blanc">{{ rubrique.libelle }}</a>
+    {% endif %}
+  {% endfor %}
+</nav>

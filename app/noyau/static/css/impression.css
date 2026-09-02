@@ -1,0 +1,162 @@
+/* --------------------------------------------------------------------------
+   Impression — géométrie de page et rendu monochrome, moteur navigateur.
+   Les documents s'impriment sur des imprimantes noir et blanc.
+
+   Sous-ensemble de docs/charte, § 4 : les constructions propres à la mise en
+   page CSS paginée (@page nommée, position: running(), boîtes de marge
+   @top-left/@bottom-left/@bottom-right) en sont retirées — aucun navigateur
+   ne les interprète, seuls des moteurs comme WeasyPrint le font. Ces
+   constructions vivent dans document_pdf.css, non chargé ici.
+   -------------------------------------------------------------------------- */
+
+/* 1. Format. Un seul gabarit de page : portrait. Aucune page nommée
+      (« paysage ») possible en impression navigateur — un document qui a
+      besoin du paysage l'obtient par réglage d'imprimante, pas par CSS. */
+@page {
+  size: A4 portrait;
+  margin: 14mm 12mm 16mm;
+}
+
+/* 2. Masquer tout ce qui n'est pas le document.
+      `details > summary` a été retiré : il masquait aussi bien le menu
+      d'actions (§ 3.41) que le libellé de matière d'une ligne dépliable
+      (§ 3.15), qui doit rester visible à l'impression. Tout élément à
+      masquer au moment de l'impression porte explicitement
+      data-impression="masquer" — à poser sur le conteneur du § 3.41 quand
+      il sera transposé en gabarit Django, pas ici. */
+header nav,
+[data-impression="masquer"] {
+  display: none !important;
+}
+body > header,
+body > footer,
+body > nav,
+form[method="get"],
+dialog {
+  display: none !important;
+}
+
+/* 3. Supprimer l'habillage écran. */
+body {
+  min-width: 0;
+  background: #fff;
+  color: #000;
+  font-size: 10pt;
+  line-height: 1.35;
+}
+main {
+  padding: 0;
+}
+section,
+div,
+table {
+  box-shadow: none !important;
+}
+a {
+  color: #000;
+  text-decoration: none;
+}
+a[href]::after {
+  content: "";
+}
+
+/* 4. Tableaux : filets noirs, en-tête en trame grise.
+      L'aplat marine ne s'imprime pas. */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+}
+thead th {
+  border: 1px solid #000 !important;
+  background: #e6e6e6 !important;
+  color: #000 !important;
+  padding: 3px 6px;
+  text-align: left;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+tbody td,
+tbody th {
+  border: 1px solid #000 !important;
+  padding: 2px 6px;
+}
+tbody tr:nth-child(even) {
+  background: #fff !important;
+}
+tbody tr[data-impression="total"] > * {
+  background: #f0f0f0 !important;
+  font-weight: 700;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* 5. En-tête de tableau répété sur chaque page — mécanisme HTML standard,
+      pas la mise en page CSS paginée : fonctionne dans tout navigateur. */
+thead {
+  display: table-header-group;
+}
+tfoot {
+  display: table-footer-group;
+}
+
+/* 6. Ruptures de page. */
+tr,
+li,
+fieldset,
+[data-impression="bloc"] {
+  break-inside: avoid;
+}
+h1,
+h2,
+legend {
+  break-after: avoid;
+}
+[data-impression="signature"] {
+  break-inside: avoid;
+}
+
+/* 7. Badges d'état lisibles sans couleur.
+      La forme du filet et le symbole portent l'information ;
+      la couleur n'était qu'un renfort. */
+[data-etat] {
+  border: 1px solid #000 !important;
+  background: #fff !important;
+  color: #000 !important;
+}
+[data-etat="brouillon"] {
+  border-style: dashed !important;
+}
+[data-etat="rejete"] {
+  border-width: 2px !important;
+}
+[data-etat="valide"],
+[data-etat="affiche"] {
+  box-shadow: inset 0 -3px 0 #000 !important;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* 8. Barres d'avancement en trames. */
+[data-avancement] {
+  border: 1px solid #000 !important;
+  background: #fff !important;
+}
+[data-avancement="programme"] {
+  background: #bbb !important;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+[data-avancement="realise"] {
+  background: #000 !important;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* 9. Aucune animation à l'impression. */
+*,
+*::before,
+*::after {
+  animation: none !important;
+  transition: none !important;
+}

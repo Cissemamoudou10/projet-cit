@@ -1,0 +1,108 @@
+@startuml CLS-03
+title Vue thématique — Ressources, calendrier et grille horaire
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide circle
+
+class Matiere <<vue P2>>
+class Session <<vue P3>>
+class Brigade <<vue P3>>
+class Utilisateur <<vue P1>>
+
+class Instructeur {
+  matricule : texte {unique}
+  nom : texte
+  prenom : texte
+  grade : texte
+  statut : StatutInstructeur
+  archive : booleen
+  /chargeHebdomadaire : decimal
+}
+class Qualification <<classe d'association>> {
+  dateAcquisition : date [0..1]
+}
+class Indisponibilite {
+  dateHeureDebut : horodatage
+  dateHeureFin : horodatage
+  motif : texte
+  horodatageSaisie : horodatage
+}
+class Lieu {
+  code : texte {unique}
+  intitule : texte
+  typologie : CategorieLieu
+  capacite : entier [0..1]
+  modePartage : ModePartage [0..1]
+  archive : booleen
+}
+class GrilleHoraire {
+  intitule : texte
+  active : booleen
+  dateActivation : horodatage [0..1]
+}
+class CreneauType {
+  jourSemaine : JourSemaine
+  ordre : entier
+  heureDebut : heure
+  heureFin : heure
+}
+class PeriodeCalendrier {
+  intitule : texte
+  dateHeureDebut : horodatage
+  dateHeureFin : horodatage
+  effet : EffetPeriode
+  /portee : Portee
+}
+class NatureEvenement <<parametrable>> {
+  libelle : texte
+  effetParDefaut : EffetPeriode
+}
+
+Instructeur "0..*" -- "0..*" Matiere
+(Instructeur, Matiere) .. Qualification
+Instructeur "1" -- "0..*" Indisponibilite
+Utilisateur "1" -- "0..*" Indisponibilite : saisie par >
+Brigade "0..*" -- "0..1" Lieu : salle attitrée >
+GrilleHoraire "1" -- "1..*" CreneauType
+Utilisateur "0..1" -- "0..*" GrilleHoraire : activée par >
+NatureEvenement "1" -- "0..*" PeriodeCalendrier
+PeriodeCalendrier "0..*" -- "0..*" Session : cible >
+PeriodeCalendrier "0..*" -- "0..*" Brigade : cible >
+
+note right of PeriodeCalendrier
+  Portée dérivée des cibles : aucune cible
+  déclarée = centre entier. Les cibles sont
+  multiples et indépendantes — plusieurs
+  sessions, plusieurs brigades, ou les deux (RG-30).
+  Les dates des sessions ne sont pas stockées ici :
+  elles sont projetées depuis Session.
+end note
+
+note bottom of GrilleHoraire
+  Plusieurs grilles coexistent — horaire ordinaire,
+  horaire de Ramadan — mais une seule est active.
+  L'activation est une décision de la cellule
+  planification, datée et nominative, non une
+  déduction du calendrier.
+  Le samedi et le dimanche ont une liste de créneaux
+  vide : non programmables par défaut, sans interdit.
+end note
+
+note bottom of Lieu
+  La capacité est renseignable sur toute
+  typologie, y compris sans salle : un terrain
+  de sport ou un carré d'armes a des limites.
+  Le contrôle ne s'applique que si elle est
+  déclarée ; une capacité vide signifie qu'on
+  ne sait pas, non que le lieu est illimité.
+  Le mode de partage conditionne le regroupement :
+  un lieu séquentiel n'accueille les brigades que
+  l'une après l'autre, jamais ensemble (RG-40).
+end note
+
+note bottom of Qualification
+  Associe un instructeur à une matière du
+  catalogue, jamais à un élément de référentiel :
+  l'habilitation est indépendante de la formation.
+end note
+@enduml

@@ -1,0 +1,10 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Accueil — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<div class="mt-8">
+  <h1 class="font-titre text-xl font-semibold">Bienvenue, {{ user.grade }} {{ user.last_name|upper }}</h1>
+  <p class="mt-1 text-sm text-gris-lecture">Profil : {{ user.get_profil_display }}</p>
+</div>
+{% endblock %}

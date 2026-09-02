@@ -1,0 +1,79 @@
+@startuml SEQ-02
+autonumber
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+
+actor "Cellule planification" as CPL
+actor "Cellule pedagogique" as CP
+participant "IU Programme" as IU
+participant "ServiceValidation" as SV
+participant "ServiceReferentiel" as SR
+participant "Programme" as PG
+participant "Journal" as JN
+
+CPL -> IU : soumettre(programme)
+IU -> SV : soumettre(programme)
+activate SV
+SV -> SV : vérifier état = brouillon ou rejeté (RG-44)
+SV -> PG : état := soumis
+SV -> JN : consigner(soumission, auteur, horodatage)
+SV --> IU : programme verrouillé (RG-41)
+deactivate SV
+IU --> CP : signaler le programme en attente
+
+CP -> IU : consulter(programme)
+IU -> SR : volumesPrescrits(formation, matières)
+SR --> IU : volumes prescrits
+IU --> CP : séances, instructeurs, lieux, ecart prescrit et programme
+
+alt validation
+  CP -> SV : valider(programme)
+  activate SV
+  SV -> PG : état := validé
+  SV -> JN : consigner(validation, agent, date) (RG-47)
+  SV --> CP : programme validé
+  deactivate SV
+
+  group Signature du directeur de la formation
+    note over CPL
+      Le programme validé est édité et signé
+      à la main par le directeur. La signature
+      elle-même est hors système ; seul son
+      enregistrement y figure (RG-47).
+    end note
+    CPL -> SV : enregistrer la signature(date, signataire)
+    activate SV
+    SV -> PG : dateSignature, signataire
+    SV -> JN : consigner(signature, auteur, horodatage)
+    deactivate SV
+  end
+
+  opt affichage
+    CPL -> SV : afficher(programme)
+    activate SV
+    SV -> SV : vérifier état = validé **et** signature enregistrée (RG-46)
+    SV -> PG : état := affiché
+    SV -> JN : consigner(affichage, auteur, horodatage)
+    SV --> CPL : programme affiché
+    deactivate SV
+    note right of PG
+      Le passage a l'état affiché declenche
+      le decompte du volume realise (RG-60).
+    end note
+  end
+
+else rejet
+  CP -> SV : rejeter(programme, motif)
+  activate SV
+  SV -> SV : vérifier motif non vide (RG-45)
+  SV -> PG : état := rejeté
+  SV -> JN : consigner(rejet, agent, date, motif)
+  SV --> CP : programme rejeté
+  deactivate SV
+  IU --> CPL : signaler le rejet et son motif
+  note right of CPL
+    Le programme redevient modifiable
+    par CU-P5-03 (RG-41).
+  end note
+end
+@enduml

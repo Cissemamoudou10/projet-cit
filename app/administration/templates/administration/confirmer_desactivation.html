@@ -1,0 +1,31 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Désactiver un compte — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[520px] animate-ouvrir border border-etat-ecart bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <!-- arbitraire : w-[520px], largeur fixe de dialogue -->
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-etat-ecart px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Désactiver le compte {{ compte.username }}
+    </p>
+    <div class="px-4 py-4 text-sm">
+      <p>Le compte de {{ compte.grade }} {{ compte.last_name|upper }} sera désactivé et ne pourra
+         plus s'authentifier. Il n'est pas supprimé : son historique est conservé.</p>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{% url 'administration:liste_comptes' %}"
+         class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-etat-ecart bg-etat-ecart
+                     px-3.5 py-1.5 text-sm font-semibold text-blanc
+                     transition-colors duration-survol hover:bg-etat-ecart-fonce">Désactiver</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

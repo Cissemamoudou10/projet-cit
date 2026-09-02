@@ -1,0 +1,33 @@
+{% load static %}
+<header class="bg-marine-900 text-blanc">
+  <div class="flex h-12 items-center justify-between px-6">
+    <div class="flex items-center gap-6">
+      <span class="font-titre text-md font-bold tracking-wide">
+        CENTRE D'INSTRUCTION — GESTION DES ACTIVITÉS
+      </span>
+      {% include "noyau/ossature/navigation.html" %}
+    </div>
+    <div class="flex items-center gap-4 text-xs">
+      <!-- écart charte : grille_active n'existe pas avant le sprint 2 — voir docs/suivi/CHARTE-INTEGRATION.md -->
+      {% if grille_active %}
+        <span class="flex items-center gap-2 border border-marine-700 bg-marine-950 px-3 py-1">
+          <svg class="h-4 w-4 text-gris-trait" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#grille-horaire"></use>
+          </svg>
+          <span class="text-gris-trait">Grille active</span>
+          <span class="font-semibold">{{ grille_active.libelle }}</span>
+        </span>
+      {% endif %}
+      <span class="flex items-center gap-2">
+        <svg class="h-4 w-4 text-gris-trait" aria-hidden="true">
+          <use href="{% static 'icones/planche.svg' %}#groupe"></use>
+        </svg>
+        <span>{{ user.grade }} {{ user.last_name|upper }}</span>
+        <!-- écart charte : pas d'attribut cellule sur Utilisateur, profil s'y substitue — voir docs/suivi/CHARTE-INTEGRATION.md -->
+        <span class="text-gris-trait">— {{ user.get_profil_display }}</span>
+      </span>
+    </div>
+  </div>
+</header>
+<div class="h-[3px] bg-marine-700"></div>
+<!-- arbitraire : h-[3px], filet d'accent inférieur au pas de l'échelle -->

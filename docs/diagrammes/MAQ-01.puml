@@ -1,0 +1,40 @@
+@startsalt MAQ-01
+{
+{* Référentiel | Sessions | Ressources | <b>Planification</b> | Évaluations | Suivi | ^Lt CISSE — Planification^ }
+{+
+  Semaine du | "04/05/2026    " | Sessions | ^Toutes les sessions actives^ | [ Générer ] | [ Optimiser ] | ^Grille active : Horaire ordinaire^
+}
+--
+<b>Programme hebdomadaire du centre — semaine du 4 au 9 mai 2026        État : BROUILLON</b>
+{/ <b>Lundi</b> | Mardi | Mercredi | Jeudi | Vendredi }
+{#
+ <b>OFF</b>              | <b>08:00 - 09:45</b>          | <b>10:10 - 12:00</b>         | <b>13:00 - 14:15</b>        | <b>14:40 - 16:00</b>
+ ANALYSTE            | Réseaux et architectures  | Réseaux et architectures | Plate-forme J2EE        | Projet fin de stage
+ .                   | Lt AFATHI   11/40   I1    | Lt AFATHI   13/40   I1   | M. EL BOUZEKRI  4/30 I1 | Cne DAFIR   7/80   I1
+ CDP                 | Énergie renouvelable      | Mise en œuvre des SIC    | Emploi des transmissions| <color:#888>AD/GROUPEMENT</color>
+ .                   | Lt EL AZOUZI 8/20  L.SIC  | Cdt BERGANNOU 12/25 L.SIC| Cne DAFIR  5/15  S.CONF | .
+ ==                  | ==                        | ==                       | ==                      | ==
+ <b>BEODR</b>            | .                         | .                        | .                       | .
+ EXP1                | Sources d'énergie         | Matériel radio           | Gestion chiffre         | Physique électricité
+ .                   | Sgt ES        14/30   B1    | KZ          9/25    B1   | A/C BRABER  3/12   B1   | Cne HS       6/20   Amphi
+ EXP2                | Électronique              | Sources d'énergie        | Combat                  | <color:#888>AD/GROUPEMENT</color>
+ .                   | BO          7/25    B2    | Sgt ES       14/30    B2   | S/Lt ILHAMI 4/16  EXT   | .
+ R.INFO 1            | Administration des réseaux| Administration réseaux   | Routage et commutation  | Administration réseaux
+ .                   | Adj SM       22/48    E3    | Adj SM       24/48    E3   | Adj SM       11/30   E3   | Adj SM      26/48   E3
+}
+--
+{+
+  <b>Créneaux non pourvus — 3</b>
+  {#
+   Brigade | Créneau | Matière recherchée | Motif
+   EXP2 | Vendredi 14:40 - 16:00 | Guerre électronique | Aucun instructeur qualifié disponible : Lt ZIANI en mission (24/04 au 09/05), Cne KIBOUR affecté BCM1 même créneau
+   CDP  | Vendredi 14:40 - 16:00 | Anglais | Aucun lieu partagé disponible : S.CONF et Amphi occupés
+   EXP1 | Mercredi 08:00 - 09:45 | Matériel radio | Volume prescrit atteint (30/30) — matière achevée
+  }
+}
+--
+{
+  [ Modifier une affectation ] | [ Regrouper des brigades ] | [ Dupliquer une semaine ] | [ <b>Soumettre à validation</b> ] | [ Imprimer par journée ]
+}
+}
+@endsalt

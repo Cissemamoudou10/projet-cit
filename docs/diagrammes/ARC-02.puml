@@ -1,0 +1,62 @@
+@startuml ARC-02
+title Déploiement — ARC-02
+skinparam shadowing false
+skinparam linetype ortho
+
+node "Poste serveur du CIT\nRéseau interne, sans accès Internet" as SRV #EEF2F9 {
+  node "Serveur applicatif" as APP {
+    artifact "Application Django 5\n(WSGI)" as DJ
+    artifact "Fichiers statiques\nCSS Tailwind précompilé" as ST
+    artifact "Gabarits de documents\n(paramétrables)" as GAB
+  }
+  database "PostgreSQL\nextension btree_gist" as PG
+  node "Serveur HTTP\n(reverse proxy)" as WEB
+}
+
+node "Poste cellule pédagogique" as P1 #FAF4E8 {
+  artifact "Navigateur" as N1
+}
+node "Poste cellule planification" as P2 #FAF4E8 {
+  artifact "Navigateur" as N2
+}
+node "Poste cellule examens" as P3 #FAF4E8 {
+  artifact "Navigateur" as N3
+}
+node "Poste direction de formation" as P4 #FAF4E8 {
+  artifact "Navigateur" as N4
+}
+node "Écran d'affichage\ndevant la direction" as TV #F4F4F4 {
+  artifact "Navigateur en mode kiosque" as N5
+}
+
+N1 --> WEB : HTTP, réseau local
+N2 --> WEB : HTTP, réseau local
+N3 --> WEB : HTTP, réseau local
+N4 --> WEB : HTTP, réseau local
+N5 ..> WEB : consultation seule
+WEB --> DJ
+WEB --> ST
+DJ --> PG
+DJ --> GAB
+
+note bottom of SRV
+  Aucune dépendance en ligne à l'exécution (BNF-06).
+  Toutes les dépendances — paquets Python, extension
+  PostgreSQL, polices des documents — sont installées
+  avant isolement du poste.
+end note
+
+note right of N5
+  Affichage public en lecture seule.
+  À distinguer du portail de consultation
+  pour instructeurs et stagiaires, exclu
+  du périmètre : périmètre à confirmer.
+end note
+
+note right of GAB
+  En-tête, mentions obligatoires, ordre de
+  présentation et blocs de signature sont des
+  données, non du code (RG-58). Un écart de
+  format réglementaire ne coûte qu'un gabarit.
+end note
+@enduml

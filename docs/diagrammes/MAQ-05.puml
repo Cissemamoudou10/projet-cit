@@ -1,0 +1,38 @@
+@startsalt MAQ-05
+{
+{* Référentiel | Sessions | Ressources | Planification | Évaluations | <b>Suivi</b> | ^Lt NIANGALY — Pédagogique^ }
+--
+<b>Rapprochement prescrit et réalisé</b>
+{+
+  Session | ^Analyste en informatique — 2026^ | Brigade | ^Toutes^ | Période | "01/03/2026" | au | "09/05/2026" | [ Actualiser ]
+}
+{#
+ <b>Brigade</b> | <b>Matière</b> | <b>Prescrit</b> | <b>Programmé</b> | <b>Réalisé</b> | <b>Écart</b> | <b>Alerte</b>
+ ANALYSTE | Algorithmique             | 60 h | 60 h | 60 h | <color:#0F6E56>0 %</color>   | .
+ ANALYSTE | Langage C                 | 40 h | 38 h | 34 h | <color:#B07000>-15 %</color> | <color:#B07000>seuil 10 % dépassé</color>
+ ANALYSTE | Réseaux et architectures  | 40 h | 15 h | 13 h | <color:#0F6E56>en cours</color> | .
+ ANALYSTE | Administration réseaux    | 48 h | 26 h | 26 h | <color:#0F6E56>en cours</color> | .
+ ANALYSTE | Plate-forme J2EE          | 30 h |  4 h |  4 h | <color:#0F6E56>en cours</color> | .
+ ANALYSTE | Sécurité militaire        | 16 h |  0 h |  0 h | <color:#888>non commencée</color> | .
+ ANALYSTE | Projet de fin de stage    | 80 h |  9 h |  7 h | <color:#B03030>-22 %</color> | <color:#B03030>seuil 10 % dépassé</color>
+}
+{
+  <color:#888>Réalisé = séances des programmes affichés, diminuées des non-exécutions déclarées (RG-60). Une séance reportée puis tenue n'entame pas le réalisé.</color>
+}
+--
+{/ Rapprochement | <b>Progression réalisée de la semaine</b> | Tableau de bord | Sessions clôturées }
+{+
+  <b>Progression réalisée — semaine du 4 au 9 mai 2026</b>
+  {#
+   <b>Brigade</b> | <b>Matière</b> | <b>Programmé</b> | <b>Réalisé</b> | <b>Écart et motif</b>
+   ANALYSTE | Langage C              | 3 h 30 | 0 h    | <color:#B03030>Non exécuté</color> — instructeur absent, non déclaré à l'avance
+   ANALYSTE | Projet de fin de stage | 1 h 20 | 1 h 20 | <color:#0F6E56>Réalisé</color> — avenant : remplacement Cne KIBOUR
+   CDP      | Guerre électronique    | 1 h 15 | 0 h    | <color:#B03030>Non exécuté</color> — mission Lt ZIANI
+   EXP2     | Guerre électronique    | 1 h 45 | 1 h 45 | <color:#0F6E56>Reportée au 12/05 puis tenue</color>
+   .        | <b>Total du centre</b>    | <b>312 h</b> | <color:#B07000><b>298 h</b></color> | <color:#B07000><b>-14 h, soit 4,5 %</b></color>
+  }
+  Édité par | Lt CISSE — Planification | le | 09/05/2026 15:40 | Signataire | "                    " | Date | "          "
+  [ <b>Éditer le document</b> ] | [ Exporter en CSV ] | [ Consulter les avenants de la semaine ]
+}
+}
+@endsalt

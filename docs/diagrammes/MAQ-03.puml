@@ -1,0 +1,44 @@
+@startsalt MAQ-03
+{
+{* Référentiel | Sessions | Ressources | <b>Planification</b> | Évaluations | Suivi | ^Lt NIANGALY — Pédagogique^ }
+--
+<b>Validation du programme hebdomadaire — semaine du 4 au 9 mai 2026</b>
+{+
+  État | <color:#B07000><b>SOUMIS</b></color> | Soumis par | Lt CISSE — Planification | le | 30/04/2026 14:12 | <color:#888>Programme verrouillé en modification (RG-41)</color>
+}
+--
+{/ <b>Écart au référentiel</b> | Programme détaillé | Historique des validations }
+{#
+ <b>Brigade</b> | <b>Matière</b> | <b>Prescrit</b> | <b>Programmé</b> | <b>Cette semaine</b> | <b>Écart</b> | .
+ ANALYSTE | Réseaux et architectures | 40 h | 13 h | 3 h 30 | <color:#0F6E56>conforme</color> | .
+ ANALYSTE | Plate-forme J2EE | 30 h | 4 h | 1 h 15 | <color:#0F6E56>conforme</color> | .
+ ANALYSTE | Projet de fin de stage | 80 h | 7 h | 1 h 20 | <color:#B03030>retard 12 %</color> | [ Détail ]
+ EXP1 | Sources d'énergie | 30 h | 14 h | 1 h 45 | <color:#0F6E56>conforme</color> | .
+ EXP1 | Matériel radio | 30 h | 30 h | 0 h | <color:#0F6E56>achevée</color> | .
+ R.INFO 1 | Administration des réseaux | 48 h | 26 h | 5 h 15 | <color:#0F6E56>conforme</color> | .
+}
+--
+{+
+  <b>Décision</b>
+  {
+    ()  Valider le programme
+    ()  Rejeter le programme
+  }
+  Motif du rejet (obligatoire en cas de rejet)
+  {SI
+    "                                                                                          "
+  }
+  [ <b>Enregistrer la décision</b> ] | [ Annuler ]
+}
+--
+{+
+  <b>Après validation</b> — circuit restant
+  {
+   1. Édition du programme et signature manuscrite du directeur de la formation
+   2. Enregistrement de la date et du nom du signataire par la cellule planification
+   3. Passage à l'état AFFICHÉ — déclenche le décompte du volume réalisé
+  }
+  <color:#B03030>Aucun affichage sans validation pédagogique et signature du directeur (RG-46).</color>
+}
+}
+@endsalt

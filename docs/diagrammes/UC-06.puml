@@ -1,0 +1,72 @@
+@startuml UC-06
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Cellule examens" as CE
+actor "Cellule pédagogique" as CP
+actor "Direction de Formation" as DF
+
+rectangle "P6 — Évaluations et suivi" {
+  usecase "CU-P6-01\nCréer une évaluation\nselon son type\n(un seul module)" as C1
+  usecase "CU-P6-02\nSaisir la date\nd'un examen final" as C2
+  usecase "CU-P6-03\nEnregistrer les sujets et\nsélectionner celui retenu" as C3
+  usecase "CU-P6-04\nOrganiser une épreuve" as C4
+  usecase "CU-P6-05\nSaisir et vérifier les notes" as C5
+  usecase "CU-P6-06\nCalculer moyennes\net classement" as C6
+  usecase "CU-P6-07\nGénérer les procès-verbaux" as C7
+  usecase "CU-P6-08\nGérer les rattrapages" as C8
+  usecase "CU-P6-09\nArchiver les résultats" as C9
+  usecase "CU-P6-10\nGérer les tests d'admission" as C10
+  usecase "CU-P6-11\nConsulter le rapprochement\nprescrit et réalisé" as C11
+  usecase "CU-P6-12\nÊtre alerté des écarts\nsignificatifs" as C12
+  usecase "CU-P6-13\nConsulter le tableau de bord" as C13
+  usecase "CU-P6-14\nExporter les données de suivi" as C14
+}
+
+CE --> C1
+CE --> C2
+CE --> C3
+CE --> C4
+CE --> C5
+CE --> C7
+CE --> C8
+CE --> C9
+CE --> C10
+CP --> C11
+CP --> C12
+DF --> C11
+DF --> C13
+DF --> C14
+
+C1 ..> C2 : <<extend>>
+C1 ..> C3 : <<extend>>
+C3 ..> C4 : <<include>>
+C7 ..> C6 : <<include>>
+C11 ..> C12 : <<extend>>
+
+note right of C7
+  Générer le procès-verbal inclut le calcul
+  des moyennes et du classement : on ne peut
+  produire le document sans avoir calculé.
+  La saisie des notes en est une précondition,
+  non un sous-cas.
+end note
+
+note right of C2
+  Date fixée par le 3ᵉ bureau, acteur externe.
+  Le système la saisit, il ne la décide pas (RG-49).
+end note
+
+note right of C4
+  Un surveillant est soit un instructeur
+  référencé, soit une personne extérieure
+  au système, non soumise au contrôle
+  de disponibilité (terrain, 23/08).
+end note
+
+note right of C3
+  Deux sujets transmis hors système
+  par l'instructeur, un seul retenu (RG-50).
+end note
+@enduml

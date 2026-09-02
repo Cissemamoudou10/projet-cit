@@ -1,0 +1,107 @@
+@startuml SEQ-04
+autonumber
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+
+actor "Cellule planification" as CPL
+participant "IU Ressources" as IU
+participant "ServiceRessources" as SRE
+participant "ServiceGeneration" as SG
+participant "ServiceContraintes" as SCT
+participant "ServiceValidation" as SV
+participant "Séance" as SEA
+participant "Journal" as JN
+
+note over CPL
+  L'instructeur transmet son indisponibilité
+  hors système. La cellule planification saisit
+  et en repond (RG-23).
+end note
+
+CPL -> IU : enregistrer indisponibilité(instructeur, période, motif)
+IU -> SRE : enregistrer(instructeur, période, motif)
+activate SRE
+SRE -> SRE : vérifier la cohérence de la période
+SRE -> SRE : rechercher un chevauchement (RG-24)
+opt période sécante existante
+  SRE -> SRE : fusionner les deux périodes
+end
+SRE -> JN : consigner(saisie, agent, horodatage)
+SRE -> SG : séancesImpactées(instructeur, période)
+activate SG
+SG --> SRE : séances, brigades, créneaux, état du programme
+deactivate SG
+SRE --> IU : période enregistrée et séances impactées
+deactivate SRE
+IU --> CPL : présenter les séances impactées
+
+loop pour chaque séance impactée
+  alt séance déjà passée et non tenue
+    CPL -> IU : déclarer la non-exécution(motif)
+    IU -> SEA : rattacher la non-exécution à la ligne
+    IU -> JN : consigner(non-exécution, agent, horodatage)
+    note right of IU
+      Le volume est retranché du réalisé.
+      Consolidé en fin de semaine dans la
+      progression réalisée (RG-60).
+    end note
+
+  else séance à venir
+    opt programme à l'état validé
+      IU --> CPL : avertir que le traitement annule la validation (RG-42)
+      CPL -> SV : ramener le programme à l'état brouillon
+      SV -> JN : consigner(annulation de validation, auteur, motif)
+    end
+    opt programme à l'état affiché
+      IU --> CPL : le programme reste affiché ; un avenant sera porté
+      note right of CPL
+        La validation pédagogique et la signature
+        du directeur restent acquises (RG-42).
+      end note
+    end
+
+    CPL -> IU : demander les remplaçants
+    IU -> SRE : remplaçantsÉligibles(matière, créneau)
+    activate SRE
+    SRE -> SRE : filtrer sur qualification et disponibilité (RG-35, RG-36)
+    SRE -> SRE : classer par charge, antériorité, statut (RG-43)
+    SRE --> IU : remplaçants classés et critère affiché
+    deactivate SRE
+
+    alt un remplaçant est retenu
+      CPL -> IU : désigner le remplaçant
+      IU -> SCT : vérifier(séance, remplaçant)
+      activate SCT
+      SCT --> IU : verdict
+      deactivate SCT
+      IU -> SEA : substituer l'instructeur
+      opt programme affiché
+        IU -> SEA : porter un avenant(motif, agent, date)
+      end
+      IU -> JN : consigner(remplacement, agent, date)
+
+    else aucun remplaçant éligible
+      alt substitution de matière
+        CPL -> IU : placer une autre matière programmable
+        IU -> SCT : vérifier(séance modifiée)
+        SCT --> IU : verdict
+        IU -> SEA : substituer la matière et reporter la précédente
+      else report de la séance
+        CPL -> IU : reporter la matière sur un créneau ultérieur
+        IU -> SCT : vérifier(nouvelle séance)
+        SCT --> IU : verdict
+        IU -> SEA : créer la séance reportée
+        note right of SEA
+          Une séance reportée puis tenue ne donne
+          pas lieu à non-exécution : le volume
+          réalisé est inchangé, le cours a eu lieu.
+        end note
+      else déprogrammation assumée
+        CPL -> IU : déprogrammer la séance
+        IU -> SEA : supprimer la séance
+        IU --> CPL : signaler l'impact sur le volume programmé
+      end
+    end
+  end
+end
+@enduml

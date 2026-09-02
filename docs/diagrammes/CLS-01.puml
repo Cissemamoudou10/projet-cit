@@ -1,0 +1,83 @@
+@startuml CLS-01
+title Vue thématique — Administration, sécurité et référentiel de formation
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide circle
+
+class Utilisateur {
+  identifiant : texte {unique}
+  empreinteMotDePasse : texte
+  nom : texte
+  prenom : texte
+  grade : texte
+  profil : Profil
+  actif : booleen
+  dernierAcces : horodatage
+  echecsConsecutifs : entier
+  verrouilleJusqua : horodatage [0..1]
+}
+class EntreeJournal <<immuable>> {
+  horodatage : horodatage
+  nature : texte
+  objetType : texte
+  objetIdentifiant : texte
+  valeurAvant : texte [0..1]
+  valeurApres : texte [0..1]
+}
+class TypeFormation {
+  code : texte {unique}
+  intitule : texte
+}
+class Formation {
+  intitule : texte
+  specialite : texte
+  dureeTheorique : entier
+  archivee : booleen
+}
+class Matiere <<catalogue>> {
+  code : texte {unique}
+  intitule : texte
+  archivee : booleen
+}
+class ElementReferentiel <<classe d'association>> {
+  volumeHorairePrescrit : entier
+  coefficient : decimal = 1
+  categorieLieuRequise : CategorieLieu
+  poidsFormatif : decimal
+  poidsCertificatif : decimal
+  /volumeProgramme : entier
+  /volumeRealise : entier
+  /volumeRestant : entier
+}
+class ObjectifPedagogique {
+  libelle : texte
+  ordre : entier
+}
+class Session <<vue P3>>
+
+Utilisateur "1" -- "0..*" EntreeJournal : produit >
+TypeFormation "1" -- "0..*" Formation : classe >
+Formation "1" -- "0..*" Matiere
+(Formation, Matiere) .. ElementReferentiel
+ElementReferentiel "0..*" -- "0..*" ElementReferentiel : requiert >
+ElementReferentiel "1" -- "0..*" ObjectifPedagogique
+Formation "1" -- "0..*" Session : instancie >
+
+note right of ElementReferentiel
+  Pivot du modèle. Le référentiel appartient à la
+  formation, jamais à la brigade (RG-05). Volume,
+  coefficient et catégorie de lieu sont propres au
+  couple formation-matière (RG-08). Les deux poids
+  règlent la part du formatif et du certificatif
+  dans la note du module : le PFE est formatif dans
+  la plupart des formations, certificatif pour le
+  stage Analyste en informatique.
+  Le graphe des prérequis est acyclique (RG-10).
+end note
+
+note bottom of Matiere
+  Catalogue indépendant des formations :
+  une matière existe sans être rattachée
+  à aucun référentiel.
+end note
+@enduml

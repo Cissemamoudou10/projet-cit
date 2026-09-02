@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Vérification — planche.svg, currentColor via &lt;use&gt; externe</title>
+<style>
+  body { font-family: sans-serif; background: #F7F8FA; padding: 24px; }
+  .rangee { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .rangee span.id { width: 160px; font-family: monospace; font-size: 12px; }
+  .icone { width: 24px; height: 24px; }
+  .marine { color: #1F3864; }
+  .ecart { color: #B03030; }
+  .lecture { color: #4A4F58; }
+  h2 { margin-top: 32px; }
+</style>
+</head>
+<body>
+<h1>Vérification — currentColor à travers &lt;use href="planche.svg#id"&gt;</h1>
+<p>Chaque icône dans trois classes de couleur (marine, écart, lecture). Si une
+colonne ne change pas de teinte, la couleur ne traverse pas la référence
+externe dans ce navigateur.</p>
+
+<h2>Marine · Écart · Lecture</h2>
+<div id="grille"></div>
+
+<script>
+  const icones = [
+    "calendrier","horloge","grille-horaire","salle","groupe","instructeur",
+    "stagiaire","matiere","seance","document","proces-verbal","signature",
+    "validation","rejet","avertissement","information","recherche","filtre",
+    "tri","tri-croissant","tri-decroissant","export","impression","ajout",
+    "modification","suppression","verrou","historique","alerte","statistique",
+    "fleche-suite","chevron-bas","chevron-droite","actions","document-valide",
+    "avenant",
+  ];
+  const grille = document.getElementById("grille");
+  for (const id of icones) {
+    const rangee = document.createElement("div");
+    rangee.className = "rangee";
+    rangee.innerHTML =
+      '<span class="id">' + id + '</span>' +
+      '<svg class="icone marine"><use href="planche.svg#' + id + '"></use></svg>' +
+      '<svg class="icone ecart"><use href="planche.svg#' + id + '"></use></svg>' +
+      '<svg class="icone lecture"><use href="planche.svg#' + id + '"></use></svg>';
+    grille.appendChild(rangee);
+  }
+</script>
+</body>
+</html>

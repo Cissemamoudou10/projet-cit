@@ -1,0 +1,92 @@
+@startuml CLS-04
+title Vue thématique — Planification : programme, séances, lignes
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide circle
+
+class ElementReferentiel <<vue P2>>
+class Brigade <<vue P3>>
+class Instructeur <<vue P4>>
+class Lieu <<vue P4>>
+class CreneauType <<vue P4>>
+class Utilisateur <<vue P1>>
+class Evaluation <<vue P6>>
+
+class ProgrammeHebdomadaire <<centre entier>> {
+  lundiDeSemaine : date {unique}
+  etat : EtatProgramme
+  dateSoumission : horodatage [0..1]
+  dateValidation : horodatage [0..1]
+  motifRejet : texte [0..1]
+  dateSignature : date [0..1]
+  signataire : texte [0..1]
+  dateAffichage : horodatage [0..1]
+}
+class Seance {
+  dateHeureDebut : horodatage
+  dateHeureFin : horodatage
+  verrouillee : booleen
+  /dureeHeures : decimal
+  /estRegroupee : booleen
+}
+class LigneProgramme {
+  /volumeCumule : entier
+}
+class NonExecution {
+  motif : texte
+  dateDeclaration : horodatage
+}
+class Avenant {
+  motif : texte
+  dateDeclaration : horodatage
+  natureModification : texte
+}
+
+ProgrammeHebdomadaire "1" -- "0..*" Seance
+Seance "1" -- "1..*" LigneProgramme
+Brigade "1" -- "0..*" LigneProgramme
+ElementReferentiel "1" -- "0..*" Seance
+Instructeur "1" -- "0..*" Seance
+Lieu "0..1" -- "0..*" Seance
+CreneauType "0..1" -- "0..*" Seance : issue de >
+Seance "0..1" -- "0..1" Evaluation : contrôle programmé >
+LigneProgramme "1" -- "0..1" NonExecution
+Seance "1" -- "0..*" Avenant
+Utilisateur "1" -- "0..*" Avenant : déclaré par >
+Utilisateur "1" -- "0..*" NonExecution : déclarée par >
+Utilisateur "0..1" -- "0..*" ProgrammeHebdomadaire : validé par >
+
+note right of ProgrammeHebdomadaire
+  Le programme couvre le centre entier pour une
+  semaine, et non une brigade. Il est validé par
+  la cellule pédagogique puis signé par le
+  directeur de la formation ; l'affichage n'est
+  possible qu'après signature (RG-46).
+  L'impression par journée est un format de sortie.
+end note
+
+note bottom of Seance
+  Une séance peut couvrir plusieurs créneaux
+  consécutifs : elle porte ses heures réelles,
+  le créneau type n'étant qu'une référence.
+  Une séance regroupée porte plusieurs lignes :
+  la charge de l'instructeur n'est comptée qu'une
+  fois, le volume l'est pour chaque brigade (RG-40).
+end note
+
+note bottom of NonExecution
+  Déclaration par exception : une séance d'un
+  programme affiché est réputée exécutée. Seule
+  la non-exécution se déclare, avec motif (RG-60).
+  Une séance reportée puis tenue ne donne pas lieu
+  à non-exécution : le cours a eu lieu, plus tard.
+end note
+
+note bottom of Avenant
+  Après affichage, la cellule planification ajuste
+  sans faire retomber le programme à brouillon :
+  la validation pédagogique et la signature du
+  directeur restent acquises (RG-42). Les avenants
+  de la semaine alimentent la progression réalisée.
+end note
+@enduml

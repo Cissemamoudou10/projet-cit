@@ -1,0 +1,53 @@
+{% load static %}
+{% if messages %}
+  <div class="mb-4 grid gap-3" role="status" aria-live="polite">
+    {% for message in messages %}
+      {% if message.tags == "success" %}
+        <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
+                    border-l-etat-conforme bg-etat-conforme-fond px-4 py-3">
+          <!-- arbitraire : border-l-[3px], filet d'accent latéral -->
+          <svg class="mt-px h-4 w-4 shrink-0 text-etat-conforme" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#validation"></use>
+          </svg>
+          <div>
+            <p class="font-titre text-base font-semibold text-etat-conforme">Succès</p>
+            <p class="text-xs text-gris-lecture">{{ message }}</p>
+          </div>
+        </div>
+      {% elif message.tags == "warning" %}
+        <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
+                    border-l-etat-attention bg-etat-attention-fond px-4 py-3">
+          <svg class="mt-px h-4 w-4 shrink-0 text-etat-attention" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+          </svg>
+          <div>
+            <p class="font-titre text-base font-semibold text-etat-attention">Avertissement</p>
+            <p class="text-xs text-gris-lecture">{{ message }}</p>
+          </div>
+        </div>
+      {% elif message.tags == "error" %}
+        <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
+                    border-l-etat-ecart bg-etat-ecart-fond px-4 py-3">
+          <svg class="mt-px h-4 w-4 shrink-0 text-etat-ecart" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#rejet"></use>
+          </svg>
+          <div>
+            <p class="font-titre text-base font-semibold text-etat-ecart">Erreur</p>
+            <p class="text-xs text-gris-lecture">{{ message }}</p>
+          </div>
+        </div>
+      {% else %}
+        <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
+                    border-l-marine-900 bg-sable px-4 py-3">
+          <svg class="mt-px h-4 w-4 shrink-0 text-marine-900" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#information"></use>
+          </svg>
+          <div>
+            <p class="font-titre text-base font-semibold text-marine-900">Information</p>
+            <p class="text-xs text-gris-lecture">{{ message }}</p>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

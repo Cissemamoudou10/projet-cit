@@ -1,0 +1,83 @@
+{% extends "noyau/base_public.html" %}
+{% load static %}
+
+{% block titre %}Connexion — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<div class="mx-auto mt-12 w-full max-w-[380px]">
+  <!-- arbitraire : max-w-[380px], largeur d'une carte de connexion, absente de l'échelle -->
+  <div class="mb-4">
+    <h1 class="font-titre text-xl font-semibold leading-tight">Connexion</h1>
+    <p class="text-sm text-gris-lecture">Centre d'instruction — gestion des activités de formation</p>
+  </div>
+
+  <form method="post" class="border border-gris-trait bg-fond-bloc px-5 py-4">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+    <div class="grid gap-3">
+      <div>
+        <label for="{{ form.identifiant.id_for_label }}"
+               class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+          Identifiant <span class="text-etat-ecart">— obligatoire</span>
+        </label>
+        {% if form.identifiant.errors %}
+          <input type="text" id="{{ form.identifiant.id_for_label }}" name="{{ form.identifiant.html_name }}"
+                 value="{{ form.identifiant.value|default_if_none:'' }}" autofocus
+                 aria-invalid="true" aria-describedby="{{ form.identifiant.id_for_label }}-erreur"
+                 class="h-controle w-full animate-secousse rounded border border-etat-ecart
+                        bg-etat-ecart-fond px-2.5 text-sm outline-none
+                        focus:ring-2 focus:ring-focus-ecart">
+          <p id="{{ form.identifiant.id_for_label }}-erreur"
+             class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+            <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+              <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+            </svg>
+            {{ form.identifiant.errors|first }}
+          </p>
+        {% else %}
+          <input type="text" id="{{ form.identifiant.id_for_label }}" name="{{ form.identifiant.html_name }}"
+                 value="{{ form.identifiant.value|default_if_none:'' }}" autofocus
+                 class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                        text-encre outline-none hover:border-marine-700
+                        focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        {% endif %}
+      </div>
+
+      <div>
+        <label for="{{ form.mot_de_passe.id_for_label }}"
+               class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+          Mot de passe <span class="text-etat-ecart">— obligatoire</span>
+        </label>
+        {% if form.mot_de_passe.errors %}
+          <input type="password" id="{{ form.mot_de_passe.id_for_label }}" name="{{ form.mot_de_passe.html_name }}"
+                 aria-invalid="true" aria-describedby="{{ form.mot_de_passe.id_for_label }}-erreur"
+                 class="h-controle w-full animate-secousse rounded border border-etat-ecart
+                        bg-etat-ecart-fond px-2.5 text-sm outline-none
+                        focus:ring-2 focus:ring-focus-ecart">
+          <p id="{{ form.mot_de_passe.id_for_label }}-erreur"
+             class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+            <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+              <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+            </svg>
+            {{ form.mot_de_passe.errors|first }}
+          </p>
+        {% else %}
+          <input type="password" id="{{ form.mot_de_passe.id_for_label }}" name="{{ form.mot_de_passe.html_name }}"
+                 class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                        text-encre outline-none hover:border-marine-700
+                        focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        {% endif %}
+      </div>
+    </div>
+
+    <button type="submit"
+            class="mt-4 inline-flex h-controle w-full items-center justify-center gap-2 border border-marine-900
+                   bg-marine-900 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700
+                   focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                   focus-visible:outline-marine-700">
+      Se connecter
+    </button>
+  </form>
+</div>
+{% endblock %}

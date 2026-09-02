@@ -1,0 +1,39 @@
+@startsalt MAQ-04
+{
+{* Référentiel | Sessions | <b>Ressources</b> | Planification | Évaluations | Suivi | ^Lt CISSE — Planification^ }
+--
+<b>Indisponibilité — Lt ZIANI, instructeur</b>
+{+
+  Du | "24/04/2026  08:00" | Au | "09/05/2026  16:00" | Motif | ^Mission^ | [ Enregistrer ]
+  . | . | . | . | . | <color:#888>Saisie déléguée : rattachée à l'agent qui enregistre (RG-23)</color> | .
+}
+--
+<b>4 séances impactées</b>
+{#
+ <b>Séance</b> | <b>Brigade</b> | <b>Matière</b> | <b>État du programme</b> | <b>Traitement</b>
+ Lun 04/05  14:40 - 16:00 | CDP  | Guerre électronique | <color:#0F6E56>AFFICHÉ</color> | ^Remplacer l'instructeur^
+ Mar 05/05  08:00 - 09:45 | EXP2 | Guerre électronique | <color:#0F6E56>AFFICHÉ</color> | ^Reporter la séance^
+ Jeu 07/05  10:10 - 12:00 | BCM2 | Systèmes UAV | <color:#B07000>BROUILLON</color> | ^Remplacer l'instructeur^
+ Ven 08/05  13:00 - 14:15 | CDP  | Guerre électronique | <color:#0F6E56>AFFICHÉ</color> | ^Déclarer la non-exécution^
+}
+--
+{+
+  <b>Remplaçants proposés — Guerre électronique, lundi 04/05 14:40 - 16:00</b>
+  {#
+   <b>Rang</b> | <b>Instructeur</b> | <b>Charge semaine</b> | <b>Déjà intervenu sur CDP</b> | <b>Statut</b> | .
+   1 | Cne KIBOUR    | 6 h 30  | oui, 4 séances | Militaire du centre | (X) Désigner
+   2 | Cdt BERGANNOU | 11 h 15 | non            | Militaire du centre | ( ) Désigner
+   3 | M. AIT LHCEN  | 3 h 20  | non            | Vacataire           | ( ) Désigner
+  }
+  <color:#888>Classement par règles explicites : qualification et disponibilité éliminatoires, puis charge croissante, antériorité sur la brigade, statut (RG-43). Vous restez libre de désigner un autre instructeur qualifié.</color>
+}
+--
+{+
+  <b>Effet sur le programme affiché</b>
+  Le programme <b>reste affiché</b> : la validation pédagogique et la signature du directeur demeurent acquises.
+  La séance portera un <b>avenant</b> daté et motivé (RG-42).
+  Motif de l'avenant | "Mission Lt ZIANI du 24/04 au 09/05 — remplacement Cne KIBOUR                 "
+  [ <b>Confirmer le remplacement</b> ] | [ Annuler ]
+}
+}
+@endsalt

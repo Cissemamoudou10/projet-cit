@@ -1,0 +1,43 @@
+# --- Python / Django ---
+__pycache__/
+*.py[cod]
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/app/media/
+/app/staticfiles/
+local_settings.py
+.env
+*.env
+
+# --- Diagrammes ---
+# Les sources .puml sont versionnees, les rendus se regenerent
+docs/diagrammes/rendu/
+
+# --- Outillage Tailwind (poste de developpement uniquement, BNF-06) ---
+node_modules/
+npm-debug.log*
+
+# --- Outils et systeme ---
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.swp
+Thumbs.db
+desktop.ini
+~$*
+
+# --- Donnees sensibles : ne JAMAIS versionner ---
+# Aucune donnee reelle du CIT : listes nominatives, sujets d'examen,
+# notes, noms d'instructeurs. Les fixtures doivent etre fictives.
+/donnees_reelles/
