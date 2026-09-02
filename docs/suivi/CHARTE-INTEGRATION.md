@@ -58,6 +58,42 @@ ouverte dans Chrome, 36 icônes × 3 teintes. Les trois colonnes changent
 bien de couleur — `currentColor` traverse la référence externe dans ce
 navigateur. Pas besoin du repli (planche incluse en ligne dans `base.html`).
 
+## Amendement daté — bloc de messages (§ 2.5) : fermeture manuelle et disparition automatique
+
+**2026-09-02.** Signalé par l'utilisateur : les messages (succès, erreur,
+avertissement, information) ne se fermaient jamais — ni tout seuls après un
+délai, ni au clic, faute de croix de fermeture.
+
+**Cause.** Le texte de la charte (§ 2.5) ne montre aucune croix de
+fermeture et aucun script : le composant tel que décrit est purement
+statique. La feuille Tailwind porte pourtant une durée `notif` (200 ms,
+`tailwind.config.js`) manifestement prévue pour ce genre d'interaction,
+jamais câblée. Premier gabarit du projet à avoir besoin de JavaScript —
+aucun fichier `.js` n'existait encore.
+
+**Correction.**
+- `app/noyau/templates/noyau/ossature/bouton_fermeture_message.html`
+  (nouveau) : croix de fermeture (icône `rejet`, § 1.11 — « rejeter, fermer,
+  retirer »), incluse dans les quatre variantes de
+  `noyau/ossature/messages.html`, chacune reçoit aussi `data-message` pour
+  le ciblage JS.
+- `app/noyau/static/js/messages.js` (nouveau, chargé en `defer` depuis
+  `base.html` et `base_public.html`) : ferme un message au clic sur sa
+  croix, et automatiquement après **6 secondes** — valeur choisie faute de
+  délai déjà fixé par la charte, à ajuster si le terrain la juge trop
+  courte ou trop longue. Fondu de 200 ms (durée `notif`) posé en style
+  JS inline, pas en classes Tailwind : ce fichier n'étant pas dans la liste
+  `content` de `tailwind.config.js`, une classe qui n'existerait que dans
+  une chaîne JS ne serait jamais générée par la compilation.
+- Respecte `prefers-reduced-motion` sans code supplémentaire : la règle
+  globale de `application.css` (`transition-duration: .001ms !important`)
+  s'applique aussi aux transitions posées en style inline par JS.
+
+**Vérifié réellement** au navigateur : déclenchement d'un message d'erreur
+réel (garde-fou administrateur, écran des habilitations), clic sur la
+croix — le message disparaît immédiatement ; rejoué sans clic — le message
+disparaît seul après le délai, sans intervention.
+
 ## Amendement daté — squelette de base (§ 2.1) : pied de page fixé en bas d'écran
 
 **2026-09-02.** Signalé visuellement par l'utilisateur sur toutes les pages :
