@@ -58,6 +58,35 @@ ouverte dans Chrome, 36 icônes × 3 teintes. Les trois colonnes changent
 bien de couleur — `currentColor` traverse la référence externe dans ce
 navigateur. Pas besoin du repli (planche incluse en ligne dans `base.html`).
 
+## Amendement daté — squelette de base (§ 2.1) : pied de page fixé en bas d'écran
+
+**2026-09-02.** Signalé visuellement par l'utilisateur sur toutes les pages :
+le pied de page (§ 2.4) ne restait pas plaqué en bas de l'écran sur une page
+dont le contenu est plus court que la fenêtre — il suivait directement le
+contenu, changeant de hauteur selon l'écran affiché, au lieu de rester une
+ligne d'ancrage stable.
+
+**Cause.** Le squelette `<body>` du § 2.1 de la charte porte
+`min-w-[1280px] bg-fond-page …` sans `min-h-screen`/`flex`/`flex-col`, et
+`<main>` sans `flex-1` — la charte elle-même ne contient pas la disposition
+« pied de page collant » (*sticky footer*) : le défaut vient du texte de
+référence, pas d'un écart pris en développant.
+
+**Correction.** `<body>` reçoit `flex min-h-screen flex-col` (en plus des
+classes existantes) ; `<main>` reçoit `flex-1` (en plus des siennes). Le
+pied de page occupe alors sa hauteur naturelle mais reste ancré au bas de
+la fenêtre quand le contenu est court, et suit normalement le contenu
+quand il dépasse la hauteur d'écran. Appliqué aux deux squelettes de base :
+`app/noyau/templates/noyau/base.html` et `base_public.html` (celui-ci sans
+`min-w-[1280px]`, déjà omis pour une autre raison, voir plus haut).
+
+**Vérifié réellement** au navigateur, deux gabarits : `noyau/accueil.html`
+(contenu court, deux lignes) et `administration/habilitations.html`
+(contenu proche de la hauteur d'écran) — le pied de page reste au bas de
+l'écran dans les deux cas. `app/administration/tests/test_gabarit_connexion.py`
+(suite existante, contrôle le contenu rendu de `base_public.html`) repasse
+sans modification.
+
 ## Défauts connus de la charte
 
 ### 1 — Interrupteur (§ 3.23) : `peer-checked:left-[18px]` ne peut pas s'appliquer

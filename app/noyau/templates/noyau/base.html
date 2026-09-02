@@ -9,12 +9,15 @@
   <link rel="stylesheet" href="{% static 'css/application.css' %}">
   <link rel="stylesheet" href="{% static 'css/impression.css' %}" media="print">
 </head>
-<body class="min-w-[1280px] bg-fond-page font-corps text-base text-encre antialiased">
-  <!-- arbitraire : min-w-[1280px], largeur minimale imposée par la grille de programme -->
+<body class="flex min-h-screen min-w-[1280px] flex-col bg-fond-page font-corps text-base text-encre antialiased">
+  <!-- arbitraire : min-w-[1280px], largeur minimale imposée par la grille de programme.
+       min-h-screen + flex-col + flex-1 (main) : pied de page fixé en bas de
+       l'écran même quand le contenu est court — écart à la charte, voir
+       docs/suivi/CHARTE-INTEGRATION.md. -->
   {% include "noyau/ossature/entete.html" %}
   {% include "noyau/ossature/fil_ariane.html" %}
   {% block entete_page %}{% endblock %}
-  <main class="px-6 pb-12 pt-4">
+  <main class="flex-1 px-6 pb-12 pt-4">
     {% include "noyau/ossature/messages.html" %}
     {% block contenu %}{% endblock %}
   </main>
