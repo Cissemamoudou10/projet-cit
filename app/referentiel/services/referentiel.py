@@ -23,6 +23,7 @@ from noyau.services.base import ServiceBase
 from noyau.services.gestion import decrire_opposants, valider_instance
 from referentiel.models import CategorieLieu, ElementReferentiel, TypeLieuPartage
 from referentiel.services.matiere import ServiceMatiere
+from referentiel.services.prerequis import ServicePrerequis
 
 PERMISSION_LECTURE = "noyau.referentiel_lecture"
 PERMISSION_ECRITURE = "noyau.referentiel_ecriture"
@@ -123,7 +124,16 @@ class ServiceReferentiel:
 
     @staticmethod
     def retirer(agissant, element):
+        """RG-07 : un prérequis bloque le retrait — contrôle explicite, pas
+        `ProtectedError` : `Prerequis.element`/`element_prerequis` sont en
+        `CASCADE`, pas en `PROTECT` (Prompt 10, § 6). La cascade reste un
+        filet pour un retrait qui contournerait ce contrôle ; ce n'est
+        jamais elle qui doit refuser.
+        """
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
+        liens = ServicePrerequis.elements_lies(element)
+        if liens:
+            raise ErreurValidation(decrire_opposants(element, liens))
         try:
             with transaction.atomic():
                 element.delete()

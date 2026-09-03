@@ -18,6 +18,12 @@
         Référentiel — {{ formation.intitule }}</h1>
       <p class="text-sm text-gris-lecture">{{ formation.type_formation }}</p>
     </div>
+    <a href="{% url 'referentiel:prerequis_formation' formation.pk %}"
+       class="inline-flex h-controle items-center border border-marine-900 px-3.5 text-sm
+              font-semibold text-marine-900 no-underline transition-colors duration-survol
+              hover:bg-fond-survol">
+      Prérequis
+    </a>
   </div>
 </div>
 {% endblock %}

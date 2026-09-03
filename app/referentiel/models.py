@@ -252,3 +252,57 @@ class ObjectifPedagogique(ModeleHorodate):
 
     def __str__(self):
         return self.libelle
+
+
+class Prerequis(ModeleHorodate):
+    """Association réflexive « exige » entre deux éléments d'un même
+    référentiel — CU-P2-07, RG-09, RG-10.
+
+    Porte sur `ElementReferentiel`, jamais sur `Matiere` (Prompt 10, § 6 et
+    CLS-01, § 3.4) : chaque extrémité désigne ainsi un couple
+    (formation, matière) précis. Cela ne garantit pourtant pas, à lui seul,
+    que les deux extrémités partagent la même formation — RG-09 (même
+    référentiel) reste un contrôle de couche services, jamais une contrainte
+    de base (Prompt 10, § 2.1 : une clé étrangère composée `(id, formation)`
+    résoudrait le problème mais Django ne sait pas la déclarer ; le coût en
+    lisibilité dépasserait le gain).
+
+    `CASCADE` des deux côtés : retirer un élément du référentiel emporte les
+    liens qui le concernent — un filet, pas la règle. RG-07 (retrait refusé
+    tant qu'un prérequis existe) est un contrôle explicite dans
+    `ServiceReferentiel.retirer`, qui s'exécute avant toute suppression.
+
+    Pas de `ModeleArchivable` : A1 pose une suppression franche, avec
+    confirmation — aucune vérification supplémentaire n'est requise, une
+    suppression ne pouvant créer de cycle.
+    """
+
+    element = models.ForeignKey(
+        ElementReferentiel,
+        on_delete=models.CASCADE,
+        related_name="prerequis_directs",
+        verbose_name="élément",
+    )
+    element_prerequis = models.ForeignKey(
+        ElementReferentiel,
+        on_delete=models.CASCADE,
+        related_name="requis_par",
+        verbose_name="élément prérequis",
+    )
+
+    class Meta:
+        db_table = "referentiel_prerequis"
+        verbose_name = "prérequis"
+        verbose_name_plural = "prérequis"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["element", "element_prerequis"], name="uq_prerequis_couple"
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(element=F("element_prerequis")),
+                name="ck_prerequis_non_reflexif",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.element.matiere} exige {self.element_prerequis.matiere}"

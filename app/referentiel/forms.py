@@ -1,7 +1,14 @@
 from django import forms
 
 from noyau.forms import FormulaireGestion
-from referentiel.models import CategorieLieu, Formation, Matiere, TypeFormation, TypeLieuPartage
+from referentiel.models import (
+    CategorieLieu,
+    ElementReferentiel,
+    Formation,
+    Matiere,
+    TypeFormation,
+    TypeLieuPartage,
+)
 from referentiel.services.type_formation import ServiceTypeFormation
 
 CLASSES_CHAMP_TEXTE = (
@@ -146,3 +153,33 @@ class FormulaireObjectifPedagogique(forms.Form):
         label="Libellé",
         widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 3}),
     )
+
+
+class ChampElementReferentiel(forms.ModelChoiceField):
+    """N'affiche que la matière : la formation est déjà celle de l'écran,
+    la répéter dans chaque option de la liste n'apporterait rien.
+    """
+
+    def label_from_instance(self, obj):
+        return str(obj.matiere)
+
+
+class FormulairePrerequis(forms.Form):
+    """§ 7 : la liste déroulante n'offre que les matières du même
+    référentiel, moins la matière elle-même, moins celles déjà déclarées —
+    restriction posée par `ServicePrerequis.elements_disponibles`, jamais
+    recopiée ici (E2/E3 évités par construction, mais restent vérifiés par
+    le service pour la voie directe).
+    """
+
+    element_prerequis = ChampElementReferentiel(
+        queryset=ElementReferentiel.objects.none(),
+        label="Prérequis",
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+
+    def __init__(self, *args, elements_disponibles, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["element_prerequis"].queryset = elements_disponibles.order_by(
+            "matiere__intitule"
+        )

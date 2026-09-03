@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
-from referentiel.models import CategorieLieu, Formation, Matiere, TypeFormation
+from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 
 
 @pytest.fixture
@@ -67,3 +67,14 @@ def donnees_element_referentiel(**supplement):
     }
     donnees.update(supplement)
     return donnees
+
+
+def creer_element(formation, intitule, code=""):
+    """Pas une fixture — un helper : US-REF-06 a besoin d'un nombre variable
+    d'éléments de référentiel par test, pour composer un graphe de
+    prérequis.
+    """
+    matiere = Matiere.objects.create(intitule=intitule, code=code)
+    return ElementReferentiel.objects.create(
+        formation=formation, matiere=matiere, **donnees_element_referentiel()
+    )

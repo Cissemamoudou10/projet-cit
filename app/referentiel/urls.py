@@ -1,6 +1,13 @@
 from django.urls import path
 
-from referentiel.views import formation, matiere, objectif_pedagogique, referentiel, type_formation
+from referentiel.views import (
+    formation,
+    matiere,
+    objectif_pedagogique,
+    prerequis,
+    referentiel,
+    type_formation,
+)
 
 app_name = "referentiel"
 
@@ -107,5 +114,20 @@ urlpatterns = [
         "matieres/<int:matiere_pk>/objectifs/<int:objectif_pk>/supprimer/",
         objectif_pedagogique.vue_confirmer_suppression_objectif_pedagogique,
         name="supprimer_objectif_pedagogique",
+    ),
+    path(
+        "formations/<int:formation_pk>/prerequis/",
+        prerequis.vue_prerequis_formation,
+        name="prerequis_formation",
+    ),
+    path(
+        "formations/<int:formation_pk>/prerequis/<int:element_pk>/ajouter/",
+        prerequis.vue_ajouter_prerequis,
+        name="ajouter_prerequis",
+    ),
+    path(
+        "formations/<int:formation_pk>/prerequis/<int:prerequis_pk>/supprimer/",
+        prerequis.vue_confirmer_suppression_prerequis,
+        name="supprimer_prerequis",
     ),
 ]
