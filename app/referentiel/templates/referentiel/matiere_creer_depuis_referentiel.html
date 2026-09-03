@@ -1,0 +1,41 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Créer une matière — {{ formation.intitule }} — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue-matiere"
+        class="w-[520px] animate-ouvrir border border-marine-900 bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <!-- arbitraire : w-[520px], largeur fixe de dialogue -->
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue-matiere"
+       class="flex items-center gap-2 bg-marine-900 px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Créer une matière — {{ formation.intitule }}
+    </p>
+    {% if form.non_field_errors %}
+      <div class="mx-4 mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+                  border-l-etat-ecart bg-etat-ecart-fond px-4 py-3">
+        <svg class="mt-px h-4 w-4 shrink-0 text-etat-ecart" aria-hidden="true">
+          <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+        </svg>
+        <p class="text-xs text-gris-lecture">{{ form.non_field_errors|first }}</p>
+      </div>
+    {% endif %}
+    <div class="grid gap-3 px-4 py-4 text-sm">
+      {% include "referentiel/_champ_formulaire.html" with champ=form.intitule %}
+      {% include "referentiel/_champ_formulaire.html" with champ=form.code %}
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 py-1.5 text-sm font-semibold text-blanc
+                     transition-colors duration-survol hover:bg-marine-700">Créer</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

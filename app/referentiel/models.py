@@ -1,4 +1,4 @@
-"""Référentiel de formation — CU-P2-01, CU-P2-02, CU-P2-03.
+"""Référentiel de formation — CU-P2-01, CU-P2-02, CU-P2-03, CU-P2-04, CU-P2-05.
 
 Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
@@ -70,6 +70,20 @@ class Matiere(ModeleHorodate, ModeleArchivable):
         return self.intitule
 
 
+class CategorieLieu(models.TextChoices):
+    """§ 6.2 — libellés du centre (BNF-08), à afficher tels quels."""
+
+    SALLE_ATTITREE = "salle_attitree", "Salle attitrée de la brigade"
+    LIEU_PARTAGE = "lieu_partage", "Lieu partagé"
+    AUCUN_LIEU = "aucun_lieu", "Aucun lieu requis"
+
+
+class TypeLieuPartage(models.TextChoices):
+    AMPHITHEATRE = "amphitheatre", "Amphithéâtre"
+    LABORATOIRE = "laboratoire", "Laboratoire"
+    SALLE_SPECIALISEE = "salle_specialisee", "Salle spécialisée"
+
+
 class Formation(ModeleHorodate, ModeleArchivable):
     """Catalogue des formations dispensées par le centre — CU-P2-02.
 
@@ -110,3 +124,79 @@ class Formation(ModeleHorodate, ModeleArchivable):
 
     def __str__(self):
         return self.intitule
+
+
+class ElementReferentiel(ModeleHorodate):
+    """Classe d'association entre `Formation` et `Matiere` — CU-P2-04,
+    CU-P2-05, RG-05 à RG-08. Le pivot du référentiel : c'est cette classe,
+    et jamais `Matiere` directement, que référenceront les séances
+    programmées et le rapprochement prescrit/réalisé des sprints suivants.
+
+    Clé primaire technique, pas composite (note d'implémentation, § 4.1) :
+    quatre autres tables la référenceront à terme (prérequis, séance,
+    évaluation, désignation de chef de module).
+
+    Pas de `ModeleArchivable` : le retrait est une suppression protégée
+    (RG-07), jamais un archivage — rien dans la fiche ne prévoit un
+    « rattachement archivé ».
+
+    Ne duplique aucun attribut de `Matiere` (Prompt 08, § 3.2) : le
+    référentiel référence la matière, il ne la recopie jamais — c'est ce
+    dont dépend le critère 6 d'US-REF-02 (une modification de la matière se
+    répercute pour toutes les formations qui l'utilisent).
+    """
+
+    formation = models.ForeignKey(
+        Formation,
+        on_delete=models.CASCADE,
+        related_name="elements_referentiel",
+        verbose_name="formation",
+    )
+    matiere = models.ForeignKey(
+        Matiere,
+        on_delete=models.PROTECT,
+        related_name="elements_referentiel",
+        verbose_name="matière",
+    )
+    volume_horaire_prescrit = models.PositiveIntegerField(
+        verbose_name="volume horaire prescrit (heures)", validators=[MinValueValidator(1)]
+    )
+    categorie_lieu = models.CharField(
+        max_length=20, choices=CategorieLieu.choices, verbose_name="catégorie de lieu"
+    )
+    type_lieu_partage = models.CharField(
+        max_length=20,
+        choices=TypeLieuPartage.choices,
+        null=True,
+        blank=True,
+        verbose_name="type de lieu partagé",
+    )
+
+    class Meta:
+        db_table = "referentiel_element_referentiel"
+        verbose_name = "élément de référentiel"
+        verbose_name_plural = "éléments de référentiel"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["formation", "matiere"], name="uq_element_referentiel_formation_matiere"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(volume_horaire_prescrit__gt=0),
+                name="ck_element_referentiel_volume_positif",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(
+                        categorie_lieu=CategorieLieu.LIEU_PARTAGE, type_lieu_partage__isnull=False
+                    )
+                    | (
+                        ~models.Q(categorie_lieu=CategorieLieu.LIEU_PARTAGE)
+                        & models.Q(type_lieu_partage__isnull=True)
+                    )
+                ),
+                name="ck_element_referentiel_type_lieu_coherent",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.matiere} — {self.formation}"

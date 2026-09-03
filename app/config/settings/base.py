@@ -98,6 +98,30 @@ AUTH_DUREE_VERROUILLAGE_MINUTES = int(os.environ.get("AUTH_DUREE_VERROUILLAGE_MI
 SESSION_COOKIE_AGE = int(os.environ.get("SESSION_COOKIE_AGE", "1800"))
 SESSION_SAVE_EVERY_REQUEST = True
 
+# Référentiel — BNF-13. Deux paramètres provisoires, à confirmer auprès du
+# chef de bureau pédagogique — voir docs/suivi/DECISIONS.md et
+# referentiel/services/referentiel.py::ServiceReferentiel.ecart.
+#
+# VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE convertit la durée d'une formation
+# (Formation.duree_semaines, en semaines — arbitrage D-25) en un volume total
+# attendu, en heures, comparable à la somme des volumes prescrits du
+# référentiel (critère 5, US-REF-03). Rien, dans aucun livrable, ne dit
+# combien d'heures d'instruction compte une semaine au CIT — la grille
+# horaire (US-RES, sprint 2) portera la vraie réponse et remplacera ce
+# paramètre provisoire.
+VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE = int(
+    os.environ.get("VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE", "30")
+)
+
+# Seuil, en pourcentage du volume attendu, au-delà duquel l'écart entre le
+# total prescrit et la durée de la formation déclenche l'avertissement non
+# bloquant du critère 5. Un pourcentage plutôt qu'un nombre d'heures absolu :
+# reste pertinent aussi bien sur une formation de deux semaines que de
+# cinquante-deux.
+SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT = int(
+    os.environ.get("SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT", "10")
+)
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

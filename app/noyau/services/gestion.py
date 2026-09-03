@@ -25,6 +25,35 @@ from noyau.pagination import paginer
 from noyau.services.base import ServiceBase
 
 
+def decrire_opposants(instance, opposants):
+    """Message d'E3 (fiche générique) — énumère jusqu'à dix éléments qui
+    s'opposent à la suppression de `instance`. Fonction libre, pas seulement
+    une méthode du patron : `ServiceReferentiel` (US-REF-03), qui n'hérite
+    pas de `ServiceGestion`, en a le même besoin pour RG-07.
+    """
+    elements = ", ".join(str(objet) for objet in list(opposants)[:10])
+    return f"{instance} est référencé par : {elements}. Impossible de le supprimer."
+
+
+def valider_instance(instance):
+    """Traduit un `ValidationError` Django (`full_clean`) en `ErreurValidation`
+    métier — fonction libre pour la même raison que `decrire_opposants` :
+    `ServiceReferentiel` valide `ElementReferentiel` sans hériter du patron.
+    """
+    try:
+        instance.full_clean(validate_unique=False, validate_constraints=False)
+    except ErreurValidationDjango as erreur:
+        raise ErreurValidation(_decrire_erreurs(erreur)) from erreur
+
+
+def _decrire_erreurs(erreur):
+    if hasattr(erreur, "message_dict"):
+        messages = [message for liste in erreur.message_dict.values() for message in liste]
+    else:
+        messages = erreur.messages
+    return " ".join(messages)
+
+
 class ServiceGestion:
     """Sous-classe : déclare `MODELE`, `DOMAINE`, `CHAMP_UNICITE` (aussi
     l'identifiant lisible du journal), `CHAMPS_RECHERCHE`, `CHAMPS_TRIABLES`,
@@ -161,7 +190,7 @@ class ServiceGestion:
                 instance.delete()
         except ProtectedError as erreur:
             raise ErreurValidation(
-                cls._decrire_opposants(instance, erreur.protected_objects)
+                decrire_opposants(instance, erreur.protected_objects)
             ) from erreur
 
     @classmethod
@@ -176,20 +205,9 @@ class ServiceGestion:
         champ = cls.CHAMPS_TRIABLES.get(colonne, cls.CHAMP_UNICITE)
         return f"-{champ}" if tri.startswith("-") else champ
 
-    @classmethod
-    def _valider(cls, instance):
-        try:
-            instance.full_clean(validate_unique=False, validate_constraints=False)
-        except ErreurValidationDjango as erreur:
-            raise ErreurValidation(cls._decrire_erreurs(erreur)) from erreur
-
     @staticmethod
-    def _decrire_erreurs(erreur):
-        if hasattr(erreur, "message_dict"):
-            messages = [message for liste in erreur.message_dict.values() for message in liste]
-        else:
-            messages = erreur.messages
-        return " ".join(messages)
+    def _valider(instance):
+        valider_instance(instance)
 
     @classmethod
     def _erreur_unicite(cls, instance):
@@ -200,11 +218,6 @@ class ServiceGestion:
             .first()
         )
         return ErreurValidation(f"« {valeur} » est déjà attribué à {existant}.")
-
-    @staticmethod
-    def _decrire_opposants(instance, opposants):
-        elements = ", ".join(str(objet) for objet in list(opposants)[:10])
-        return f"{instance} est référencé par : {elements}. Impossible de le supprimer."
 
     @classmethod
     def _capturer(cls, instance):

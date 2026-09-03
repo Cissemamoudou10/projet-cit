@@ -14,6 +14,7 @@ from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
 from referentiel.forms import FormulaireFormation
 from referentiel.services.formation import ServiceFormation
+from referentiel.services.referentiel import ServiceReferentiel
 from referentiel.services.type_formation import ServiceTypeFormation
 
 
@@ -148,12 +149,16 @@ def _ligne(formation):
 @exige_habilitation(ServiceFormation.PERMISSION_LECTURE)
 def vue_detail_formation(request, pk):
     formation = _formation_ou_404(pk)
+    elements = ServiceReferentiel.lister(request.user, formation)
     return render(
         request,
         "referentiel/formation_detail.html",
         {
             "formation": formation,
             "url_modifier": reverse("referentiel:modifier_formation", args=[formation.pk]),
+            "url_referentiel": reverse("referentiel:referentiel_formation", args=[formation.pk]),
+            "nombre_elements_referentiel": len(elements),
+            "total_volume_referentiel": ServiceReferentiel.total_volume(formation),
         },
     )
 

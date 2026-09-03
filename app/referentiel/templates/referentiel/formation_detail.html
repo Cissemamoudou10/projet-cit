@@ -56,16 +56,42 @@
               font-semibold uppercase tracking-wide text-marine-900">
       Référentiel
     </p>
-    <div class="px-4 py-8 text-center">
-      <svg class="mx-auto mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
-        <use href="{% static 'icones/planche.svg' %}#matiere"></use>
-      </svg>
-      <p class="mb-1 font-titre text-sm font-semibold">Référentiel non composé</p>
-      <p class="mx-auto max-w-xs text-xs text-gris-lecture">
-        Matières, volumes et catégories de lieu se rattachent à cette formation
-        à partir d'US-REF-03.
-      </p>
-    </div>
+    {% if nombre_elements_referentiel %}
+      <dl class="grid gap-3 px-4 py-3.5 text-sm">
+        <div>
+          <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Matières rattachées</dt>
+          <dd>{{ nombre_elements_referentiel }}</dd>
+        </div>
+        <div>
+          <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Volume total prescrit</dt>
+          <dd>{{ total_volume_referentiel }} h</dd>
+        </div>
+      </dl>
+      <div class="border-t border-gris-trait px-4 py-3">
+        <a href="{{ url_referentiel }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Composer le référentiel
+        </a>
+      </div>
+    {% else %}
+      <div class="px-4 py-8 text-center">
+        <svg class="mx-auto mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+          <use href="{% static 'icones/planche.svg' %}#matiere"></use>
+        </svg>
+        <p class="mb-1 font-titre text-sm font-semibold">Référentiel non composé</p>
+        <p class="mx-auto mb-3.5 max-w-xs text-xs text-gris-lecture">
+          Aucune matière n'est encore rattachée à cette formation.
+        </p>
+        <a href="{{ url_referentiel }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Composer le référentiel
+        </a>
+      </div>
+    {% endif %}
   </section>
 </div>
 {% endblock %}

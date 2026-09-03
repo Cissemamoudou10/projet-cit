@@ -1,0 +1,214 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Référentiel — {{ formation.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">
+        Référentiel — {{ formation.intitule }}</h1>
+      <p class="text-sm text-gris-lecture">{{ formation.type_formation }}</p>
+    </div>
+    <a href="{% url 'referentiel:detail_formation' formation.pk %}"
+       class="inline-flex h-controle items-center px-3.5 text-sm text-marine-700 no-underline">
+      Retour à la formation
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 grid grid-cols-3 gap-6">
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Volume total prescrit</p>
+    <p class="flex items-baseline gap-1.5">
+      <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ ecart.total }}</span>
+      <span class="text-xs text-gris-lecture">h</span>
+    </p>
+    <p class="mt-2 border-t border-dotted border-gris-trait pt-1.5 text-xs tabular-nums">
+      <span class="text-gris-lecture">attendu : {{ ecart.attendu }} h, sur
+        {{ formation.duree_semaines }} semaine{{ formation.duree_semaines|pluralize }}</span>
+    </p>
+  </div>
+  <div class="col-span-2">
+    {% if ecart.depasse_seuil %}
+      <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
+                  border-l-etat-attention bg-etat-attention-fond px-4 py-3">
+        <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-attention" aria-hidden="true">
+          <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+        </svg>
+        <div>
+          <p class="font-titre text-base font-semibold text-etat-attention">Écart de volume</p>
+          <p class="text-xs text-gris-lecture">
+            Le total prescrit ({{ ecart.total }} h) s'écarte du volume attendu
+            ({{ ecart.attendu }} h) au-delà du seuil de tolérance. Cet avertissement
+            n'empêche pas l'enregistrement — vérifiez le cursus si l'écart est involontaire.
+          </p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Matières rattachées
+  </p>
+  {% if elements %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Matière</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Volume</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Catégorie de lieu</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Type de lieu partagé</th>
+          <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for element in elements %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ element.matiere }}</th>
+            <td class="px-3 py-1.5">
+              <span class="flex w-24 items-stretch border border-gris-trait bg-fond-bloc">
+                <input type="number" min="1" inputmode="numeric" name="volume_horaire_prescrit"
+                       form="ligne-{{ element.pk }}" value="{{ element.volume_horaire_prescrit }}"
+                       aria-label="Volume prescrit — {{ element.matiere }}"
+                       class="h-ligne w-full border-0 bg-transparent px-2 text-right text-xs
+                              tabular-nums outline-none">
+                <span class="flex items-center border-l border-gris-trait bg-fond-bande px-2
+                             text-2xs text-gris-lecture">h</span>
+              </span>
+            </td>
+            <td class="px-3 py-1.5">
+              <select name="categorie_lieu" form="ligne-{{ element.pk }}"
+                      aria-label="Catégorie de lieu — {{ element.matiere }}"
+                      class="h-ligne rounded border border-gris-trait bg-fond-bloc px-2 text-xs
+                             outline-none hover:border-marine-700
+                             focus:border-marine-700 focus:ring-2 focus:ring-focus">
+                {% for valeur, libelle in categories_lieu %}
+                  <option value="{{ valeur }}" {% if valeur == element.categorie_lieu %}selected{% endif %}>
+                    {{ libelle }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td class="px-3 py-1.5">
+              <select name="type_lieu_partage" form="ligne-{{ element.pk }}"
+                      aria-label="Type de lieu partagé — {{ element.matiere }}"
+                      class="h-ligne rounded border border-gris-trait bg-fond-bloc px-2 text-xs
+                             outline-none hover:border-marine-700
+                             focus:border-marine-700 focus:ring-2 focus:ring-focus">
+                <option value="">—</option>
+                {% for valeur, libelle in types_lieu_partage %}
+                  <option value="{{ valeur }}" {% if valeur == element.type_lieu_partage %}selected{% endif %}>
+                    {{ libelle }}</option>
+                {% endfor %}
+              </select>
+              <p class="mt-1 text-2xs text-gris-lecture">Utilisé seulement si lieu partagé.</p>
+            </td>
+            <td class="px-3 py-1.5 text-right">
+              <button type="submit" form="ligne-{{ element.pk }}"
+                      title="Enregistrer" aria-label="Enregistrer {{ element.matiere }}"
+                      class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                             hover:border-marine-700 hover:bg-fond-survol">
+                <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                  <use href="{% static 'icones/planche.svg' %}#validation"></use>
+                </svg>
+              </button>
+              <a href="{% url 'referentiel:retirer_element_referentiel' formation.pk element.pk %}"
+                 title="Retirer du référentiel" aria-label="Retirer {{ element.matiere }} du référentiel"
+                 class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                        hover:border-etat-ecart hover:bg-etat-ecart-fond">
+                <svg class="h-4 w-4 text-etat-ecart" aria-hidden="true">
+                  <use href="{% static 'icones/planche.svg' %}#suppression"></use>
+                </svg>
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% for element in elements %}
+      <form id="ligne-{{ element.pk }}" method="post"
+            action="{% url 'referentiel:modifier_element_referentiel' formation.pk element.pk %}"
+            hidden>{% csrf_token %}</form>
+    {% endfor %}
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#matiere"></use>
+      </svg>
+      <p class="mb-1 font-titre text-lg font-semibold">Aucune matière rattachée</p>
+      <p class="mb-3.5 max-w-lg text-sm text-gris-lecture">
+        Le volume total prescrit ne peut être calculé tant qu'aucune matière n'est
+        rattachée.
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Rattacher une matière
+  </p>
+  <form method="post" action="{{ url_rattacher }}" class="flex flex-wrap items-end gap-3 px-4 py-3.5">
+    {% csrf_token %}
+    <div class="w-64">
+      <label for="{{ formulaire_rattachement.matiere.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Matière</label>
+      {{ formulaire_rattachement.matiere }}
+      {% if formulaire_rattachement.matiere.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">{{ formulaire_rattachement.matiere.errors|first }}</p>
+      {% endif %}
+    </div>
+    <div class="w-32">
+      <label for="{{ formulaire_rattachement.volume_horaire_prescrit.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Volume</label>
+      <div class="flex items-stretch rounded border border-gris-trait bg-fond-bloc
+                  hover:border-marine-700
+                  focus-within:border-marine-700 focus-within:ring-2 focus-within:ring-focus">
+        {{ formulaire_rattachement.volume_horaire_prescrit }}
+        <span class="flex items-center border-l border-gris-trait bg-fond-bande px-2.5
+                     text-xs font-medium text-gris-lecture">h</span>
+      </div>
+      {% if formulaire_rattachement.volume_horaire_prescrit.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">
+          {{ formulaire_rattachement.volume_horaire_prescrit.errors|first }}</p>
+      {% endif %}
+    </div>
+    <div class="w-48">
+      <label for="{{ formulaire_rattachement.categorie_lieu.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Catégorie de lieu</label>
+      {{ formulaire_rattachement.categorie_lieu }}
+    </div>
+    <div class="w-48">
+      <label for="{{ formulaire_rattachement.type_lieu_partage.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Type de lieu partagé</label>
+      {{ formulaire_rattachement.type_lieu_partage }}
+    </div>
+    {% if formulaire_rattachement.non_field_errors %}
+      <p class="w-full text-2xs text-etat-ecart">{{ formulaire_rattachement.non_field_errors|first }}</p>
+    {% endif %}
+    <button type="submit" name="action" value="rattacher"
+            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700">
+      Rattacher
+    </button>
+    <a href="{{ url_creer_matiere }}"
+       class="inline-flex h-controle items-center px-3.5 text-sm text-marine-700">
+      Créer une nouvelle matière
+    </a>
+  </form>
+</div>
+{% endblock %}

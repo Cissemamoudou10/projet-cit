@@ -1,7 +1,7 @@
 from django import forms
 
 from noyau.forms import FormulaireGestion
-from referentiel.models import Formation, Matiere, TypeFormation
+from referentiel.models import CategorieLieu, Formation, Matiere, TypeFormation, TypeLieuPartage
 from referentiel.services.type_formation import ServiceTypeFormation
 
 CLASSES_CHAMP_TEXTE = (
@@ -72,3 +72,59 @@ class FormulaireFormation(FormulaireGestion):
                 pk=self.instance.type_formation_id
             )
         self.fields["type_formation"].queryset = disponibles.order_by("intitule")
+
+
+class FormulaireRattachementMatiere(forms.Form):
+    """A2/E1 non couverts ici : ce formulaire ne fait que saisir, la
+    cohérence catégorie/type de lieu et le doublon (E1) sont tranchés par
+    `ServiceReferentiel`, seul juge — voir .claude/rules/vues.md.
+    """
+
+    matiere = forms.ModelChoiceField(
+        queryset=Matiere.objects.none(),
+        label="Matière",
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    volume_horaire_prescrit = forms.IntegerField(
+        label="Volume horaire prescrit",
+        min_value=1,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "inputmode": "numeric"}),
+    )
+    categorie_lieu = forms.ChoiceField(
+        choices=CategorieLieu.choices,
+        label="Catégorie de lieu",
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    type_lieu_partage = forms.ChoiceField(
+        choices=TypeLieuPartage.choices,
+        label="Type de lieu partagé",
+        required=False,
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+
+    def __init__(self, *args, matieres_disponibles, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["matiere"].queryset = matieres_disponibles.order_by("intitule")
+
+
+class FormulaireElementReferentiel(forms.Form):
+    """A2 : modification en place d'un rattachement existant — mêmes trois
+    champs que le rattachement, sans la matière, qui ne change jamais.
+    """
+
+    volume_horaire_prescrit = forms.IntegerField(
+        label="Volume horaire prescrit",
+        min_value=1,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "inputmode": "numeric"}),
+    )
+    categorie_lieu = forms.ChoiceField(
+        choices=CategorieLieu.choices,
+        label="Catégorie de lieu",
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    type_lieu_partage = forms.ChoiceField(
+        choices=TypeLieuPartage.choices,
+        label="Type de lieu partagé",
+        required=False,
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )

@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
+from referentiel.models import CategorieLieu, Formation, Matiere, TypeFormation
+
 
 @pytest.fixture
 def redacteur(db):
@@ -32,3 +34,36 @@ def lecteur(db):
     utilisateur.doit_changer_mot_de_passe = False
     utilisateur.save()
     return utilisateur
+
+
+@pytest.fixture
+def type_officiers(db):
+    return TypeFormation.objects.create(intitule="Officiers")
+
+
+@pytest.fixture
+def formation(db, type_officiers):
+    return Formation.objects.create(
+        intitule="Formation initiale",
+        specialite="Transmissions",
+        duree_semaines=10,
+        type_formation=type_officiers,
+    )
+
+
+@pytest.fixture
+def matiere(db):
+    return Matiere.objects.create(intitule="Électronique numérique", code="ELN01")
+
+
+def donnees_element_referentiel(**supplement):
+    """Pas une fixture — un helper : US-REF-03/04, `ElementReferentiel` a
+    besoin d'un couple (formation, matière) différent selon le test.
+    """
+    donnees = {
+        "volume_horaire_prescrit": 40,
+        "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
+        "type_lieu_partage": None,
+    }
+    donnees.update(supplement)
+    return donnees

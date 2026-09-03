@@ -17,8 +17,8 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 - [x] **US-REF-00** — Gérer les types de formation · 2 pts · Must
 - [x] **US-REF-01** — Gérer les formations · 3 pts · Must
 - [x] **US-REF-02** — Gérer le catalogue des matières · 3 pts · Must
-- [ ] **US-REF-03** — Composer le référentiel d'une formation · 8 pts · Must
-- [ ] **US-REF-04** — Déclarer la catégorie de lieu requise par matière · 3 pts · Must
+- [x] **US-REF-03** — Composer le référentiel d'une formation · 8 pts · Must
+- [x] **US-REF-04** — Déclarer la catégorie de lieu requise par matière · 3 pts · Must
 - [ ] **US-REF-05** — Associer des objectifs pédagogiques aux matières · 3 pts · Must
 - [ ] **US-REF-06** — Déclarer les prérequis d'un référentiel · 5 pts · Must
 - [ ] **US-REF-07** — Consulter le référentiel depuis les autres cellules · 2 pts · Must
@@ -30,7 +30,7 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 
 - [x] Squelette Django : sept applications, réglages, base PostgreSQL
 - [x] Extension `btree_gist` installée et migration initiale
-- [x] Tailwind précompilé, CSS versionné (`app/noyau/static/css/application.css`, 17 285 octets après US-REF-02)
+- [x] Tailwind précompilé, CSS versionné (`app/noyau/static/css/application.css`, 17 614 octets après US-REF-03/04)
 - [x] Tests d'architecture en place et passants (confirmé par un vrai `pytest`, 28/28 — voir docs/suivi/PROBLEMES.md)
 - [ ] **Test d'installation hors ligne** — dépendances natives de WeasyPrint
 - [ ] Jeu de données d'essai fictif, couvrant les douze situations de la règle `tests.md`
