@@ -3,6 +3,34 @@
 from administration.models import EntreeJournal, Profil, TypeAction
 from administration.services.comptes import ServiceCompte
 
+NATURES_RG26_COMPTES = {
+    TypeAction.CREATION_COMPTE,
+    TypeAction.MODIFICATION_COMPTE,
+    TypeAction.CHANGEMENT_PROFIL,
+    TypeAction.DESACTIVATION_COMPTE,
+    TypeAction.REACTIVATION_COMPTE,
+}
+NATURES_RG26_PLACEHOLDER = {
+    TypeAction.SAISIE_NOTE,
+    TypeAction.MODIFICATION_NOTE,
+    TypeAction.VALIDATION_PROGRAMME,
+    TypeAction.REJET_PROGRAMME,
+    TypeAction.SELECTION_SUJET,
+}
+NATURES_RG26_AUTHENTIFICATION = {TypeAction.ECHEC_AUTHENTIFICATION}
+EXTENSIONS_HORS_RG26 = {
+    TypeAction.ACCES_REFUSE,
+    TypeAction.MODIFICATION_HABILITATIONS,
+    TypeAction.CONSULTATION_JOURNAL,
+}
+# US-REF-00 (D-18) : quatrième extension à RG-26, trois valeurs génériques
+# réutilisées par les cinq stories du patron de gestion.
+NATURES_PATRON_GESTION = {
+    TypeAction.CREATION_ELEMENT_GESTION,
+    TypeAction.MODIFICATION_ELEMENT_GESTION,
+    TypeAction.ARCHIVAGE_ELEMENT_GESTION,
+}
+
 
 def test_une_modification_enregistre_auteur_date_et_valeur_precedente(administrateur):
     compte = ServiceCompte.creer(
@@ -71,34 +99,14 @@ def test_aucun_condense_de_mot_de_passe_n_entre_au_journal(administrateur):
 
 def test_enumeration_couvre_les_cinq_natures_de_rg_26_plus_les_extensions():
     """§ 2.5 : cinq natures RG-26 (trois sans TypeAction encore atteignable —
-    note, programme, sujet — déclarées quand même), plus trois natures hors
+    note, programme, sujet — déclarées quand même), plus les natures hors
     RG-26 signalées dans docs/suivi/DECISIONS.md.
     """
-    natures_rg26_comptes = {
-        TypeAction.CREATION_COMPTE,
-        TypeAction.MODIFICATION_COMPTE,
-        TypeAction.CHANGEMENT_PROFIL,
-        TypeAction.DESACTIVATION_COMPTE,
-        TypeAction.REACTIVATION_COMPTE,
-    }
-    natures_rg26_placeholder = {
-        TypeAction.SAISIE_NOTE,
-        TypeAction.MODIFICATION_NOTE,
-        TypeAction.VALIDATION_PROGRAMME,
-        TypeAction.REJET_PROGRAMME,
-        TypeAction.SELECTION_SUJET,
-    }
-    natures_rg26_authentification = {TypeAction.ECHEC_AUTHENTIFICATION}
-    extensions_hors_rg26 = {
-        TypeAction.ACCES_REFUSE,
-        TypeAction.MODIFICATION_HABILITATIONS,
-        TypeAction.CONSULTATION_JOURNAL,
-    }
-
     attendu = (
-        natures_rg26_comptes
-        | natures_rg26_placeholder
-        | natures_rg26_authentification
-        | extensions_hors_rg26
+        NATURES_RG26_COMPTES
+        | NATURES_RG26_PLACEHOLDER
+        | NATURES_RG26_AUTHENTIFICATION
+        | EXTENSIONS_HORS_RG26
+        | NATURES_PATRON_GESTION
     )
     assert set(TypeAction.values) == {nature.value for nature in attendu}

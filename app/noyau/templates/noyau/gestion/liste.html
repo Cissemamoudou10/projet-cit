@@ -1,0 +1,194 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ titre }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ titre }}</h1>
+      <p class="text-sm text-gris-lecture">{{ sous_titre }}</p>
+    </div>
+    {% if url_creer %}
+      <a href="{{ url_creer }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        {{ libelle_creer|default:"Créer" }}
+      </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<form method="get"
+      class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
+  {% if champ_recherche_libelle %}
+    <div>
+      <label for="filtre-recherche"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ champ_recherche_libelle }}</label>
+      <input type="text" id="filtre-recherche" name="recherche" value="{{ filtres.recherche }}"
+             class="h-controle w-64 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                    outline-none hover:border-marine-700
+                    focus:border-marine-700 focus:ring-2 focus:ring-focus">
+    </div>
+  {% endif %}
+  <div>
+    <label for="filtre-etat"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</label>
+    <select id="filtre-etat" name="etat"
+            class="h-controle w-40 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700
+                   focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Tous</option>
+      <option value="actif" {% if filtres.etat == "actif" %}selected{% endif %}>Actif</option>
+      <option value="archive" {% if filtres.etat == "archive" %}selected{% endif %}>Archivé</option>
+    </select>
+  </div>
+  <button type="submit"
+          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                 hover:bg-marine-700
+                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                 focus-visible:outline-marine-700">
+    Appliquer
+  </button>
+  <a href="{{ url_liste }}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
+</form>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if page %}
+    <div class="max-h-96 overflow-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr>
+            {% for colonne in colonnes %}
+              {% if colonne.cle_tri %}
+                <th scope="col" aria-sort="{{ colonne.aria }}"
+                    class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                           font-semibold uppercase tracking-wider text-blanc">
+                  <a href="{% querystring tri=colonne.tri_suivant %}"
+                     class="inline-flex items-center gap-1.5 text-blanc no-underline
+                            hover:text-gris-trait
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                            focus-visible:outline-blanc">
+                    {{ colonne.libelle }}
+                    {% if colonne.sens == "asc" %}
+                      <svg class="h-3 w-3 text-blanc" aria-hidden="true">
+                        <use href="{% static 'icones/planche.svg' %}#tri-croissant"></use>
+                      </svg>
+                    {% elif colonne.sens == "desc" %}
+                      <svg class="h-3 w-3 text-blanc" aria-hidden="true">
+                        <use href="{% static 'icones/planche.svg' %}#tri-decroissant"></use>
+                      </svg>
+                    {% else %}
+                      <svg class="h-3 w-3 text-blanc" aria-hidden="true">
+                        <use href="{% static 'icones/planche.svg' %}#tri"></use>
+                      </svg>
+                    {% endif %}
+                  </a>
+                </th>
+              {% else %}
+                <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                                       font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+                  {{ colonne.libelle }}</th>
+              {% endif %}
+            {% endfor %}
+            <th scope="col" class="sticky top-0 z-10 w-20 bg-marine-900 px-3 py-2 text-right
+                                   font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ligne in lignes %}
+            {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
+            <tr class="{% cycle bande %} h-ligne border-t border-gris-trait
+                       transition-colors duration-survol hover:bg-fond-survol">
+              {% for cellule in ligne.cellules %}
+                <td class="px-3 text-left">{{ cellule }}</td>
+              {% endfor %}
+              <td class="px-3 text-right">
+                <a href="{{ ligne.url_modifier }}"
+                   title="Modifier" aria-label="Modifier {{ ligne.cellules.0 }}"
+                   class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                          hover:border-marine-700 hover:bg-fond-survol
+                          focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                          focus-visible:outline-marine-700">
+                  <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#modification"></use>
+                  </svg>
+                </a>
+                {% if ligne.archive %}
+                  <form method="post" action="{{ ligne.url_desarchiver }}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" title="Désarchiver" aria-label="Désarchiver {{ ligne.cellules.0 }}"
+                            class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                                   hover:border-marine-700 hover:bg-fond-survol
+                                   focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                                   focus-visible:outline-marine-700">
+                      <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                        <use href="{% static 'icones/planche.svg' %}#historique"></use>
+                      </svg>
+                    </button>
+                  </form>
+                {% else %}
+                  <a href="{{ ligne.url_archiver }}"
+                     title="Archiver" aria-label="Archiver {{ ligne.cellules.0 }}"
+                     class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                            hover:border-marine-700 hover:bg-fond-survol
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                            focus-visible:outline-marine-700">
+                    <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                      <use href="{% static 'icones/planche.svg' %}#verrou"></use>
+                    </svg>
+                  </a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="flex items-center justify-between border-t border-gris-trait bg-fond-bande px-3 py-2 text-xs"
+         aria-label="Pagination">
+      <p class="tabular-nums text-gris-lecture">
+        Éléments <strong class="text-encre">{{ page.start_index }} à {{ page.end_index }}</strong>
+        sur <strong class="text-encre">{{ page.paginator.count }}</strong>
+      </p>
+      <div class="flex items-center gap-1">
+        {% if page.has_previous %}
+          <a href="{% querystring page=page.previous_page_number %}"
+             class="border border-gris-trait bg-fond-bloc px-2.5 py-1 no-underline text-encre
+                    transition-colors duration-survol hover:bg-fond-bande">Précédent</a>
+        {% else %}
+          <span class="cursor-not-allowed border border-gris-trait bg-fond-bloc px-2.5 py-1
+                       text-gris-eteint">Précédent</span>
+        {% endif %}
+        {% for numero in page.paginator.page_range %}
+          {% if numero == page.number %}
+            <span aria-current="page"
+                  class="border border-marine-900 bg-marine-900 px-2.5 py-1 font-semibold
+                         tabular-nums text-blanc">{{ numero }}</span>
+          {% else %}
+            <a href="{% querystring page=numero %}"
+               class="border border-gris-trait bg-fond-bloc px-2.5 py-1 tabular-nums no-underline
+                      text-encre transition-colors duration-survol hover:bg-fond-bande">{{ numero }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </nav>
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#recherche"></use>
+      </svg>
+      <p class="mb-1 font-titre text-lg font-semibold">{{ libelle_vide|default:"Aucun élément" }}</p>
+      <p class="mb-3.5 max-w-lg text-sm text-gris-lecture">{{ texte_vide }}</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

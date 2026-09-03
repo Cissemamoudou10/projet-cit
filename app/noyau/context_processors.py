@@ -15,6 +15,7 @@ from django.utils import timezone
 from noyau.habilitations import a_permission
 
 PERMISSION_ADMINISTRATION = "noyau.administration_ecriture"
+PERMISSION_REFERENTIEL = "noyau.referentiel_lecture"
 
 
 def contexte_application(request):
@@ -31,12 +32,21 @@ def contexte_application(request):
 
 
 def _rubriques(request):
-    if not a_permission(request.user, PERMISSION_ADMINISTRATION):
-        return []
-    return [
-        {
-            "slug": "administration",
-            "libelle": "Administration",
-            "url": reverse("administration:liste_comptes"),
-        }
-    ]
+    rubriques = []
+    if a_permission(request.user, PERMISSION_ADMINISTRATION):
+        rubriques.append(
+            {
+                "slug": "administration",
+                "libelle": "Administration",
+                "url": reverse("administration:liste_comptes"),
+            }
+        )
+    if a_permission(request.user, PERMISSION_REFERENTIEL):
+        rubriques.append(
+            {
+                "slug": "referentiel",
+                "libelle": "Référentiel",
+                "url": reverse("referentiel:liste_types_formation"),
+            }
+        )
+    return rubriques

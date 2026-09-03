@@ -15,6 +15,17 @@ class ModeleHorodate(models.Model):
     voir noyau/services/base.py. Impérativement `settings.AUTH_USER_MODEL`,
     jamais un import direct de `administration.models.Utilisateur` : cet
     import inverserait le sens des couches, noyau ne dépendant de rien.
+
+    `cree_par`/`modifie_par` portent `blank=True` en plus de `null=True` :
+    ce sont deux préoccupations distinctes, la première pour la base, la
+    seconde pour la validation de formulaire (`full_clean`). Ces deux champs
+    ne sont jamais saisis par un formulaire, toujours posés après coup par
+    `noyau.services.base.ServiceBase` — sans `blank=True`,
+    `noyau.services.gestion.ServiceGestion._valider` (qui appelle
+    `full_clean` avant l'écriture, pour E1) les traiterait comme obligatoires
+    et refuserait toute création, quel que soit le champ réellement saisi.
+    Vérifié réellement : `blank` ne touche pas la base, aucune migration
+    n'en résulte pour les modèles déjà déployés.
     """
 
     cree_le = models.DateTimeField(auto_now_add=True, verbose_name="créé le")
@@ -23,6 +34,7 @@ class ModeleHorodate(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         null=True,
+        blank=True,
         related_name="+",
         verbose_name="créé par",
     )
@@ -30,9 +42,27 @@ class ModeleHorodate(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         null=True,
+        blank=True,
         related_name="+",
         verbose_name="modifié par",
     )
+
+    class Meta:
+        abstract = True
+
+
+class ModeleArchivable(models.Model):
+    """Abstraite — patron de gestion, Prompt 05, § 2.3.
+
+    L'archivage remplace la suppression dès qu'un élément est référencé par
+    une donnée historique : il disparaît des listes de sélection mais reste
+    consultable et référencé. La suppression physique n'est offerte que pour
+    un élément jamais utilisé — `noyau.services.gestion.ServiceGestion`
+    s'appuie sur `on_delete=PROTECT` pour le garantir, pas sur ce mixin.
+    """
+
+    archive = models.BooleanField(default=False, verbose_name="archivé")
+    archive_le = models.DateTimeField(null=True, blank=True, verbose_name="archivé le")
 
     class Meta:
         abstract = True

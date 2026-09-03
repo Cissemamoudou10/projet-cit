@@ -1,0 +1,73 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ titre }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">{{ titre }}</h1>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<form method="post" class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% csrf_token %}
+  {% if modifie_le_attendu %}
+    <input type="hidden" name="modifie_le_attendu" value="{{ modifie_le_attendu|date:'c' }}">
+  {% endif %}
+
+  {% if form.non_field_errors %}
+    <div class="mx-5 mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+                border-l-etat-ecart bg-etat-ecart-fond px-4 py-3">
+      <svg class="mt-px h-4 w-4 shrink-0 text-etat-ecart" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+      </svg>
+      <p class="text-xs text-gris-lecture">{{ form.non_field_errors|first }}</p>
+    </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 gap-6 px-5 py-4">
+    <fieldset class="rounded border border-gris-trait px-4 pb-4 pt-3.5">
+      <legend class="px-1.5 font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+        {{ legende|default:"Informations" }}
+      </legend>
+      <div class="grid gap-3">
+        {% for champ in form.visible_fields %}
+          <div>
+            <label for="{{ champ.id_for_label }}"
+                   class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+              {{ champ.label }}
+              {% if champ.field.required %}<span class="text-etat-ecart">— obligatoire</span>{% endif %}
+            </label>
+            {{ champ }}
+            {% if champ.errors %}
+              <p class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+                <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+                  <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+                </svg>
+                {{ champ.errors|first }}
+              </p>
+            {% elif champ.help_text %}
+              <p class="mt-1 text-2xs text-gris-lecture">{{ champ.help_text }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="flex items-center justify-between border-t border-gris-trait bg-fond-bande px-5 py-2.5">
+    <p class="text-xs text-gris-lecture">Les champs sans mention sont facultatifs.</p>
+    <div class="flex gap-2">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900 px-3.5 py-1.5
+                     text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        {{ libelle_bouton|default:"Enregistrer" }}
+      </button>
+    </div>
+  </div>
+</form>
+{% endblock %}

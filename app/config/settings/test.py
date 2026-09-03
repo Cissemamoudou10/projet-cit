@@ -27,3 +27,8 @@ DATABASES = {
 }
 
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+# Application de test du patron de gestion (Prompt 05, § 7) — jamais en
+# développement ni en production, uniquement pour prouver ServiceGestion
+# sur un modèle qui ne soit pas TypeFormation.
+INSTALLED_APPS = [*INSTALLED_APPS, "essai_patron_gestion"]  # noqa: F405

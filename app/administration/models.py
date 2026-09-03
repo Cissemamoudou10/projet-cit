@@ -73,10 +73,16 @@ class TypeAction(models.TextChoices):
     sprints 2 à 4 n'aient qu'à s'y rattacher — aucune n'est encore
     atteignable depuis un service ou une vue.
 
-    Trois natures s'ajoutent, hors RG-26 — voir docs/suivi/DECISIONS.md, D-16 :
+    Quatre natures s'ajoutent, hors RG-26 — voir docs/suivi/DECISIONS.md :
     `ACCES_REFUSE` (US-ADM-03), `MODIFICATION_HABILITATIONS` (US-ADM-03,
-    jamais signalée comme extension en son temps — corrigé ici) et
-    `CONSULTATION_JOURNAL` (US-ADM-04).
+    jamais signalée comme extension en son temps — corrigé en D-16),
+    `CONSULTATION_JOURNAL` (US-ADM-04), et les trois natures génériques du
+    patron de gestion (US-REF-00, D-18) — `CREATION_ELEMENT_GESTION`,
+    `MODIFICATION_ELEMENT_GESTION`, `ARCHIVAGE_ELEMENT_GESTION` comptent
+    pour une seule extension au sens de RG-26, bien que trois valeurs
+    d'énumération : elles ne se distinguent pas par nature d'action mais par
+    `objet_type`, réutilisées telles quelles par les cinq stories qui
+    partagent le patron.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -93,6 +99,12 @@ class TypeAction(models.TextChoices):
     ACCES_REFUSE = "acces_refuse", "Accès refusé"
     MODIFICATION_HABILITATIONS = "modification_habilitations", "Modification des habilitations"
     CONSULTATION_JOURNAL = "consultation_journal", "Consultation du journal"
+    CREATION_ELEMENT_GESTION = "creation_element_gestion", "Création d'un élément de gestion"
+    MODIFICATION_ELEMENT_GESTION = (
+        "modification_element_gestion",
+        "Modification d'un élément de gestion",
+    )
+    ARCHIVAGE_ELEMENT_GESTION = "archivage_element_gestion", "Archivage d'un élément de gestion"
 
 
 class EntreeJournal(ModeleHorodate):

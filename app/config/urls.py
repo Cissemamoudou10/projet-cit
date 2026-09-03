@@ -7,4 +7,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("noyau.urls")),
     path("", include("administration.urls")),
+    path("", include("referentiel.urls")),
 ]

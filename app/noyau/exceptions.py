@@ -26,6 +26,13 @@ class ErreurEtatInvalide(ErreurMetier):
     """L'action demandée ne s'applique pas à l'état courant de l'objet."""
 
 
+class ErreurModificationConcurrente(ErreurMetier):
+    """La donnée a changé depuis l'ouverture du formulaire — Prompt 05, § 2.2,
+    E5 de la fiche générique de gestion. Le message porte l'auteur de la
+    modification concurrente, pas seulement le constat du conflit.
+    """
+
+
 class ErreurAuthentification(ErreurMetier):
     """Identifiant inexistant ou mot de passe erroné — RG-01, CU-P1-01 E1.
 

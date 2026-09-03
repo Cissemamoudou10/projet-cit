@@ -31,6 +31,46 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-22 — Critères 2 et 4 reportés à US-REF-01, comme annoncé
+**Date** 2026-09-03 · **Story** US-REF-00 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Backlog v7, critères d'acceptation de US-REF-00 : « Une formation est rattachée à un type et un seul » (2) et « Les listes de formations sont filtrables par type » (4) supposent l'entité Formation, hors périmètre de cette story (elle arrive avec US-REF-01). Le Prompt 05 l'annonçait déjà lui-même en § 1 et le demandait consigné.
+**Décision** — Consigné ici formellement : les critères 2 et 4 ne sont pas vérifiés par cette story, ni par aucun test. US-REF-01 les portera, avec la clé étrangère `Formation.type` (`on_delete=PROTECT`) qui rendra aussi le critère 3 (suppression refusée si utilisé) réellement exerçable — cette story-ci n'a pu le prouver que sur le modèle de test dédié du patron (`essai_patron_gestion`), pas sur un `TypeFormation` réellement référencé.
+**Alternative écartée** — Écrire des tests factices simulant une Formation pour « couvrir » ces critères maintenant : aurait testé un modèle qui n'existe pas encore, sans valeur, et à refaire entièrement dès que le vrai modèle Formation apparaît.
+**Impact sur les livrables** — aucun sur la conception ; trace explicite pour la revue de sprint du 12 septembre.
+**Reporté au livrable** — non applicable, dette de développement déjà identifiée par le prompt.
+
+## D-21 — Unicité de l'intitulé insensible à la casse
+**Date** 2026-09-03 · **Story** US-REF-00 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 5 du Prompt 05 demandait un arbitrage motivé en deux phrases : deux types nommés *Officiers* et *officiers* doivent-ils coexister ?
+**Décision** — Non : contrainte insensible à la casse, `UniqueConstraint(Upper("intitule"), name="uq_type_formation_intitule")`. Deux intitulés qui ne diffèrent que par la casse désignent le même public aux yeux d'un utilisateur ; les laisser coexister ouvrirait la porte à des doublons accidentels indiscernables à l'écran. L'intitulé affiché garde la casse choisie à la création — seule la comparaison d'unicité est insensible à la casse, pas la valeur stockée.
+**Alternative écartée** — Unicité sensible à la casse (contrainte simple `unique=True` sur `intitule`) : plus simple à poser, mais n'empêche pas le doublon accidentel que l'arbitrage cherche justement à éviter.
+**Impact sur les livrables** — aucun sur la conception ; fixe la sémantique d'unicité pour toute future entité du référentiel qui reprendrait le même patron.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-20 — E3 du patron ne protège que la suppression, pas l'archivage — écart avec le libellé du Prompt 05, § 7
+**Date** 2026-09-03 · **Story** US-REF-00 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.3 du Prompt 05 est sans ambiguïté : « Archiver | Toujours possible » contre « Supprimer | Seulement si jamais référencé ». La table de tests du patron, § 7, porte pourtant la ligne : « Élément référencé → **archivage** refusé, éléments opposants énumérés | E3 » — en contradiction directe avec § 2.3. La définition générique d'E3 (§ 1, fiche générique) couvre elle-même « archivage **ou** suppression refusé », ce qui explique l'origine du libellé sans lever la contradiction avec la règle concrète posée en § 2.3 pour ce patron précis.
+**Décision** — Implanté et testé selon § 2.3, qui fait foi (règle concrète et motivée) sur § 7 (table de tests, susceptible d'une coquille de transcription) : `ServiceGestion.archiver` n'a aucune condition, `ServiceGestion.supprimer` seule intercepte `ProtectedError` et lève E3. Le test correspondant (`noyau/tests/test_service_gestion.py::test_element_reference_empeche_la_suppression_avec_enumeration`) porte sur la suppression, avec un commentaire renvoyant à cette décision.
+**Alternative écartée** — Bloquer aussi l'archivage d'un élément référencé : contredirait directement § 2.3 et la règle générale de la fiche générique (« L'archivage remplace la suppression dès qu'un élément est référencé » — un élément référencé doit au contraire pouvoir être archivé, c'est précisément le mécanisme prévu pour lui).
+**Impact sur les livrables** — Prompt 05, § 7 (ou le dossier de cas d'utilisation dont il dérive) à corriger : « archivage refusé » devrait lire « suppression refusée ».
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire — signalement prioritaire, la contradiction est dans la conception source elle-même.
+
+## D-19 — `ServiceGestion` : la dépendance à `administration` s'injecte, elle ne s'importe pas
+**Date** 2026-09-03 · **Story** US-REF-00 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.1 du Prompt 05 impose `ServiceGestion` dans `app/noyau/services/gestion.py`. Il doit vérifier l'habilitation (`verifier_habilitation`, qui journalise) et journaliser créations/modifications/archivages (`ServiceJournal`) — les deux vivent dans `administration`. Le précédent D-14 (import différé, à l'intérieur d'une méthode) a été essayé en premier, par analogie : il échoue ici, car `test_ordre_des_dependances_entre_applications` (`tests/architecture/test_couches.py`) parcourt l'arbre syntaxique du **fichier entier** et signale tout `ImportFrom` vers une application non autorisée, **sans distinguer un import en tête de module d'un import à l'intérieur d'une fonction** — contrairement à D-14, qui ne franchissait aucune frontière d'application (`administration.habilitations` important `administration.services.journal`, la même application).
+**Décision** — Injection par attributs de classe. `ServiceGestion` déclare `PERMISSION_LECTURE`/`PERMISSION_ECRITURE`, `VERIFIER_HABILITATION`, `ENREGISTRER_JOURNAL`, `DONNEES_JOURNAL`, `NATURE_CREATION`/`MODIFICATION`/`ARCHIVAGE` à `None`, sans jamais importer `administration`. La sous-classe (`ServiceTypeFormation`, dans `referentiel`, autorisée à dépendre d'`administration`) les renseigne : `VERIFIER_HABILITATION = staticmethod(verifier_habilitation)`, `ENREGISTRER_JOURNAL = staticmethod(ServiceJournal.enregistrer_detaillee)`, etc. `noyau/services/gestion.py` n'importe rien d'`administration`, ni en tête de fichier ni ailleurs — vérifié réellement par `pytest tests/architecture`.
+**Alternative écartée** — Des méthodes-crochets (`_verifier_habilitation`, `_journaliser`) que chaque sous-classe redéfinit entièrement : aurait dupliqué la même poignée de lignes cinq fois (une par story du patron) au lieu de les injecter une fois comme valeurs. L'injection par attributs porte le même principe (la sous-classe fournit ce que `noyau` ne peut pas importer) avec moins de code répété.
+**Impact sur les livrables** — aucun sur la conception ; note d'implémentation pour toute future méthode de `ServiceGestion` qui aurait besoin d'`administration`.
+**Reporté au livrable** — non applicable.
+
+## D-18 — Trois natures génériques pour le patron de gestion, pas une par entité
+**Date** 2026-09-03 · **Story** US-REF-00 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.6 du Prompt 05 : les créations, modifications et archivages du référentiel sont journalisés dès maintenant. Cinq stories (US-REF-00, 01, 02, 05, 07) partagent le même patron `ServiceGestion`. Une nature `TypeAction` par action **et par entité** aurait posé quinze valeurs (3 × 5) au fil des stories, pour un même mécanisme générique.
+**Décision** — Trois valeurs seulement : `CREATION_ELEMENT_GESTION`, `MODIFICATION_ELEMENT_GESTION`, `ARCHIVAGE_ELEMENT_GESTION`, réutilisées par toutes les entités du patron. L'entité concernée se distingue par `objet_type` (`"type_formation"`, etc.), pas par la nature de l'action — exactement à quoi sert ce couple, posé en D-15.
+**Alternative écartée** — Une nature par entité (`creation_type_formation`, `creation_matiere`, …) : distinguerait l'action ET l'entité au même endroit, redondant avec `objet_type` qui porte déjà cette distinction, et ferait grossir l'énumération à chaque nouvelle story du patron.
+**Impact sur les livrables** — Le prompt annonce que ce sera « la troisième extension » à RG-26 ; c'est inexact depuis D-16 (`MODIFICATION_HABILITATIONS` en était déjà une troisième, non signalée en son temps) — avec ces trois valeurs-ci, c'est la **quatrième** extension, comptée comme un seul bloc (trois valeurs, un seul fait générateur : le patron de gestion).
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
 ## D-16 — Trois natures hors RG-26, pas deux : `MODIFICATION_HABILITATIONS` retrouvée
 **Date** 2026-09-03 · **Story** US-ADM-04 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — § 2.5 du Prompt 04 annonçait deux extensions à RG-26 à signaler : `ACCES_REFUSE` et `CONSULTATION_JOURNAL`. En construisant l'énumération complète (voir D-17 plus bas), `MODIFICATION_HABILITATIONS` (posée en US-ADM-03) s'est révélée être une **troisième** extension, jamais signalée en son temps — recherche faite dans `DECISIONS.md`/`HABILITATIONS.md`, aucune trace.
