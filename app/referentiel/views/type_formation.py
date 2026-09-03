@@ -78,6 +78,7 @@ def _colonne_intitule(tri_actuel):
 def _ligne(type_formation):
     return {
         "cellules": [type_formation.intitule, type_formation.nombre_formations],
+        "libelle": type_formation.intitule,
         "url_modifier": reverse("referentiel:modifier_type_formation", args=[type_formation.pk]),
         "url_archiver": reverse("referentiel:archiver_type_formation", args=[type_formation.pk]),
         "url_desarchiver": reverse(

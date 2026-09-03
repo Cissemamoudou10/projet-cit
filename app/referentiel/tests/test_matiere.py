@@ -176,6 +176,22 @@ def test_les_trois_ecrans_du_referentiel_sont_croises(client, redacteur):
     assert reverse("referentiel:liste_matieres").encode() in reponse_formations.content
 
 
+def test_le_bouton_modifier_de_la_liste_n_est_pas_casse_par_le_lien_de_l_intitule(
+    client, redacteur
+):
+    """Voir referentiel/tests/test_formation.py — même correctif, même
+    gabarit générique, exercé ici pour le catalogue des matières.
+    """
+    ServiceMatiere.creer(redacteur, _donnees())
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("referentiel:liste_matieres"))
+    contenu = reponse.content.decode()
+
+    assert 'aria-label="Modifier Électronique numérique"' in contenu
+    assert "<a" not in contenu.split('aria-label="Modifier')[1].split('"')[0]
+
+
 def test_modification_concurrente_est_detectee(redacteur):
     matiere = ServiceMatiere.creer(redacteur, _donnees())
     modifie_le_initial = matiere.modifie_le

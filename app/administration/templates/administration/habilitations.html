@@ -5,6 +5,13 @@
 
 {% block entete_page %}
 <div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{% url 'administration:liste_comptes' %}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux comptes
+  </a>
   <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">Habilitations</h1>
   <p class="text-sm text-gris-lecture">
     Droits d'accès par profil — un croisement lecture / écriture par domaine.

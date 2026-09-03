@@ -139,6 +139,7 @@ def _ligne(formation):
             f"{formation.duree_semaines} sem.",
             "Archivée" if formation.archive else "Active",
         ],
+        "libelle": formation.intitule,
         "url_modifier": reverse("referentiel:modifier_formation", args=[formation.pk]),
         "url_archiver": reverse("referentiel:archiver_formation", args=[formation.pk]),
         "url_desarchiver": reverse("referentiel:desarchiver_formation", args=[formation.pk]),

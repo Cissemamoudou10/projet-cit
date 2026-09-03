@@ -88,6 +88,7 @@ def _ligne(matiere):
     )
     return {
         "cellules": [lien_intitule, matiere.code],
+        "libelle": matiere.intitule,
         "url_modifier": reverse("referentiel:modifier_matiere", args=[matiere.pk]),
         "url_archiver": reverse("referentiel:archiver_matiere", args=[matiere.pk]),
         "url_desarchiver": reverse("referentiel:desarchiver_matiere", args=[matiere.pk]),

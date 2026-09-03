@@ -156,7 +156,7 @@
               {% endfor %}
               <td class="px-3 text-right">
                 <a href="{{ ligne.url_modifier }}"
-                   title="Modifier" aria-label="Modifier {{ ligne.cellules.0 }}"
+                   title="Modifier" aria-label="Modifier {{ ligne.libelle }}"
                    class="inline-flex border border-transparent p-1 transition-colors duration-survol
                           hover:border-marine-700 hover:bg-fond-survol
                           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
@@ -168,7 +168,7 @@
                 {% if ligne.archive %}
                   <form method="post" action="{{ ligne.url_desarchiver }}" class="inline">
                     {% csrf_token %}
-                    <button type="submit" title="Désarchiver" aria-label="Désarchiver {{ ligne.cellules.0 }}"
+                    <button type="submit" title="Désarchiver" aria-label="Désarchiver {{ ligne.libelle }}"
                             class="inline-flex border border-transparent p-1 transition-colors duration-survol
                                    hover:border-marine-700 hover:bg-fond-survol
                                    focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
@@ -180,7 +180,7 @@
                   </form>
                 {% else %}
                   <a href="{{ ligne.url_archiver }}"
-                     title="Archiver" aria-label="Archiver {{ ligne.cellules.0 }}"
+                     title="Archiver" aria-label="Archiver {{ ligne.libelle }}"
                      class="inline-flex border border-transparent p-1 transition-colors duration-survol
                             hover:border-marine-700 hover:bg-fond-survol
                             focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2

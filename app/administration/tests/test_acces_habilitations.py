@@ -28,6 +28,17 @@ def test_acces_direct_a_l_url_avec_permission_est_accepte(client, administrateur
     assert reponse.status_code == 200
 
 
+def test_un_lien_de_retour_vers_les_comptes_est_present(client, administrateur):
+    """Sans lien de retour, l'écran des habilitations est une impasse de
+    navigation — seule la rubrique de tête ramène ailleurs, indirectement.
+    """
+    client.force_login(administrateur)
+
+    reponse = client.get(reverse("administration:habilitations"))
+
+    assert reverse("administration:liste_comptes").encode() in reponse.content
+
+
 def test_la_rubrique_administration_est_masquee_sans_la_permission(client, non_administrateur):
     client.force_login(non_administrateur)
 

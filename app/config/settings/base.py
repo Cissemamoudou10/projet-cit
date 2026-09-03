@@ -36,7 +36,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # Après AuthenticationMiddleware : a besoin de request.user. § 2.2.
+    # Les deux ont besoin de request.user, donc après AuthenticationMiddleware.
+    # ConnexionObligatoireMiddleware avant l'autre : une session expirée doit
+    # atteindre l'écran de connexion, pas celui de changement de mot de passe.
+    "administration.middleware.ConnexionObligatoireMiddleware",
     "administration.middleware.ChangementMotDePasseObligatoireMiddleware",
 ]
 

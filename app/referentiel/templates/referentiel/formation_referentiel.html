@@ -5,16 +5,19 @@
 
 {% block entete_page %}
 <div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{% url 'referentiel:detail_formation' formation.pk %}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour à la formation
+  </a>
   <div class="flex items-end justify-between gap-6">
     <div>
       <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">
         Référentiel — {{ formation.intitule }}</h1>
       <p class="text-sm text-gris-lecture">{{ formation.type_formation }}</p>
     </div>
-    <a href="{% url 'referentiel:detail_formation' formation.pk %}"
-       class="inline-flex h-controle items-center px-3.5 text-sm text-marine-700 no-underline">
-      Retour à la formation
-    </a>
   </div>
 </div>
 {% endblock %}

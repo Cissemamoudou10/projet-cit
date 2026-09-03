@@ -26,6 +26,16 @@
         <!-- écart charte : pas d'attribut cellule sur Utilisateur, profil s'y substitue — voir docs/suivi/CHARTE-INTEGRATION.md -->
         <span class="text-gris-trait">— {{ user.get_profil_display }}</span>
       </span>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'administration:deconnexion' %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="text-gris-trait underline-offset-2 transition-colors duration-survol
+                         hover:text-blanc hover:underline">
+            Déconnexion
+          </button>
+        </form>
+      {% endif %}
     </div>
   </div>
 </header>

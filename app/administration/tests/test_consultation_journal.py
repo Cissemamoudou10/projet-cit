@@ -25,6 +25,14 @@ def test_une_consultation_produit_une_seule_entree(administrateur):
     assert EntreeJournal.objects.filter(type_action=TypeAction.CONSULTATION_JOURNAL).count() == 1
 
 
+def test_un_lien_de_retour_vers_les_comptes_est_present(client, administrateur):
+    client.force_login(administrateur)
+
+    reponse = client.get(reverse("administration:journal"))
+
+    assert reverse("administration:liste_comptes").encode() in reponse.content
+
+
 def test_vingt_entrees_affichees_ne_produisent_pas_vingt_et_une_entrees(administrateur):
     for i in range(20):
         EntreeJournal.objects.create(

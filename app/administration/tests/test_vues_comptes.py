@@ -9,6 +9,21 @@ from django.urls import NoReverseMatch, reverse
 from administration.models import Profil
 
 
+def test_la_rubrique_administration_est_surlignee_sur_ses_propres_pages(client, administrateur):
+    """`rubrique_active` se déduit de l'URL résolue, jamais renseigné par la
+    vue — voir noyau/context_processors.py. Une page d'administration doit
+    donc surligner la rubrique « Administration », pas rester neutre.
+    """
+    client.force_login(administrateur)
+
+    reponse = client.get(reverse("administration:liste_comptes"))
+    contenu = reponse.content.decode()
+
+    assert 'aria-current="page"' in contenu
+    index = contenu.index('aria-current="page"')
+    assert "Administration" in contenu[index : index + 200]
+
+
 def test_drapeau_leve_redirige_n_importe_quelle_url(client, administrateur):
     administrateur.doit_changer_mot_de_passe = True
     administrateur.save()

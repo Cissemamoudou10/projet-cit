@@ -142,6 +142,20 @@ def test_le_bandeau_referentiel_est_visible_pour_la_cellule_pedagogique(client, 
     assert "referentiel" in slugs
 
 
+def test_la_rubrique_referentiel_est_surlignee_sur_ses_propres_pages(client, redacteur):
+    """`rubrique_active` se déduit de l'URL résolue, jamais renseigné par la
+    vue — voir noyau/context_processors.py.
+    """
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("referentiel:liste_types_formation"))
+    contenu = reponse.content.decode()
+
+    assert 'aria-current="page"' in contenu
+    index = contenu.index('aria-current="page"')
+    assert "Référentiel" in contenu[index : index + 200]
+
+
 def test_les_listes_de_types_et_de_formations_sont_croisees(client, redacteur):
     """Sans lien croisé, un utilisateur qui arrive sur l'un des deux écrans
     du référentiel n'a aucun moyen visible d'atteindre l'autre — seul le
@@ -154,6 +168,25 @@ def test_les_listes_de_types_et_de_formations_sont_croisees(client, redacteur):
 
     assert reverse("referentiel:liste_formations").encode() in reponse_types.content
     assert reverse("referentiel:liste_types_formation").encode() in reponse_formations.content
+
+
+def test_le_bouton_modifier_de_la_liste_n_est_pas_casse_par_le_lien_de_l_intitule(
+    client, redacteur, type_officiers
+):
+    """La cellule « intitulé » de la liste est un lien cliquable (HTML sûr,
+    via format_html) — s'il fuit tel quel dans l'attribut `aria-label` du
+    bouton Modifier, les guillemets qu'il contient referment l'attribut en
+    plein milieu et cassent le balisage qui suit. `aria-label` doit donc
+    utiliser le libellé texte brut, jamais la cellule affichée.
+    """
+    ServiceFormation.creer(redacteur, _donnees(type_officiers))
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("referentiel:liste_formations"))
+    contenu = reponse.content.decode()
+
+    assert 'aria-label="Modifier Formation initiale"' in contenu
+    assert "<a" not in contenu.split('aria-label="Modifier')[1].split('"')[0]
 
 
 @pytest.mark.parametrize(
