@@ -48,6 +48,23 @@
       <option value="archive" {% if filtres.etat == "archive" %}selected{% endif %}>Archivé</option>
     </select>
   </div>
+  {% for champ in filtres_champs %}
+    <div>
+      <label for="filtre-{{ champ.nom }}"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ champ.libelle }}</label>
+      <select id="filtre-{{ champ.nom }}" name="{{ champ.nom }}"
+              class="h-controle w-52 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                     outline-none hover:border-marine-700
+                     focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        <option value="">Tous</option>
+        {% for valeur, libelle in champ.choix %}
+          <option value="{{ valeur }}" {% if valeur|stringformat:"s" == champ.valeur|stringformat:"s" %}selected{% endif %}>
+            {{ libelle }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  {% endfor %}
   <button type="submit"
           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
                  px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
@@ -58,6 +75,23 @@
   </button>
   <a href="{{ url_liste }}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
 </form>
+
+{% if filtres_actifs %}
+  <div class="mt-2 flex flex-wrap items-center gap-1.5">
+    <span class="text-xs text-gris-lecture">Filtres actifs :</span>
+    {% for filtre in filtres_actifs %}
+      <span class="inline-flex items-center gap-1.5 border border-gris-trait bg-fond-bloc
+                   py-0.5 pl-2.5 pr-1 text-xs">
+        {{ filtre.libelle }}
+        <a href="{{ filtre.url_retrait }}" aria-label="Retirer le filtre {{ filtre.libelle }}">
+          <svg class="h-3 w-3 stroke-gris-lecture" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#rejet"></use>
+          </svg>
+        </a>
+      </span>
+    {% endfor %}
+  </div>
+{% endif %}
 
 <div class="mt-4 border border-gris-trait bg-fond-bloc">
   {% if page %}

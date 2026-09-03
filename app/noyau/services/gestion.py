@@ -28,16 +28,17 @@ from noyau.services.base import ServiceBase
 class ServiceGestion:
     """Sous-classe : déclare `MODELE`, `DOMAINE`, `CHAMP_UNICITE` (aussi
     l'identifiant lisible du journal), `CHAMPS_RECHERCHE`, `CHAMPS_TRIABLES`,
-    `OBJET_TYPE`, `CHAMPS_JOURNALISES`, plus les six attributs injectés
-    ci-dessous (D-19) : `PERMISSION_LECTURE`, `PERMISSION_ECRITURE`,
-    `VERIFIER_HABILITATION`, `ENREGISTRER_JOURNAL`, `DONNEES_JOURNAL`,
-    `NATURE_CREATION`/`NATURE_MODIFICATION`/`NATURE_ARCHIVAGE`.
+    `CHAMPS_FILTRABLES`, `OBJET_TYPE`, `CHAMPS_JOURNALISES`, plus les six
+    attributs injectés ci-dessous (D-19) : `PERMISSION_LECTURE`,
+    `PERMISSION_ECRITURE`, `VERIFIER_HABILITATION`, `ENREGISTRER_JOURNAL`,
+    `DONNEES_JOURNAL`, `NATURE_CREATION`/`NATURE_MODIFICATION`/`NATURE_ARCHIVAGE`.
     """
 
     MODELE = None
     CHAMP_UNICITE = None
     CHAMPS_RECHERCHE = ()
     CHAMPS_TRIABLES = {}
+    CHAMPS_FILTRABLES = ()  # égalité, dans lister() ; filtre ignoré si vide
     OBJET_TYPE = ""
     CHAMPS_JOURNALISES = ()
 
@@ -51,13 +52,22 @@ class ServiceGestion:
     NATURE_ARCHIVAGE = None
 
     @classmethod
+    def _queryset(cls):
+        """Base de `lister()` : à surcharger pour `select_related`/annotation."""
+        return cls.MODELE.objects.all()
+
+    @classmethod
     def lister(cls, agissant, filtres, page):
         cls._verifier(agissant, lecture=True)
-        queryset = cls.MODELE.objects.all()
+        queryset = cls._queryset()
         if filtres.get("etat") == "actif":
             queryset = queryset.filter(archive=False)
         elif filtres.get("etat") == "archive":
             queryset = queryset.filter(archive=True)
+        for champ in cls.CHAMPS_FILTRABLES:
+            valeur = filtres.get(champ)
+            if valeur:
+                queryset = queryset.filter(**{champ: valeur})
         recherche = filtres.get("recherche")
         if recherche and cls.CHAMPS_RECHERCHE:
             condition = models.Q()
@@ -69,9 +79,7 @@ class ServiceGestion:
 
     @classmethod
     def disponibles_pour_selection(cls):
-        """§ 2.4 : une liste de sélection ne montre jamais un élément
-        archivé — à l'inverse de `lister`, une consultation.
-        """
+        """§ 2.4 : une sélection ne montre jamais un archivé, `lister` si."""
         return cls.MODELE.objects.filter(archive=False)
 
     @classmethod

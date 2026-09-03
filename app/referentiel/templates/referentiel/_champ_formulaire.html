@@ -1,0 +1,19 @@
+{% load static %}
+<div>
+  <label for="{{ champ.id_for_label }}"
+         class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+    {{ champ.label }}
+    {% if champ.field.required %}<span class="text-etat-ecart">— obligatoire</span>{% endif %}
+  </label>
+  {{ champ }}
+  {% if champ.errors %}
+    <p class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+      <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+      </svg>
+      {{ champ.errors|first }}
+    </p>
+  {% elif champ.help_text %}
+    <p class="mt-1 text-2xs text-gris-lecture">{{ champ.help_text }}</p>
+  {% endif %}
+</div>

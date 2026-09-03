@@ -15,6 +15,7 @@ class ServiceElementGestionTest(ServiceGestion):
     MODELE = ElementGestionTest
     CHAMP_UNICITE = "intitule"
     CHAMPS_RECHERCHE = ("intitule",)
+    CHAMPS_FILTRABLES = ("intitule",)
     CHAMPS_JOURNALISES = ("intitule",)
     OBJET_TYPE = "element_gestion_test"
 

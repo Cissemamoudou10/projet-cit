@@ -31,6 +31,46 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-27 — Deux extensions génériques remontées au patron `ServiceGestion`
+**Date** 2026-09-03 · **Story** US-REF-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — US-REF-01 a besoin (a) de filtrer la liste des formations par type, (b) d'afficher le nombre de formations rattachées sur la liste des types sans une requête par ligne. Aucun des deux besoins n'est propre aux formations : le patron `ServiceGestion` (posé à US-REF-00) ne prévoyait qu'un filtre d'état et une recherche texte libre, et construisait son queryset de base en dur (`MODELE.objects.all()`), sans point d'extension pour un `select_related` ou une annotation.
+**Décision** — Deux ajouts génériques à `noyau/services/gestion.py`, testés sur `essai_patron_gestion` (pas sur `Formation` — un patron testé à travers un seul usage n'est pas un patron, cf. Prompt 05 § 7) : `CHAMPS_FILTRABLES`, tuple de noms de champs filtrés par égalité dans `lister()` (filtre ignoré si absent ou vide) ; `_queryset()`, classmethod appelée par `lister()` à la place du littéral `MODELE.objects.all()`, surchargée par `ServiceFormation` (`select_related("type_formation")`) et par `ServiceTypeFormation` (`annotate(nombre_formations=Count("formations"))`).
+**Alternative écartée** — Écrire le filtre par type et l'annotation directement dans `ServiceFormation.lister()`/`ServiceTypeFormation.lister()`, en dupliquant le corps de la méthode du patron : c'est exactement le genre de code « qui n'a rien de propre aux formations » que le Prompt 06 demande de remonter plutôt que de dupliquer — trois autres stories du référentiel (US-REF-02, 05, 07) héritent du même patron et auront vraisemblablement le même besoin.
+**Impact sur les livrables** — aucun sur la conception ; note d'implémentation pour toute future story de gestion qui a besoin d'un filtre par relation ou d'une colonne calculée par agrégation.
+**Reporté au livrable** — non applicable.
+
+## D-26 — Contradiction backlog v7 / fiche CU-P2-02 sur l'unicité de l'intitulé — tranchée en faveur de la fiche
+**Date** 2026-09-03 · **Story** US-REF-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le backlog v7 dit « l'intitulé est unique » (sans plus de précision) ; la fiche des cas d'utilisation v4 (CU-P2-02) dit « l'intitulé est unique au sein d'un type de formation ». Les deux documents portent la même date. Ce n'est pas une nuance de rédaction : le premier interdit deux formations homonymes dans tout le centre, le second les autorise dès lors qu'elles s'adressent à des publics différents — une *Formation initiale* pour officiers et une *Formation initiale* pour sous-officiers sont deux objets légitimement distincts.
+**Décision** — Implanté selon la fiche des cas d'utilisation, la plus précise : contrainte composite `uq_formation_type_intitule` sur `(type_formation_id, UPPER(intitule))`, posée en base (`UniqueConstraint` avec `F("type_formation")` et `Upper("intitule")`, cohérent avec l'insensibilité à la casse déjà retenue pour `TypeFormation`, D-21). `ServiceFormation._erreur_unicite` est surchargée pour désigner le doublon dans le bon type, le patron `ServiceGestion._erreur_unicite` ne connaissant qu'une unicité à un seul champ.
+**Alternative écartée** — Suivre le backlog v7 littéralement (intitulé unique dans tout le centre) : plus simple à poser (le patron l'aurait couvert sans surcharge), mais aurait interdit un cas d'usage réel et légitime du CIT — deux formations de même nom pour deux publics différents.
+**Impact sur les livrables** — le backlog v7 devra être corrigé pour reprendre la formulation de la fiche des cas d'utilisation, ou l'arbitrage inversé si le chef de bureau pédagogique en décide autrement. **Question pour le terrain, non tranchée définitivement ici.**
+**Reporté au livrable** — oui, à la prochaine revue avec le chef de bureau pédagogique.
+
+## D-25 — Unité de la durée d'une formation : la semaine, proposée et non confirmée
+**Date** 2026-09-03 · **Story** US-REF-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Aucun livrable ne dit si la durée d'une formation s'exprime en semaines, en jours ou en heures. Elle n'est pas dérivable : le volume horaire prescrit appartient au futur référentiel (US-REF-03), et les dates appartiennent à la session (US-SES-01, sprint 2).
+**Décision** — `duree_semaines`, entier strictement positif (`PositiveSmallIntegerField` + `MinValueValidator(1)` côté Python, contrainte `ck_formation_duree_positive` en base). Le nom du champ porte l'unité pour rester lisible sans documentation ; le formulaire l'affiche accolée (§ 3.18 de la charte). Choix motivé par la cohérence avec le programme hebdomadaire, unité de travail du centre — mais **c'est une proposition, pas une donnée du terrain**.
+**Alternative écartée** — Un couple (valeur, unité) au choix de l'utilisateur : plus flexible, mais aurait ajouté une complexité (conversion, affichage) que rien dans les livrables ne justifie, et aurait retardé la story pour un besoin non confirmé.
+**Impact sur les livrables** — aucune classe ni règle du diagramme de classes à reprendre si la semaine est confirmée ; à renommer et migrer si le terrain répond « jours » ou « heures ».
+**Reporté au livrable** — oui, question ouverte pour le terrain, à trancher avec la cellule pédagogique.
+
+## D-24 — Spécialité de formation : texte libre, non une entité du modèle
+**Date** 2026-09-03 · **Story** US-REF-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Aucun livrable ne dit si la spécialité d'une formation est un texte libre ou une valeur d'une liste fermée, et aucune entité *Spécialité* n'existe au diagramme de classes (`docs/conception/13-diagramme-classes.md`, CLS-01).
+**Décision** — `CharField` texte libre. Une énumération inventée maintenant serait fausse (aucune source ne liste les valeurs possibles), et une entité créée sans besoin confirmé alourdirait le modèle sans bénéfice démontré. La spécialité qualifie la formation, jamais la brigade — la brigade reste un outil de séparation des effectifs, pas une spécialité pédagogique (ne pas confondre les deux dans une future story).
+**Alternative écartée** — Une énumération `TextChoices` à valeurs devinées : aurait figé une liste sans source, à corriger dès le premier retour du terrain — plus coûteux qu'un texte libre migré vers une entité si le besoin se confirme.
+**Impact sur les livrables** — aucun sur le diagramme de classes actuel ; à revoir si le terrain confirme un besoin de liste fermée (nouvelle entité `Specialite`, migration de données).
+**Reporté au livrable** — oui, question ouverte pour le terrain.
+
+## D-23 — Critère 4 d'US-REF-01 (suppression bloquée par une session ouverte) : reporté à US-SES-01, mécanisme posé dès maintenant
+**Date** 2026-09-03 · **Story** US-REF-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Critère 4 du backlog v7 : « Une formation disposant de sessions ouvertes ne peut être supprimée. » `Session` appartient au paquetage P3, sprint 2 (US-SES-01) : ni créable ni testable ici.
+**Décision** — Aucun code spécifique écrit pour ce critère : le mécanisme générique du patron (`ServiceGestion.supprimer`, qui intercepte `ProtectedError` et énumère les opposants — voir D-20) suffit déjà à ce qu'exige E3 de la fiche générique. Dès qu'US-SES-01 posera `Session.formation` avec `on_delete=PROTECT`, la suppression d'une formation portant une session ouverte sera automatiquement refusée et les sessions énumérées, **sans une ligne de code supplémentaire dans `referentiel`**. Aujourd'hui, `ServiceFormation.supprimer` (hérité, non surchargé) ne bloque que sur un futur `ElementReferentiel` protégé (US-REF-03) — aucune donnée ne le référence encore, le critère 4 reste donc non vérifié par un test tant qu'aucun des deux modèles n'existe.
+**Alternative écartée** — Écrire une méthode dédiée `Formation.a_des_sessions_ouvertes()` par anticipation : aurait anticipé une structure de données (`Session`, son état) non encore conçue, avec un risque élevé de devoir la refaire à US-SES-01.
+**Impact sur les livrables** — aucun sur la conception ; note pour US-SES-01 : poser `on_delete=models.PROTECT` sur la clé étrangère vers `Formation` suffit à rendre le critère 4 vrai et testable.
+**Reporté au livrable** — non applicable, dette de développement déjà identifiée par le Prompt 06.
+
 ## D-22 — Critères 2 et 4 reportés à US-REF-01, comme annoncé
 **Date** 2026-09-03 · **Story** US-REF-00 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Backlog v7, critères d'acceptation de US-REF-00 : « Une formation est rattachée à un type et un seul » (2) et « Les listes de formations sont filtrables par type » (4) supposent l'entité Formation, hors périmètre de cette story (elle arrive avec US-REF-01). Le Prompt 05 l'annonçait déjà lui-même en § 1 et le demandait consigné.

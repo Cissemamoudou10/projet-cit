@@ -7,6 +7,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
+from django.db.models import Count
 from essai_patron_gestion.models import DependantGestionTest, ElementGestionTest
 from essai_patron_gestion.services import ServiceElementGestionTest
 
@@ -110,6 +111,47 @@ def test_modifie_le_obsolete_leve_erreur_avec_auteur_nomme(redacteur):
         )
 
     assert redacteur.username in str(info.value)
+
+
+def test_lister_filtre_sur_un_champ_declare_dans_champs_filtrables(redacteur):
+    """Prompt 06, § remontées au patron : un filtre d'égalité générique, en
+    plus de `etat` et de la recherche libre — sert le filtre par type de
+    formation d'US-REF-01, sans y être propre.
+    """
+    ServiceElementGestionTest.creer(redacteur, {"intitule": "Alpha"})
+    ServiceElementGestionTest.creer(redacteur, {"intitule": "Beta"})
+
+    page = ServiceElementGestionTest.lister(redacteur, {"intitule": "Alpha"}, None)
+
+    assert [element.intitule for element in page] == ["Alpha"]
+
+
+def test_lister_ignore_un_filtre_declare_mais_vide(redacteur):
+    ServiceElementGestionTest.creer(redacteur, {"intitule": "Alpha"})
+    ServiceElementGestionTest.creer(redacteur, {"intitule": "Beta"})
+
+    page = ServiceElementGestionTest.lister(redacteur, {"intitule": ""}, None)
+
+    assert page.paginator.count == 2
+
+
+class _ServiceElementGestionTestAnnote(ServiceElementGestionTest):
+    """Local au test : prouve que `_queryset()` est le point d'extension
+    attendu pour une annotation, sans modifier le service partagé.
+    """
+
+    @classmethod
+    def _queryset(cls):
+        return super()._queryset().annotate(nombre_dependants=Count("dependants"))
+
+
+def test_queryset_surchargee_permet_d_annoter_sans_requete_en_boucle(redacteur):
+    element = ServiceElementGestionTest.creer(redacteur, {"intitule": "Annoté"})
+    DependantGestionTest.objects.create(element=element)
+
+    page = _ServiceElementGestionTestAnnote.lister(redacteur, {}, None)
+
+    assert page[0].nombre_dependants == 1
 
 
 def test_deux_ecritures_concurrentes_la_seconde_echoue(redacteur):

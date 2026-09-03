@@ -1,37 +1,12 @@
 """US-REF-00 — Gérer les types de formation, CU-P2-01."""
 
 import pytest
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
-from django.core.management import call_command
 from django.db import IntegrityError, transaction
 
 from administration.models import EntreeJournal, TypeAction
 from noyau.exceptions import ErreurHabilitation
 from referentiel.models import TypeFormation
 from referentiel.services.type_formation import ServiceTypeFormation
-
-
-@pytest.fixture
-def redacteur(db):
-    call_command("initialiser_habilitations")
-    modele = get_user_model()
-    utilisateur = modele.objects.create_user(
-        username="redacteur-ref", password="x", grade="Lt", profil=modele.Profil.CELLULE_PEDAGOGIQUE
-    )
-    utilisateur.groups.add(Group.objects.get(name="Cellule pédagogique"))
-    return utilisateur
-
-
-@pytest.fixture
-def lecteur(db):
-    call_command("initialiser_habilitations")
-    modele = get_user_model()
-    utilisateur = modele.objects.create_user(
-        username="lecteur-ref", password="x", grade="Lt", profil=modele.Profil.CELLULE_EXAMENS
-    )
-    utilisateur.groups.add(Group.objects.get(name="Cellule examens"))
-    return utilisateur
 
 
 def test_intitule_unique_en_base_en_contournant_l_orm(db):
