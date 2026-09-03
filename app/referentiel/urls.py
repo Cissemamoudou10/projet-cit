@@ -1,6 +1,6 @@
 from django.urls import path
 
-from referentiel.views import formation, type_formation
+from referentiel.views import formation, matiere, type_formation
 
 app_name = "referentiel"
 
@@ -43,5 +43,19 @@ urlpatterns = [
         "formations/<int:pk>/desarchiver/",
         formation.vue_desarchiver_formation,
         name="desarchiver_formation",
+    ),
+    path("matieres/", matiere.vue_liste_matieres, name="liste_matieres"),
+    path("matieres/creer/", matiere.vue_creer_matiere, name="creer_matiere"),
+    path("matieres/<int:pk>/", matiere.vue_detail_matiere, name="detail_matiere"),
+    path("matieres/<int:pk>/modifier/", matiere.vue_modifier_matiere, name="modifier_matiere"),
+    path(
+        "matieres/<int:pk>/archiver/",
+        matiere.vue_confirmer_archivage_matiere,
+        name="archiver_matiere",
+    ),
+    path(
+        "matieres/<int:pk>/desarchiver/",
+        matiere.vue_desarchiver_matiere,
+        name="desarchiver_matiere",
     ),
 ]

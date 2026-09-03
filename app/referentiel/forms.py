@@ -1,7 +1,7 @@
 from django import forms
 
 from noyau.forms import FormulaireGestion
-from referentiel.models import Formation, TypeFormation
+from referentiel.models import Formation, Matiere, TypeFormation
 from referentiel.services.type_formation import ServiceTypeFormation
 
 CLASSES_CHAMP_TEXTE = (
@@ -27,6 +27,17 @@ class FormulaireTypeFormation(FormulaireGestion):
         fields = ["intitule"]
         labels = {"intitule": "Intitulé"}
         widgets = {"intitule": forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE})}
+
+
+class FormulaireMatiere(FormulaireGestion):
+    class Meta:
+        model = Matiere
+        fields = ["intitule", "code"]
+        labels = {"intitule": "Intitulé", "code": "Code"}
+        widgets = {
+            "intitule": forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+            "code": forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+        }
 
 
 class FormulaireFormation(FormulaireGestion):

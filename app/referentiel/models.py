@@ -1,4 +1,4 @@
-"""Référentiel de formation — CU-P2-01, CU-P2-02.
+"""Référentiel de formation — CU-P2-01, CU-P2-02, CU-P2-03.
 
 Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
@@ -31,6 +31,39 @@ class TypeFormation(ModeleHorodate, ModeleArchivable):
         verbose_name_plural = "types de formation"
         constraints = [
             models.UniqueConstraint(Upper("intitule"), name="uq_type_formation_intitule"),
+        ]
+
+    def __str__(self):
+        return self.intitule
+
+
+class Matiere(ModeleHorodate, ModeleArchivable):
+    """Catalogue des matières — CU-P2-03, RG-05.
+
+    Indépendant des formations à dessein (écart 1, Prompt 07 § 3) : aucune
+    clé étrangère vers `Formation` ici, sous aucun prétexte — c'est le
+    référentiel d'US-REF-03 qui établira le lien, en référençant la matière,
+    jamais en recopiant son intitulé (§ 2 : sans quoi une modification ne se
+    répercuterait jamais sur les formations qui l'utilisent).
+
+    Ni catégorie de lieu (elle se déclare au rattachement, CU-P2-04) ni
+    objectif pédagogique (entité propre, US-REF-05) : Prompt 07 § 3.
+    """
+
+    intitule = models.CharField(max_length=150, verbose_name="intitulé")
+    code = models.CharField(max_length=20, blank=True, verbose_name="code")
+
+    class Meta:
+        db_table = "referentiel_matiere"
+        verbose_name = "matière"
+        verbose_name_plural = "matières"
+        constraints = [
+            models.UniqueConstraint(Upper("intitule"), name="uq_matiere_intitule"),
+            models.UniqueConstraint(
+                Upper("code"),
+                condition=~models.Q(code=""),
+                name="uq_matiere_code",
+            ),
         ]
 
     def __str__(self):

@@ -44,7 +44,8 @@ def vue_liste_types_formation(request):
         "titre": "Types de formation",
         "sous_titre": "Classent les formations selon le public auquel elles s'adressent.",
         "liens_associes": [
-            {"libelle": "Formations", "url": reverse("referentiel:liste_formations")}
+            {"libelle": "Formations", "url": reverse("referentiel:liste_formations")},
+            {"libelle": "Matières", "url": reverse("referentiel:liste_matieres")},
         ],
         "url_creer": reverse("referentiel:creer_type_formation"),
         "libelle_creer": "Créer un type",
