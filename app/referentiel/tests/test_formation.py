@@ -127,6 +127,35 @@ def test_cellule_pedagogique_ecrit(redacteur, type_officiers):
     ServiceFormation.creer(redacteur, _donnees(type_officiers))  # ne lève pas
 
 
+def test_le_bandeau_referentiel_est_visible_pour_la_cellule_pedagogique(client, redacteur):
+    """La rubrique de navigation, injectée par
+    noyau.context_processors.contexte_application, ne s'affiche que si
+    l'utilisateur a `noyau.referentiel_lecture` — c'est l'accès principal à
+    l'écran des types de formation pour un utilisateur qui ne connaît pas
+    l'URL par cœur.
+    """
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("referentiel:liste_types_formation"))
+
+    slugs = [rubrique["slug"] for rubrique in reponse.context["rubriques"]]
+    assert "referentiel" in slugs
+
+
+def test_les_listes_de_types_et_de_formations_sont_croisees(client, redacteur):
+    """Sans lien croisé, un utilisateur qui arrive sur l'un des deux écrans
+    du référentiel n'a aucun moyen visible d'atteindre l'autre — seul le
+    bandeau de navigation mène aux types de formation, pas aux formations.
+    """
+    client.force_login(redacteur)
+
+    reponse_types = client.get(reverse("referentiel:liste_types_formation"))
+    reponse_formations = client.get(reverse("referentiel:liste_formations"))
+
+    assert reverse("referentiel:liste_formations").encode() in reponse_types.content
+    assert reverse("referentiel:liste_types_formation").encode() in reponse_formations.content
+
+
 @pytest.mark.parametrize(
     "nom_groupe", ["Cellule planification", "Cellule examens", "Direction de formation"]
 )

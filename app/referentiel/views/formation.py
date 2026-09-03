@@ -93,6 +93,9 @@ def vue_liste_formations(request):
     contexte = {
         "titre": "Formations",
         "sous_titre": "Catalogue des formations dispensées par le centre.",
+        "liens_associes": [
+            {"libelle": "Types de formation", "url": reverse("referentiel:liste_types_formation")}
+        ],
         "url_creer": reverse("referentiel:creer_formation"),
         "libelle_creer": "Créer une formation",
         "champ_recherche_libelle": "Intitulé ou spécialité",
