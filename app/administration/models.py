@@ -76,13 +76,15 @@ class TypeAction(models.TextChoices):
     Quatre natures s'ajoutent, hors RG-26 — voir docs/suivi/DECISIONS.md :
     `ACCES_REFUSE` (US-ADM-03), `MODIFICATION_HABILITATIONS` (US-ADM-03,
     jamais signalée comme extension en son temps — corrigé en D-16),
-    `CONSULTATION_JOURNAL` (US-ADM-04), et les trois natures génériques du
-    patron de gestion (US-REF-00, D-18) — `CREATION_ELEMENT_GESTION`,
-    `MODIFICATION_ELEMENT_GESTION`, `ARCHIVAGE_ELEMENT_GESTION` comptent
-    pour une seule extension au sens de RG-26, bien que trois valeurs
-    d'énumération : elles ne se distinguent pas par nature d'action mais par
-    `objet_type`, réutilisées telles quelles par les cinq stories qui
-    partagent le patron.
+    `CONSULTATION_JOURNAL` (US-ADM-04), et les natures génériques du patron
+    de gestion (US-REF-00, D-18 ; `SUPPRESSION_ELEMENT_GESTION` ajoutée à
+    US-REF-05, la première story du patron où une suppression est réelle,
+    pas seulement théorique) — `CREATION_ELEMENT_GESTION`,
+    `MODIFICATION_ELEMENT_GESTION`, `ARCHIVAGE_ELEMENT_GESTION`,
+    `SUPPRESSION_ELEMENT_GESTION` comptent pour une seule extension au sens
+    de RG-26, bien que quatre valeurs d'énumération : elles ne se
+    distinguent pas par nature d'action mais par `objet_type`, réutilisées
+    telles quelles par les stories qui partagent le patron.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -105,6 +107,10 @@ class TypeAction(models.TextChoices):
         "Modification d'un élément de gestion",
     )
     ARCHIVAGE_ELEMENT_GESTION = "archivage_element_gestion", "Archivage d'un élément de gestion"
+    SUPPRESSION_ELEMENT_GESTION = (
+        "suppression_element_gestion",
+        "Suppression d'un élément de gestion",
+    )
 
 
 class EntreeJournal(ModeleHorodate):

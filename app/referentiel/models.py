@@ -1,4 +1,5 @@
-"""Référentiel de formation — CU-P2-01, CU-P2-02, CU-P2-03, CU-P2-04, CU-P2-05.
+"""Référentiel de formation — CU-P2-01, CU-P2-02, CU-P2-03, CU-P2-04, CU-P2-05,
+CU-P2-06.
 
 Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
@@ -200,3 +201,54 @@ class ElementReferentiel(ModeleHorodate):
 
     def __str__(self):
         return f"{self.matiere} — {self.formation}"
+
+
+class ObjectifPedagogique(ModeleHorodate):
+    """Objectif pédagogique d'une matière — CU-P2-06.
+
+    Rattaché à la matière du catalogue, jamais à la formation ni à
+    `ElementReferentiel` (Prompt 09, § 2.1) : une compétence ne change pas
+    selon la formation qui la dispense, ce sont le volume horaire et la
+    catégorie de lieu qui varient — et ceux-là vivent déjà sur la classe
+    d'association.
+
+    Pas de `ModeleArchivable` (§ 2.3) : seule entité du projet à user d'une
+    suppression réelle plutôt que d'un archivage — rien ne référence jamais
+    un objectif, sa suppression ne menace donc aucune intégrité historique.
+
+    `ordre` autorise des trous après suppression (retirer le numéro 2 sur
+    cinq ne renumérote rien : il sert à trier, pas à compter) et sa
+    contrainte d'unicité par matière est **différée** — vérifiée à la
+    validation de la transaction, pas à chaque écriture — pour permettre
+    l'état transitoire d'un échange de deux positions (§ 2.2).
+    """
+
+    matiere = models.ForeignKey(
+        Matiere,
+        on_delete=models.CASCADE,
+        related_name="objectifs_pedagogiques",
+        verbose_name="matière",
+    )
+    libelle = models.TextField(verbose_name="libellé")
+    ordre = models.PositiveIntegerField(
+        verbose_name="ordre d'affichage", validators=[MinValueValidator(1)]
+    )
+
+    class Meta:
+        db_table = "referentiel_objectif_pedagogique"
+        verbose_name = "objectif pédagogique"
+        verbose_name_plural = "objectifs pédagogiques"
+        ordering = ["ordre"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["matiere", "ordre"],
+                name="uq_objectif_matiere_ordre",
+                deferrable=models.Deferrable.DEFERRED,
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(libelle=""), name="ck_objectif_libelle_non_vide"
+            ),
+        ]
+
+    def __str__(self):
+        return self.libelle

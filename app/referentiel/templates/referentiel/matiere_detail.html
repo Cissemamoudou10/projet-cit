@@ -49,38 +49,131 @@
   </dl>
 </section>
 
-<div class="mt-4 grid grid-cols-2 gap-6">
-  <section class="border border-gris-trait bg-fond-bloc">
-    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
-              font-semibold uppercase tracking-wide text-marine-900">
-      Formations utilisatrices
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Formations utilisatrices
+  </p>
+  <div class="px-4 py-8 text-center">
+    <svg class="mx-auto mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#matiere"></use>
+    </svg>
+    <p class="mb-1 font-titre text-sm font-semibold">Aucun référentiel ne la cite encore</p>
+    <p class="mx-auto max-w-xs text-xs text-gris-lecture">
+      Se remplit quand un référentiel de formation référence cette matière.
     </p>
-    <div class="px-4 py-8 text-center">
-      <svg class="mx-auto mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
-        <use href="{% static 'icones/planche.svg' %}#matiere"></use>
-      </svg>
-      <p class="mb-1 font-titre text-sm font-semibold">Aucun référentiel ne la cite encore</p>
-      <p class="mx-auto max-w-xs text-xs text-gris-lecture">
-        Se remplit à partir d'US-REF-03, quand un référentiel de formation
-        référence cette matière.
-      </p>
-    </div>
-  </section>
+  </div>
+</section>
 
-  <section class="border border-gris-trait bg-fond-bloc">
-    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
-              font-semibold uppercase tracking-wide text-marine-900">
-      Objectifs pédagogiques
-    </p>
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Objectifs pédagogiques
+  </p>
+  {% if objectifs %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="w-14 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Ordre</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Libellé</th>
+          <th scope="col" class="w-36 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for objectif in objectifs %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <td class="px-3 py-1.5 tabular-nums text-gris-lecture">{{ objectif.ordre }}</td>
+            <td class="px-3 py-1.5">
+              <textarea name="libelle" form="ligne-objectif-{{ objectif.pk }}" rows="2"
+                        aria-label="Libellé — objectif {{ objectif.ordre }}"
+                        class="w-full resize-y rounded border border-gris-trait bg-fond-bloc px-2.5 py-1.5
+                               text-sm leading-normal outline-none
+                               focus:border-marine-700 focus:ring-2 focus:ring-focus">{{ objectif.libelle }}</textarea>
+            </td>
+            <td class="px-3 py-1.5 text-right align-top">
+              <form method="post"
+                    action="{% url 'referentiel:monter_objectif_pedagogique' matiere.pk objectif.pk %}"
+                    class="inline">
+                {% csrf_token %}
+                <button type="submit" {% if forloop.first %}disabled aria-disabled="true"{% endif %}
+                        title="Monter" aria-label="Monter l'objectif {{ objectif.ordre }}"
+                        class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                               {% if forloop.first %}cursor-not-allowed opacity-30
+                               {% else %}hover:border-marine-700 hover:bg-fond-survol{% endif %}">
+                  <svg class="h-4 w-4 rotate-180 text-marine-900" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#chevron-bas"></use>
+                  </svg>
+                </button>
+              </form>
+              <form method="post"
+                    action="{% url 'referentiel:descendre_objectif_pedagogique' matiere.pk objectif.pk %}"
+                    class="inline">
+                {% csrf_token %}
+                <button type="submit" {% if forloop.last %}disabled aria-disabled="true"{% endif %}
+                        title="Descendre" aria-label="Descendre l'objectif {{ objectif.ordre }}"
+                        class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                               {% if forloop.last %}cursor-not-allowed opacity-30
+                               {% else %}hover:border-marine-700 hover:bg-fond-survol{% endif %}">
+                  <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#chevron-bas"></use>
+                  </svg>
+                </button>
+              </form>
+              <button type="submit" form="ligne-objectif-{{ objectif.pk }}"
+                      title="Enregistrer" aria-label="Enregistrer l'objectif {{ objectif.ordre }}"
+                      class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                             hover:border-marine-700 hover:bg-fond-survol">
+                <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                  <use href="{% static 'icones/planche.svg' %}#validation"></use>
+                </svg>
+              </button>
+              <a href="{% url 'referentiel:supprimer_objectif_pedagogique' matiere.pk objectif.pk %}"
+                 title="Supprimer" aria-label="Supprimer l'objectif {{ objectif.ordre }}"
+                 class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                        hover:border-etat-ecart hover:bg-etat-ecart-fond">
+                <svg class="h-4 w-4 text-etat-ecart" aria-hidden="true">
+                  <use href="{% static 'icones/planche.svg' %}#suppression"></use>
+                </svg>
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% for objectif in objectifs %}
+      <form id="ligne-objectif-{{ objectif.pk }}" method="post"
+            action="{% url 'referentiel:modifier_objectif_pedagogique' matiere.pk objectif.pk %}"
+            hidden>{% csrf_token %}</form>
+    {% endfor %}
+  {% else %}
     <div class="px-4 py-8 text-center">
       <svg class="mx-auto mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
         <use href="{% static 'icones/planche.svg' %}#document"></use>
       </svg>
       <p class="mb-1 font-titre text-sm font-semibold">Aucun objectif déclaré</p>
       <p class="mx-auto max-w-xs text-xs text-gris-lecture">
-        Se remplit à partir d'US-REF-05.
+        Décrivez les compétences visées par cette matière.
       </p>
     </div>
-  </section>
-</div>
+  {% endif %}
+  <form method="post" action="{{ url_ajouter_objectif }}"
+        class="flex items-end gap-3 border-t border-gris-trait bg-fond-bande px-4 py-3">
+    {% csrf_token %}
+    <div class="flex-1">
+      <label for="{{ formulaire_objectif.libelle.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+        Nouvel objectif</label>
+      {{ formulaire_objectif.libelle }}
+    </div>
+    <button type="submit"
+            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700">
+      Ajouter
+    </button>
+  </form>
+</section>
 {% endblock %}

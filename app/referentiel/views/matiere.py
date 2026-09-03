@@ -12,8 +12,10 @@ from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
-from referentiel.forms import FormulaireMatiere
+from noyau.forms import modifie_le_attendu_depuis_requete
+from referentiel.forms import FormulaireMatiere, FormulaireObjectifPedagogique
 from referentiel.services.matiere import ServiceMatiere
+from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 
 
 def _matiere_ou_404(pk):
@@ -105,6 +107,11 @@ def vue_detail_matiere(request, pk):
         {
             "matiere": matiere,
             "url_modifier": reverse("referentiel:modifier_matiere", args=[matiere.pk]),
+            "objectifs": ServiceObjectifPedagogique.lister_pour_matiere(request.user, matiere),
+            "formulaire_objectif": FormulaireObjectifPedagogique(),
+            "url_ajouter_objectif": reverse(
+                "referentiel:ajouter_objectif_pedagogique", args=[matiere.pk]
+            ),
         },
     )
 
@@ -149,7 +156,7 @@ def vue_modifier_matiere(request, pk):
 
 def _traiter_modification(request, matiere):
     formulaire = FormulaireMatiere(request.POST, instance=matiere)
-    modifie_le_attendu = request.POST.get("modifie_le_attendu")
+    modifie_le_attendu = modifie_le_attendu_depuis_requete(request)
     if formulaire.is_valid():
         try:
             ServiceMatiere.modifier(

@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
+from noyau.forms import modifie_le_attendu_depuis_requete
 from referentiel.forms import FormulaireTypeFormation
 from referentiel.services.type_formation import ServiceTypeFormation
 
@@ -128,7 +129,7 @@ def vue_modifier_type_formation(request, pk):
 
 def _traiter_modification(request, type_formation):
     formulaire = FormulaireTypeFormation(request.POST, instance=type_formation)
-    modifie_le_attendu = request.POST.get("modifie_le_attendu")
+    modifie_le_attendu = modifie_le_attendu_depuis_requete(request)
     if formulaire.is_valid():
         try:
             ServiceTypeFormation.modifier(

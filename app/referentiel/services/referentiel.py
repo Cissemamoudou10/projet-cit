@@ -50,6 +50,7 @@ class ServiceReferentiel:
         return (
             ElementReferentiel.objects.filter(formation=formation)
             .select_related("matiere")
+            .prefetch_related("matiere__objectifs_pedagogiques")
             .order_by("matiere__intitule")
         )
 

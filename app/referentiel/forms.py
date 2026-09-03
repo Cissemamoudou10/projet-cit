@@ -20,6 +20,12 @@ CLASSES_CHAMP_UNITE = (
     "h-[30px] w-full border-0 bg-transparent px-2.5 text-right text-sm tabular-nums outline-none"
 )
 
+CLASSES_ZONE_TEXTE = (
+    "w-full resize-y rounded border border-gris-trait bg-fond-bloc px-2.5 py-2 "
+    "text-sm leading-normal outline-none "
+    "focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+
 
 class FormulaireTypeFormation(FormulaireGestion):
     class Meta:
@@ -127,4 +133,16 @@ class FormulaireElementReferentiel(forms.Form):
         label="Type de lieu partagé",
         required=False,
         widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+
+
+class FormulaireObjectifPedagogique(forms.Form):
+    """Un seul champ, réutilisé pour l'ajout et pour la modification en
+    place d'un objectif existant (§ 6.1) : l'ordre se calcule ou s'échange,
+    il ne se saisit jamais dans ce formulaire.
+    """
+
+    libelle = forms.CharField(
+        label="Libellé",
+        widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 3}),
     )

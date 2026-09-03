@@ -20,6 +20,20 @@ données nettoyées (`construct_instance`) doit rester faite, sans quoi
 from django import forms
 from django.core.exceptions import ValidationError as ErreurValidationDjango
 from django.forms.models import InlineForeignKeyField, construct_instance
+from django.utils.dateparse import parse_datetime
+
+
+def modifie_le_attendu_depuis_requete(request):
+    """Le champ caché `modifie_le_attendu` (E5, modification concurrente)
+    arrive du POST comme une chaîne ISO 8601 — jamais comparable telle
+    quelle à `instance.modifie_le`, un `datetime` : en Python,
+    `datetime != str` vaut toujours vrai, quelle que soit la valeur, sans
+    lever d'exception. Sans cette conversion, `ServiceGestion.modifier`
+    refuserait **toute** modification comme si elle était concurrente,
+    même la toute première, sans qu'aucun autre utilisateur n'y ait touché.
+    Vérifié réellement — voir docs/suivi/PROBLEMES.md.
+    """
+    return parse_datetime(request.POST.get("modifie_le_attendu") or "")
 
 
 class FormulaireGestion(forms.ModelForm):

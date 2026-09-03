@@ -23,12 +23,14 @@ EXTENSIONS_HORS_RG26 = {
     TypeAction.MODIFICATION_HABILITATIONS,
     TypeAction.CONSULTATION_JOURNAL,
 }
-# US-REF-00 (D-18) : quatrième extension à RG-26, trois valeurs génériques
-# réutilisées par les cinq stories du patron de gestion.
+# US-REF-00 (D-18) : quatrième extension à RG-26, quatre valeurs génériques
+# réutilisées par les cinq stories du patron de gestion — SUPPRESSION_ELEMENT_GESTION
+# ajoutée à US-REF-05, première story où une suppression est réelle.
 NATURES_PATRON_GESTION = {
     TypeAction.CREATION_ELEMENT_GESTION,
     TypeAction.MODIFICATION_ELEMENT_GESTION,
     TypeAction.ARCHIVAGE_ELEMENT_GESTION,
+    TypeAction.SUPPRESSION_ELEMENT_GESTION,
 }
 
 

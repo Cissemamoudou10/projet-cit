@@ -137,6 +137,34 @@
               </a>
             </td>
           </tr>
+          <tr class="border-t border-gris-trait bg-fond-bloc">
+            <td colspan="5" class="px-3 py-1.5 text-left">
+              <details class="group">
+                <summary class="flex cursor-pointer list-none items-center gap-2 text-xs
+                                text-gris-lecture">
+                  <svg class="h-3 w-3 -rotate-90 text-gris-lecture transition-transform
+                              duration-notif group-open:rotate-0" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#chevron-bas"></use>
+                  </svg>
+                  Objectifs pédagogiques
+                </summary>
+                <div class="mt-2 bg-sable px-4 py-3 font-normal">
+                  {% with objectifs=element.matiere.objectifs_pedagogiques.all %}
+                    {% if objectifs %}
+                      <ol class="list-decimal space-y-1 pl-4 text-xs text-gris-lecture">
+                        {% for objectif in objectifs %}
+                          <li>{{ objectif.libelle }}</li>
+                        {% endfor %}
+                      </ol>
+                    {% else %}
+                      <p class="text-xs text-gris-lecture">
+                        Aucun objectif déclaré pour cette matière.</p>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+              </details>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>

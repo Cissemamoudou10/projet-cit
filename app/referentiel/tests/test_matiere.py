@@ -44,9 +44,11 @@ def test_aucun_champ_de_categorie_de_lieu_sur_le_modele():
 
 def test_aucun_champ_d_objectif_pedagogique_sur_le_modele():
     """Test de non-présence, § 3.2 : les objectifs pédagogiques forment une
-    entité propre (US-REF-05), jamais un champ de la matière.
+    entité propre (US-REF-05), jamais un champ de la matière — `_meta.fields`
+    ne porte que les colonnes réelles, pas la relation inverse légitime que
+    `ObjectifPedagogique.matiere` y ajoute désormais dans `get_fields()`.
     """
-    noms_champs = {champ.name for champ in Matiere._meta.get_fields()}
+    noms_champs = {champ.name for champ in Matiere._meta.fields}
     assert not any("objectif" in nom for nom in noms_champs)
 
 
@@ -190,6 +192,30 @@ def test_le_bouton_modifier_de_la_liste_n_est_pas_casse_par_le_lien_de_l_intitul
 
     assert 'aria-label="Modifier Électronique numérique"' in contenu
     assert "<a" not in contenu.split('aria-label="Modifier')[1].split('"')[0]
+
+
+def test_modifier_par_le_vrai_formulaire_html_ne_declenche_pas_a_tort_e5(client, redacteur):
+    """Voir referentiel/tests/test_type_formation.py et test_formation.py —
+    même bug, même correctif, exercé ici pour le catalogue des matières.
+    """
+    matiere = ServiceMatiere.creer(redacteur, _donnees())
+    client.force_login(redacteur)
+
+    reponse_get = client.get(reverse("referentiel:modifier_matiere", args=[matiere.pk]))
+    modifie_le_attendu = reponse_get.context["modifie_le_attendu"]
+
+    reponse_post = client.post(
+        reverse("referentiel:modifier_matiere", args=[matiere.pk]),
+        {
+            "intitule": matiere.intitule,
+            "code": "ELN02",
+            "modifie_le_attendu": modifie_le_attendu.isoformat(),
+        },
+    )
+
+    assert reponse_post.status_code == 302
+    matiere.refresh_from_db()
+    assert matiere.code == "ELN02"
 
 
 def test_modification_concurrente_est_detectee(redacteur):

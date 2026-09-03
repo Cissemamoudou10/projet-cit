@@ -231,6 +231,39 @@ def test_creation_modification_archivage_sont_journalises(redacteur, type_offici
     assert TypeAction.ARCHIVAGE_ELEMENT_GESTION in natures
 
 
+def test_modifier_par_le_vrai_formulaire_html_ne_declenche_pas_a_tort_e5(
+    client, redacteur, type_officiers
+):
+    """Bug réel trouvé en usage (2026-09-03) : le champ caché
+    `modifie_le_attendu` arrive du POST comme une chaîne, jamais comparable
+    telle quelle à `instance.modifie_le` (un `datetime`) — voir
+    docs/suivi/PROBLEMES.md. Passer une durée de 12 à 2 semaines déclenchait
+    l'erreur E5 dès le tout premier essai, sans aucun conflit réel. Seul le
+    vrai cycle GET puis POST exerce ce chemin — un appel direct au service
+    avec un `datetime` Python ne l'aurait jamais révélé.
+    """
+    formation = ServiceFormation.creer(redacteur, _donnees(type_officiers, duree_semaines=12))
+    client.force_login(redacteur)
+
+    reponse_get = client.get(reverse("referentiel:modifier_formation", args=[formation.pk]))
+    modifie_le_attendu = reponse_get.context["modifie_le_attendu"]
+
+    reponse_post = client.post(
+        reverse("referentiel:modifier_formation", args=[formation.pk]),
+        {
+            "intitule": formation.intitule,
+            "specialite": formation.specialite,
+            "type_formation": type_officiers.pk,
+            "duree_semaines": 2,
+            "modifie_le_attendu": modifie_le_attendu.isoformat(),
+        },
+    )
+
+    assert reponse_post.status_code == 302
+    formation.refresh_from_db()
+    assert formation.duree_semaines == 2
+
+
 def test_modification_concurrente_est_detectee(redacteur, type_officiers):
     formation = ServiceFormation.creer(redacteur, _donnees(type_officiers))
     modifie_le_initial = formation.modifie_le
