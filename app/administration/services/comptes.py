@@ -5,10 +5,12 @@ Aucune suppression : un compte ayant produit des entrées de journal ne peut
 être supprimé (RG-04) — voir Prompt 02, § 2.1. Seule la désactivation existe.
 """
 
+from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as ErreurValidationDjango
 from django.db import IntegrityError, models, transaction
 
+from administration.constantes import PROFIL_VERS_GROUPE
 from administration.exceptions import ErreurIdentifiantExistant
 from administration.habilitations import verifier_habilitation
 from administration.models import Profil, Utilisateur
@@ -50,6 +52,7 @@ class ServiceCompte:
                 ServiceCompte.definir_mot_de_passe_initial(
                     agissant, compte, donnees["mot_de_passe"]
                 )
+                ServiceCompte._synchroniser_groupe(compte)
                 journaliser_creation(agissant, compte)
         except IntegrityError as erreur:
             raise ErreurIdentifiantExistant(
@@ -72,6 +75,18 @@ class ServiceCompte:
             ServiceBase.modifier(compte, agissant)
 
     @staticmethod
+    def _synchroniser_groupe(compte):
+        """RG-02 bis : les droits reposent sur les groupes Django, jamais
+        sur `profil` — sans ce rattachement, un compte créé ou modifié ici
+        porte un `profil` correct mais n'a en réalité aucune permission,
+        `has_perm` ne consultant que les groupes. Remplace l'appartenance
+        plutôt que d'ajouter : un compte n'est jamais rattaché qu'à un seul
+        groupe métier à la fois, celui de son profil courant.
+        """
+        groupe = Group.objects.get(name=PROFIL_VERS_GROUPE[compte.profil])
+        compte.groups.set([groupe])
+
+    @staticmethod
     def modifier(agissant, compte, donnees):
         verifier_habilitation(agissant, PERMISSION_GESTION_COMPTES)
 
@@ -90,6 +105,7 @@ class ServiceCompte:
         try:
             with transaction.atomic():
                 ServiceBase.modifier(compte, agissant)
+                ServiceCompte._synchroniser_groupe(compte)
                 journaliser_modification(agissant, compte, ancien_profil)
         except IntegrityError as erreur:
             raise ErreurIdentifiantExistant(

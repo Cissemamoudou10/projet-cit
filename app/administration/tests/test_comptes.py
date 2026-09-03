@@ -97,6 +97,32 @@ def test_compte_desactive_ne_peut_plus_s_authentifier(administrateur, mot_de_pas
         ServiceAuthentification.authentifier(cible.username, mot_de_passe)
 
 
+def test_creation_rattache_le_compte_au_groupe_du_profil(administrateur):
+    """RG-02 bis : `has_perm` ne consulte que les groupes Django, jamais
+    `profil` — un compte non rattaché n'a en réalité aucune permission,
+    quel que soit son profil affiché.
+    """
+    compte = ServiceCompte.creer(
+        administrateur,
+        {
+            **DONNEES_MINIMALES,
+            "identifiant": "nouveau-groupe",
+            "mot_de_passe": "un-mot-de-passe-correct",
+        },
+    )
+
+    assert [groupe.name for groupe in compte.groups.all()] == ["Cellule pédagogique"]
+    assert compte.has_perm("noyau.referentiel_lecture")
+
+
+def test_changement_de_profil_deplace_le_compte_vers_le_nouveau_groupe(administrateur):
+    cible = _creer_cible(username="cible-groupe", profil=Profil.CELLULE_PEDAGOGIQUE)
+
+    ServiceCompte.modifier(administrateur, cible, {"profil": Profil.CELLULE_EXAMENS})
+
+    assert [groupe.name for groupe in cible.groups.all()] == ["Cellule examens"]
+
+
 def test_changement_de_profil_journalise_ancienne_et_nouvelle_valeur(administrateur):
     cible = _creer_cible(username="cible-profil", profil=Profil.CELLULE_PEDAGOGIQUE)
 

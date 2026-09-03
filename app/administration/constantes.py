@@ -1,5 +1,7 @@
 """Valeurs de domaine de l'application `administration`."""
 
+from administration.models import Profil
+
 GROUPES = [
     "Administrateur",
     "Cellule pédagogique",
@@ -7,6 +9,18 @@ GROUPES = [
     "Cellule examens",
     "Direction de formation",
 ]
+
+# RG-02 bis : les droits reposent sur les groupes Django, jamais sur `profil`
+# directement — mais un compte doit être rattaché au groupe correspondant à
+# son profil pour que RG-02 bis soit autre chose qu'un champ d'affichage.
+# Voir `administration.services.comptes.ServiceCompte` pour l'usage.
+PROFIL_VERS_GROUPE = {
+    Profil.ADMINISTRATEUR: "Administrateur",
+    Profil.CELLULE_PEDAGOGIQUE: "Cellule pédagogique",
+    Profil.CELLULE_PLANIFICATION: "Cellule planification",
+    Profil.CELLULE_EXAMENS: "Cellule examens",
+    Profil.DIRECTION_FORMATION: "Direction de formation",
+}
 
 # § 11.2 du dossier des cas d'utilisation — neuf domaines, deux niveaux
 # chacun. « É » donne lecture et écriture ; « L » donne lecture seule. Voir
