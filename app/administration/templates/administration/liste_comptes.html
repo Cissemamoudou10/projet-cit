@@ -11,6 +11,12 @@
       <p class="text-sm text-gris-lecture">Créer, modifier et désactiver les comptes du système.</p>
     </div>
     <div class="flex items-center gap-2">
+      <a href="{% url 'administration:journal' %}"
+         class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                text-sm font-medium text-encre no-underline transition-colors duration-survol
+                hover:border-marine-700 hover:bg-fond-survol">
+        Journal
+      </a>
       <a href="{% url 'administration:habilitations' %}"
          class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
                 text-sm font-medium text-encre no-underline transition-colors duration-survol
@@ -85,7 +91,7 @@
             <th scope="col" aria-sort="{{ tri_identifiant.aria }}"
                 class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                        font-semibold uppercase tracking-wider text-blanc">
-              <a href="?{% querystring tri=tri_identifiant.suivant %}"
+              <a href="{% querystring tri=tri_identifiant.suivant %}"
                  class="inline-flex items-center gap-1.5 text-blanc no-underline
                         hover:text-gris-trait
                         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
@@ -118,7 +124,7 @@
             <th scope="col" aria-sort="{{ tri_derniere_connexion.aria }}"
                 class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                        font-semibold uppercase tracking-wider text-blanc">
-              <a href="?{% querystring tri=tri_derniere_connexion.suivant %}"
+              <a href="{% querystring tri=tri_derniere_connexion.suivant %}"
                  class="inline-flex items-center gap-1.5 text-blanc no-underline
                         hover:text-gris-trait
                         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
@@ -218,7 +224,7 @@
       </p>
       <div class="flex items-center gap-1">
         {% if page.has_previous %}
-          <a href="?{% querystring page=page.previous_page_number %}"
+          <a href="{% querystring page=page.previous_page_number %}"
              class="border border-gris-trait bg-fond-bloc px-2.5 py-1 no-underline text-encre
                     transition-colors duration-survol hover:bg-fond-bande">Précédent</a>
         {% else %}
@@ -231,7 +237,7 @@
                   class="border border-marine-900 bg-marine-900 px-2.5 py-1 font-semibold
                          tabular-nums text-blanc">{{ numero }}</span>
           {% else %}
-            <a href="?{% querystring page=numero %}"
+            <a href="{% querystring page=numero %}"
                class="border border-gris-trait bg-fond-bloc px-2.5 py-1 tabular-nums no-underline
                       text-encre transition-colors duration-survol hover:bg-fond-bande">{{ numero }}</a>
           {% endif %}

@@ -110,8 +110,8 @@ d'une semaine : c'est la requête la plus lourde, et BNF-04 la borne à cinq min
 | `idx_periode_debut_fin` | periode_calendrier | date_heure_debut, date_heure_fin |
 | `idx_note_evaluation` | note | evaluation |
 | `idx_note_stagiaire` | note | stagiaire |
-| `idx_journal_horodatage` | entree_journal | horodatage décroissant |
-| `idx_journal_objet` | entree_journal | objet_type, objet_identifiant |
+| `idx_journal_horodatage` | entree_journal | `cree_le` décroissant (colonne réelle, voir docs/suivi/DECISIONS.md, D-04) |
+| `idx_journal_nature_auteur` | entree_journal | type_action, auteur (posé en US-ADM-04, D-15 — pas `idx_journal_objet` : le filtre par objet ne porte pas d'index composé, `objet_type`/`objet_identifiant` existent mais sans index dédié) |
 
 Django indexe seul les clés étrangères : n'ajoute que les index composites.
 

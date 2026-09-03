@@ -65,7 +65,19 @@ Utilisateur.Profil = Profil
 
 
 class TypeAction(models.TextChoices):
-    """Au niveau du module — même raison que `Profil` : voir sa docstring."""
+    """Au niveau du module — même raison que `Profil` : voir sa docstring.
+
+    RG-26 énumère cinq natures ; trois portent sur des objets qui n'existent
+    pas encore (note, programme, sujet). L'énumération les déclare
+    néanmoins dès US-ADM-04 (§ 2.5 du Prompt 04), pour que les stories des
+    sprints 2 à 4 n'aient qu'à s'y rattacher — aucune n'est encore
+    atteignable depuis un service ou une vue.
+
+    Trois natures s'ajoutent, hors RG-26 — voir docs/suivi/DECISIONS.md, D-16 :
+    `ACCES_REFUSE` (US-ADM-03), `MODIFICATION_HABILITATIONS` (US-ADM-03,
+    jamais signalée comme extension en son temps — corrigé ici) et
+    `CONSULTATION_JOURNAL` (US-ADM-04).
+    """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
     CREATION_COMPTE = "creation_compte", "Création de compte"
@@ -73,8 +85,14 @@ class TypeAction(models.TextChoices):
     CHANGEMENT_PROFIL = "changement_profil", "Changement de profil"
     DESACTIVATION_COMPTE = "desactivation_compte", "Désactivation de compte"
     REACTIVATION_COMPTE = "reactivation_compte", "Réactivation de compte"
+    SAISIE_NOTE = "saisie_note", "Saisie d'une note"
+    MODIFICATION_NOTE = "modification_note", "Modification d'une note"
+    VALIDATION_PROGRAMME = "validation_programme", "Validation d'un programme"
+    REJET_PROGRAMME = "rejet_programme", "Rejet d'un programme"
+    SELECTION_SUJET = "selection_sujet", "Sélection d'un sujet d'examen"
     ACCES_REFUSE = "acces_refuse", "Accès refusé"
     MODIFICATION_HABILITATIONS = "modification_habilitations", "Modification des habilitations"
+    CONSULTATION_JOURNAL = "consultation_journal", "Consultation du journal"
 
 
 class EntreeJournal(ModeleHorodate):
@@ -91,6 +109,19 @@ class EntreeJournal(ModeleHorodate):
     - `creation_compte`, `modification_compte`, `changement_profil`,
       `desactivation_compte`, `reactivation_compte` : l'administrateur **agissant**.
       Le compte visé va dans `cible`.
+
+    `objet_type`/`objet_identifiant` (US-ADM-04, CU-P1-03) désignent l'objet
+    concerné par un couple, jamais une clé étrangère : les objets journalisés
+    appartiennent à six applications, dont cinq n'existent pas encore, et une
+    FK les rendrait toutes dépendantes d'`administration` — voir
+    docs/suivi/DECISIONS.md, D-15. Distincts de `cible`, qui garde son sens
+    d'origine (voir D-04) : `cible` reste inchangé pour ne pas casser les
+    tests des stories précédentes qui le lisent directement.
+
+    `valeur_avant`/`valeur_apres` reçoivent une **liste blanche de champs**
+    déclarée par le service appelant, jamais une sérialisation complète d'un
+    objet — sans quoi le condensat d'un mot de passe finirait dans une table
+    lisible par un administrateur (BNF-03).
     """
 
     type_action = models.CharField(
@@ -107,6 +138,12 @@ class EntreeJournal(ModeleHorodate):
     )
     identifiant_saisi = models.CharField(max_length=150, verbose_name="identifiant saisi")
     detail = models.TextField(blank=True, verbose_name="détail")
+    objet_type = models.CharField(max_length=50, blank=True, verbose_name="type d'objet")
+    objet_identifiant = models.CharField(
+        max_length=100, blank=True, verbose_name="identifiant de l'objet"
+    )
+    valeur_avant = models.JSONField(null=True, blank=True, verbose_name="valeur avant")
+    valeur_apres = models.JSONField(null=True, blank=True, verbose_name="valeur après")
 
     class Meta:
         db_table = "administration_entree_journal"
@@ -117,6 +154,10 @@ class EntreeJournal(ModeleHorodate):
                 condition=models.Q(type_action__in=TypeAction.values),
                 name="ck_entree_journal_type_action",
             ),
+        ]
+        indexes = [
+            models.Index(fields=["-cree_le"], name="idx_journal_horodatage"),
+            models.Index(fields=["type_action", "auteur"], name="idx_journal_nature_auteur"),
         ]
 
     def __str__(self):

@@ -18,7 +18,7 @@ from django.core.management.base import BaseCommand
 
 from administration.constantes import GROUPES, MATRICE
 from administration.models import TypeAction
-from administration.services.journal import ServiceJournal
+from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 
 
 class Command(BaseCommand):
@@ -56,9 +56,13 @@ class Command(BaseCommand):
             self.style.SUCCESS(f"{nom} : {permissions.count()} permissions appliquées (§ 11.2).")
         )
         if force:
-            ServiceJournal.enregistrer(
-                type_action=TypeAction.MODIFICATION_HABILITATIONS,
-                identifiant_saisi="",
-                detail=f"Groupe « {nom} » réinitialisé aux valeurs de la matrice § 11.2.",
-                cible=nom,
+            ServiceJournal.enregistrer_detaillee(
+                DonneesEntreeJournal(
+                    type_action=TypeAction.MODIFICATION_HABILITATIONS,
+                    identifiant_saisi="",
+                    detail=f"Groupe « {nom} » réinitialisé aux valeurs de la matrice § 11.2.",
+                    cible=nom,
+                    objet_type="groupe_habilitation",
+                    objet_identifiant=nom,
+                )
             )

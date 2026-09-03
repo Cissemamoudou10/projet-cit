@@ -11,12 +11,17 @@ from django.db import IntegrityError, models, transaction
 
 from administration.exceptions import ErreurIdentifiantExistant
 from administration.habilitations import verifier_habilitation
-from administration.models import Profil, TypeAction, Utilisateur
+from administration.models import Profil, Utilisateur
 from administration.services.garde_fous import (
     interdire_autodesactivation,
     interdire_perte_du_dernier_administrateur,
 )
-from administration.services.journal import ServiceJournal
+from administration.services.journal_comptes import (
+    journaliser_creation,
+    journaliser_desactivation,
+    journaliser_modification,
+    journaliser_reactivation,
+)
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.pagination import paginer
 from noyau.services.base import ServiceBase
@@ -45,13 +50,7 @@ class ServiceCompte:
                 ServiceCompte.definir_mot_de_passe_initial(
                     agissant, compte, donnees["mot_de_passe"]
                 )
-                ServiceJournal.enregistrer(
-                    type_action=TypeAction.CREATION_COMPTE,
-                    identifiant_saisi=compte.username,
-                    detail=f"Profil : {compte.get_profil_display()}.",
-                    auteur=agissant,
-                    cible=compte.username,
-                )
+                journaliser_creation(agissant, compte)
         except IntegrityError as erreur:
             raise ErreurIdentifiantExistant(
                 f"L'identifiant « {compte.username} » est déjà attribué."
@@ -91,30 +90,12 @@ class ServiceCompte:
         try:
             with transaction.atomic():
                 ServiceBase.modifier(compte, agissant)
-                ServiceCompte._journaliser_modification(agissant, compte, ancien_profil)
+                journaliser_modification(agissant, compte, ancien_profil)
         except IntegrityError as erreur:
             raise ErreurIdentifiantExistant(
                 f"L'identifiant « {compte.username} » est déjà attribué."
             ) from erreur
         return compte
-
-    @staticmethod
-    def _journaliser_modification(agissant, compte, ancien_profil):
-        ServiceJournal.enregistrer(
-            type_action=TypeAction.MODIFICATION_COMPTE,
-            identifiant_saisi=compte.username,
-            detail="Compte modifié.",
-            auteur=agissant,
-            cible=compte.username,
-        )
-        if compte.profil != ancien_profil:
-            ServiceJournal.enregistrer(
-                type_action=TypeAction.CHANGEMENT_PROFIL,
-                identifiant_saisi=compte.username,
-                detail=f"Profil : {ancien_profil} → {compte.profil}.",
-                auteur=agissant,
-                cible=compte.username,
-            )
 
     @staticmethod
     @transaction.atomic
@@ -125,13 +106,7 @@ class ServiceCompte:
 
         compte.is_active = False
         ServiceBase.modifier(compte, agissant)
-        ServiceJournal.enregistrer(
-            type_action=TypeAction.DESACTIVATION_COMPTE,
-            identifiant_saisi=compte.username,
-            detail="Compte désactivé.",
-            auteur=agissant,
-            cible=compte.username,
-        )
+        journaliser_desactivation(agissant, compte)
         return compte
 
     @staticmethod
@@ -141,13 +116,7 @@ class ServiceCompte:
 
         compte.is_active = True
         ServiceBase.modifier(compte, agissant)
-        ServiceJournal.enregistrer(
-            type_action=TypeAction.REACTIVATION_COMPTE,
-            identifiant_saisi=compte.username,
-            detail="Compte réactivé.",
-            auteur=agissant,
-            cible=compte.username,
-        )
+        journaliser_reactivation(agissant, compte)
         return compte
 
     @staticmethod

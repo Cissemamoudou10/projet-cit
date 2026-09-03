@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import AccessMixin
 from django.core.exceptions import PermissionDenied
 
 from administration.models import TypeAction
-from administration.services.journal import ServiceJournal
+from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurHabilitation
 from noyau.habilitations import a_permission
 
@@ -25,12 +25,16 @@ def verifier_habilitation(utilisateur, permission: str) -> None:
     """
     if a_permission(utilisateur, permission):
         return
-    ServiceJournal.enregistrer(
-        type_action=TypeAction.ACCES_REFUSE,
-        identifiant_saisi=getattr(utilisateur, "username", ""),
-        detail=f"Permission demandée : {permission}.",
-        auteur=utilisateur if utilisateur.is_authenticated else None,
-        cible=permission,
+    ServiceJournal.enregistrer_detaillee(
+        DonneesEntreeJournal(
+            type_action=TypeAction.ACCES_REFUSE,
+            identifiant_saisi=getattr(utilisateur, "username", ""),
+            detail=f"Permission demandée : {permission}.",
+            auteur=utilisateur if utilisateur.is_authenticated else None,
+            cible=permission,
+            objet_type="permission",
+            objet_identifiant=permission,
+        )
     )
     raise ErreurHabilitation(f"Habilitation manquante pour {permission!r} : {utilisateur}.")
 

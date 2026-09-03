@@ -12,7 +12,7 @@ from administration.constantes import GROUPES, MATRICE
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.comptes import PERMISSION_GESTION_COMPTES
-from administration.services.journal import ServiceJournal
+from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 
 
@@ -229,15 +229,21 @@ class ServiceMatriceHabilitations:
 
     @staticmethod
     def _journaliser(agissant, nom_groupe, domaine, ancien, nouveau):
-        ServiceJournal.enregistrer(
-            type_action=TypeAction.MODIFICATION_HABILITATIONS,
-            identifiant_saisi="",
-            detail=(
-                f"{nom_groupe} / {domaine} : lecture {ancien['lecture']}→{nouveau['lecture']}, "
-                f"écriture {ancien['ecriture']}→{nouveau['ecriture']}."
-            ),
-            auteur=agissant,
-            cible=f"{nom_groupe}:{domaine}",
+        ServiceJournal.enregistrer_detaillee(
+            DonneesEntreeJournal(
+                type_action=TypeAction.MODIFICATION_HABILITATIONS,
+                identifiant_saisi="",
+                detail=(
+                    f"{nom_groupe} / {domaine} : lecture {ancien['lecture']}→{nouveau['lecture']}, "
+                    f"écriture {ancien['ecriture']}→{nouveau['ecriture']}."
+                ),
+                auteur=agissant,
+                cible=f"{nom_groupe}:{domaine}",
+                objet_type="croisement_habilitation",
+                objet_identifiant=f"{nom_groupe}:{domaine}",
+                valeur_avant=ancien,
+                valeur_apres=nouveau,
+            )
         )
 
     @staticmethod

@@ -31,6 +31,46 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-16 — Trois natures hors RG-26, pas deux : `MODIFICATION_HABILITATIONS` retrouvée
+**Date** 2026-09-03 · **Story** US-ADM-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.5 du Prompt 04 annonçait deux extensions à RG-26 à signaler : `ACCES_REFUSE` et `CONSULTATION_JOURNAL`. En construisant l'énumération complète (voir D-17 plus bas), `MODIFICATION_HABILITATIONS` (posée en US-ADM-03) s'est révélée être une **troisième** extension, jamais signalée en son temps — recherche faite dans `DECISIONS.md`/`HABILITATIONS.md`, aucune trace.
+**Décision** — Signaler les trois, pas deux : `ACCES_REFUSE` (US-ADM-03), `MODIFICATION_HABILITATIONS` (US-ADM-03, oubli corrigé ici), `CONSULTATION_JOURNAL` (US-ADM-04). Les trois sont hors RG-26, à porter au cahier des charges.
+**Alternative écartée** — Ne signaler que les deux annoncées par le prompt et laisser l'oubli de `MODIFICATION_HABILITATIONS` tel quel : aurait perpétué une rupture de traçabilité déjà identifiée comme un risque par le prompt lui-même (« une nature journalisée sans règle d'origine »).
+**Impact sur les livrables** — RG-26 (ou son commentaire associé) à compléter de trois natures hors énoncé, pas deux.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-17 — `TypeAction` porte l'énumération complète de RG-26, y compris les natures pas encore atteignables
+**Date** 2026-09-03 · **Story** US-ADM-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.5 du Prompt 04 : RG-26 énumère cinq natures ; trois portent sur des objets qui n'existent pas encore (note, programme, sujet) et n'avaient donc aucune valeur `TypeAction`. Le prompt demande de déclarer l'énumération complète dès maintenant, pour que les stories des sprints 2 à 4 s'y rattachent sans ajouter de valeur — première lecture du plan avait manqué ce point, corrigé en cours d'implantation.
+**Décision** — Cinq valeurs ajoutées : `SAISIE_NOTE`, `MODIFICATION_NOTE` (« saisie et modification d'une note »), `VALIDATION_PROGRAMME`, `REJET_PROGRAMME` (« validation ou rejet d'un programme »), `SELECTION_SUJET` (« sélection d'un sujet d'examen »). Granularité alignée sur le précédent des actions de compte (US-ADM-02) : un verbe RG-26 qui couvre plusieurs sous-actions distinctes reçoit une valeur par sous-action.
+**Alternative écartée** — Une seule valeur composite par bullet RG-26 (ex. `ACTION_NOTE` au lieu de deux) : aurait contredit le patron déjà posé pour les comptes (`CREATION_COMPTE`/`MODIFICATION_COMPTE`/... — cinq valeurs pour un seul bullet RG-26), source d'incohérence entre les deux familles.
+**Impact sur les livrables** — migration `0008_entree_journal_natures_rg26_completes` ; aucune de ces cinq valeurs n'est encore atteignable depuis un service ou une vue (RG-26 lui-même le prévoit : objets hors périmètre).
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-15 — `objet_type`/`objet_identifiant`, additifs à `cible`, jamais un remplacement
+**Date** 2026-09-03 · **Story** US-ADM-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CU-P1-03 exige un filtre par objet concerné, structuré en couple type/identifiant. `.claude/rules/migrations.md` anticipait déjà ces deux noms de colonnes depuis le socle (voir D-04), jamais posés faute d'écran de consultation. `cible` (posé en US-ADM-01 sans définition claire, voir D-04) porte aujourd'hui des choses différentes selon l'appelant, et **plusieurs tests des trois stories précédentes lisent `.cible`/`cible=` directement** (`test_authentification.py`, `test_comptes.py`, `test_journal.py`) — le renommer casserait la non-régression exigée par le Prompt 04, § 7.
+**Décision** — `objet_type`/`objet_identifiant` ajoutés comme deux champs **nouveaux**, `cible` intact. Retrofit additif (nouveaux paramètres seulement) sur les points d'appel existants qui ont un objet naturel : comptes (`objet_type="utilisateur"`), refus d'habilitation (`"permission"`), commande et croisement d'habilitations (`"groupe_habilitation"`/`"croisement_habilitation"`). `authentification.py` non touché : aucun objet réel quand le compte visé n'existe pas.
+**Alternative écartée** — Renommer `cible` en `objet_identifiant` : correspond mieux à l'intention d'origine de `migrations.md`, mais casse cinq assertions de tests déjà committés dans trois stories antérieures.
+**Impact sur les livrables** — `.claude/rules/migrations.md` corrigée sur `idx_journal_objet` → en réalité `idx_journal_nature_auteur` posé (voir Prompt 04, § 5 : l'index composé demandé porte sur nature/auteur, pas objet_type/objet_identifiant).
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-14 — Import différé dans `ServiceJournal.consulter` pour éviter un cycle avec `administration.habilitations`
+**Date** 2026-09-03 · **Story** US-ADM-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `ServiceJournal.consulter` doit vérifier `noyau.administration_lecture`, donc appeler `administration.habilitations.verifier_habilitation`. Mais `administration/habilitations.py` importe déjà `ServiceJournal` en tête de module (pour journaliser un refus, voir D-09) : un import de `verifier_habilitation` en tête de `journal.py` créerait un cycle d'import — vérifié réellement, `ImportError: cannot import name 'ServiceJournal' from partially initialized module`.
+**Décision** — Import différé (à l'intérieur de la méthode `consulter`, pas en tête de module) côté `journal.py` : le cycle n'existe qu'au moment du chargement des modules, plus une fois les deux modules complètement chargés.
+**Alternative écartée** — Déplacer l'import de `ServiceJournal` dans `habilitations.py` en import différé à la place : symétriquement valable, mais `verifier_habilitation` y est appelée par bien plus de points d'entrée que `consulter` ne l'est ici — modifier le point le plus récent et le moins sollicité limite la portée du contournement.
+**Impact sur les livrables** — aucun sur la conception ; note d'implémentation pour toute future méthode de service qui aurait besoin des deux côtés de cette frontière.
+**Reporté au livrable** — non applicable.
+
+## D-13 — `pfe_cit_app` regreffé sur `test_pfe_cit` : la seconde connexion de test ne fonctionnait pas
+**Date** 2026-09-03 · **Story** US-ADM-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2.2 du Prompt 04 demande un test RG-27 sous une seconde connexion, avec le rôle applicatif `pfe_cit_app`, distincte de la connexion `pfe_cit_migration` de la suite de tests. Vérifié réellement avant d'écrire quoi que ce soit : `has_table_privilege('pfe_cit_app', 'administration_entree_journal', 'SELECT')` retourne `false` sur `test_pfe_cit` — `pfe_cit_app` n'y a **aucun** privilège, INSERT et SELECT compris. Cause : `ALTER DEFAULT PRIVILEGES` (posé dans `01_roles.sql`, une fois, contre la base `pfe_cit`) ne se propage pas à `test_pfe_cit`, une base distincte créée après coup par `pfe_cit_migration`. Un test d'UPDATE-refusé écrit naïvement aurait donc prouvé l'absence totale de droits, pas la révocation ciblée par RG-27.
+**Décision** — `conftest.py` à la racine du dépôt, qui étend le fixture `django_db_setup` de pytest-django : une fois la base de test migrée, regreffe `GRANT SELECT, INSERT, UPDATE, DELETE ... TO pfe_cit_app` sur `test_pfe_cit`, puis rejoue immédiatement la révocation ciblée de la migration 0007 (`REVOKE UPDATE, DELETE`). L'état final de `test_pfe_cit` reproduit exactement celui de `pfe_cit`.
+**Alternative écartée** — Étendre `01_roles.sql` pour viser aussi `test_pfe_cit` : impossible, cette base n'existe pas encore au moment où le script Docker s'exécute (elle est créée à la demande par pytest-django, potentiellement avec `--reuse-db`).
+**Impact sur les livrables** — aucun sur la conception ; corrige un vrai défaut de la configuration de test du socle, pas seulement de cette story.
+**Reporté au livrable** — non applicable.
+
 ## D-12 — `GROUPES`/`MATRICE` déplacées vers `administration/constantes.py`
 **Date** 2026-09-02 · **Story** US-ADM-03 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Relecture (`relecteur-conception`) : `services/matrice_habilitations.py` importait `GROUPES`/`MATRICE` depuis `management/commands/initialiser_habilitations.py` — un service qui dépend d'une commande d'administration est à l'envers du sens naturel des couches (la commande est un point d'entrée, censé consommer des constantes, pas les définir).
