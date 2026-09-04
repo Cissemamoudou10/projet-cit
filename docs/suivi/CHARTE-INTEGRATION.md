@@ -123,6 +123,32 @@ l'écran dans les deux cas. `app/administration/tests/test_gabarit_connexion.py`
 (suite existante, contrôle le contenu rendu de `base_public.html`) repasse
 sans modification.
 
+## Amendement daté — badge à trois états neutres (US-INS-01, statut d'instructeur)
+
+**2026-09-04.** La charte ne propose qu'un badge à deux états (§ 3.29, type
+d'évaluation : rempli marine-900 / contour marine-700) et les seuls badges à
+trois teintes ou plus (§ 2.5, bloc de messages) portent les couleurs `etat.*`
+— un jugement de conformité (conforme/attention/écart) inadapté à un statut
+d'emploi (militaire du centre / vacataire / civil), qui n'est pas une échelle
+bon/mauvais.
+
+**Motif retenu**, composé sur le même principe que § 3.29 plutôt qu'ajouté à
+la charte comme un nouveau numéro (à faire si un second cas se présente) :
+
+```html
+<span class="bg-marine-900 px-2 py-px text-2xs font-semibold tracking-wide text-blanc">
+  MILITAIRE DU CENTRE</span>
+<span class="border border-marine-700 px-2 py-px text-2xs font-semibold tracking-wide
+             text-marine-700">VACATAIRE</span>
+<span class="border border-gris-trait px-2 py-px text-2xs font-semibold tracking-wide
+             text-gris-lecture">CIVIL</span>
+```
+
+Le libellé complet en majuscules double la couleur d'un mot (§ 1.2) : les
+trois états restent distinguables à l'impression monochrome. Implanté dans
+`app/ressources/views/instructeur.py::_badge_statut`, vérifié par
+`test_le_badge_de_statut_distingue_les_trois_valeurs_par_le_mot`.
+
 ## Défauts connus de la charte
 
 ### 1 — Interrupteur (§ 3.23) : `peer-checked:left-[18px]` ne peut pas s'appliquer

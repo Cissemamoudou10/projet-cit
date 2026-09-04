@@ -13,4 +13,5 @@ urlpatterns = [
     path("", include("noyau.urls")),
     path("", include("administration.urls")),
     path("", include("referentiel.urls")),
+    path("", include("ressources.urls")),
 ]

@@ -1,0 +1,89 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ instructeur }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{% url 'ressources:liste_instructeurs' %}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux instructeurs
+  </a>
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ instructeur }}</h1>
+      <p class="text-sm text-gris-lecture">{{ instructeur.specialite }}</p>
+    </div>
+    {% if perms.noyau.instructeurs_qualifications_ecriture %}
+      <a href="{{ url_modifier }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Modifier
+      </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Identité
+  </p>
+  <dl class="grid grid-cols-3 gap-3 px-4 py-3.5 text-sm">
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Nom</dt>
+      <dd>{{ instructeur.nom }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Prénom</dt>
+      <dd>{{ instructeur.prenom }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Matricule</dt>
+      <dd class="font-mono">{{ instructeur.matricule|default:"—" }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Grade</dt>
+      <dd>{{ instructeur.grade }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Spécialité</dt>
+      <dd>{{ instructeur.specialite }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Statut</dt>
+      <dd>{{ instructeur.get_statut_display }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</dt>
+      <dd>{% if instructeur.archive %}Archivé{% else %}Actif{% endif %}</dd>
+    </div>
+  </dl>
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Qualifications
+  </p>
+  <div class="px-4 py-8 text-center">
+    <p class="text-xs text-gris-lecture">À venir — US-INS-02.</p>
+  </div>
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Indisponibilités
+  </p>
+  <div class="px-4 py-8 text-center">
+    <p class="text-xs text-gris-lecture">À venir — US-INS-03, sprint 2.</p>
+  </div>
+</section>
+{% endblock %}

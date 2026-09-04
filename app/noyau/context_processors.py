@@ -23,6 +23,7 @@ from noyau.habilitations import a_permission
 
 PERMISSION_ADMINISTRATION = "noyau.administration_ecriture"
 PERMISSION_REFERENTIEL = "noyau.referentiel_lecture"
+PERMISSION_RESSOURCES = "noyau.instructeurs_qualifications_lecture"
 
 
 def contexte_application(request):
@@ -59,6 +60,14 @@ def _rubriques(request):
                 "slug": "referentiel",
                 "libelle": "Référentiel",
                 "url": reverse("referentiel:liste_types_formation"),
+            }
+        )
+    if a_permission(request.user, PERMISSION_RESSOURCES):
+        rubriques.append(
+            {
+                "slug": "ressources",
+                "libelle": "Ressources",
+                "url": reverse("ressources:liste_instructeurs"),
             }
         )
     return rubriques

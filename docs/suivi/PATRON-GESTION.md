@@ -77,6 +77,30 @@ toujours l'instance depuis la base avant de comparer — jamais l'objet passé
 par l'appelant, qui pourrait déjà être périmé. `modifie_le_attendu` vient du
 champ caché du formulaire (§ 2.2), posé par `noyau/gestion/formulaire.html`.
 
+## Premier usage hors du référentiel — US-INS-01, `ServiceInstructeur`
+
+Le patron s'applique proprement : `ServiceInstructeur` ne surcharge que
+`_erreur_unicite` (voir D-47) et ajoute une méthode propre
+(`valeurs_specialite_distinctes`) — rien dans `ServiceGestion` ne suppose
+l'application `referentiel`. Ce qui ne vient pas du patron, et qu'il a fallu
+ajouter à la main, hors de `ressources` :
+
+- **La rubrique de navigation** — `noyau/context_processors.py::_rubriques()`
+  code en dur une rubrique par application (`administration`, `referentiel`,
+  désormais `ressources`) ; aucun mécanisme ne la découvre depuis `DOMAINE`
+  ou `PERMISSION_LECTURE`. Un ajout mineur, mais réel, à chaque nouvelle
+  application dotée d'un écran.
+- **Le formulaire à deux colonnes** (D-46) — le gabarit générique ne
+  supportait qu'un seul groupe de champs ; généralisé plutôt que dupliqué.
+- **`CHAMP_UNICITE` ≠ le champ réellement unique** (D-47) — le patron suppose
+  implicitement qu'ils coïncident ; ce n'est pas vrai pour toute entité dont
+  la clé naturelle est facultative pour une partie des lignes.
+
+Aucun de ces trois points ne remet en cause le patron lui-même : le premier et
+le second sont des compléments génériques qui serviront aux quatre autres
+stories du sprint 2 qui en dépendent, le troisième est une règle d'usage à
+retenir, pas un défaut du code.
+
 ## Ce que `ServiceCompte` gagnerait à reprendre du patron
 
 Demandé en Étape 0, sans reprise dans cette story (décision séparée) :
