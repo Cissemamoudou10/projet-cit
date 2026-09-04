@@ -8,6 +8,12 @@ environ auraient dû, sinon, chacune surcharger la clé dans son propre
 contexte — un oubli sur l'une d'elles cassait silencieusement le
 surlignement, sans qu'aucun test ne le voie.
 
+Exception : `ressources` porte deux rubriques de navigation distinctes
+(Instructeurs et Lieux, US-INS-01 et US-PLAN-02) pour deux permissions
+différentes, alors que `app_name` vaut « ressources » pour les deux. Départagé
+par le préfixe du chemin (`/lieux/`) plutôt que par l'URL name, qui varierait
+vue par vue.
+
 `fil_ariane` retombe sur une liste vide : la navigation se remplira story
 par story. `rubriques` porte désormais *Administration* pour les
 utilisateurs habilités, filtrée par `a_permission` — silencieuse, aucune
@@ -24,6 +30,7 @@ from noyau.habilitations import a_permission
 PERMISSION_ADMINISTRATION = "noyau.administration_ecriture"
 PERMISSION_REFERENTIEL = "noyau.referentiel_lecture"
 PERMISSION_RESSOURCES = "noyau.instructeurs_qualifications_lecture"
+PERMISSION_LIEUX = "noyau.lieux_calendrier_lecture"
 
 
 def contexte_application(request):
@@ -41,7 +48,11 @@ def contexte_application(request):
 
 def _rubrique_active(request):
     correspondance = getattr(request, "resolver_match", None)
-    return correspondance.app_name if correspondance else None
+    if not correspondance:
+        return None
+    if correspondance.app_name == "ressources" and request.path.startswith("/lieux/"):
+        return "lieux"
+    return correspondance.app_name
 
 
 def _rubriques(request):
@@ -68,6 +79,14 @@ def _rubriques(request):
                 "slug": "ressources",
                 "libelle": "Ressources",
                 "url": reverse("ressources:liste_instructeurs"),
+            }
+        )
+    if a_permission(request.user, PERMISSION_LIEUX):
+        rubriques.append(
+            {
+                "slug": "lieux",
+                "libelle": "Lieux",
+                "url": reverse("ressources:liste_lieux"),
             }
         )
     return rubriques

@@ -9,6 +9,40 @@ from ressources.services.lieu import ServiceLieu
 from ressources.tests.test_lieu import _donnees
 
 
+def test_la_rubrique_lieux_apparait_pour_la_planification(client, planificateur):
+    """P-26 : la rubrique « Ressources » (US-INS-01) ne portait qu'un lien
+    vers les instructeurs — aucun chemin de navigation ne menait aux lieux,
+    y compris pour un profil qui n'a que `lieux_calendrier_lecture`.
+    """
+    client.force_login(planificateur)
+
+    reponse = client.get(reverse("noyau:accueil"))
+
+    assert "Lieux" in reponse.content.decode()
+
+
+def test_la_rubrique_lieux_apparait_pour_la_cellule_examens_sans_acces_instructeurs(
+    client, cellule_examens
+):
+    """La cellule examens n'a pas `instructeurs_qualifications_lecture` (§ 4.1
+    du Prompt 12) mais lit `lieux_calendrier` (matrice § 11.2) : elle doit
+    voir la rubrique Lieux même sans voir « Ressources »."""
+    client.force_login(cellule_examens)
+
+    reponse = client.get(reverse("noyau:accueil")).content.decode()
+
+    assert "Lieux" in reponse
+    assert "Ressources" not in reponse
+
+
+def test_la_rubrique_lieux_est_surlignee_active_sur_les_ecrans_de_lieux(client, planificateur):
+    client.force_login(planificateur)
+
+    reponse = client.get(reverse("ressources:liste_lieux"))
+
+    assert reponse.context["rubrique_active"] == "lieux"
+
+
 def test_acces_direct_a_la_liste_ouvert_a_la_cellule_pedagogique(client, redacteur):
     """Matrice § 11.2 : inversion des habilitations par rapport aux
     stories précédentes — la cellule pédagogique lit ici, elle n'écrit pas.

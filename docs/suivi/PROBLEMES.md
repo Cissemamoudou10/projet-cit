@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-26 — Aucun chemin de navigation ne menait aux lieux après livraison d'US-PLAN-02
+**Date** 2026-09-04 · **Story** US-PLAN-02 · **État** : résolu
+**Symptôme** — Signalé par Lt Cissé après connexion avec un compte de la cellule planification : les écrans de lieux existent et les habilitations sont correctes, mais rien dans l'interface n'y mène.
+**Cause** — La rubrique de navigation « Ressources » (posée à US-INS-01, `noyau/context_processors.py::_rubriques`) est gardée par la seule permission `instructeurs_qualifications_lecture` et pointe uniquement vers la liste des instructeurs. US-PLAN-02 a ajouté les écrans et les URLs de `Lieu`, mais aucune entrée de navigation n'a été ajoutée en même temps — l'oubli n'était visible par aucun test, la story ne testant l'accès qu'en appelant les URLs directement (patron déjà établi pour les stories précédentes). La cellule examens, qui lit `lieux_calendrier` sans lire `instructeurs_qualifications`, n'avait d'ailleurs aucun moyen d'atteindre les lieux même par ce biais.
+**Résolution** — Rubrique « Lieux » distincte, gardée par `lieux_calendrier_lecture`, ajoutée à `_rubriques()`. `_rubrique_active` distingue désormais « ressources » (instructeurs) de « lieux » par le préfixe du chemin (`/lieux/`), les deux partageant le même `app_name` Django. Trois tests ajoutés à `test_lieu_ecran.py`.
+**Risque concerné** — aucun du registre ; défaut de navigation, aucun impact sur l'intégrité des données ni les habilitations elles-mêmes (les URLs étaient déjà protégées correctement).
+**Leçon** — Une story qui ajoute un nouvel écran de premier niveau doit aussi vérifier son accessibilité depuis la navigation, pas seulement l'exactitude de ses permissions — à ajouter à la définition de fini du patron de gestion.
+
 ## P-25 — D-30 annonçait la fiche matière remplie à US-REF-03 : elle est toujours vide
 **Date** 2026-09-04 · **Story** US-REF-07 (trouvé en revue des reports du paquetage, § 8 du Prompt 11) · **État** : ouvert
 **Symptôme** — `matiere_detail.html`, section « Formations utilisatrices », affiche toujours l'état vide statique (« Aucun référentiel ne la cite encore ») quelle que soit la matière, y compris pour une matière réellement rattachée à une ou plusieurs formations. `vue_detail_matiere` (`referentiel/views/matiere.py`) ne passe aucune clé au contexte pour cette section.
