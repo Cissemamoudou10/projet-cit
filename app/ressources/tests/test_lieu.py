@@ -3,12 +3,17 @@ contraintes en base et le service — les écrans sont dans test_lieu_ecran.py,
 les indisponibilités dans test_indisponibilite_lieu.py.
 """
 
+import datetime
+
 import pytest
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 
+from administration.models import EntreeJournal, TypeAction
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
 from referentiel.models import CategorieLieu as CategorieLieuReferentiel
 from ressources.models import CategorieLieu, Lieu, TypeLieuPartage
+from ressources.services.indisponibilite_lieu import ServiceIndisponibiliteLieu
 from ressources.services.lieu import ServiceLieu
 
 
@@ -151,6 +156,31 @@ def test_filtre_par_capacite_minimale(planificateur):
     assert [lieu.intitule for lieu in page] == ["Grande salle"]
 
 
+def test_filtre_par_disponibilite(planificateur):
+    """Critère 5, arbitrage § 4 du Prompt 14 (D-55) : un lieu sort de la
+    liste s'il porte une indisponibilité recouvrant la période interrogée."""
+    ServiceLieu.creer(planificateur, _donnees(intitule="Salle libre"))
+    occupee = ServiceLieu.creer(planificateur, _donnees(intitule="Salle occupée"))
+    ServiceIndisponibiliteLieu.declarer(
+        planificateur,
+        occupee,
+        timezone.make_aware(datetime.datetime(2027, 1, 4, 8, 0)),
+        timezone.make_aware(datetime.datetime(2027, 1, 4, 12, 0)),
+        "Réfection du sol",
+    )
+
+    page = ServiceLieu.lister(
+        planificateur,
+        {
+            "disponible_du": datetime.date(2027, 1, 4),
+            "disponible_au": datetime.date(2027, 1, 8),
+        },
+        None,
+    )
+
+    assert [lieu.intitule for lieu in page] == ["Salle libre"]
+
+
 def test_methode_d_enumeration_des_bloquants_existe_et_ne_trouve_rien(planificateur):
     """Critère 4, § 3.3 du Prompt 14 : le blocage par une brigade attitrée
     (US-SES-02) ou par une séance (US-PLAN-03) n'est pas testable
@@ -173,6 +203,21 @@ def test_lieu_archive_absent_de_la_selection_present_en_consultation(planificate
 
     assert lieu.pk not in disponibles.values_list("pk", flat=True)
     assert lieu.pk in [ligne.pk for ligne in page_consultation]
+
+
+def test_creation_modification_archivage_sont_journalises(planificateur):
+    lieu = ServiceLieu.creer(planificateur, _donnees())
+    ServiceLieu.modifier(planificateur, lieu.pk, _donnees(capacite=45), lieu.modifie_le)
+    ServiceLieu.archiver(planificateur, lieu.pk)
+
+    natures = list(
+        EntreeJournal.objects.filter(objet_type="lieu", objet_identifiant="Salle 101")
+        .order_by("cree_le")
+        .values_list("type_action", flat=True)
+    )
+    assert TypeAction.CREATION_ELEMENT_GESTION in natures
+    assert TypeAction.MODIFICATION_ELEMENT_GESTION in natures
+    assert TypeAction.ARCHIVAGE_ELEMENT_GESTION in natures
 
 
 def test_l_archivage_ne_supprime_rien(planificateur):

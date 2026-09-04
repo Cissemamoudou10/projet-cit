@@ -31,6 +31,14 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-57 — Navigation des lieux (P-27) : une rubrique « Ressources » unique, onglets internes plutôt qu'une seconde rubrique
+**Date** 2026-09-05 · **Story** US-PLAN-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — P-26 avait résolu l'absence de chemin de navigation vers les lieux en ajoutant une rubrique « Lieux » de premier niveau, distincte de « Ressources ». Les maquettes de référence (`docs/conception/16-maquettes.md`) fixent pourtant un menu principal à six entrées, sans « Lieux » ; le dossier des cas d'utilisation range `CU-P4-06` dans le paquetage P4-Ressources (§ 7.1), avec les instructeurs.
+**Décision** — Une seule rubrique « Ressources », visible si l'utilisateur détient `instructeurs_qualifications_lecture` ou `lieux_calendrier_lecture`, dont l'URL par défaut dépend de la permission détenue. À l'intérieur, un composant Onglets (charte § 3.42) bascule entre Instructeurs et Lieux, chaque onglet filtré par sa propre permission ; la barre disparaît si un seul domaine est accessible — rien à choisir. `_rubrique_active` redevient uniquement `app_name` ; l'onglet actif est un contexte propre aux vues de `ressources` (`ressources/navigation.py`), pas au processeur de contexte global.
+**Alternative écartée** — Garder deux rubriques distinctes (résolution initiale de P-26) : plus simple à coder, mais s'écarte de la maquette de référence sans justification métier — les lieux ne sont pas un domaine fonctionnel à part, ce sont des ressources au même titre que les instructeurs.
+**Impact sur les livrables** — aucun sur la conception elle-même ; documente un écart d'implantation transitoire (celui de P-26) désormais refermé.
+**Reporté au livrable** — non applicable.
+
 ## D-56 — Formulaire de `Lieu` : les deux champs de Nature restent toujours visibles, écart assumé avec le § 8 du Prompt 14
 **Date** 2026-09-04 · **Story** US-PLAN-02 · **Auteur** Lt Cissé (avec Claude Code), validé par Lt Cissé en session
 **Contexte** — Le Prompt 14 § 8 demande explicitement : « Le champ *type* n'apparaît que pour un lieu partagé. » Le projet n'a jusqu'ici jamais masqué un champ conditionnellement au client : `FormulaireRattachementMatiere`/`FormulaireElementReferentiel` (US-REF-03/04, même paire catégorie/type) affichent toujours les deux champs, la cohérence étant tranchée en service et par `ck_..._type_partage_coherent` en base ; et la charte est explicitement « sans script » sur les composants voisins (§ 3.21, 3.23).

@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-27 — La résolution de P-26 s'écartait elle-même de la maquette de référence
+**Date** 2026-09-05 · **Story** US-PLAN-02 · **État** : résolu
+**Symptôme** — Signalé par Lt Cissé en relecture : la rubrique « Lieux » ajoutée par P-26 est un menu de premier niveau distinct de « Ressources », alors que les maquettes de référence (`docs/conception/16-maquettes.md`, MAQ-01 à MAQ-05) fixent un menu principal à six entrées exactement — `Référentiel | Sessions | Ressources | Planification | Évaluations | Suivi` — sans « Lieux ». Le dossier des cas d'utilisation range d'ailleurs `CU-P4-06` dans le paquetage P4-Ressources (§ 7.1), aux côtés des instructeurs.
+**Cause** — P-26 a corrigé l'absence de chemin de navigation en ajoutant une seconde rubrique plutôt qu'en rattachant les lieux à la rubrique « Ressources » existante. Traité comme un simple bug de navigation, l'écart avec la maquette n'a pas été consigné dans `DECISIONS.md` au moment de la résolution.
+**Résolution** — Rubrique « Ressources » unique, visible dès que l'utilisateur détient `instructeurs_qualifications_lecture` **ou** `lieux_calendrier_lecture`, pointant par défaut vers les instructeurs si cette permission est détenue, sinon directement vers les lieux (cellule examens). Bascule entre les deux via le composant Onglets de la charte (§ 3.42), affiché seulement quand les deux domaines sont accessibles — voir `ressources/navigation.py`, D-57.
+**Risque concerné** — aucun du registre ; écart de conception sans impact sur les données ni les habilitations.
+**Leçon** — Un correctif de navigation doit être vérifié contre la maquette de référence avant d'être considéré résolu, pas seulement contre le symptôme signalé.
+
 ## P-26 — Aucun chemin de navigation ne menait aux lieux après livraison d'US-PLAN-02
 **Date** 2026-09-04 · **Story** US-PLAN-02 · **État** : résolu
 **Symptôme** — Signalé par Lt Cissé après connexion avec un compte de la cellule planification : les écrans de lieux existent et les habilitations sont correctes, mais rien dans l'interface n'y mène.

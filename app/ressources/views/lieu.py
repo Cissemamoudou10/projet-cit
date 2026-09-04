@@ -17,6 +17,7 @@ from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, E
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
 from ressources.forms import FormulaireLieu
+from ressources.navigation import onglets_ressources
 from ressources.services.indisponibilite_lieu import ServiceIndisponibiliteLieu
 from ressources.services.lieu import ServiceLieu
 
@@ -203,9 +204,12 @@ def vue_liste_lieux(request):
     }
     page = ServiceLieu.lister(request.user, filtres, request.GET.get("page"))
     peut_ecrire = a_permission(request.user, ServiceLieu.PERMISSION_ECRITURE)
+    onglets, onglet_actif = onglets_ressources(request.user, "lieux")
     contexte = {
         "titre": "Lieux",
         "sous_titre": "Inventaire des salles et lieux partagés du centre.",
+        "onglets": onglets,
+        "onglet_actif": onglet_actif,
         "url_creer": reverse("ressources:creer_lieu") if peut_ecrire else "",
         "libelle_creer": "Créer un lieu",
         "champ_recherche_libelle": "Intitulé",

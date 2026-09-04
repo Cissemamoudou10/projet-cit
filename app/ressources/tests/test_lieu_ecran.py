@@ -9,38 +9,37 @@ from ressources.services.lieu import ServiceLieu
 from ressources.tests.test_lieu import _donnees
 
 
-def test_la_rubrique_lieux_apparait_pour_la_planification(client, planificateur):
-    """P-26 : la rubrique « Ressources » (US-INS-01) ne portait qu'un lien
-    vers les instructeurs — aucun chemin de navigation ne menait aux lieux,
-    y compris pour un profil qui n'a que `lieux_calendrier_lecture`.
-    """
+def test_l_onglet_lieux_permet_d_atteindre_les_lieux_depuis_les_instructeurs(client, planificateur):
+    """D-57 : P-26 signalait qu'aucun chemin de navigation ne menait aux
+    lieux depuis la rubrique « Ressources ». Corrigé par un onglet — pas par
+    une seconde rubrique, qui s'écartait de la maquette de référence
+    (`docs/conception/16-maquettes.md`)."""
     client.force_login(planificateur)
 
-    reponse = client.get(reverse("noyau:accueil"))
+    reponse = client.get(reverse("ressources:liste_instructeurs")).content.decode()
 
-    assert "Lieux" in reponse.content.decode()
+    assert reverse("ressources:liste_lieux") in reponse
 
 
-def test_la_rubrique_lieux_apparait_pour_la_cellule_examens_sans_acces_instructeurs(
-    client, cellule_examens
-):
-    """La cellule examens n'a pas `instructeurs_qualifications_lecture` (§ 4.1
-    du Prompt 12) mais lit `lieux_calendrier` (matrice § 11.2) : elle doit
-    voir la rubrique Lieux même sans voir « Ressources »."""
+def test_aucun_onglet_pour_la_cellule_examens_qui_n_a_que_les_lieux(client, cellule_examens):
+    """La cellule examens n'a pas `instructeurs_qualifications_lecture`
+    (§ 4.1 du Prompt 12) : rien à choisir, la barre d'onglets ne doit pas
+    apparaître sur son unique écran accessible."""
     client.force_login(cellule_examens)
 
-    reponse = client.get(reverse("noyau:accueil")).content.decode()
+    reponse = client.get(reverse("ressources:liste_lieux"))
 
-    assert "Lieux" in reponse
-    assert "Ressources" not in reponse
+    assert reponse.context["onglets"] == []
+    assert "Instructeurs" not in reponse.content.decode()
 
 
-def test_la_rubrique_lieux_est_surlignee_active_sur_les_ecrans_de_lieux(client, planificateur):
+def test_la_rubrique_ressources_est_surlignee_active_sur_les_ecrans_de_lieux(client, planificateur):
     client.force_login(planificateur)
 
     reponse = client.get(reverse("ressources:liste_lieux"))
 
-    assert reponse.context["rubrique_active"] == "lieux"
+    assert reponse.context["rubrique_active"] == "ressources"
+    assert reponse.context["onglet_actif"] == "lieux"
 
 
 def test_acces_direct_a_la_liste_ouvert_a_la_cellule_pedagogique(client, redacteur):

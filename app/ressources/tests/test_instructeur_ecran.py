@@ -106,9 +106,28 @@ def test_la_rubrique_ressources_apparait_pour_la_cellule_pedagogique(client, red
     assert "Ressources" in reponse.content.decode()
 
 
-def test_la_rubrique_ressources_est_masquee_pour_la_cellule_examens(client, cellule_examens):
+def test_la_rubrique_ressources_est_surlignee_active_sur_les_ecrans_d_instructeurs(
+    client, planificateur
+):
+    """Symétrique du test côté lieux (test_lieu_ecran.py) : même mécanisme,
+    onglet « instructeurs » cette fois."""
+    client.force_login(planificateur)
+
+    reponse = client.get(reverse("ressources:liste_instructeurs"))
+
+    assert reponse.context["rubrique_active"] == "ressources"
+    assert reponse.context["onglet_actif"] == "instructeurs"
+
+
+def test_la_rubrique_ressources_pointe_vers_les_lieux_pour_la_cellule_examens(
+    client, cellule_examens
+):
+    """D-57 : la cellule examens lit `lieux_calendrier` mais pas
+    `instructeurs_qualifications` (§ 4.1 du Prompt 12) — la rubrique reste
+    visible, une seule, et son lien mène directement aux lieux."""
     client.force_login(cellule_examens)
 
-    reponse = client.get(reverse("noyau:accueil"))
+    reponse = client.get(reverse("noyau:accueil")).content.decode()
 
-    assert "Ressources" not in reponse.content.decode()
+    assert "Ressources" in reponse
+    assert reverse("ressources:liste_lieux") in reponse

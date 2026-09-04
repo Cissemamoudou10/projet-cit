@@ -14,6 +14,7 @@ from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, E
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
 from ressources.forms import FormulaireInstructeur
+from ressources.navigation import onglets_ressources
 from ressources.services.instructeur import ServiceInstructeur
 
 CLASSES_BADGE_STATUT = {
@@ -163,9 +164,12 @@ def vue_liste_instructeurs(request):
     }
     page = ServiceInstructeur.lister(request.user, filtres, request.GET.get("page"))
     peut_ecrire = a_permission(request.user, ServiceInstructeur.PERMISSION_ECRITURE)
+    onglets, onglet_actif = onglets_ressources(request.user, "instructeurs")
     contexte = {
         "titre": "Instructeurs",
         "sous_titre": "Annuaire du corps enseignant du centre.",
+        "onglets": onglets,
+        "onglet_actif": onglet_actif,
         "url_creer": reverse("ressources:creer_instructeur") if peut_ecrire else "",
         "libelle_creer": "Créer un instructeur",
         "champ_recherche_libelle": "Nom, prénom ou matricule",

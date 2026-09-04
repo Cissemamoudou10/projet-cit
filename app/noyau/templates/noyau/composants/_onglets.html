@@ -1,0 +1,17 @@
+{% if onglets %}
+  <nav class="flex border-b border-gris-trait bg-fond-bande" aria-label="Sections">
+    {% for onglet in onglets %}
+      {% if onglet.slug == onglet_actif %}
+        <a href="{{ onglet.url }}" aria-current="page"
+           class="border-r border-gris-trait bg-fond-bloc px-4 py-2 font-titre text-sm font-semibold
+                  text-marine-900 no-underline shadow-[inset_0_-3px_0_currentColor]">
+          {{ onglet.libelle }}</a>
+      {% else %}
+        <a href="{{ onglet.url }}"
+           class="border-r border-gris-trait px-4 py-2 font-titre text-sm font-medium
+                  text-gris-lecture no-underline transition-colors duration-survol
+                  hover:bg-fond-bloc hover:text-marine-900">{{ onglet.libelle }}</a>
+      {% endif %}
+    {% endfor %}
+  </nav>
+{% endif %}
