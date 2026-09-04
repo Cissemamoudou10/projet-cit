@@ -116,6 +116,7 @@ def vue_detail_matiere(request, pk):
             "url_ajouter_objectif": reverse(
                 "referentiel:ajouter_objectif_pedagogique", args=[matiere.pk]
             ),
+            "nombre_instructeurs_qualifies": matiere.qualifications.count(),
         },
     )
 

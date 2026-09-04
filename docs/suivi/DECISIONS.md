@@ -31,6 +31,38 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-52 — `Qualification` vit dans `ressources` ; `referentiel` compte par relation inverse, jamais par import
+**Date** 2026-09-04 · **Story** US-INS-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `tests/architecture/test_couches.py::DEPENDANCES_AUTORISEES` fixe un sens unique : `ressources` peut dépendre de `referentiel`, jamais l'inverse. `Qualification` porte des clés étrangères vers les deux (`Instructeur`, `ressources` ; `Matiere`, `referentiel`), donc elle ne peut vivre que dans `ressources` — confirmé par le prompt lui-même (`Meta.db_table = "ressources_qualification"`). Restait à résoudre deux écrans qui en dépendent depuis l'autre côté : l'entrée par matière (§ 7.3, A1, normalement accrochée à la fiche matière de `referentiel`) et le signalement du critère 4 sur `formation_referentiel.html` (§ 7.4, aussi dans `referentiel`).
+**Décision** — Les deux vues symétriques (entrée instructeur, entrée matière) vivent toutes les deux dans `ressources/views/qualification.py`, sur des URLs `ressources:...` ; `matiere_detail.html` (`referentiel`) ne porte qu'un lien `{% url %}` vers cet écran — un gabarit n'est pas scanné par le test d'architecture, qui ne porte que sur les imports Python. Pour le signalement du critère 4, `Qualification.matiere` porte `related_name="qualifications"` : `ServiceReferentiel.lister` annote `Count("matiere__qualifications", distinct=True)`, une chaîne de caractères résolue par l'ORM Django au moment de la requête, jamais un `import ressources` — même motif que `Count("formations")`, déjà utilisé par `ServiceTypeFormation._queryset`.
+**Alternative écartée** — Une vue de `referentiel` important `ServiceQualification` pour l'entrée par matière : aurait violé le sens de dépendance et fait échouer `test_ordre_des_dependances_entre_applications`, qui scanne aussi les fichiers de tests, pas seulement `services.py`/`views.py`. Un service de comptage dans `ressources` appelé depuis `referentiel` : même violation, dans l'autre sens.
+**Impact sur les livrables** — aucun sur la conception ; note de méthode pour toute future association entre deux applications dans ce sens de dépendance (le paquetage organisation en aura probablement besoin).
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-51 — Report d'E1 (US-INS-02) vers US-PLAN-03, mécanisme posé quand même
+**Date** 2026-09-04 · **Story** US-INS-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — E1 (« l'instructeur est affecté à des séances futures de cette matière ») suppose `Seance`/l'affectation, qui appartiennent à US-PLAN-03, sprint 3 — même famille de report que D-23, D-30, D-35, D-39, D-45 pour les paquetages précédents.
+**Décision** — `ServiceQualification.seances_futures(qualification)` rend `[]` aujourd'hui, sans changer de signature quand US-PLAN-03 la remplira. L'écran de confirmation de retrait affiche déjà l'énumération (vide) et le message d'E1, comme demandé au § 3.2 du Prompt 13 : rien à récrire à l'écran quand la source de données existera.
+**Alternative écartée** — Ne rien écrire avant US-PLAN-03 : aurait reporté aussi le travail d'écran, alors que le Prompt 13 demande explicitement de le faire maintenant pour que seule la source de données manque plus tard.
+**Impact sur les livrables** — note pour US-PLAN-03 : remplir `seances_futures` sans changer sa signature ni l'écran qui l'appelle.
+**Reporté au livrable** — non applicable, dette de développement déjà identifiée par le Prompt 13 lui-même (§ 3.2).
+
+## D-50 — Le report D-30 (US-REF-02) est refermé sur ses deux volets — le premier l'était déjà, sans l'avoir consigné
+**Date** 2026-09-04 · **Story** US-INS-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — D-30 (US-REF-02) attendait deux sources pour rendre le critère 5 (« une matière utilisée ne peut être supprimée ») réellement testable : le référentiel (`ElementReferentiel`, US-REF-03) et la matrice de qualification (`Qualification`, cette story). En explorant à l'étape 0, `ElementReferentiel.matiere` s'est révélé déjà porté en `PROTECT` depuis US-REF-03, avec un test qui le prouve déjà (`test_suppression_d_une_matiere_rattachee_est_refusee`, `referentiel/tests/test_referentiel.py`) — mais personne ne l'avait signalé comme refermant D-30, à la différence de D-40 qui avait explicitement refermé la source équivalente côté prérequis.
+**Décision** — `Qualification.matiere` en `PROTECT` referme le second et dernier volet, sans code nouveau dans `ServiceMatiere` (mécanisme générique du patron, `ProtectedError` + `decrire_opposants`). Testé dans `ressources/tests/test_qualification.py::test_suppression_d_une_matiere_qualifiee_est_refusee` — seule application autorisée à importer les deux côtés pour l'exercer. D-30 est donc entièrement refermé par cette entrée : les deux sources bloquent réellement la suppression d'une matière du catalogue.
+**Alternative écartée** — Aucune ; cette entrée constate une fermeture déjà acquise plutôt que d'en décider une nouvelle pour le premier volet.
+**Impact sur les livrables** — aucun sur la conception ; D-30 peut être considéré clos dans la matrice de traçabilité suivie en revue de sprint.
+**Reporté au livrable** — non applicable, referme un report déjà consigné.
+
+## D-49 — `Qualification` n'hérite pas du mixin d'archivage : second retrait réel du patron, après `ObjectifPedagogique`
+**Date** 2026-09-04 · **Story** US-INS-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le Prompt 13, § 3.1, écarte explicitement l'archivage pour `Qualification` : une qualification retirée disparaît, rien ne la référence — les séances futures portent un instructeur et une matière, jamais la qualification elle-même. RG-22 protège l'intégrité en amont (refus du retrait s'il casserait une affectation), pas en aval par un historique.
+**Décision** — `Qualification` n'hérite que de `ModeleHorodate`, pas de `ModeleArchivable`. `ServiceQualification.retirer` exécute un `DELETE` réel après vérification d'E1, journalisé avec `TypeAction.SUPPRESSION_ELEMENT_GESTION` (nature déjà posée par D-38 pour `ObjectifPedagogique`, réutilisée telle quelle). Testé par un test de non-présence (même patron que `test_n_a_pas_de_champ_d_archivage` pour `ObjectifPedagogique`, D-37).
+**Alternative écartée** — Archiver comme les entités du patron `ServiceGestion` : contredirait le point de conception du § 2 (aucune anticipation) et le § 3.1, qui motive explicitement l'exception par l'absence de toute référence à conserver.
+**Impact sur les livrables** — aucun sur la conception ; deuxième exception documentée à la convention d'archivage du patron, après D-37.
+**Reporté au livrable** — non applicable.
+
 ## D-48 — Matricule de l'instructeur : obligatoire et unique pour un militaire du centre, facultatif sinon
 **Date** 2026-09-04 · **Story** US-INS-01 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — § 2 du Prompt 12 : le critère 1 énumère identité, grade, spécialité, statut, mais oublie le matricule que le critère 3 exige pourtant en recherche — omission de rédaction, pas une ambiguïté. Restait à trancher si le matricule est obligatoire et unique, sachant qu'un militaire du centre en a nécessairement un, alors qu'un vacataire ou un civil n'est pas nécessairement enregistré dans le système d'information du centre.

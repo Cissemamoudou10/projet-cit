@@ -12,7 +12,7 @@ Un service ne connaît pas la requête HTTP — voir .claude/rules/services.md.
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.db.models.deletion import ProtectedError
 
 from administration.habilitations import verifier_habilitation
@@ -47,11 +47,18 @@ class ServiceReferentiel:
 
     @staticmethod
     def lister(agissant, formation):
+        """`nombre_instructeurs_qualifies` — US-INS-02, § 7.4 : compté par la
+        relation inverse `matiere.qualifications` (posée dans `ressources`,
+        `Qualification.matiere.related_name`), jamais par un import de
+        `ressources` — `referentiel` ne peut pas en dépendre (voir
+        `tests/architecture/test_couches.py::DEPENDANCES_AUTORISEES`).
+        """
         verifier_habilitation(agissant, PERMISSION_LECTURE)
         return (
             ElementReferentiel.objects.filter(formation=formation)
             .select_related("matiere")
             .prefetch_related("matiere__objectifs_pedagogiques")
+            .annotate(nombre_instructeurs_qualifies=Count("matiere__qualifications", distinct=True))
             .order_by("matiere__intitule")
         )
 

@@ -18,12 +18,22 @@
         Référentiel — {{ formation.intitule }}</h1>
       <p class="text-sm text-gris-lecture">{{ formation.type_formation }}</p>
     </div>
-    <a href="{% url 'referentiel:prerequis_formation' formation.pk %}"
-       class="inline-flex h-controle items-center border border-marine-900 px-3.5 text-sm
-              font-semibold text-marine-900 no-underline transition-colors duration-survol
-              hover:bg-fond-survol">
-      Prérequis
-    </a>
+    <div class="flex items-center gap-2">
+      {% if perms.noyau.instructeurs_qualifications_lecture %}
+        <a href="{% url 'ressources:couverture_qualifications' formation.pk %}"
+           class="inline-flex h-controle items-center border border-gris-trait px-3.5 text-sm
+                  font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-marine-700 hover:bg-fond-survol">
+          Couverture des qualifications
+        </a>
+      {% endif %}
+      <a href="{% url 'referentiel:prerequis_formation' formation.pk %}"
+         class="inline-flex h-controle items-center border border-marine-900 px-3.5 text-sm
+                font-semibold text-marine-900 no-underline transition-colors duration-survol
+                hover:bg-fond-survol">
+        Prérequis
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -57,7 +67,13 @@
       <tbody>
         {% for element in elements %}
           <tr class="h-ligne border-t border-gris-trait">
-            <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ element.matiere }}</th>
+            <th scope="row" class="px-3 py-1.5 text-left font-medium">
+              {{ element.matiere }}
+              {% if perms.noyau.instructeurs_qualifications_lecture and not element.nombre_instructeurs_qualifies %}
+                <span class="ml-1.5 bg-etat-ecart px-1.5 py-px text-2xs font-semibold tracking-wide text-blanc">
+                  AUCUN INSTRUCTEUR QUALIFIÉ</span>
+              {% endif %}
+            </th>
             {% if perms.noyau.referentiel_ecriture %}
               <td class="px-3 py-1.5">
                 <span class="flex w-24 items-stretch border border-gris-trait bg-fond-bloc">

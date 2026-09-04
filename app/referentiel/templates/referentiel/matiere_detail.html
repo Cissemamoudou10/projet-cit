@@ -67,6 +67,40 @@
   </div>
 </section>
 
+{% if perms.noyau.instructeurs_qualifications_lecture %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Instructeurs qualifiés
+    </p>
+    <div class="flex items-center justify-between px-4 py-3.5">
+      <p class="text-sm">
+        {% if nombre_instructeurs_qualifies %}
+          {{ nombre_instructeurs_qualifies }} instructeur{{ nombre_instructeurs_qualifies|pluralize }}
+          qualifié{{ nombre_instructeurs_qualifies|pluralize }}.
+        {% else %}
+          <span class="text-etat-ecart">Aucun instructeur qualifié.</span>
+        {% endif %}
+      </p>
+      {% if perms.noyau.instructeurs_qualifications_ecriture %}
+        <a href="{% url 'ressources:qualifications_matiere' matiere.pk %}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Gérer les qualifications
+        </a>
+      {% else %}
+        <a href="{% url 'ressources:qualifications_matiere' matiere.pk %}"
+           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                  text-sm font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-marine-700 hover:bg-fond-survol">
+          Voir les qualifications
+        </a>
+      {% endif %}
+    </div>
+  </section>
+{% endif %}
+
 <section class="mt-4 border border-gris-trait bg-fond-bloc">
   <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
             font-semibold uppercase tracking-wide text-marine-900">

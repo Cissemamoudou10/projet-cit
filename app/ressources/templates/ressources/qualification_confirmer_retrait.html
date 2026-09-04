@@ -1,0 +1,69 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Retirer une qualification — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[520px] animate-ouvrir border border-etat-ecart bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <!-- arbitraire : w-[520px], largeur fixe de dialogue -->
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-etat-ecart px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Retirer la qualification
+    </p>
+    <div class="px-4 py-4 text-sm">
+      <p>
+        « {{ qualification.instructeur }} » ne sera plus déclaré qualifié pour
+        « {{ qualification.matiere }} ». Action définitive, sans corbeille (§ 3.1).
+      </p>
+
+      {% if seances_futures %}
+        <div class="mt-3 flex items-start gap-3 border border-l-[3px] border-gris-trait
+                    border-l-etat-ecart bg-etat-ecart-fond px-4 py-3">
+          <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-ecart" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+          </svg>
+          <div>
+            <p class="font-titre text-base font-semibold text-etat-ecart">Retrait impossible</p>
+            <p class="text-xs text-gris-lecture">
+              {{ qualification.instructeur }} est affecté à des séances futures de
+              {{ qualification.matiere }} : {% for seance in seances_futures %}{{ seance }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+              Réaffectez-les avant de retirer la qualification.
+            </p>
+          </div>
+        </div>
+      {% elif laisserait_non_couverte %}
+        <div class="mt-3 flex items-start gap-3 border border-l-[3px] border-gris-trait
+                    border-l-etat-attention bg-etat-attention-fond px-4 py-3">
+          <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-attention" aria-hidden="true">
+            <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+          </svg>
+          <div>
+            <p class="font-titre text-base font-semibold text-etat-attention">
+              Matière sans instructeur qualifié</p>
+            <p class="text-xs text-gris-lecture">
+              « {{ qualification.matiere }} » n'aura plus aucun instructeur qualifié après ce
+              retrait. C'est une décision de commandement, pas une erreur de saisie (§ 3.4) —
+              le retrait aboutit si vous le confirmez.
+            </p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      {% if not seances_futures %}
+        <button type="submit"
+                class="inline-flex items-center gap-2 border border-etat-ecart bg-etat-ecart
+                       px-3.5 py-1.5 text-sm font-semibold text-blanc
+                       transition-colors duration-survol hover:bg-etat-ecart-fonce">Retirer</button>
+      {% endif %}
+    </div>
+  </form>
+</dialog>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from ressources.views import instructeur
+from ressources.views import instructeur, qualification
 
 app_name = "ressources"
 
@@ -22,5 +22,44 @@ urlpatterns = [
         "instructeurs/<int:pk>/desarchiver/",
         instructeur.vue_desarchiver_instructeur,
         name="desarchiver_instructeur",
+    ),
+    path(
+        "instructeurs/<int:pk>/qualifications/",
+        qualification.vue_qualifications_instructeur,
+        name="qualifications_instructeur",
+    ),
+    path(
+        "instructeurs/<int:instructeur_pk>/qualifications/<int:matiere_pk>/ajouter/",
+        qualification.vue_ajouter_qualification,
+        {"origine": "instructeur"},
+        name="ajouter_qualification_instructeur",
+    ),
+    path(
+        "qualifications/matieres/<int:pk>/",
+        qualification.vue_qualifications_matiere,
+        name="qualifications_matiere",
+    ),
+    path(
+        "qualifications/matieres/<int:matiere_pk>/instructeurs/<int:instructeur_pk>/ajouter/",
+        qualification.vue_ajouter_qualification,
+        {"origine": "matiere"},
+        name="ajouter_qualification_matiere",
+    ),
+    path(
+        "qualifications/<int:pk>/retirer/depuis-instructeur/",
+        qualification.vue_confirmer_retrait_qualification,
+        {"origine": "instructeur"},
+        name="retirer_qualification_instructeur",
+    ),
+    path(
+        "qualifications/<int:pk>/retirer/depuis-matiere/",
+        qualification.vue_confirmer_retrait_qualification,
+        {"origine": "matiere"},
+        name="retirer_qualification_matiere",
+    ),
+    path(
+        "qualifications/formations/<int:formation_pk>/couverture/",
+        qualification.vue_couverture_qualifications,
+        name="couverture_qualifications",
     ),
 ]

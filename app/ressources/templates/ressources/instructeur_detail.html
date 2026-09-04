@@ -72,8 +72,29 @@
             font-semibold uppercase tracking-wide text-marine-900">
     Qualifications
   </p>
-  <div class="px-4 py-8 text-center">
-    <p class="text-xs text-gris-lecture">À venir — US-INS-02.</p>
+  <div class="flex items-center justify-between px-4 py-3.5">
+    <p class="text-sm">
+      {% if nombre_qualifications %}
+        Qualifié pour {{ nombre_qualifications }} matière{{ nombre_qualifications|pluralize }} du catalogue.
+      {% else %}
+        <span class="text-gris-lecture">Aucune matière du catalogue.</span>
+      {% endif %}
+    </p>
+    {% if perms.noyau.instructeurs_qualifications_ecriture %}
+      <a href="{% url 'ressources:qualifications_instructeur' instructeur.pk %}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Gérer les qualifications
+      </a>
+    {% else %}
+      <a href="{% url 'ressources:qualifications_instructeur' instructeur.pk %}"
+         class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                text-sm font-medium text-encre no-underline transition-colors duration-survol
+                hover:border-marine-700 hover:bg-fond-survol">
+        Voir les qualifications
+      </a>
+    {% endif %}
   </div>
 </section>
 

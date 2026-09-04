@@ -1,4 +1,4 @@
-"""Ressources humaines et matérielles du centre — CU-P4-01.
+"""Ressources humaines et matérielles du centre — CU-P4-01, CU-P4-02.
 
 Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
@@ -6,6 +6,7 @@ Aucune règle métier ici : voir .claude/rules/modeles.md.
 from django.db import models
 
 from noyau.models import ModeleArchivable, ModeleHorodate
+from referentiel.models import Matiere
 
 
 class Statut(models.TextChoices):
@@ -54,3 +55,53 @@ class Instructeur(ModeleHorodate, ModeleArchivable):
 
     def __str__(self):
         return f"{self.grade} {self.nom} {self.prenom}"
+
+
+class Qualification(ModeleHorodate):
+    """Associe un instructeur à une matière du **catalogue** — jamais à un
+    élément du référentiel (§ 2 du Prompt 13) : un instructeur habilité pour
+    une matière l'est indépendamment de la formation où elle est enseignée.
+    Aucun niveau d'habilitation, aucune date de validité, aucun commentaire
+    — le point de conception écarte explicitement toute anticipation.
+
+    Pas de mixin d'archivage (§ 3.1) : un retrait est une suppression
+    réelle, la seconde exception à la convention du patron après
+    `ObjectifPedagogique` (D-37) — aucune séance programmée ne référence
+    jamais la qualification elle-même, seulement l'instructeur et la
+    matière, donc rien n'a besoin de la retrouver après coup.
+
+    `matiere` en `PROTECT`, `instructeur` en `CASCADE` : une matière
+    qualifiée ne peut plus être supprimée du catalogue (referme le second
+    volet du report D-30, `docs/suivi/DECISIONS.md`) ; un instructeur
+    supprimé — cas rare, l'archivage prévaut — emporte ses qualifications,
+    qui n'ont pas de sens sans lui. `related_name="qualifications"` sur
+    `matiere` : c'est par cette relation inverse que `referentiel` compte
+    les instructeurs qualifiés sans jamais importer `ressources` (sens de
+    dépendance interdit, voir `tests/architecture/test_couches.py`).
+    """
+
+    instructeur = models.ForeignKey(
+        Instructeur,
+        on_delete=models.CASCADE,
+        related_name="qualifications",
+        verbose_name="instructeur",
+    )
+    matiere = models.ForeignKey(
+        Matiere,
+        on_delete=models.PROTECT,
+        related_name="qualifications",
+        verbose_name="matière",
+    )
+
+    class Meta:
+        db_table = "ressources_qualification"
+        verbose_name = "qualification"
+        verbose_name_plural = "qualifications"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["instructeur", "matiere"], name="uq_qualification_instructeur_matiere"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.instructeur} — {self.matiere}"

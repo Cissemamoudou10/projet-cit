@@ -191,6 +191,7 @@ def vue_detail_instructeur(request, pk):
         {
             "instructeur": instructeur,
             "url_modifier": reverse("ressources:modifier_instructeur", args=[instructeur.pk]),
+            "nombre_qualifications": instructeur.qualifications.count(),
         },
     )
 
