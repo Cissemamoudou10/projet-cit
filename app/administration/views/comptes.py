@@ -17,6 +17,7 @@ from administration.forms import (
     FormulaireCreationCompte,
 )
 from administration.habilitations import exige_habilitation
+from administration.navigation import onglets_administration
 from administration.services.comptes import PERMISSION_GESTION_COMPTES, ServiceCompte
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 
@@ -38,12 +39,15 @@ def vue_liste_comptes(request):
         "tri": tri_actuel,
     }
     page = ServiceCompte.lister(request.user, filtres, request.GET.get("page"))
+    onglets, onglet_actif = onglets_administration(request.user, "comptes")
     contexte = {
         "page": page,
         "filtres": filtres,
         "profils": ServiceCompte.profils_disponibles(),
         "tri_identifiant": _etat_tri(tri_actuel, "identifiant"),
         "tri_derniere_connexion": _etat_tri(tri_actuel, "derniere_connexion"),
+        "onglets": onglets,
+        "onglet_actif": onglet_actif,
     }
     return render(request, "administration/liste_comptes.html", contexte)
 

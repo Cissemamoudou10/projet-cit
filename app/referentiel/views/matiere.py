@@ -15,6 +15,7 @@ from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, E
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
 from referentiel.forms import FormulaireMatiere, FormulaireObjectifPedagogique
+from referentiel.navigation import onglets_referentiel
 from referentiel.services.matiere import ServiceMatiere
 from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 
@@ -35,13 +36,6 @@ def _etat_tri(tri_actuel, colonne):
     return {"aria": "none", "suivant": colonne, "sens": None}
 
 
-def _liens_associes():
-    return [
-        {"libelle": "Types de formation", "url": reverse("referentiel:liste_types_formation")},
-        {"libelle": "Formations", "url": reverse("referentiel:liste_formations")},
-    ]
-
-
 @exige_habilitation(ServiceMatiere.PERMISSION_LECTURE)
 def vue_liste_matieres(request):
     tri_actuel = request.GET.get("tri", "")
@@ -52,10 +46,12 @@ def vue_liste_matieres(request):
     }
     page = ServiceMatiere.lister(request.user, filtres, request.GET.get("page"))
     peut_ecrire = a_permission(request.user, ServiceMatiere.PERMISSION_ECRITURE)
+    onglets, onglet_actif = onglets_referentiel("matieres")
     contexte = {
         "titre": "Matières",
         "sous_titre": "Catalogue indépendant des formations — RG-05.",
-        "liens_associes": _liens_associes(),
+        "onglets": onglets,
+        "onglet_actif": onglet_actif,
         "url_creer": reverse("referentiel:creer_matiere") if peut_ecrire else "",
         "libelle_creer": "Créer une matière",
         "champ_recherche_libelle": "Intitulé",

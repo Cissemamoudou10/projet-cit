@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 
 from administration.habilitations import exige_habilitation
+from administration.navigation import onglets_administration
 from administration.services.comptes import PERMISSION_GESTION_COMPTES
 from administration.services.matrice_habilitations import (
     DOMAINES,
@@ -22,10 +23,15 @@ def vue_habilitations(request):
         _traiter_soumission(request)
         return redirect("administration:habilitations")
 
+    onglets, onglet_actif = onglets_administration(request.user, "habilitations")
     return render(
         request,
         "administration/habilitations.html",
-        {"matrice": ServiceMatriceHabilitations.matrice(request.user)},
+        {
+            "matrice": ServiceMatriceHabilitations.matrice(request.user),
+            "onglets": onglets,
+            "onglet_actif": onglet_actif,
+        },
     )
 
 

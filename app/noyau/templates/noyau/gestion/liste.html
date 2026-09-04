@@ -11,14 +11,6 @@
       <p class="text-sm text-gris-lecture">{{ sous_titre }}</p>
     </div>
     <div class="flex items-center gap-2">
-      {% for lien in liens_associes %}
-        <a href="{{ lien.url }}"
-           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
-                  text-sm font-medium text-encre no-underline transition-colors duration-survol
-                  hover:border-marine-700 hover:bg-fond-survol">
-          {{ lien.libelle }}
-        </a>
-      {% endfor %}
       {% if url_creer %}
         <a href="{{ url_creer }}"
            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5

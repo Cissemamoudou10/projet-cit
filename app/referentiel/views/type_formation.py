@@ -14,6 +14,7 @@ from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, E
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
 from referentiel.forms import FormulaireTypeFormation
+from referentiel.navigation import onglets_referentiel
 from referentiel.services.type_formation import ServiceTypeFormation
 
 
@@ -43,13 +44,12 @@ def vue_liste_types_formation(request):
     }
     page = ServiceTypeFormation.lister(request.user, filtres, request.GET.get("page"))
     peut_ecrire = a_permission(request.user, ServiceTypeFormation.PERMISSION_ECRITURE)
+    onglets, onglet_actif = onglets_referentiel("types_formation")
     contexte = {
         "titre": "Types de formation",
         "sous_titre": "Classent les formations selon le public auquel elles s'adressent.",
-        "liens_associes": [
-            {"libelle": "Formations", "url": reverse("referentiel:liste_formations")},
-            {"libelle": "Matières", "url": reverse("referentiel:liste_matieres")},
-        ],
+        "onglets": onglets,
+        "onglet_actif": onglet_actif,
         "url_creer": reverse("referentiel:creer_type_formation") if peut_ecrire else "",
         "libelle_creer": "Créer un type",
         "champ_recherche_libelle": "Intitulé",

@@ -11,18 +11,6 @@
       <p class="text-sm text-gris-lecture">Créer, modifier et désactiver les comptes du système.</p>
     </div>
     <div class="flex items-center gap-2">
-      <a href="{% url 'administration:journal' %}"
-         class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
-                text-sm font-medium text-encre no-underline transition-colors duration-survol
-                hover:border-marine-700 hover:bg-fond-survol">
-        Journal
-      </a>
-      <a href="{% url 'administration:habilitations' %}"
-         class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
-                text-sm font-medium text-encre no-underline transition-colors duration-survol
-                hover:border-marine-700 hover:bg-fond-survol">
-        Habilitations
-      </a>
       <a href="{% url 'administration:creer_compte' %}"
          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
                 text-sm font-semibold text-blanc no-underline transition-colors duration-survol
@@ -32,6 +20,7 @@
     </div>
   </div>
 </div>
+{% include "noyau/composants/_onglets.html" %}
 {% endblock %}
 
 {% block contenu %}

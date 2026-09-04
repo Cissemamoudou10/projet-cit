@@ -10,6 +10,7 @@ programme) n'a qu'à construire cette URL, rien d'autre à prévoir ici.
 from django.shortcuts import render
 
 from administration.habilitations import exige_habilitation
+from administration.navigation import onglets_administration
 from administration.services.journal import PERMISSION_CONSULTATION_JOURNAL, ServiceJournal
 
 
@@ -27,12 +28,15 @@ def vue_journal(request):
         "tri": tri_actuel,
     }
     page = ServiceJournal.consulter(request.user, filtres, request.GET.get("page"))
+    onglets, onglet_actif = onglets_administration(request.user, "journal")
     contexte = {
         "page": page,
         "filtres": filtres,
         "nature_libelle": dict(natures).get(filtres["nature"], filtres["nature"]),
         "natures": natures,
         "tri_horodatage": _etat_tri(tri_actuel, "horodatage"),
+        "onglets": onglets,
+        "onglet_actif": onglet_actif,
     }
     return render(request, "administration/journal.html", contexte)
 
