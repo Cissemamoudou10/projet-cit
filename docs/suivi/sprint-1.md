@@ -24,7 +24,7 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 - [x] **US-REF-07** — Consulter le référentiel depuis les autres cellules · 2 pts · Must
 - [x] **US-INS-01** — Gérer les instructeurs · 5 pts · Must
 - [x] **US-INS-02** — Établir la matrice de qualification · 5 pts · Must
-- [ ] **US-PLAN-02** — Gérer les lieux d'enseignement · 3 pts · Must
+- [x] **US-PLAN-02** — Gérer les lieux d'enseignement · 3 pts · Must
 
 ## Tâches transverses
 

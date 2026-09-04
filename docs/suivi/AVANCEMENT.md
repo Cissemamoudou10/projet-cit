@@ -2,7 +2,7 @@
 
 *Récapitulatif court. Le détail vit dans les fichiers de sprint.*
 
-**Dernière mise à jour :** 2 septembre 2026 — US-ADM-01 et US-ADM-02 livrées et commitées
+**Dernière mise à jour :** 4 septembre 2026 — US-PLAN-02 livrée, sprint 1 complet (15/15 stories)
 
 ## Où nous en sommes
 
@@ -21,7 +21,7 @@
 
 | Sprint | Période | Stories | Points | Livrées | Jalon |
 |---|---|---|---|---|---|
-| 1 | 31/08 – 12/09 | 15 | 58 | 2 | C1 |
+| 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | 0 | C2 |
 | 3 | 28/09 – 10/10 | 11 | 47 | 0 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
@@ -33,8 +33,8 @@
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 2 / 53 planifiées | — |
-| Points livrés | 8 / 227 planifiés | — |
+| Stories livrées | 15 / 53 planifiées | — |
+| Points livrés | 58 / 227 planifiés | — |
 | Vélocité mesurée | *non mesurée* | à établir au sprint 1 |
 | Clé de conversion | 1,3 h par point | **à réviser sur la vélocité réelle** |
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer |

@@ -31,6 +31,40 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-56 — Formulaire de `Lieu` : les deux champs de Nature restent toujours visibles, écart assumé avec le § 8 du Prompt 14
+**Date** 2026-09-04 · **Story** US-PLAN-02 · **Auteur** Lt Cissé (avec Claude Code), validé par Lt Cissé en session
+**Contexte** — Le Prompt 14 § 8 demande explicitement : « Le champ *type* n'apparaît que pour un lieu partagé. » Le projet n'a jusqu'ici jamais masqué un champ conditionnellement au client : `FormulaireRattachementMatiere`/`FormulaireElementReferentiel` (US-REF-03/04, même paire catégorie/type) affichent toujours les deux champs, la cohérence étant tranchée en service et par `ck_..._type_partage_coherent` en base ; et la charte est explicitement « sans script » sur les composants voisins (§ 3.21, 3.23).
+**Décision** — `FormulaireLieu` affiche toujours `catégorie` et `type_partage`, sans script de masquage conditionnel — même patron que le référentiel. Proposé en session avant l'implantation et validé explicitement.
+**Alternative écartée** — Masquage conditionnel par JavaScript minimal : aurait introduit le premier script du projet pour un seul champ, sans bénéfice fonctionnel (le champ reste facultatif et sa cohérence est déjà garantie par la contrainte en base).
+**Impact sur les livrables** — § 8 du Prompt 14 (fiche de conception de la story) à corriger : le champ n'est pas masqué, seulement facultatif et validé en service/base, comme pour US-REF-03/04.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-55 — Filtre « disponibilité » des lieux (US-PLAN-02) : période saisie, date du jour par défaut
+**Date** 2026-09-04 · **Story** US-PLAN-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le critère 5 (« la liste est filtrable … par disponibilité ») ne précise pas par rapport à quel instant : aucune règle du dossier de conception ne tranche la question, le Prompt 14 § 4 demandait explicitement une proposition.
+**Décision** — Deux bornes de date, `disponible_du`/`disponible_au`, pré-remplies à la date du jour à l'ouverture de l'écran. Un lieu sort de la liste s'il porte une `IndisponibiliteLieu` recouvrant cette période. Retenu plutôt qu'une simple date du jour : la cellule planification cherche une salle pour une période (une semaine de session), pas pour un instant.
+**Alternative écartée** — Disponibilité au jour même uniquement, ou « aucune indisponibilité future » : ne répond pas au besoin réel de recherche sur une période donnée.
+**Impact sur les livrables** — nouvelle règle de filtrage, absente des soixante-cinq règles métier ; à ajouter au dossier de conception si le mémoire détaille les critères de filtrage.
+**Reporté au livrable** — oui, à ajouter à la section correspondante d'US-PLAN-02 dans le dossier des cas d'utilisation.
+
+## D-54 — Critère 4 d'US-PLAN-02 reporté deux fois : brigade attitrée (US-SES-02), séance (US-PLAN-03)
+**Date** 2026-09-04 · **Story** US-PLAN-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Critère 4 (« un lieu affecté à une brigade ou à une séance ne peut être supprimé ») suppose deux modèles qui n'existent pas encore : l'attribution d'une salle attitrée à une brigade (`Brigade`, paquetage P3, US-SES-02, sprint 2) et l'affectation d'un lieu partagé à une séance (`Seance`, paquetage P5, US-PLAN-03, sprint 3) — même famille de report que D-45/D-51 pour les instructeurs.
+**Décision** — `ServiceLieu.supprimer` hérite tel quel de `ServiceGestion` (`PROTECT` sur toute clé étrangère future vers `Lieu`) ; un test consigne explicitement que la suppression ne trouve aujourd'hui aucun opposant, en attendant les deux clés étrangères à venir.
+**Alternative écartée** — Aucune : rien à écrire de plus tant que les deux modèles n'existent pas, le mécanisme de protection est déjà générique.
+**Impact sur les livrables** — aucun sur la conception ; se referme en deux temps distincts, au sprint 2 pour la brigade, au sprint 3 pour la séance.
+**Reporté au livrable** — non applicable, dette de développement déjà identifiée par le Prompt 14 lui-même (§ 3.3, § 12).
+
+## D-53 — `Lieu.categorie` porte deux valeurs, propre à `ressources` — le diagramme de classes en portait trois, partagées avec le référentiel
+**Date** 2026-09-04 · **Story** US-PLAN-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `docs/conception/13-diagramme-classes.md` porte encore un `CategorieLieu` unique à trois valeurs (`SALLE_ATTITREE`, `LIEU_PARTAGE`, `SANS_LIEU`), appliqué à la fois à `Lieu.typologie` et implicitement à l'exigence de lieu d'une matière. Le terrain a depuis distingué les deux notions : `referentiel.CategorieLieu` (trois valeurs, une **exigence** portée par une matière) et une catégorie de **lieu physique** à deux valeurs seulement — *aucun lieu requis* ne désigne rien de physique à inventorier (Prompt 14 § 2).
+**Décision** — `ressources.models.CategorieLieu` : deux valeurs (`salle_attitree`, `lieu_partage`), sans lien avec `referentiel.models.CategorieLieu`. `ressources.models.TypeLieuPartage` également dupliquée plutôt qu'importée de `referentiel` : mêmes libellés par coïncidence du vocabulaire du centre, mais deux notions distinctes (propriété du lieu contre exigence de la matière) que RG-37 rapprochera par comparaison de valeurs, jamais par une classe partagée.
+**Alternative écartée** — Réutiliser `referentiel.CategorieLieu`/`TypeLieuPartage` tel quel : aurait reproduit la confusion que le terrain vient de corriger, et couplé `ressources` à une énumération qui évolue pour une raison propre au référentiel.
+**Impact sur les livrables** — `docs/conception/13-diagramme-classes.md` est à reprendre : `Lieu.typologie` passe à une énumération à deux valeurs propre à P4, distincte de `CategorieLieu` (P2) ; `Lieu.modePartage : ModePartage` (SIMULTANE/SEQUENTIEL) du diagramme n'est pas repris par cette story, hors périmètre du Prompt 14.
+**Reporté au livrable** — oui, correction du diagramme de classes et de la section correspondante du dossier des cas d'utilisation.
+
+---
+
 ## D-52 — `Qualification` vit dans `ressources` ; `referentiel` compte par relation inverse, jamais par import
 **Date** 2026-09-04 · **Story** US-INS-02 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — `tests/architecture/test_couches.py::DEPENDANCES_AUTORISEES` fixe un sens unique : `ressources` peut dépendre de `referentiel`, jamais l'inverse. `Qualification` porte des clés étrangères vers les deux (`Instructeur`, `ressources` ; `Matiere`, `referentiel`), donc elle ne peut vivre que dans `ressources` — confirmé par le prompt lui-même (`Meta.db_table = "ressources_qualification"`). Restait à résoudre deux écrans qui en dépendent depuis l'autre côté : l'entrée par matière (§ 7.3, A1, normalement accrochée à la fiche matière de `referentiel`) et le signalement du critère 4 sur `formation_referentiel.html` (§ 7.4, aussi dans `referentiel`).

@@ -63,16 +63,30 @@
       <label for="filtre-{{ champ.nom }}"
              class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
         {{ champ.libelle }}</label>
-      <select id="filtre-{{ champ.nom }}" name="{{ champ.nom }}"
-              class="h-controle w-52 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
-                     outline-none hover:border-marine-700
-                     focus:border-marine-700 focus:ring-2 focus:ring-focus">
-        <option value="">Tous</option>
-        {% for valeur, libelle in champ.choix %}
-          <option value="{{ valeur }}" {% if valeur|stringformat:"s" == champ.valeur|stringformat:"s" %}selected{% endif %}>
-            {{ libelle }}</option>
-        {% endfor %}
-      </select>
+      {% if champ.type == "numerique" %}
+        <input type="number" id="filtre-{{ champ.nom }}" name="{{ champ.nom }}"
+               value="{{ champ.valeur|default_if_none:'' }}" min="1" inputmode="numeric"
+               class="h-controle w-28 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                      tabular-nums outline-none hover:border-marine-700
+                      focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      {% elif champ.type == "date" %}
+        <input type="date" id="filtre-{{ champ.nom }}" name="{{ champ.nom }}"
+               value="{{ champ.valeur|date:'Y-m-d' }}"
+               class="h-controle w-40 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                      tabular-nums outline-none hover:border-marine-700
+                      focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      {% else %}
+        <select id="filtre-{{ champ.nom }}" name="{{ champ.nom }}"
+                class="h-controle w-52 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                       outline-none hover:border-marine-700
+                       focus:border-marine-700 focus:ring-2 focus:ring-focus">
+          <option value="">Tous</option>
+          {% for valeur, libelle in champ.choix %}
+            <option value="{{ valeur }}" {% if valeur|stringformat:"s" == champ.valeur|stringformat:"s" %}selected{% endif %}>
+              {{ libelle }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
     </div>
   {% endfor %}
   <button type="submit"

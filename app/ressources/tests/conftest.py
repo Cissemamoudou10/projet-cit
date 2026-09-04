@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 
 from referentiel.models import Formation, Matiere, TypeFormation
-from ressources.models import Instructeur, Statut
+from ressources.models import CategorieLieu, Instructeur, Lieu, Statut
 
 
 def _utilisateur(username, grade, profil, groupe):
@@ -81,4 +81,11 @@ def instructeur(db):
         grade="Lt",
         specialite="Transmissions",
         statut=Statut.MILITAIRE_DU_CENTRE,
+    )
+
+
+@pytest.fixture
+def lieu(db):
+    return Lieu.objects.create(
+        intitule="Salle 101", capacite=30, categorie=CategorieLieu.SALLE_ATTITREE
     )

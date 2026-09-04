@@ -1,0 +1,120 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ lieu }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{% url 'ressources:liste_lieux' %}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux lieux
+  </a>
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ lieu }}</h1>
+      <p class="text-sm text-gris-lecture">{{ lieu.get_categorie_display }}</p>
+    </div>
+    {% if perms.noyau.lieux_calendrier_ecriture %}
+      <a href="{{ url_modifier }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Modifier
+      </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Identification
+  </p>
+  <dl class="grid grid-cols-3 gap-3 px-4 py-3.5 text-sm">
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Intitulé</dt>
+      <dd>{{ lieu.intitule }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Capacité</dt>
+      <dd class="tabular-nums">{{ lieu.capacite }} places</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</dt>
+      <dd>{% if lieu.archive %}Archivé{% else %}Actif{% endif %}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Catégorie</dt>
+      <dd>{{ lieu.get_categorie_display }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Type de lieu partagé</dt>
+      <dd>{{ lieu.get_type_partage_display|default:"—" }}</dd>
+    </div>
+  </dl>
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <div class="flex items-center justify-between border-b border-gris-trait bg-fond-bande px-4 py-2">
+    <p class="font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+      Indisponibilités
+    </p>
+    {% if perms.noyau.lieux_calendrier_ecriture %}
+      <a href="{% url 'ressources:declarer_indisponibilite_lieu' lieu.pk %}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Déclarer une indisponibilité
+      </a>
+    {% endif %}
+  </div>
+  {% if indisponibilites %}
+    <div class="max-h-80 overflow-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr>
+            <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                                   font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              Début</th>
+            <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                                   font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              Fin</th>
+            <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                                   font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              Motif</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for indisponibilite in indisponibilites %}
+            {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
+            <tr class="{% cycle bande %} h-ligne border-t border-gris-trait">
+              <td class="px-3 text-left tabular-nums">{{ indisponibilite.debut|date:"d/m/Y H:i" }}</td>
+              <td class="px-3 text-left tabular-nums">{{ indisponibilite.fin|date:"d/m/Y H:i" }}</td>
+              <td class="px-3 text-left">{{ indisponibilite.motif }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="border-t border-gris-trait px-4 py-6 text-center">
+      <p class="text-xs text-gris-lecture">Aucune période d'indisponibilité déclarée.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Brigades attitrées
+  </p>
+  <div class="px-4 py-8 text-center">
+    <p class="text-xs text-gris-lecture">À venir — US-SES-02, sprint 2.</p>
+  </div>
+</section>
+{% endblock %}
