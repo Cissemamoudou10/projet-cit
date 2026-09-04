@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
 from noyau.forms import modifie_le_attendu_depuis_requete
+from noyau.habilitations import a_permission
 from referentiel.forms import FormulaireFormation
 from referentiel.services.formation import ServiceFormation
 from referentiel.services.referentiel import ServiceReferentiel
@@ -92,6 +93,7 @@ def vue_liste_formations(request):
         "tri": tri_actuel,
     }
     page = ServiceFormation.lister(request.user, filtres, request.GET.get("page"))
+    peut_ecrire = a_permission(request.user, ServiceFormation.PERMISSION_ECRITURE)
     contexte = {
         "titre": "Formations",
         "sous_titre": "Catalogue des formations dispensées par le centre.",
@@ -99,7 +101,7 @@ def vue_liste_formations(request):
             {"libelle": "Types de formation", "url": reverse("referentiel:liste_types_formation")},
             {"libelle": "Matières", "url": reverse("referentiel:liste_matieres")},
         ],
-        "url_creer": reverse("referentiel:creer_formation"),
+        "url_creer": reverse("referentiel:creer_formation") if peut_ecrire else "",
         "libelle_creer": "Créer une formation",
         "champ_recherche_libelle": "Intitulé ou spécialité",
         "filtres": filtres,
@@ -107,7 +109,7 @@ def vue_liste_formations(request):
         "filtres_actifs": _filtres_actifs(request, type_formation_id),
         "url_liste": reverse("referentiel:liste_formations"),
         "colonnes": _colonnes(tri_actuel),
-        "lignes": [_ligne(formation) for formation in page] if page else [],
+        "lignes": [_ligne(formation, peut_ecrire) for formation in page] if page else [],
         "libelle_vide": "Aucune formation ne correspond aux filtres",
         "texte_vide": "Ajustez la recherche ou réinitialisez les filtres.",
         "page": page,
@@ -126,13 +128,13 @@ def _colonne_intitule(tri_actuel):
     }
 
 
-def _ligne(formation):
+def _ligne(formation, peut_ecrire):
     lien_intitule = format_html(
         '<a href="{}" class="text-marine-900 no-underline hover:underline">{}</a>',
         reverse("referentiel:detail_formation", args=[formation.pk]),
         formation.intitule,
     )
-    return {
+    ligne = {
         "cellules": [
             lien_intitule,
             formation.type_formation.intitule,
@@ -141,11 +143,13 @@ def _ligne(formation):
             "Archivée" if formation.archive else "Active",
         ],
         "libelle": formation.intitule,
-        "url_modifier": reverse("referentiel:modifier_formation", args=[formation.pk]),
-        "url_archiver": reverse("referentiel:archiver_formation", args=[formation.pk]),
-        "url_desarchiver": reverse("referentiel:desarchiver_formation", args=[formation.pk]),
         "archive": formation.archive,
     }
+    if peut_ecrire:
+        ligne["url_modifier"] = reverse("referentiel:modifier_formation", args=[formation.pk])
+        ligne["url_archiver"] = reverse("referentiel:archiver_formation", args=[formation.pk])
+        ligne["url_desarchiver"] = reverse("referentiel:desarchiver_formation", args=[formation.pk])
+    return ligne
 
 
 @exige_habilitation(ServiceFormation.PERMISSION_LECTURE)

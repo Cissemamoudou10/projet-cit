@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-25 — D-30 annonçait la fiche matière remplie à US-REF-03 : elle est toujours vide
+**Date** 2026-09-04 · **Story** US-REF-07 (trouvé en revue des reports du paquetage, § 8 du Prompt 11) · **État** : ouvert
+**Symptôme** — `matiere_detail.html`, section « Formations utilisatrices », affiche toujours l'état vide statique (« Aucun référentiel ne la cite encore ») quelle que soit la matière, y compris pour une matière réellement rattachée à une ou plusieurs formations. `vue_detail_matiere` (`referentiel/views/matiere.py`) ne passe aucune clé au contexte pour cette section.
+**Cause** — D-30 (US-REF-02) réservait l'emplacement en attendant `ElementReferentiel` (US-REF-03), en notant explicitement que « son remplissage à US-REF-03 sera un ajout de contenu, pas une refonte d'écran ». US-REF-03/04 (Prompt 08) a bien créé `ElementReferentiel`, mais n'a jamais fait cet ajout de contenu — ni le prompt ni la relecture ne l'ont signalé à l'époque.
+**Résolution** — Aucune apportée par cette story : hors périmètre d'US-REF-07 (consultation, pas édition de la fiche matière). Signalé pour arbitrage : petite story ou tâche technique à programmer avant la revue de sprint du 12 septembre, la matrice de traçabilité devant être vérifiée à cette date.
+**Risque concerné** — aucun du registre ; défaut d'exhaustivité d'écran, sans impact sur l'intégrité des données.
+**Leçon** — Un report consigné avec « aucun code à écrire aujourd'hui » (D-23, D-30, D-35) doit être revérifié une fois la story qui le referme réellement livrée, pas seulement supposé clos parce que le modèle sous-jacent existe désormais. Voir l'état complet des reports du paquetage référentiel dans docs/suivi/DECISIONS.md.
+
 ## P-24 — Un conflit d'ordre à l'ajout d'un objectif pédagogique produisait un message citant « None »
 **Date** 2026-09-03 · **Story** US-REF-05 (trouvé par le sous-agent `relecteur-conception`, avant tout usage réel) · **État** : résolu
 **Symptôme** — Aucun encore observé en usage réel — signalé à la relecture, avant commit. `ServiceObjectifPedagogique.CHAMP_UNICITE = "libelle"` sert au patron `ServiceGestion._erreur_unicite` pour composer le message d'un `IntegrityError` intercepté par `creer()`. Or aucune contrainte d'unicité ne porte sur `libelle` seul ; la seule contrainte réelle est `uq_objectif_matiere_ordre` (matière, ordre), différée. Le seul cas qui atteint réellement cette méthode est donc un conflit d'`ordre`, jamais un doublon de libellé — et `_erreur_unicite` cherchait alors un objectif existant par `libelle`, n'en trouvait aucun, et produisait « « [libellé saisi] » est déjà attribué à None. », un message qui ne désigne aucune action corrective (`.claude/rules/vues.md`).

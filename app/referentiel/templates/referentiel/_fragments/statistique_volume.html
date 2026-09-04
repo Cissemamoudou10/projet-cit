@@ -1,0 +1,33 @@
+{% load static %}
+<div class="mt-4 grid grid-cols-3 gap-6">
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Volume total prescrit</p>
+    <p class="flex items-baseline gap-1.5">
+      <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ ecart.total }}</span>
+      <span class="text-xs text-gris-lecture">h</span>
+    </p>
+    <p class="mt-2 border-t border-dotted border-gris-trait pt-1.5 text-xs tabular-nums">
+      <span class="text-gris-lecture">attendu : {{ ecart.attendu }} h, sur
+        {{ formation.duree_semaines }} semaine{{ formation.duree_semaines|pluralize }}</span>
+    </p>
+  </div>
+  <div class="col-span-2">
+    {% if ecart.depasse_seuil %}
+      <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
+                  border-l-etat-attention bg-etat-attention-fond px-4 py-3">
+        <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-attention" aria-hidden="true">
+          <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+        </svg>
+        <div>
+          <p class="font-titre text-base font-semibold text-etat-attention">Écart de volume</p>
+          <p class="text-xs text-gris-lecture">
+            Le total prescrit ({{ ecart.total }} h) s'écarte du volume attendu
+            ({{ ecart.attendu }} h) au-delà du seuil de tolérance. Cet avertissement
+            n'empêche pas l'enregistrement — vérifiez le cursus si l'écart est involontaire.
+          </p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>

@@ -155,17 +155,19 @@
                 <td class="px-3 text-left">{{ cellule }}</td>
               {% endfor %}
               <td class="px-3 text-right">
-                <a href="{{ ligne.url_modifier }}"
-                   title="Modifier" aria-label="Modifier {{ ligne.libelle }}"
-                   class="inline-flex border border-transparent p-1 transition-colors duration-survol
-                          hover:border-marine-700 hover:bg-fond-survol
-                          focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
-                          focus-visible:outline-marine-700">
-                  <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
-                    <use href="{% static 'icones/planche.svg' %}#modification"></use>
-                  </svg>
-                </a>
-                {% if ligne.archive %}
+                {% if ligne.url_modifier %}
+                  <a href="{{ ligne.url_modifier }}"
+                     title="Modifier" aria-label="Modifier {{ ligne.libelle }}"
+                     class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                            hover:border-marine-700 hover:bg-fond-survol
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                            focus-visible:outline-marine-700">
+                    <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                      <use href="{% static 'icones/planche.svg' %}#modification"></use>
+                    </svg>
+                  </a>
+                {% endif %}
+                {% if ligne.archive and ligne.url_desarchiver %}
                   <form method="post" action="{{ ligne.url_desarchiver }}" class="inline">
                     {% csrf_token %}
                     <button type="submit" title="Désarchiver" aria-label="Désarchiver {{ ligne.libelle }}"
@@ -178,7 +180,7 @@
                       </svg>
                     </button>
                   </form>
-                {% else %}
+                {% elif ligne.url_archiver %}
                   <a href="{{ ligne.url_archiver }}"
                      title="Archiver" aria-label="Archiver {{ ligne.libelle }}"
                      class="inline-flex border border-transparent p-1 transition-colors duration-survol

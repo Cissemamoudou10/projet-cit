@@ -37,20 +37,27 @@ def _prerequis_ou_404(pk):
         raise Http404 from erreur
 
 
-def _rendre_page(request, formation):
+def preparer_donnees_prerequis(request, formation):
+    """Reprise par `consultation.vue_consultation_formation` (US-REF-07) :
+    même composition elements/ordre, sans réécrire `_annoter` (Prompt 11, § 2.1).
+    """
     elements = list(ServiceReferentiel.lister(request.user, formation).select_related("matiere"))
     suffisant = len(elements) >= 2
     liens = list(ServicePrerequis.lister(request.user, formation)) if suffisant else []
     _annoter(elements, liens)
-    contexte = {
-        "formation": formation,
+    return {
         "elements": elements,
         "elements_suffisants": suffisant,
         "ordre": ordre_topologique(formation) if suffisant else [],
-        "url_composer_referentiel": reverse(
-            "referentiel:referentiel_formation", args=[formation.pk]
-        ),
     }
+
+
+def _rendre_page(request, formation):
+    contexte = preparer_donnees_prerequis(request, formation)
+    contexte["formation"] = formation
+    contexte["url_composer_referentiel"] = reverse(
+        "referentiel:referentiel_formation", args=[formation.pk]
+    )
     return render(request, "referentiel/prerequis_formation.html", contexte)
 
 

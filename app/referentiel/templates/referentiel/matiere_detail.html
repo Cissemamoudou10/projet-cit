@@ -17,12 +17,14 @@
       <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ matiere.intitule }}</h1>
       <p class="text-sm text-gris-lecture">{{ matiere.code|default:"Aucun code" }}</p>
     </div>
-    <a href="{{ url_modifier }}"
-       class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
-              text-sm font-semibold text-blanc no-underline transition-colors duration-survol
-              hover:bg-marine-700">
-      Modifier
-    </a>
+    {% if perms.noyau.referentiel_ecriture %}
+      <a href="{{ url_modifier }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Modifier
+      </a>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
@@ -70,7 +72,9 @@
             font-semibold uppercase tracking-wide text-marine-900">
     Objectifs pédagogiques
   </p>
-  {% if objectifs %}
+  {% if not perms.noyau.referentiel_ecriture %}
+    {% include "referentiel/_fragments/objectifs_lecture.html" %}
+  {% elif objectifs %}
     <table class="w-full border-collapse text-sm">
       <thead>
         <tr>
@@ -159,21 +163,23 @@
       </p>
     </div>
   {% endif %}
-  <form method="post" action="{{ url_ajouter_objectif }}"
-        class="flex items-end gap-3 border-t border-gris-trait bg-fond-bande px-4 py-3">
-    {% csrf_token %}
-    <div class="flex-1">
-      <label for="{{ formulaire_objectif.libelle.id_for_label }}"
-             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
-        Nouvel objectif</label>
-      {{ formulaire_objectif.libelle }}
-    </div>
-    <button type="submit"
-            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
-                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
-                   hover:bg-marine-700">
-      Ajouter
-    </button>
-  </form>
+  {% if perms.noyau.referentiel_ecriture %}
+    <form method="post" action="{{ url_ajouter_objectif }}"
+          class="flex items-end gap-3 border-t border-gris-trait bg-fond-bande px-4 py-3">
+      {% csrf_token %}
+      <div class="flex-1">
+        <label for="{{ formulaire_objectif.libelle.id_for_label }}"
+               class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+          Nouvel objectif</label>
+        {{ formulaire_objectif.libelle }}
+      </div>
+      <button type="submit"
+              class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        Ajouter
+      </button>
+    </form>
+  {% endif %}
 </section>
 {% endblock %}

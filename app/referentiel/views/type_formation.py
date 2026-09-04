@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
 from noyau.forms import modifie_le_attendu_depuis_requete
+from noyau.habilitations import a_permission
 from referentiel.forms import FormulaireTypeFormation
 from referentiel.services.type_formation import ServiceTypeFormation
 
@@ -41,6 +42,7 @@ def vue_liste_types_formation(request):
         "tri": tri_actuel,
     }
     page = ServiceTypeFormation.lister(request.user, filtres, request.GET.get("page"))
+    peut_ecrire = a_permission(request.user, ServiceTypeFormation.PERMISSION_ECRITURE)
     contexte = {
         "titre": "Types de formation",
         "sous_titre": "Classent les formations selon le public auquel elles s'adressent.",
@@ -48,7 +50,7 @@ def vue_liste_types_formation(request):
             {"libelle": "Formations", "url": reverse("referentiel:liste_formations")},
             {"libelle": "Matières", "url": reverse("referentiel:liste_matieres")},
         ],
-        "url_creer": reverse("referentiel:creer_type_formation"),
+        "url_creer": reverse("referentiel:creer_type_formation") if peut_ecrire else "",
         "libelle_creer": "Créer un type",
         "champ_recherche_libelle": "Intitulé",
         "filtres": filtres,
@@ -57,7 +59,7 @@ def vue_liste_types_formation(request):
             _colonne_intitule(tri_actuel),
             {"libelle": "Formations rattachées", "cle_tri": None},
         ],
-        "lignes": [_ligne(type_formation) for type_formation in page] if page else [],
+        "lignes": [_ligne(type_formation, peut_ecrire) for type_formation in page] if page else [],
         "libelle_vide": "Aucun type de formation ne correspond aux filtres",
         "texte_vide": "Ajustez la recherche ou réinitialisez les filtres.",
         "page": page,
@@ -76,17 +78,23 @@ def _colonne_intitule(tri_actuel):
     }
 
 
-def _ligne(type_formation):
-    return {
+def _ligne(type_formation, peut_ecrire):
+    ligne = {
         "cellules": [type_formation.intitule, type_formation.nombre_formations],
         "libelle": type_formation.intitule,
-        "url_modifier": reverse("referentiel:modifier_type_formation", args=[type_formation.pk]),
-        "url_archiver": reverse("referentiel:archiver_type_formation", args=[type_formation.pk]),
-        "url_desarchiver": reverse(
-            "referentiel:desarchiver_type_formation", args=[type_formation.pk]
-        ),
         "archive": type_formation.archive,
     }
+    if peut_ecrire:
+        ligne["url_modifier"] = reverse(
+            "referentiel:modifier_type_formation", args=[type_formation.pk]
+        )
+        ligne["url_archiver"] = reverse(
+            "referentiel:archiver_type_formation", args=[type_formation.pk]
+        )
+        ligne["url_desarchiver"] = reverse(
+            "referentiel:desarchiver_type_formation", args=[type_formation.pk]
+        )
+    return ligne
 
 
 @exige_habilitation(ServiceTypeFormation.PERMISSION_ECRITURE)

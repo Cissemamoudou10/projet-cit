@@ -1,0 +1,22 @@
+<dl class="grid gap-3 px-4 py-3.5 text-sm">
+  <div>
+    <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Intitulé</dt>
+    <dd>{{ formation.intitule }}</dd>
+  </div>
+  <div>
+    <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Spécialité</dt>
+    <dd>{{ formation.specialite }}</dd>
+  </div>
+  <div>
+    <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Type de formation</dt>
+    <dd>{{ formation.type_formation }}</dd>
+  </div>
+  <div>
+    <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Durée</dt>
+    <dd>{{ formation.duree_semaines }} semaine{{ formation.duree_semaines|pluralize }}</dd>
+  </div>
+  <div>
+    <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</dt>
+    <dd>{% if formation.archive %}Archivée{% else %}Active{% endif %}</dd>
+  </div>
+</dl>

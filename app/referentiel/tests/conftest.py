@@ -37,6 +37,38 @@ def lecteur(db):
 
 
 @pytest.fixture
+def planificateur(db):
+    call_command("initialiser_habilitations")
+    modele = get_user_model()
+    utilisateur = modele.objects.create_user(
+        username="planificateur-ref",
+        password="x",
+        grade="Lt",
+        profil=modele.Profil.CELLULE_PLANIFICATION,
+    )
+    utilisateur.groups.add(Group.objects.get(name="Cellule planification"))
+    utilisateur.doit_changer_mot_de_passe = False
+    utilisateur.save()
+    return utilisateur
+
+
+@pytest.fixture
+def direction_formation(db):
+    call_command("initialiser_habilitations")
+    modele = get_user_model()
+    utilisateur = modele.objects.create_user(
+        username="direction-ref",
+        password="x",
+        grade="Cne",
+        profil=modele.Profil.DIRECTION_FORMATION,
+    )
+    utilisateur.groups.add(Group.objects.get(name="Direction de formation"))
+    utilisateur.doit_changer_mot_de_passe = False
+    utilisateur.save()
+    return utilisateur
+
+
+@pytest.fixture
 def type_officiers(db):
     return TypeFormation.objects.create(intitule="Officiers")
 

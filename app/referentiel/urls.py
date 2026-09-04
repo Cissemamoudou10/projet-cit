@@ -1,6 +1,7 @@
 from django.urls import path
 
 from referentiel.views import (
+    consultation,
     formation,
     matiere,
     objectif_pedagogique,
@@ -38,6 +39,11 @@ urlpatterns = [
     path("formations/", formation.vue_liste_formations, name="liste_formations"),
     path("formations/creer/", formation.vue_creer_formation, name="creer_formation"),
     path("formations/<int:pk>/", formation.vue_detail_formation, name="detail_formation"),
+    path(
+        "formations/<int:pk>/consultation/",
+        consultation.vue_consultation_formation,
+        name="consultation_formation",
+    ),
     path(
         "formations/<int:pk>/modifier/", formation.vue_modifier_formation, name="modifier_formation"
     ),

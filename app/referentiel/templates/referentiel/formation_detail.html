@@ -17,12 +17,22 @@
       <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ formation.intitule }}</h1>
       <p class="text-sm text-gris-lecture">{{ formation.type_formation }}</p>
     </div>
-    <a href="{{ url_modifier }}"
-       class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
-              text-sm font-semibold text-blanc no-underline transition-colors duration-survol
-              hover:bg-marine-700">
-      Modifier
-    </a>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'referentiel:consultation_formation' formation.pk %}"
+         class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                text-sm font-medium text-encre no-underline transition-colors duration-survol
+                hover:border-marine-700 hover:bg-fond-survol">
+        Vue consolidée du référentiel
+      </a>
+      {% if perms.noyau.referentiel_ecriture %}
+        <a href="{{ url_modifier }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Modifier
+        </a>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -34,28 +44,7 @@
               font-semibold uppercase tracking-wide text-marine-900">
       Identification
     </p>
-    <dl class="grid gap-3 px-4 py-3.5 text-sm">
-      <div>
-        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Intitulé</dt>
-        <dd>{{ formation.intitule }}</dd>
-      </div>
-      <div>
-        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Spécialité</dt>
-        <dd>{{ formation.specialite }}</dd>
-      </div>
-      <div>
-        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Type de formation</dt>
-        <dd>{{ formation.type_formation }}</dd>
-      </div>
-      <div>
-        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Durée</dt>
-        <dd>{{ formation.duree_semaines }} semaine{{ formation.duree_semaines|pluralize }}</dd>
-      </div>
-      <div>
-        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</dt>
-        <dd>{% if formation.archive %}Archivée{% else %}Active{% endif %}</dd>
-      </div>
-    </dl>
+    {% include "referentiel/_fragments/identification_formation.html" %}
   </section>
 
   <section class="border border-gris-trait bg-fond-bloc">

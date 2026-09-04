@@ -1,0 +1,103 @@
+{% load static %}
+{# peut_ecrire est fourni explicitement par l'appelant, jamais lu depuis perms.
+   noyau.referentiel_ecriture ici : ce fragment sert aussi l'écran consolidé
+   (US-REF-07), où l'écriture reste masquée à tous les profils sans exception. #}
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Prérequis directs
+  </p>
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="w-56 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Matière</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Exige</th>
+        {% if peut_ecrire %}
+          <th scope="col" class="w-64 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Ajouter</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for element in elements %}
+        <tr class="h-ligne border-t border-gris-trait align-top">
+          <th scope="row" class="px-3 py-2 text-left font-medium">{{ element.matiere }}</th>
+          <td class="px-3 py-2">
+            {% if element.prerequis_directs_affiches %}
+              <div class="flex flex-wrap items-center gap-1.5">
+                {% for lien in element.prerequis_directs_affiches %}
+                  <span class="inline-flex items-center gap-1.5 border border-gris-trait
+                               bg-fond-bloc py-0.5 pl-2.5 {% if peut_ecrire %}pr-1{% else %}pr-2.5{% endif %} text-xs">
+                    {{ lien.element_prerequis.matiere }}
+                    {% if peut_ecrire %}
+                      <a href="{% url 'referentiel:supprimer_prerequis' formation.pk lien.pk %}"
+                         aria-label="Retirer le prérequis {{ lien.element_prerequis.matiere }}">
+                        <svg class="h-3 w-3 stroke-gris-lecture" aria-hidden="true">
+                          <use href="{% static 'icones/planche.svg' %}#rejet"></use>
+                        </svg>
+                      </a>
+                    {% endif %}
+                  </span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-xs text-gris-lecture">Aucun prérequis déclaré.</p>
+            {% endif %}
+          </td>
+          {% if peut_ecrire %}
+            <td class="px-3 py-2">
+              {% if element.elements_disponibles_affiches %}
+                <form method="post" class="flex items-stretch gap-1.5"
+                      action="{% url 'referentiel:ajouter_prerequis' formation.pk element.pk %}">
+                  {% csrf_token %}
+                  <select name="element_prerequis" aria-label="Nouveau prérequis pour {{ element.matiere }}"
+                          class="h-ligne rounded border border-gris-trait bg-fond-bloc px-2 text-xs
+                                 outline-none hover:border-marine-700
+                                 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+                    {% for autre in element.elements_disponibles_affiches %}
+                      <option value="{{ autre.pk }}">{{ autre.matiere }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit"
+                          class="inline-flex h-ligne items-center border border-marine-900
+                                 bg-marine-900 px-2.5 text-xs font-semibold text-blanc
+                                 transition-colors duration-survol hover:bg-marine-700">
+                    Ajouter
+                  </button>
+                </form>
+              {% else %}
+                <p class="text-xs text-gris-lecture">Aucune autre matière disponible.</p>
+              {% endif %}
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Ordre de progression
+  </p>
+  <div class="px-4 py-3.5">
+    <div class="mb-3 flex items-start gap-3 border border-l-[3px] border-gris-trait
+                border-l-marine-700 bg-sable px-3 py-2.5">
+      <svg class="mt-px h-4 w-4 shrink-0 stroke-marine-700" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+      </svg>
+      <p class="text-xs text-gris-lecture">
+        Un ordre admissible parmi d'autres, point de départ de la génération du programme
+        — pas une prescription.
+      </p>
+    </div>
+    <ol class="list-decimal space-y-1 pl-4 text-sm">
+      {% for element in ordre %}
+        <li>{{ element.matiere }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>

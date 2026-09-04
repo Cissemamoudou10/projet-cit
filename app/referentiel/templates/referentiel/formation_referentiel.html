@@ -29,38 +29,7 @@
 {% endblock %}
 
 {% block contenu %}
-<div class="mt-4 grid grid-cols-3 gap-6">
-  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
-    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
-      Volume total prescrit</p>
-    <p class="flex items-baseline gap-1.5">
-      <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ ecart.total }}</span>
-      <span class="text-xs text-gris-lecture">h</span>
-    </p>
-    <p class="mt-2 border-t border-dotted border-gris-trait pt-1.5 text-xs tabular-nums">
-      <span class="text-gris-lecture">attendu : {{ ecart.attendu }} h, sur
-        {{ formation.duree_semaines }} semaine{{ formation.duree_semaines|pluralize }}</span>
-    </p>
-  </div>
-  <div class="col-span-2">
-    {% if ecart.depasse_seuil %}
-      <div class="flex items-start gap-3 border border-l-[3px] border-gris-trait
-                  border-l-etat-attention bg-etat-attention-fond px-4 py-3">
-        <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-attention" aria-hidden="true">
-          <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
-        </svg>
-        <div>
-          <p class="font-titre text-base font-semibold text-etat-attention">Écart de volume</p>
-          <p class="text-xs text-gris-lecture">
-            Le total prescrit ({{ ecart.total }} h) s'écarte du volume attendu
-            ({{ ecart.attendu }} h) au-delà du seuil de tolérance. Cet avertissement
-            n'empêche pas l'enregistrement — vérifiez le cursus si l'écart est involontaire.
-          </p>
-        </div>
-      </div>
-    {% endif %}
-  </div>
-</div>
+{% include "referentiel/_fragments/statistique_volume.html" %}
 
 <div class="mt-4 border border-gris-trait bg-fond-bloc">
   <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
@@ -79,72 +48,79 @@
                                  font-semibold uppercase tracking-wider text-blanc">Catégorie de lieu</th>
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Type de lieu partagé</th>
-          <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
-                                 font-semibold uppercase tracking-wider text-blanc">Actions</th>
+          {% if perms.noyau.referentiel_ecriture %}
+            <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                   font-semibold uppercase tracking-wider text-blanc">Actions</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
         {% for element in elements %}
           <tr class="h-ligne border-t border-gris-trait">
             <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ element.matiere }}</th>
-            <td class="px-3 py-1.5">
-              <span class="flex w-24 items-stretch border border-gris-trait bg-fond-bloc">
-                <input type="number" min="1" inputmode="numeric" name="volume_horaire_prescrit"
-                       form="ligne-{{ element.pk }}" value="{{ element.volume_horaire_prescrit }}"
-                       aria-label="Volume prescrit — {{ element.matiere }}"
-                       class="h-ligne w-full border-0 bg-transparent px-2 text-right text-xs
-                              tabular-nums outline-none">
-                <span class="flex items-center border-l border-gris-trait bg-fond-bande px-2
-                             text-2xs text-gris-lecture">h</span>
-              </span>
-            </td>
-            <td class="px-3 py-1.5">
-              <select name="categorie_lieu" form="ligne-{{ element.pk }}"
-                      aria-label="Catégorie de lieu — {{ element.matiere }}"
-                      class="h-ligne rounded border border-gris-trait bg-fond-bloc px-2 text-xs
-                             outline-none hover:border-marine-700
-                             focus:border-marine-700 focus:ring-2 focus:ring-focus">
-                {% for valeur, libelle in categories_lieu %}
-                  <option value="{{ valeur }}" {% if valeur == element.categorie_lieu %}selected{% endif %}>
-                    {{ libelle }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td class="px-3 py-1.5">
-              <select name="type_lieu_partage" form="ligne-{{ element.pk }}"
-                      aria-label="Type de lieu partagé — {{ element.matiere }}"
-                      class="h-ligne rounded border border-gris-trait bg-fond-bloc px-2 text-xs
-                             outline-none hover:border-marine-700
-                             focus:border-marine-700 focus:ring-2 focus:ring-focus">
-                <option value="">—</option>
-                {% for valeur, libelle in types_lieu_partage %}
-                  <option value="{{ valeur }}" {% if valeur == element.type_lieu_partage %}selected{% endif %}>
-                    {{ libelle }}</option>
-                {% endfor %}
-              </select>
-              <p class="mt-1 text-2xs text-gris-lecture">Utilisé seulement si lieu partagé.</p>
-            </td>
-            <td class="px-3 py-1.5 text-right">
-              <button type="submit" form="ligne-{{ element.pk }}"
-                      title="Enregistrer" aria-label="Enregistrer {{ element.matiere }}"
-                      class="inline-flex border border-transparent p-1 transition-colors duration-survol
-                             hover:border-marine-700 hover:bg-fond-survol">
-                <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
-                  <use href="{% static 'icones/planche.svg' %}#validation"></use>
-                </svg>
-              </button>
-              <a href="{% url 'referentiel:retirer_element_referentiel' formation.pk element.pk %}"
-                 title="Retirer du référentiel" aria-label="Retirer {{ element.matiere }} du référentiel"
-                 class="inline-flex border border-transparent p-1 transition-colors duration-survol
-                        hover:border-etat-ecart hover:bg-etat-ecart-fond">
-                <svg class="h-4 w-4 text-etat-ecart" aria-hidden="true">
-                  <use href="{% static 'icones/planche.svg' %}#suppression"></use>
-                </svg>
-              </a>
-            </td>
+            {% if perms.noyau.referentiel_ecriture %}
+              <td class="px-3 py-1.5">
+                <span class="flex w-24 items-stretch border border-gris-trait bg-fond-bloc">
+                  <input type="number" min="1" inputmode="numeric" name="volume_horaire_prescrit"
+                         form="ligne-{{ element.pk }}" value="{{ element.volume_horaire_prescrit }}"
+                         aria-label="Volume prescrit — {{ element.matiere }}"
+                         class="h-ligne w-full border-0 bg-transparent px-2 text-right text-xs
+                                tabular-nums outline-none">
+                  <span class="flex items-center border-l border-gris-trait bg-fond-bande px-2
+                               text-2xs text-gris-lecture">h</span>
+                </span>
+              </td>
+              <td class="px-3 py-1.5">
+                <select name="categorie_lieu" form="ligne-{{ element.pk }}"
+                        aria-label="Catégorie de lieu — {{ element.matiere }}"
+                        class="h-ligne rounded border border-gris-trait bg-fond-bloc px-2 text-xs
+                               outline-none hover:border-marine-700
+                               focus:border-marine-700 focus:ring-2 focus:ring-focus">
+                  {% for valeur, libelle in categories_lieu %}
+                    <option value="{{ valeur }}" {% if valeur == element.categorie_lieu %}selected{% endif %}>
+                      {{ libelle }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td class="px-3 py-1.5">
+                <select name="type_lieu_partage" form="ligne-{{ element.pk }}"
+                        aria-label="Type de lieu partagé — {{ element.matiere }}"
+                        class="h-ligne rounded border border-gris-trait bg-fond-bloc px-2 text-xs
+                               outline-none hover:border-marine-700
+                               focus:border-marine-700 focus:ring-2 focus:ring-focus">
+                  <option value="">—</option>
+                  {% for valeur, libelle in types_lieu_partage %}
+                    <option value="{{ valeur }}" {% if valeur == element.type_lieu_partage %}selected{% endif %}>
+                      {{ libelle }}</option>
+                  {% endfor %}
+                </select>
+                <p class="mt-1 text-2xs text-gris-lecture">Utilisé seulement si lieu partagé.</p>
+              </td>
+              <td class="px-3 py-1.5 text-right">
+                <button type="submit" form="ligne-{{ element.pk }}"
+                        title="Enregistrer" aria-label="Enregistrer {{ element.matiere }}"
+                        class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                               hover:border-marine-700 hover:bg-fond-survol">
+                  <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#validation"></use>
+                  </svg>
+                </button>
+                <a href="{% url 'referentiel:retirer_element_referentiel' formation.pk element.pk %}"
+                   title="Retirer du référentiel" aria-label="Retirer {{ element.matiere }} du référentiel"
+                   class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                          hover:border-etat-ecart hover:bg-etat-ecart-fond">
+                  <svg class="h-4 w-4 text-etat-ecart" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#suppression"></use>
+                  </svg>
+                </a>
+              </td>
+            {% else %}
+              {% include "referentiel/_fragments/cellules_matiere_volume_lecture.html" %}
+            {% endif %}
           </tr>
           <tr class="border-t border-gris-trait bg-fond-bloc">
-            <td colspan="5" class="px-3 py-1.5 text-left">
+            <td colspan="{% if perms.noyau.referentiel_ecriture %}5{% else %}4{% endif %}"
+                class="px-3 py-1.5 text-left">
               <details class="group">
                 <summary class="flex cursor-pointer list-none items-center gap-2 text-xs
                                 text-gris-lecture">
@@ -155,18 +131,7 @@
                   Objectifs pédagogiques
                 </summary>
                 <div class="mt-2 bg-sable px-4 py-3 font-normal">
-                  {% with objectifs=element.matiere.objectifs_pedagogiques.all %}
-                    {% if objectifs %}
-                      <ol class="list-decimal space-y-1 pl-4 text-xs text-gris-lecture">
-                        {% for objectif in objectifs %}
-                          <li>{{ objectif.libelle }}</li>
-                        {% endfor %}
-                      </ol>
-                    {% else %}
-                      <p class="text-xs text-gris-lecture">
-                        Aucun objectif déclaré pour cette matière.</p>
-                    {% endif %}
-                  {% endwith %}
+                  {% include "referentiel/_fragments/objectifs_lecture.html" with objectifs=element.matiere.objectifs_pedagogiques.all %}
                 </div>
               </details>
             </td>
@@ -174,11 +139,13 @@
         {% endfor %}
       </tbody>
     </table>
-    {% for element in elements %}
-      <form id="ligne-{{ element.pk }}" method="post"
-            action="{% url 'referentiel:modifier_element_referentiel' formation.pk element.pk %}"
-            hidden>{% csrf_token %}</form>
-    {% endfor %}
+    {% if perms.noyau.referentiel_ecriture %}
+      {% for element in elements %}
+        <form id="ligne-{{ element.pk }}" method="post"
+              action="{% url 'referentiel:modifier_element_referentiel' formation.pk element.pk %}"
+              hidden>{% csrf_token %}</form>
+      {% endfor %}
+    {% endif %}
   {% else %}
     <div class="border-t border-gris-trait px-6 py-8">
       <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
@@ -193,6 +160,7 @@
   {% endif %}
 </div>
 
+{% if perms.noyau.referentiel_ecriture %}
 <div class="mt-4 border border-gris-trait bg-fond-bloc">
   <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
             font-semibold uppercase tracking-wide text-marine-900">
@@ -248,4 +216,5 @@
     </a>
   </form>
 </div>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,9 @@
+{% if objectifs %}
+  <ol class="list-decimal space-y-1 pl-4 text-xs text-gris-lecture">
+    {% for objectif in objectifs %}
+      <li>{{ objectif.libelle }}</li>
+    {% endfor %}
+  </ol>
+{% else %}
+  <p class="text-xs text-gris-lecture">Aucun objectif déclaré pour cette matière.</p>
+{% endif %}
