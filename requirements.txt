@@ -1,2 +1,5 @@
 Django==5.2.1
 psycopg[binary]==3.2.10
+gunicorn==26.2.0
+whitenoise==6.12.0
+weasyprint==69.0

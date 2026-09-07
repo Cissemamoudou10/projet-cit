@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/polices.css">
+<link rel="stylesheet" href="css/document_pdf.css">
+<style>
+  body { font-family: 'IBM Plex Sans', sans-serif; font-size: 10pt; color: #111; }
+  h1 { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 16pt; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8pt; }
+  th, td { border: 0.5pt solid #333; padding: 4pt 6pt; text-align: left; }
+  th { font-family: 'Barlow', sans-serif; font-weight: 600; }
+  .b400 { font-family: 'Barlow'; font-weight: 400; }
+  .b500 { font-family: 'Barlow'; font-weight: 500; }
+  .b600 { font-family: 'Barlow'; font-weight: 600; }
+  .b700 { font-family: 'Barlow'; font-weight: 700; }
+  .ps400 { font-family: 'IBM Plex Sans'; font-weight: 400; }
+  .ps500 { font-family: 'IBM Plex Sans'; font-weight: 500; }
+  .ps600 { font-family: 'IBM Plex Sans'; font-weight: 600; }
+  .pm400 { font-family: 'IBM Plex Mono'; font-weight: 400; }
+  .pm500 { font-family: 'IBM Plex Mono'; font-weight: 500; }
+</style>
+</head>
+<body data-impression="paysage" data-reference="Document fictif — vérification installation hors ligne, Prompt 18">
+  <header data-impression="entete">
+    <strong class="b700">Centre d'instruction des transmissions</strong>
+    — vérification WeasyPrint hors ligne, jeu de démonstration
+  </header>
+
+  <h1>Vérification des neuf polices et de la mise en page paysage</h1>
+  <p class="ps400">
+    Document produit hors ligne, dans le conteneur applicatif, par
+    <code class="pm400">infra/verification-pdf/generer_pdf_demonstration.py</code>.
+    Aucune donnée réelle du CIT — texte fictif uniquement.
+  </p>
+
+  <table>
+    <tr><th>Famille</th><th>Graisse</th><th>Aperçu</th></tr>
+    <tr><td>Barlow</td><td>400</td><td class="b400">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>Barlow</td><td>500</td><td class="b500">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>Barlow</td><td>600</td><td class="b600">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>Barlow</td><td>700</td><td class="b700">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>IBM Plex Sans</td><td>400</td><td class="ps400">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>IBM Plex Sans</td><td>500</td><td class="ps500">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>IBM Plex Sans</td><td>600</td><td class="ps600">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>IBM Plex Mono</td><td>400</td><td class="pm400">Électronique, Zoologie, transmission — 0123456789</td></tr>
+    <tr><td>IBM Plex Mono</td><td>500</td><td class="pm500">Électronique, Zoologie, transmission — 0123456789</td></tr>
+  </table>
+
+  <p class="ps400" style="margin-top:12pt;">
+    Page A4 paysage, en-tête répété par boîte de marge, pied de page numéroté
+    — mise en page paginée de document_pdf.css, § 5.4 du Prompt 18.
+  </p>
+</body>
+</html>

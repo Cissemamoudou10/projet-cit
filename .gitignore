@@ -41,3 +41,10 @@ desktop.ini
 # Aucune donnee reelle du CIT : listes nominatives, sujets d'examen,
 # notes, noms d'instructeurs. Les fixtures doivent etre fictives.
 /donnees_reelles/
+
+# --- Installation hors ligne (Prompt 18) ---
+# Le paquet est constitue par scripts/constituer-paquet.sh, jamais versionne
+# lui-meme : images exportees, .deb du moteur Docker.
+/paquet-deploiement/
+/infra/verification-pdf/demonstration.pdf
+

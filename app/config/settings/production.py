@@ -35,3 +35,26 @@ DATABASES = {
         "PORT": _variable_obligatoire("BASE_PORT"),
     }
 }
+
+# Fichiers statiques servis par l'application elle-même (WhiteNoise) — aucun
+# serveur frontal à emporter ni à maintenir sur le poste du centre.
+#
+# Sans manifeste (empreinte dans le nom de fichier) : css/polices.css
+# référence ../polices/*.woff2 en chemin relatif, et le manifeste de Django
+# ne réécrit que les urls découvertes dans les fichiers qu'il traite si
+# leur extension est reconnue — sur un intranet de quelques dizaines
+# d'agents, le cache longue durée du manifeste n'apporte rien qui justifie
+# ce risque. Compression seule.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
+
+# Doit suivre SecurityMiddleware — recommandation WhiteNoise. Copie de la
+# liste de base.py : ne mute pas MIDDLEWARE en place, pour ne pas affecter
+# les autres environnements qui importent le même module.
+MIDDLEWARE = [
+    *MIDDLEWARE[:1],
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    *MIDDLEWARE[1:],
+]

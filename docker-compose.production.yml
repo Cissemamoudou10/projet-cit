@@ -1,0 +1,69 @@
+# Pile de production — application et base de données en conteneurs,
+# orchestrées ensemble. Distinct de docker-compose.yml (développement),
+# qui reste inchangé et sert tous les jours au binôme.
+#
+# Images déjà chargées (`docker load`), jamais tirées d'un registre — aucun
+# registre n'est joignable depuis le poste du centre. Démarrage :
+#
+#   docker compose -f docker-compose.production.yml up -d
+#
+# Migrations et création du premier compte administrateur restent des
+# commandes explicites, non déclenchées ici — voir
+# docs/exploitation/INSTALLATION.md.
+
+services:
+  base:
+    image: postgres:16.15-bookworm
+    container_name: pfe_cit_base
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${BASE_NOM}
+      # Rôle superutilisateur, créé par l'image officielle au premier
+      # démarrage, employé uniquement par le script d'initialisation
+      # ci-dessous pour créer les deux rôles applicatifs restreints — jamais
+      # utilisé ensuite. Voir infra/postgres/init-production/01_roles.sh et
+      # infra/postgres/init/01_roles.sql (développement, même schéma).
+      POSTGRES_USER: ${BASE_UTILISATEUR_INITDB}
+      POSTGRES_PASSWORD: ${BASE_MOT_DE_PASSE_INITDB}
+      # Tri respectant les accents : Électronique se classe avant Zoologie.
+      # Irrattrapable sans reconstruction de la base — § 4.1 du protocole,
+      # vérifié par un tri réel, pas seulement par cette configuration.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=fr-FR --locale=C"
+      # Lus par infra/postgres/init-production/01_roles.sh — les deux rôles
+      # restreints qu'il crée (RG-27, § 4.1).
+      BASE_UTILISATEUR_MIGRATION: ${BASE_UTILISATEUR_MIGRATION}
+      BASE_MOT_DE_PASSE_MIGRATION: ${BASE_MOT_DE_PASSE_MIGRATION}
+      BASE_UTILISATEUR: ${BASE_UTILISATEUR}
+      BASE_MOT_DE_PASSE: ${BASE_MOT_DE_PASSE}
+    volumes:
+      - donnees_pfe_cit:/var/lib/postgresql/data
+      - ./infra/postgres/init-production:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${BASE_UTILISATEUR_INITDB} -d ${BASE_NOM}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  application:
+    image: pfe-cit-application:${VERSION_APPLICATION:-hors-ligne}
+    container_name: pfe_cit_application
+    restart: unless-stopped
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      BASE_NOM: ${BASE_NOM}
+      BASE_HOTE: base
+      BASE_PORT: "5432"
+      # Rôle applicatif restreint (RG-27) — pas le rôle de migration, qui
+      # ne sert qu'à la commande manuelle `migrate` (voir INSTALLATION.md).
+      BASE_UTILISATEUR: ${BASE_UTILISATEUR}
+      BASE_MOT_DE_PASSE: ${BASE_MOT_DE_PASSE}
+    depends_on:
+      base:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+volumes:
+  donnees_pfe_cit:
