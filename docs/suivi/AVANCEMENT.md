@@ -2,7 +2,7 @@
 
 *Récapitulatif court. Le détail vit dans les fichiers de sprint.*
 
-**Dernière mise à jour :** 4 septembre 2026 — US-PLAN-02 livrée, sprint 1 complet (15/15 stories)
+**Dernière mise à jour :** 7 septembre 2026 — test d'installation hors ligne réussi, jalon C1 franchi
 
 ## Où nous en sommes
 
@@ -46,8 +46,12 @@ variables couvrent toutes les brigades de toutes les sessions actives. Le
 prototype du sprint 2 doit être dimensionné en conséquence, sinon il valide une
 faisabilité qui n'est pas celle du système réel.
 
-**R9, test hors ligne au 12 septembre.** WeasyPrint dépend de bibliothèques
-natives. Repli prévu sur ReportLab, conteneurisation en second recours.
+**R9, test hors ligne — résolu le 7 septembre.** Réussi sur VM Debian 12
+isolée, avant l'échéance du 12 septembre : pile conteneurisée (Docker Engine,
+images, moteur), migrations, tri accentué réel, rendu PDF, redémarrage
+résilient. WeasyPrint ≥ 53 ne dépend plus de Cairo/GDK-PixBuf (D-60) — le
+repli ReportLab envisagé n'a pas été nécessaire. Détail complet :
+`docs/suivi/INSTALLATION-HORS-LIGNE.md`.
 
 **R19, cohérence documentaire.** Toute décision prise en développement qui
 s'écarte de la conception doit entrer dans `DECISIONS.md` le jour même.
