@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-35 — Aucune habilitation cochée et erreur 500 à la création d'un compte, sur la VM après installation
+**Date** 2026-09-07 · **Story** transverse — Prompt 18, usage réel après le test d'installation · **État** : résolu
+**Symptôme** — Signalé par Lt Cissé en testant l'application dans son navigateur, une fois la pile en service sur la VM : tous les profils affichent « aucune habilitation », et créer un compte ou cocher une habilitation renvoie une erreur 500.
+**Cause** — `docs/exploitation/INSTALLATION.md` listait les migrations puis la création du compte administrateur, mais omettait `python manage.py initialiser_habilitations` — la commande qui crée les cinq groupes Django et leur applique la matrice de permissions (§ 11.2). Sans elle, la table des groupes est vide : l'écran d'habilitations n'a rien à afficher, et `ServiceCompte._synchroniser_groupe` (appelé par `ServiceCompte.creer`) lève `Group.DoesNotExist` en cherchant le groupe du profil du nouveau compte — remontée en 500 générique côté navigateur, car `DEBUG=False` et le projet n'a pas de `LOGGING` personnalisé : l'exception part vers `mail_admins` (aucun serveur de courriel configuré) plutôt que vers la sortie du conteneur, invisible dans `docker compose logs`.
+**Résolution** — `python manage.py initialiser_habilitations` exécuté sur la VM (cinq groupes créés, matrice appliquée). Ajouté comme étape 8, obligatoire, dans `docs/exploitation/INSTALLATION.md`, entre les migrations et la création du premier compte (renumérotée en conséquence).
+**Risque concerné** — aucun du registre ; étape d'installation manquante à la documentation, pas un défaut du code applicatif (la commande existait déjà, testée depuis le sprint 1).
+**Leçon** — Avec `DEBUG=False` et sans `LOGGING` explicite, une exception non gérée dans une vue ne laisse **aucune trace exploitable** dans les journaux du conteneur — seul un `mail_admins` silencieusement inopérant la reçoit. Pour diagnostiquer un 500 en production sans configuration de courriel, reproduire l'appel du service directement via `manage.py shell` plutôt que d'attendre une trace côté Gunicorn. À plus long terme, une configuration `LOGGING` minimale (console, niveau ERROR) mériterait d'être ajoutée à `production.py` — non fait ici, hors périmètre de ce blocage.
+
 ## P-34 — Des workers Gunicorn ont expiré (`WORKER TIMEOUT`) juste après le démarrage de la pile sur la VM
 **Date** 2026-09-07 · **Story** transverse — Prompt 18, § 2 phase 3, premier test réel sur VM Debian 12 · **État** : résolu (surveillé)
 **Symptôme** — Dans les minutes suivant `docker compose up`, plusieurs workers Gunicorn sont tués (`CRITICAL WORKER TIMEOUT`, `SIGKILL! Perhaps out of memory?`) et redémarrés, sans qu'aucune requête HTTP n'ait encore été envoyée à l'application.
