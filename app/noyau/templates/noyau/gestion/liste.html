@@ -149,7 +149,7 @@
                   {{ colonne.libelle }}</th>
               {% endif %}
             {% endfor %}
-            <th scope="col" class="sticky top-0 z-10 w-20 bg-marine-900 px-3 py-2 text-right
+            <th scope="col" class="sticky top-0 z-10 w-28 bg-marine-900 px-3 py-2 text-right
                                    font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
               Actions</th>
           </tr>
@@ -163,6 +163,7 @@
                 <td class="px-3 text-left">{{ cellule }}</td>
               {% endfor %}
               <td class="px-3 text-right">
+                <div class="inline-flex flex-nowrap items-center justify-end gap-1">
                 {% if ligne.url_modifier %}
                   <a href="{{ ligne.url_modifier }}"
                      title="Modifier" aria-label="Modifier {{ ligne.libelle }}"
@@ -212,6 +213,7 @@
                     </svg>
                   </a>
                 {% endif %}
+                </div>
               </td>
             </tr>
           {% endfor %}
