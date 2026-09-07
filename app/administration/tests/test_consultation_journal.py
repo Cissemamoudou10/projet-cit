@@ -112,6 +112,52 @@ def test_le_filtre_objet_restreint_le_resultat(administrateur):
     assert {entree.objet_identifiant for entree in page} == {"essai-cible"}
 
 
+def test_le_filtre_type_d_objet_est_une_liste_deroulante_pas_un_champ_libre(client, administrateur):
+    """Prompt 17, § 3.1 : un champ libre était incompris — l'agent y
+    saisissait une nature d'action (« modification »), pas un type
+    d'objet."""
+    EntreeJournal.objects.create(
+        type_action=TypeAction.CREATION_COMPTE,
+        identifiant_saisi="a",
+        objet_type="utilisateur",
+        objet_identifiant="essai",
+    )
+    client.force_login(administrateur)
+
+    contenu = client.get(reverse("administration:journal")).content.decode()
+
+    assert '<select id="filtre-objet-type" name="objet_type"' in contenu
+    assert '<option value="utilisateur"' in contenu
+    assert "Compte" in contenu
+
+
+def test_valeur_avant_apres_vides_affichent_une_mention_plutot_qu_un_vide(client, administrateur):
+    """Prompt 17, § 3.2 : une création n'a pas de valeur antérieure, un
+    refus d'habilitation ne modifie rien — le comportement est juste, mais
+    l'écran laissait deux colonnes vides sans explication."""
+    EntreeJournal.objects.create(
+        type_action=TypeAction.CREATION_COMPTE, identifiant_saisi="a", detail="Créé."
+    )
+    client.force_login(administrateur)
+
+    contenu = client.get(reverse("administration:journal")).content.decode()
+
+    assert "Sans objet pour cette nature d'action." in contenu
+
+
+def test_objet_types_disponibles_ne_liste_que_les_valeurs_reellement_presentes(db):
+    EntreeJournal.objects.create(
+        type_action=TypeAction.CREATION_COMPTE, identifiant_saisi="a", objet_type="utilisateur"
+    )
+    EntreeJournal.objects.create(
+        type_action=TypeAction.ACCES_REFUSE, identifiant_saisi="b", objet_type=""
+    )
+
+    valeurs = ServiceJournal.objet_types_disponibles()
+
+    assert valeurs == [("utilisateur", "Compte")]
+
+
 def test_filtre_sans_resultat_rappelle_les_filtres(client, administrateur):
     client.force_login(administrateur)
 
@@ -125,6 +171,12 @@ def test_filtre_sans_resultat_rappelle_les_filtres(client, administrateur):
 
 
 def test_le_contrat_d_adresse_preselectionne_le_filtre_objet(client, administrateur):
+    EntreeJournal.objects.create(
+        type_action=TypeAction.CREATION_COMPTE,
+        identifiant_saisi="a",
+        objet_type="utilisateur",
+        objet_identifiant="essai-cible",
+    )
     client.force_login(administrateur)
 
     reponse = client.get(
@@ -133,7 +185,7 @@ def test_le_contrat_d_adresse_preselectionne_le_filtre_objet(client, administrat
     )
 
     contenu = reponse.content.decode()
-    assert 'value="utilisateur"' in contenu
+    assert '<option value="utilisateur" selected>' in contenu
     assert 'value="essai-cible"' in contenu
 
 

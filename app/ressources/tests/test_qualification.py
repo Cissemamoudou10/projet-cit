@@ -6,11 +6,15 @@ test_qualification_ecran.py.
 import pytest
 from django.db import IntegrityError, transaction
 from django.db.models import ForeignKey
+from django.test import Client
+from django.urls import reverse
 
 from administration.models import EntreeJournal, TypeAction
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
 from referentiel.models import ElementReferentiel, Matiere
 from referentiel.services.matiere import ServiceMatiere
+from referentiel.services.referentiel import ServiceReferentiel
+from referentiel.tests.conftest import donnees_element_referentiel
 from ressources.models import Instructeur, Qualification
 from ressources.services.qualification import ServiceQualification
 
@@ -75,6 +79,62 @@ def test_doublon_refuse_en_base(db, instructeur, matiere):
 
     with pytest.raises(IntegrityError), transaction.atomic():
         Qualification.objects.create(instructeur=instructeur, matiere=matiere)
+
+
+def test_suppression_d_une_matiere_qualifiee_est_refusee_par_le_service(
+    redacteur, instructeur, matiere
+):
+    """Prompt 16, cause racine n° 3, critère 5 : une matière qualifiée ne
+    peut plus être supprimée du catalogue (RG-22, `ressources/models.py`).
+    Vit ici, pas dans `referentiel/tests/` : `referentiel` ne peut pas
+    importer `ressources` (ordre des dépendances, test d'architecture)."""
+    ServiceQualification.ajouter(redacteur, instructeur, matiere)
+
+    with pytest.raises(ErreurValidation) as info:
+        ServiceMatiere.supprimer(redacteur, matiere.pk)
+    assert str(instructeur) in str(info.value)
+    assert Matiere.objects.filter(pk=matiere.pk).exists()
+
+
+def test_colonne_instructeurs_qualifies_du_catalogue_exclut_les_archives(
+    redacteur, instructeur, matiere
+):
+    """Prompt 17, § 2.1 : le compteur de la liste des matières ne compte
+    que les instructeurs non archivés — un instructeur archivé ne peut plus
+    être affecté, le compter laisserait croire une matière couverte."""
+    archive = Instructeur.objects.create(
+        nom="Retraité",
+        prenom="Ancien",
+        matricule="M99999",
+        grade="Cne",
+        specialite="Transmissions",
+        statut="militaire_du_centre",
+        archive=True,
+    )
+    ServiceQualification.ajouter(redacteur, instructeur, matiere)
+    ServiceQualification.ajouter(redacteur, archive, matiere)
+
+    page = ServiceMatiere.lister(redacteur, {}, None)
+    ligne = next(m for m in page if m.pk == matiere.pk)
+
+    assert ligne.nombre_instructeurs_qualifies == 1
+
+
+def test_la_vue_consolidee_du_referentiel_affiche_le_nombre_d_instructeurs_qualifies(
+    redacteur, direction_formation, instructeur, matiere, formation
+):
+    """Prompt 17, § 2.2 — voir referentiel/tests/test_couverture_consultation.py
+    pour le cas « aucun ». `client` n'est pas un paramètre : au-delà de cinq,
+    le patron de test l'instancie lui-même (.claude/rules/python.md)."""
+    client = Client()
+    ServiceReferentiel.rattacher(redacteur, formation, matiere, donnees_element_referentiel())
+    ServiceQualification.ajouter(redacteur, instructeur, matiere)
+    client.force_login(direction_formation)
+
+    reponse = client.get(reverse("referentiel:consultation_formation", args=[formation.pk]))
+
+    assert "AUCUN" not in reponse.content.decode()
+    assert ">1<" in reponse.content.decode()
 
 
 def test_doublon_refuse_avec_message_exploitable(redacteur, instructeur, matiere):

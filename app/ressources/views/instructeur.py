@@ -95,6 +95,7 @@ def _colonnes(tri_actuel):
         _colonne_tri(tri_actuel, "nom", "Nom et prénom"),
         {"libelle": "Spécialité", "cle_tri": None},
         {"libelle": "Statut", "cle_tri": None},
+        {"libelle": "Qualifications", "cle_tri": None},
         {"libelle": "État", "cle_tri": None},
     ]
 
@@ -124,6 +125,7 @@ def _ligne(instructeur, peut_ecrire):
             lien_nom,
             instructeur.specialite,
             _badge_statut(instructeur.statut),
+            format_html('<span class="tabular-nums">{}</span>', instructeur.nombre_qualifications),
             "Archivé" if instructeur.archive else "Actif",
         ],
         "libelle": f"{instructeur.nom} {instructeur.prenom}",

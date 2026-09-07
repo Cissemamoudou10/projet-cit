@@ -11,6 +11,8 @@ apparaîtrait comme « None », exactement le défaut déjà corrigé en P-24
 désigner le `matricule`, seule contrainte d'unicité réelle du modèle.
 """
 
+from django.db.models import Count
+
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
@@ -36,6 +38,13 @@ class ServiceInstructeur(ServiceGestion):
     NATURE_CREATION = TypeAction.CREATION_ELEMENT_GESTION
     NATURE_MODIFICATION = TypeAction.MODIFICATION_ELEMENT_GESTION
     NATURE_ARCHIVAGE = TypeAction.ARCHIVAGE_ELEMENT_GESTION
+    NATURE_SUPPRESSION = TypeAction.SUPPRESSION_ELEMENT_GESTION
+
+    @classmethod
+    def _queryset(cls):
+        """Prompt 17, § 2.4 : nombre de qualifications, une seule requête
+        agrégée pour toute la page."""
+        return cls.MODELE.objects.annotate(nombre_qualifications=Count("qualifications"))
 
     @staticmethod
     def choix_statut():

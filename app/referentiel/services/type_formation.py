@@ -34,6 +34,7 @@ class ServiceTypeFormation(ServiceGestion):
     NATURE_CREATION = TypeAction.CREATION_ELEMENT_GESTION
     NATURE_MODIFICATION = TypeAction.MODIFICATION_ELEMENT_GESTION
     NATURE_ARCHIVAGE = TypeAction.ARCHIVAGE_ELEMENT_GESTION
+    NATURE_SUPPRESSION = TypeAction.SUPPRESSION_ELEMENT_GESTION
 
     @classmethod
     def _queryset(cls):

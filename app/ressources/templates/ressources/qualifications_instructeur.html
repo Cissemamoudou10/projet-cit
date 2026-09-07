@@ -1,5 +1,6 @@
 {% extends "noyau/base.html" %}
 {% load static %}
+{% load pagination %}
 
 {% block titre %}Qualifications — {{ instructeur }} — {{ block.super }}{% endblock %}
 
@@ -104,7 +105,7 @@
         {% endfor %}
       </tbody>
     </table>
-    {% include "noyau/gestion/_pagination.html" %}
+    {% pagination page %}
   {% else %}
     <div class="border-t border-gris-trait px-6 py-8">
       <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">

@@ -87,6 +87,11 @@
             <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
                                    font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
               Motif</th>
+            {% if perms.noyau.lieux_calendrier_ecriture %}
+              <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                                     font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+                <span class="sr-only">Actions</span></th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -96,6 +101,30 @@
               <td class="px-3 text-left tabular-nums">{{ indisponibilite.debut|date:"d/m/Y H:i" }}</td>
               <td class="px-3 text-left tabular-nums">{{ indisponibilite.fin|date:"d/m/Y H:i" }}</td>
               <td class="px-3 text-left">{{ indisponibilite.motif }}</td>
+              {% if perms.noyau.lieux_calendrier_ecriture %}
+                <td class="px-3 text-left">
+                  <a href="{% url 'ressources:modifier_indisponibilite_lieu' indisponibilite.pk %}"
+                     title="Modifier" aria-label="Modifier cette indisponibilité"
+                     class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                            hover:border-marine-700 hover:bg-fond-survol
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                            focus-visible:outline-marine-700">
+                    <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                      <use href="{% static 'icones/planche.svg' %}#modification"></use>
+                    </svg>
+                  </a>
+                  <a href="{% url 'ressources:supprimer_indisponibilite_lieu' indisponibilite.pk %}"
+                     title="Supprimer" aria-label="Supprimer cette indisponibilité"
+                     class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                            hover:border-etat-ecart hover:bg-fond-survol
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                            focus-visible:outline-etat-ecart">
+                    <svg class="h-4 w-4 text-etat-ecart" aria-hidden="true">
+                      <use href="{% static 'icones/planche.svg' %}#suppression"></use>
+                    </svg>
+                  </a>
+                </td>
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody>

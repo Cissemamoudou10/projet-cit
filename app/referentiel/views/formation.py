@@ -79,6 +79,8 @@ def _colonnes(tri_actuel):
         {"libelle": "Type", "cle_tri": None},
         {"libelle": "Spécialité", "cle_tri": None},
         {"libelle": "Durée", "cle_tri": None},
+        {"libelle": "Matières", "cle_tri": None},
+        {"libelle": "Volume prescrit", "cle_tri": None},
         {"libelle": "État", "cle_tri": None},
     ]
 
@@ -140,6 +142,10 @@ def _ligne(formation, peut_ecrire):
             formation.type_formation.intitule,
             formation.specialite,
             f"{formation.duree_semaines} sem.",
+            format_html('<span class="tabular-nums">{}</span>', formation.nombre_matieres),
+            format_html(
+                '<span class="tabular-nums">{}</span> h', formation.volume_prescrit_total or 0
+            ),
             "Archivée" if formation.archive else "Active",
         ],
         "libelle": formation.intitule,
@@ -149,6 +155,7 @@ def _ligne(formation, peut_ecrire):
         ligne["url_modifier"] = reverse("referentiel:modifier_formation", args=[formation.pk])
         ligne["url_archiver"] = reverse("referentiel:archiver_formation", args=[formation.pk])
         ligne["url_desarchiver"] = reverse("referentiel:desarchiver_formation", args=[formation.pk])
+        ligne["url_supprimer"] = reverse("referentiel:supprimer_formation", args=[formation.pk])
     return ligne
 
 
@@ -270,3 +277,27 @@ def vue_desarchiver_formation(request, pk):
     ServiceFormation.desarchiver(request.user, pk)
     messages.success(request, "Formation désarchivée.")
     return redirect("referentiel:liste_formations")
+
+
+@exige_habilitation(ServiceFormation.PERMISSION_ECRITURE)
+def vue_confirmer_suppression_formation(request, pk):
+    formation = _formation_ou_404(pk)
+    if request.method == "POST":
+        try:
+            ServiceFormation.supprimer(request.user, pk)
+        except ErreurValidation as erreur:
+            messages.error(request, str(erreur))
+        else:
+            messages.success(request, "Formation supprimée.")
+        return redirect("referentiel:liste_formations")
+    return render(
+        request,
+        "noyau/gestion/confirmer_suppression.html",
+        {
+            "titre_dialogue": f"Supprimer la formation « {formation.intitule} »",
+            "texte_explication": (
+                f"La formation « {formation.intitule} » sera supprimée définitivement."
+            ),
+            "url_annuler": reverse("referentiel:liste_formations"),
+        },
+    )

@@ -11,10 +11,21 @@ urlpatterns = [
     path("lieux/<int:pk>/modifier/", lieu.vue_modifier_lieu, name="modifier_lieu"),
     path("lieux/<int:pk>/archiver/", lieu.vue_confirmer_archivage_lieu, name="archiver_lieu"),
     path("lieux/<int:pk>/desarchiver/", lieu.vue_desarchiver_lieu, name="desarchiver_lieu"),
+    path("lieux/<int:pk>/supprimer/", lieu.vue_confirmer_suppression_lieu, name="supprimer_lieu"),
     path(
         "lieux/<int:lieu_pk>/indisponibilites/declarer/",
         indisponibilite_lieu.vue_declarer_indisponibilite,
         name="declarer_indisponibilite_lieu",
+    ),
+    path(
+        "indisponibilites/<int:pk>/modifier/",
+        indisponibilite_lieu.vue_modifier_indisponibilite,
+        name="modifier_indisponibilite_lieu",
+    ),
+    path(
+        "indisponibilites/<int:pk>/supprimer/",
+        indisponibilite_lieu.vue_confirmer_suppression_indisponibilite,
+        name="supprimer_indisponibilite_lieu",
     ),
     path("instructeurs/", instructeur.vue_liste_instructeurs, name="liste_instructeurs"),
     path("instructeurs/creer/", instructeur.vue_creer_instructeur, name="creer_instructeur"),

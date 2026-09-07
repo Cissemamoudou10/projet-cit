@@ -64,6 +64,20 @@ def test_capacite_negative_est_refusee_en_base(db):
         Lieu.objects.create(**_donnees(capacite=-5))
 
 
+def test_capacite_nulle_est_refusee_par_le_service(planificateur):
+    with pytest.raises(ErreurValidation) as info:
+        ServiceLieu.creer(planificateur, _donnees(capacite=0))
+
+    assert "None" not in str(info.value)
+
+
+def test_capacite_negative_est_refusee_par_le_service(planificateur):
+    with pytest.raises(ErreurValidation) as info:
+        ServiceLieu.creer(planificateur, _donnees(capacite=-5))
+
+    assert "None" not in str(info.value)
+
+
 def test_lieu_partage_sans_type_est_refuse_en_base(db):
     with pytest.raises(IntegrityError), transaction.atomic():
         Lieu.objects.create(**_donnees(categorie=CategorieLieu.LIEU_PARTAGE))
@@ -76,6 +90,28 @@ def test_salle_attitrable_avec_un_type_est_refusee_en_base(db):
                 categorie=CategorieLieu.SALLE_ATTITREE, type_partage=TypeLieuPartage.LABORATOIRE
             )
         )
+
+
+def test_lieu_partage_sans_type_est_refuse_par_le_service(planificateur):
+    """Relecture de conception : le message générique du patron chercherait
+    un doublon d'intitulé inexistant et produirait « ... attribué à None. »
+    (même défaut que US-REF-05, voir test_objectif_pedagogique_ordre.py)."""
+    with pytest.raises(ErreurValidation) as info:
+        ServiceLieu.creer(planificateur, _donnees(categorie=CategorieLieu.LIEU_PARTAGE))
+
+    assert "None" not in str(info.value)
+
+
+def test_salle_attitrable_avec_un_type_est_refusee_par_le_service(planificateur):
+    with pytest.raises(ErreurValidation) as info:
+        ServiceLieu.creer(
+            planificateur,
+            _donnees(
+                categorie=CategorieLieu.SALLE_ATTITREE, type_partage=TypeLieuPartage.LABORATOIRE
+            ),
+        )
+
+    assert "None" not in str(info.value)
 
 
 def test_la_categorie_de_lieu_compte_deux_valeurs_pas_trois():
@@ -120,6 +156,32 @@ def test_intitule_duplique_est_refuse_par_le_service(planificateur):
 
     with pytest.raises(ErreurValidation):
         ServiceLieu.creer(planificateur, _donnees())
+
+
+def test_colonne_indisponibilites_a_venir_exclut_les_passees(planificateur):
+    """Prompt 17, § 2.5 : les indisponibilités passées n'intéressent
+    personne à la consultation."""
+    lieu = ServiceLieu.creer(planificateur, _donnees())
+    maintenant = timezone.now()
+    ServiceIndisponibiliteLieu.declarer(
+        planificateur,
+        lieu,
+        maintenant - datetime.timedelta(days=10),
+        maintenant - datetime.timedelta(days=9),
+        "Passée",
+    )
+    ServiceIndisponibiliteLieu.declarer(
+        planificateur,
+        lieu,
+        maintenant + datetime.timedelta(days=5),
+        maintenant + datetime.timedelta(days=6),
+        "À venir",
+    )
+
+    page = ServiceLieu.lister(planificateur, {}, None)
+    ligne = next(candidat for candidat in page if candidat.pk == lieu.pk)
+
+    assert ligne.nombre_indisponibilites_a_venir == 1
 
 
 def test_liste_paginee_au_dela_de_vingt_lieux(planificateur):
@@ -218,6 +280,20 @@ def test_creation_modification_archivage_sont_journalises(planificateur):
     assert TypeAction.CREATION_ELEMENT_GESTION in natures
     assert TypeAction.MODIFICATION_ELEMENT_GESTION in natures
     assert TypeAction.ARCHIVAGE_ELEMENT_GESTION in natures
+
+
+def test_suppression_est_journalisee(planificateur):
+    """Prompt 16, cause racine n° 3, § 5 — relevé en relecture, voir
+    referentiel/tests/test_type_formation.py."""
+    lieu = ServiceLieu.creer(planificateur, _donnees())
+
+    ServiceLieu.supprimer(planificateur, lieu.pk)
+
+    assert EntreeJournal.objects.filter(
+        objet_type="lieu",
+        objet_identifiant="Salle 101",
+        type_action=TypeAction.SUPPRESSION_ELEMENT_GESTION,
+    ).exists()
 
 
 def test_l_archivage_ne_supprime_rien(planificateur):

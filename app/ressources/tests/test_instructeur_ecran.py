@@ -2,6 +2,8 @@
 sont testés dans test_instructeur.py.
 """
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ressources.services.instructeur import ServiceInstructeur
@@ -131,3 +133,26 @@ def test_la_rubrique_ressources_pointe_vers_les_lieux_pour_la_cellule_examens(
 
     assert "Ressources" in reponse
     assert reverse("ressources:liste_lieux") in reponse
+
+
+def test_nombre_de_requetes_de_la_liste_des_instructeurs_ne_depend_pas_du_nombre_de_lignes(
+    client, redacteur
+):
+    """Prompt 17, § 2.6 — le test obligatoire."""
+    client.force_login(redacteur)
+    url = reverse("ressources:liste_instructeurs")
+    for i in range(5):
+        ServiceInstructeur.creer(
+            redacteur, _donnees(nom=f"Instructeur {i:02d}", matricule=f"M{i:05d}")
+        )
+    with CaptureQueriesContext(connection) as capture_cinq:
+        client.get(url)
+
+    for i in range(5, 20):
+        ServiceInstructeur.creer(
+            redacteur, _donnees(nom=f"Instructeur {i:02d}", matricule=f"M{i:05d}")
+        )
+    with CaptureQueriesContext(connection) as capture_vingt:
+        client.get(url)
+
+    assert len(capture_vingt) == len(capture_cinq)

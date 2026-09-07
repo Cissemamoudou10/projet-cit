@@ -13,6 +13,19 @@ from noyau.services.base import ServiceBase
 
 PERMISSION_CONSULTATION_JOURNAL = "noyau.administration_lecture"
 
+LIBELLES_OBJET_TYPE = {
+    "type_formation": "Type de formation",
+    "formation": "Formation",
+    "matiere": "Matière",
+    "objectif_pedagogique": "Objectif pédagogique",
+    "prerequis": "Prérequis",
+    "instructeur": "Instructeur",
+    "lieu": "Lieu",
+    "indisponibilite_lieu": "Indisponibilité de lieu",
+    "qualification": "Qualification",
+    "utilisateur": "Compte",
+}
+
 
 @dataclass
 class DonneesEntreeJournal:
@@ -93,6 +106,24 @@ class ServiceJournal:
         .claude/rules/vues.md.
         """
         return TypeAction.choices
+
+    @staticmethod
+    def objet_types_disponibles():
+        """Liste déroulante du filtre « objet » (Prompt 17, § 3.1) : les
+        valeurs réellement présentes dans le journal, jamais une
+        nomenclature figée qui dériverait des services qui la posent —
+        `administration` ne peut importer aucune des applications qui
+        déclarent `OBJET_TYPE` (ordre des dépendances). Un identifiant
+        saisi à la main était incompris (l'agent y cherchait une nature
+        d'action) ; une liste déroulante empêche la confusion.
+        """
+        valeurs = (
+            EntreeJournal.objects.exclude(objet_type="")
+            .order_by("objet_type")
+            .values_list("objet_type", flat=True)
+            .distinct()
+        )
+        return [(valeur, LIBELLES_OBJET_TYPE.get(valeur, valeur)) for valeur in valeurs]
 
     @staticmethod
     def consulter(agissant, filtres, page):

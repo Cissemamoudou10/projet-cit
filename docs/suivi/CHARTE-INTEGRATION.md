@@ -294,3 +294,43 @@ réduction de mouvement, § 4.1, installée verbatim). Sortie versionnée :
 `base.html` référence et que le dépôt doit conserver à jour après toute
 modification des gabarits ou de `tailwind.config.js`. `npm run css:watch`
 recompile en continu pendant le développement.
+
+## Amendement daté — § 3.10, pagination : fenêtre bornée à cinq numéros
+
+**2026-09-07, Prompt 17.** Le texte de la charte (§ 3.10) boucle sur
+`page.paginator.page_range` en entier — correct pour une poignée de pages,
+inutilisable au-delà (le journal en compte déjà vingt-trois, une barre sur
+plusieurs lignes). Un premier correctif avait repris ce défaut au seul
+gabarit générique du patron `ServiceGestion`, sans toucher les écrans
+d'administration (comptes, journal) écrits avant ce patron et portant leur
+propre copie du même balisage — jamais atteints, voir P-32,
+`docs/suivi/PROBLEMES.md`.
+
+**Correction : le fragment n'est plus inclus (`{% include %}`), il est
+généré par une balise d'inclusion, `{% load pagination %}{% pagination page
+%}`** (`app/noyau/templatetags/pagination.py`), seul point du système qui
+calcule la fenêtre (page courante, deux avant, deux après, décalée aux
+extrémités pour toujours en montrer cinq ; première et dernière page
+ajoutées séparément, avec un repère d'omission — `<span aria-hidden="true">`,
+jamais un lien — seulement quand un écart réel les sépare de la fenêtre).
+Chaque lien de page porte un `aria-label="Page N"` distinct du texte visible,
+pour un lecteur d'écran. `app/noyau/templates/noyau/gestion/_pagination.html`
+reste le seul gabarit de rendu, mais n'est plus jamais inclus directement.
+
+**Écrans mis à jour** : les cinq déjà sur le patron (types de formation,
+formations, matières, instructeurs, lieux) et les qualifications par
+instructeur l'utilisaient déjà via `noyau/gestion/liste.html` — migrés vers
+la balise sans changement de comportement pour eux. `liste_comptes.html` et
+`journal.html` (administration, antérieurs au patron) portaient chacun leur
+propre copie du balisage fautif — remplacée par la même balise. Vérifié par
+un test qui compare le balisage produit sur les trois familles d'écrans
+(`referentiel/tests/test_pagination_ecran.py`).
+
+**Écran non concerné, contrairement à ce qu'annonçait le prompt** :
+*habilitations* n'est jamais paginé (`ServiceMatriceHabilitations` n'appelle
+pas `paginer()` — matrice fixe de 5 groupes × 18 permissions, voir P-16).
+Rien à corriger là.
+
+Le texte de la charte devra être repris pour refléter ce nouveau patron —
+non fait ici : cette entrée en tient lieu jusqu'à la prochaine reprise du
+document source.

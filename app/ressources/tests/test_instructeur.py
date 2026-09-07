@@ -8,8 +8,10 @@ from django.db.models import ForeignKey
 
 from administration.models import EntreeJournal, TypeAction, Utilisateur
 from noyau.exceptions import ErreurHabilitation, ErreurModificationConcurrente, ErreurValidation
+from referentiel.models import Matiere
 from ressources.models import Instructeur, Statut
 from ressources.services.instructeur import ServiceInstructeur
+from ressources.services.qualification import ServiceQualification
 
 
 def _donnees(**supplement):
@@ -91,6 +93,26 @@ def test_matricule_duplique_est_refuse_avec_l_instructeur_existant(redacteur):
 
     assert "M12345" in str(info.value)
     assert "Ziani" in str(info.value)
+
+
+def test_colonne_nombre_de_qualifications_est_exacte(redacteur):
+    """Prompt 17, § 2.4."""
+    instructeur = ServiceInstructeur.creer(redacteur, _donnees())
+    sans_qualification = ServiceInstructeur.creer(
+        redacteur, _donnees(nom="Sans qualification", matricule="M00001")
+    )
+    ServiceQualification.ajouter(
+        redacteur, instructeur, Matiere.objects.create(intitule="Matière 1")
+    )
+    ServiceQualification.ajouter(
+        redacteur, instructeur, Matiere.objects.create(intitule="Matière 2")
+    )
+
+    page = ServiceInstructeur.lister(redacteur, {}, None)
+    lignes = {i.pk: i for i in page}
+
+    assert lignes[instructeur.pk].nombre_qualifications == 2
+    assert lignes[sans_qualification.pk].nombre_qualifications == 0
 
 
 def test_liste_paginee_au_dela_de_vingt_instructeurs(redacteur):

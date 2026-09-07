@@ -1,11 +1,14 @@
 """Gestion du catalogue des matières — CU-P2-03.
 
-Tout vient du patron `ServiceGestion`, sans rien y ajouter (Prompt 07,
-étape 0) : `Matiere` n'a ni relation ni filtre ni colonne calculée. Seule
-surcharge : `_erreur_unicite`, parce que `Matiere` porte deux champs
-indépendamment uniques (`intitule`, `code`) — le patron ne sait désigner un
-doublon que sur un seul champ (`CHAMP_UNICITE`).
+Seconde surcharge, Prompt 17 § 2.1 : `_queryset` annote trois compteurs pour
+la liste — formations, instructeurs qualifiés non archivés, objectifs — en
+une seule requête agrégée, jamais une par ligne (`.claude/rules/python.md`).
+`Count(..., distinct=True)` sur les trois relations simultanément : chacune
+compte sa propre clé primaire, donc le produit cartésien introduit par les
+jointures multiples ne fausse aucun des trois totaux.
 """
+
+from django.db.models import Count, Q
 
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
@@ -31,6 +34,19 @@ class ServiceMatiere(ServiceGestion):
     NATURE_CREATION = TypeAction.CREATION_ELEMENT_GESTION
     NATURE_MODIFICATION = TypeAction.MODIFICATION_ELEMENT_GESTION
     NATURE_ARCHIVAGE = TypeAction.ARCHIVAGE_ELEMENT_GESTION
+    NATURE_SUPPRESSION = TypeAction.SUPPRESSION_ELEMENT_GESTION
+
+    @classmethod
+    def _queryset(cls):
+        return cls.MODELE.objects.annotate(
+            nombre_formations=Count("elements_referentiel", distinct=True),
+            nombre_instructeurs_qualifies=Count(
+                "qualifications",
+                filter=Q(qualifications__instructeur__archive=False),
+                distinct=True,
+            ),
+            nombre_objectifs=Count("objectifs_pedagogiques", distinct=True),
+        )
 
     @classmethod
     def _erreur_unicite(cls, instance):

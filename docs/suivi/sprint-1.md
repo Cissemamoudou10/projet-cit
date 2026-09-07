@@ -33,7 +33,10 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 - [x] Tailwind précompilé, CSS versionné (`app/noyau/static/css/application.css`, 18 494 octets après US-INS-02)
 - [x] Tests d'architecture en place et passants (confirmé par un vrai `pytest`, 17/17 après US-INS-02 — voir docs/suivi/PROBLEMES.md)
 - [ ] **Test d'installation hors ligne** — dépendances natives de WeasyPrint
-- [ ] Jeu de données d'essai fictif, couvrant les douze situations de la règle `tests.md`
+- [x] Jeu de données de démonstration du sprint 1 (Prompt 15, WBS 5.1.17) — `charger_jeu_demonstration`, voir `docs/suivi/JEU-DEMONSTRATION.md`
+- [ ] Jeu de données d'essai fictif, couvrant les douze situations de la règle `tests.md` (sessions, brigades, séances — paquetage P3, sprints 2-3)
+- [x] Corrections des écarts de recette du 4 septembre (Prompt 16) — verrouillage et modification concurrente classés absence de défaut (P-31), suppression manquante pour cinq entités (P-30), journalisation des suppressions (patron `ServiceGestion`) — voir `docs/suivi/PROBLEMES.md`
+- [x] Pagination et enrichissement des listes (Prompt 17, WBS 5.1.20) — fenêtre de pagination partagée (P-32), cinq compteurs agrégés, filtre objet du journal, modification d'une indisponibilité de lieu — voir `docs/suivi/PROMPT-17-tracabilite.md`
 
 ## Revue et rétrospective
 

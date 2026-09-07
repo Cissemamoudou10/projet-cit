@@ -1,5 +1,6 @@
 {% extends "noyau/base.html" %}
 {% load static %}
+{% load pagination %}
 
 {% block titre %}{{ titre }} — {{ block.super }}{% endblock %}
 
@@ -199,6 +200,18 @@
                     </svg>
                   </a>
                 {% endif %}
+                {% if ligne.url_supprimer %}
+                  <a href="{{ ligne.url_supprimer }}"
+                     title="Supprimer" aria-label="Supprimer {{ ligne.libelle }}"
+                     class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                            hover:border-etat-ecart hover:bg-fond-survol
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                            focus-visible:outline-etat-ecart">
+                    <svg class="h-4 w-4 text-etat-ecart" aria-hidden="true">
+                      <use href="{% static 'icones/planche.svg' %}#suppression"></use>
+                    </svg>
+                  </a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -206,7 +219,7 @@
       </table>
     </div>
 
-    {% include "noyau/gestion/_pagination.html" %}
+    {% pagination page %}
   {% else %}
     <div class="border-t border-gris-trait px-6 py-8">
       <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">

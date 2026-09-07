@@ -60,7 +60,8 @@ class ServiceGestion:
     `CHAMPS_FILTRABLES`, `OBJET_TYPE`, `CHAMPS_JOURNALISES`, plus les six
     attributs injectés ci-dessous (D-19) : `PERMISSION_LECTURE`,
     `PERMISSION_ECRITURE`, `VERIFIER_HABILITATION`, `ENREGISTRER_JOURNAL`,
-    `DONNEES_JOURNAL`, `NATURE_CREATION`/`NATURE_MODIFICATION`/`NATURE_ARCHIVAGE`.
+    `DONNEES_JOURNAL`, `NATURE_CREATION`/`NATURE_MODIFICATION`/`NATURE_ARCHIVAGE`/
+    `NATURE_SUPPRESSION`.
     """
 
     MODELE = None
@@ -79,6 +80,7 @@ class ServiceGestion:
     NATURE_CREATION = None
     NATURE_MODIFICATION = None
     NATURE_ARCHIVAGE = None
+    NATURE_SUPPRESSION = None
 
     @classmethod
     def _queryset(cls):
@@ -188,6 +190,7 @@ class ServiceGestion:
         try:
             with transaction.atomic():
                 instance.delete()
+                cls._journaliser(agissant, cls.NATURE_SUPPRESSION, instance)
         except ProtectedError as erreur:
             raise ErreurValidation(
                 decrire_opposants(instance, erreur.protected_objects)

@@ -46,6 +46,8 @@
                                    font-semibold uppercase tracking-wider text-blanc">Catégorie de lieu</th>
             <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                    font-semibold uppercase tracking-wider text-blanc">Type de lieu partagé</th>
+            <th scope="col" class="w-40 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                   font-semibold uppercase tracking-wider text-blanc">Instructeurs qualifiés</th>
           </tr>
         </thead>
         <tbody>
@@ -53,6 +55,14 @@
             <tr class="h-ligne border-t border-gris-trait">
               <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ element.matiere }}</th>
               {% include "referentiel/_fragments/cellules_matiere_volume_lecture.html" %}
+              <td class="px-3 py-1.5">
+                {% if element.nombre_instructeurs_qualifies %}
+                  <span class="tabular-nums">{{ element.nombre_instructeurs_qualifies }}</span>
+                {% else %}
+                  <span class="bg-etat-ecart px-2 py-px text-2xs font-semibold tracking-wide text-blanc">
+                    AUCUN</span>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>

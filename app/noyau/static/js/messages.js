@@ -9,7 +9,7 @@
  * chaîne JS ne serait jamais générée.
  */
 (function () {
-  var DELAI_DISPARITION_MS = 6000;
+  var DELAI_DISPARITION_MS = 36000;
   var DUREE_TRANSITION_MS = 200; // durée « notif » de tailwind.config.js
 
   function fermer(message) {

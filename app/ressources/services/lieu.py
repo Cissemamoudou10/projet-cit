@@ -8,12 +8,13 @@ disponibilité une exclusion sur `IndisponibiliteLieu` — voir § 4 du Prompt 1
 
 import datetime
 
-from django.db.models import Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef, Q
 from django.utils import timezone
 
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
+from noyau.exceptions import ErreurValidation
 from noyau.pagination import paginer
 from noyau.services.gestion import ServiceGestion
 from ressources.models import CategorieLieu, IndisponibiliteLieu, Lieu, TypeLieuPartage
@@ -35,6 +36,32 @@ class ServiceLieu(ServiceGestion):
     NATURE_CREATION = TypeAction.CREATION_ELEMENT_GESTION
     NATURE_MODIFICATION = TypeAction.MODIFICATION_ELEMENT_GESTION
     NATURE_ARCHIVAGE = TypeAction.ARCHIVAGE_ELEMENT_GESTION
+    NATURE_SUPPRESSION = TypeAction.SUPPRESSION_ELEMENT_GESTION
+
+    @classmethod
+    def _erreur_unicite(cls, instance):
+        """`intitule` n'est pas la seule contrainte en base : `Lieu` porte
+        aussi `ck_lieu_capacite_positive` et `ck_lieu_type_partage_coherent`
+        (§ 2 du Prompt 14), chacune capable de provoquer l'`IntegrityError`
+        que ce patron intercepte. Sans cette distinction, le message
+        générique cherche un doublon d'intitulé qui n'existe pas et produit
+        « ... est déjà attribué à None. » — même défaut que celui corrigé
+        pour `ServiceObjectifPedagogique` (US-REF-05), sur une contrainte
+        différente à chaque fois.
+        """
+        if instance.capacite is not None and instance.capacite <= 0:
+            return ErreurValidation("La capacité doit être un nombre strictement positif.")
+        if instance.categorie == CategorieLieu.LIEU_PARTAGE and not instance.type_partage:
+            return ErreurValidation(
+                f"« {instance.intitule} » est un lieu partagé : précisez son type "
+                "(amphithéâtre, laboratoire ou salle spécialisée)."
+            )
+        if instance.categorie != CategorieLieu.LIEU_PARTAGE and instance.type_partage:
+            return ErreurValidation(
+                f"« {instance.intitule} » n'est pas un lieu partagé : retirez le "
+                "type de partage renseigné."
+            )
+        return super()._erreur_unicite(instance)
 
     @staticmethod
     def choix_categorie():
@@ -53,9 +80,12 @@ class ServiceLieu(ServiceGestion):
 
     @classmethod
     def _queryset(cls):
-        """Annote `est_indisponible_maintenant` pour la colonne « état de
-        disponibilité » (§ 8) — une requête pour toute la page, jamais une
-        par ligne (.claude/rules/python.md).
+        """Annote `est_indisponible_maintenant` (§ 8) et, Prompt 17 § 2.5,
+        `nombre_indisponibilites_a_venir` — une seule requête pour toute la
+        page, jamais une par ligne (.claude/rules/python.md). Les deux
+        portent sur la même relation (`indisponibilites`) : `Exists` est une
+        sous-requête corrélée, `Count` la seule jointure du queryset, aucun
+        produit cartésien entre les deux à craindre.
         """
         maintenant = timezone.now()
         return cls.MODELE.objects.annotate(
@@ -63,7 +93,10 @@ class ServiceLieu(ServiceGestion):
                 IndisponibiliteLieu.objects.filter(
                     lieu=OuterRef("pk"), debut__lte=maintenant, fin__gt=maintenant
                 )
-            )
+            ),
+            nombre_indisponibilites_a_venir=Count(
+                "indisponibilites", filter=Q(indisponibilites__fin__gt=maintenant)
+            ),
         )
 
     @classmethod

@@ -8,6 +8,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
@@ -60,6 +61,9 @@ def vue_liste_matieres(request):
         "colonnes": [
             _colonne_intitule(tri_actuel),
             {"libelle": "Code", "cle_tri": None},
+            {"libelle": "Formations", "cle_tri": None},
+            {"libelle": "Instructeurs", "cle_tri": None},
+            {"libelle": "Objectifs", "cle_tri": None},
         ],
         "lignes": [_ligne(matiere, peut_ecrire) for matiere in page] if page else [],
         "libelle_vide": "Aucune matière ne correspond aux filtres",
@@ -87,7 +91,13 @@ def _ligne(matiere, peut_ecrire):
         matiere.intitule,
     )
     ligne = {
-        "cellules": [lien_intitule, matiere.code],
+        "cellules": [
+            lien_intitule,
+            matiere.code,
+            format_html('<span class="tabular-nums">{}</span>', matiere.nombre_formations),
+            _cellule_instructeurs_qualifies(matiere.nombre_instructeurs_qualifies),
+            format_html('<span class="tabular-nums">{}</span>', matiere.nombre_objectifs),
+        ],
         "libelle": matiere.intitule,
         "archive": matiere.archive,
     }
@@ -95,7 +105,19 @@ def _ligne(matiere, peut_ecrire):
         ligne["url_modifier"] = reverse("referentiel:modifier_matiere", args=[matiere.pk])
         ligne["url_archiver"] = reverse("referentiel:archiver_matiere", args=[matiere.pk])
         ligne["url_desarchiver"] = reverse("referentiel:desarchiver_matiere", args=[matiere.pk])
+        ligne["url_supprimer"] = reverse("referentiel:supprimer_matiere", args=[matiere.pk])
     return ligne
+
+
+def _cellule_instructeurs_qualifies(nombre):
+    """Couleur doublée d'un mot, même signalement qu'à US-INS-02 critère 4
+    (`ressources/couverture_qualifications.html`)."""
+    if nombre:
+        return format_html('<span class="tabular-nums">{}</span>', nombre)
+    return mark_safe(
+        '<span class="bg-etat-ecart px-2 py-px text-2xs font-semibold tracking-wide '
+        'text-blanc">AUCUN</span>'
+    )
 
 
 @exige_habilitation(ServiceMatiere.PERMISSION_LECTURE)
@@ -216,3 +238,27 @@ def vue_desarchiver_matiere(request, pk):
     ServiceMatiere.desarchiver(request.user, pk)
     messages.success(request, "Matière désarchivée.")
     return redirect("referentiel:liste_matieres")
+
+
+@exige_habilitation(ServiceMatiere.PERMISSION_ECRITURE)
+def vue_confirmer_suppression_matiere(request, pk):
+    matiere = _matiere_ou_404(pk)
+    if request.method == "POST":
+        try:
+            ServiceMatiere.supprimer(request.user, pk)
+        except ErreurValidation as erreur:
+            messages.error(request, str(erreur))
+        else:
+            messages.success(request, "Matière supprimée.")
+        return redirect("referentiel:liste_matieres")
+    return render(
+        request,
+        "noyau/gestion/confirmer_suppression.html",
+        {
+            "titre_dialogue": f"Supprimer la matière « {matiere.intitule} »",
+            "texte_explication": (
+                f"La matière « {matiere.intitule} » sera supprimée définitivement du catalogue."
+            ),
+            "url_annuler": reverse("referentiel:liste_matieres"),
+        },
+    )

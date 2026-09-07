@@ -125,6 +125,7 @@ def _colonnes(tri_actuel):
         {"libelle": "Type", "cle_tri": None},
         _colonne_tri(tri_actuel, "capacite", "Capacité"),
         {"libelle": "Disponibilité", "cle_tri": None},
+        {"libelle": "Indisponibilités à venir", "cle_tri": None},
         {"libelle": "État", "cle_tri": None},
     ]
 
@@ -153,6 +154,9 @@ def _ligne(lieu, peut_ecrire):
             lieu.get_type_partage_display() if lieu.type_partage else "—",
             format_html('<span class="tabular-nums">{}</span>', lieu.capacite),
             _badge_disponibilite(lieu.est_indisponible_maintenant),
+            format_html(
+                '<span class="tabular-nums">{}</span>', lieu.nombre_indisponibilites_a_venir
+            ),
             "Archivé" if lieu.archive else "Actif",
         ],
         "libelle": lieu.intitule,
@@ -162,6 +166,7 @@ def _ligne(lieu, peut_ecrire):
         ligne["url_modifier"] = reverse("ressources:modifier_lieu", args=[lieu.pk])
         ligne["url_archiver"] = reverse("ressources:archiver_lieu", args=[lieu.pk])
         ligne["url_desarchiver"] = reverse("ressources:desarchiver_lieu", args=[lieu.pk])
+        ligne["url_supprimer"] = reverse("ressources:supprimer_lieu", args=[lieu.pk])
     return ligne
 
 
@@ -337,3 +342,25 @@ def vue_desarchiver_lieu(request, pk):
     ServiceLieu.desarchiver(request.user, pk)
     messages.success(request, "Lieu désarchivé.")
     return redirect("ressources:liste_lieux")
+
+
+@exige_habilitation(ServiceLieu.PERMISSION_ECRITURE)
+def vue_confirmer_suppression_lieu(request, pk):
+    lieu = _lieu_ou_404(pk)
+    if request.method == "POST":
+        try:
+            ServiceLieu.supprimer(request.user, pk)
+        except ErreurValidation as erreur:
+            messages.error(request, str(erreur))
+        else:
+            messages.success(request, "Lieu supprimé.")
+        return redirect("ressources:liste_lieux")
+    return render(
+        request,
+        "noyau/gestion/confirmer_suppression.html",
+        {
+            "titre_dialogue": f"Supprimer « {lieu} »",
+            "texte_explication": f"« {lieu} » sera supprimé définitivement de l'inventaire.",
+            "url_annuler": reverse("ressources:liste_lieux"),
+        },
+    )

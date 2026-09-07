@@ -34,6 +34,7 @@ def vue_journal(request):
         "filtres": filtres,
         "nature_libelle": dict(natures).get(filtres["nature"], filtres["nature"]),
         "natures": natures,
+        "objet_types": ServiceJournal.objet_types_disponibles(),
         "tri_horodatage": _etat_tri(tri_actuel, "horodatage"),
         "onglets": onglets,
         "onglet_actif": onglet_actif,

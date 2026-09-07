@@ -2,9 +2,11 @@
 testés dans test_lieu.py.
 """
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from ressources.models import CategorieLieu
+from ressources.models import CategorieLieu, Lieu
 from ressources.services.lieu import ServiceLieu
 from ressources.tests.test_lieu import _donnees
 
@@ -132,6 +134,21 @@ def test_modifier_par_le_vrai_formulaire_html_ne_declenche_pas_a_tort_e5(client,
     assert lieu.capacite == 45
 
 
+def test_suppression_d_un_lieu_jamais_utilise_reussit_depuis_l_ecran(client, planificateur):
+    """Prompt 16, cause racine n° 3 : aucune route de suppression n'existait
+    pour les lieux."""
+    lieu = ServiceLieu.creer(planificateur, _donnees())
+    client.force_login(planificateur)
+
+    reponse_get = client.get(reverse("ressources:supprimer_lieu", args=[lieu.pk]))
+    assert reponse_get.status_code == 200
+
+    reponse_post = client.post(reverse("ressources:supprimer_lieu", args=[lieu.pk]))
+
+    assert reponse_post.status_code == 302
+    assert not Lieu.objects.filter(pk=lieu.pk).exists()
+
+
 def test_declarer_une_indisponibilite_par_le_formulaire(client, planificateur, lieu):
     client.force_login(planificateur)
 
@@ -157,3 +174,22 @@ def test_declarer_une_indisponibilite_refusee_a_la_cellule_pedagogique(client, r
     )
 
     assert reponse.status_code == 403
+
+
+def test_nombre_de_requetes_de_la_liste_des_lieux_ne_depend_pas_du_nombre_de_lignes(
+    client, planificateur
+):
+    """Prompt 17, § 2.6 — le test obligatoire."""
+    client.force_login(planificateur)
+    url = reverse("ressources:liste_lieux")
+    for i in range(5):
+        ServiceLieu.creer(planificateur, _donnees(intitule=f"Salle {i:02d}"))
+    with CaptureQueriesContext(connection) as capture_cinq:
+        client.get(url)
+
+    for i in range(5, 20):
+        ServiceLieu.creer(planificateur, _donnees(intitule=f"Salle {i:02d}"))
+    with CaptureQueriesContext(connection) as capture_vingt:
+        client.get(url)
+
+    assert len(capture_vingt) == len(capture_cinq)

@@ -7,8 +7,10 @@ import datetime
 
 import pytest
 from django.db import IntegrityError, transaction
+from django.urls import reverse
 from django.utils import timezone
 
+from administration.models import EntreeJournal, TypeAction
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
 from ressources.models import CategorieLieu, IndisponibiliteLieu, Lieu
 from ressources.services.indisponibilite_lieu import ServiceIndisponibiliteLieu
@@ -115,6 +117,108 @@ def test_le_message_d_erreur_nomme_la_periode_existante(planificateur, lieu):
     assert "Réfection du sol" in str(info.value)
 
 
+def test_modifier_le_motif_seul_reussit(planificateur, lieu):
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+
+    ServiceIndisponibiliteLieu.modifier(
+        planificateur,
+        indisponibilite,
+        _instant(4, 8),
+        _instant(4, 12),
+        "Réfection du sol et peinture",
+    )
+
+    indisponibilite.refresh_from_db()
+    assert indisponibilite.motif == "Réfection du sol et peinture"
+
+
+def test_decaler_les_bornes_sans_conflit_reussit(planificateur, lieu):
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+
+    ServiceIndisponibiliteLieu.modifier(
+        planificateur, indisponibilite, _instant(4, 9), _instant(4, 13), "Réfection du sol"
+    )
+
+    indisponibilite.refresh_from_db()
+    assert indisponibilite.debut == _instant(4, 9)
+    assert indisponibilite.fin == _instant(4, 13)
+
+
+def test_modifier_sans_deplacer_les_bornes_reussit(planificateur, lieu):
+    """Le piège : la contrainte ne doit pas détecter la période comme son
+    propre conflit."""
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+
+    ServiceIndisponibiliteLieu.modifier(
+        planificateur, indisponibilite, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )  # ne lève pas
+
+
+def test_deplacer_sur_une_periode_existante_est_refuse_en_nommant_la_periode(planificateur, lieu):
+    ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(5, 8), _instant(5, 12), "Désinfection"
+    )
+
+    with pytest.raises(ErreurValidation) as info:
+        ServiceIndisponibiliteLieu.modifier(
+            planificateur, indisponibilite, _instant(4, 10), _instant(4, 14), "Désinfection"
+        )
+
+    assert "Réfection du sol" in str(info.value)
+    indisponibilite.refresh_from_db()
+    assert indisponibilite.debut == _instant(5, 8)
+
+
+def test_deplacer_jusqu_a_etre_contigue_reussit(planificateur, lieu):
+    """Cas limite d'US-PLAN-02 : se toucher sans se recouvrir est permis."""
+    ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Matinée"
+    )
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(5, 8), _instant(5, 12), "Après-midi"
+    )
+
+    ServiceIndisponibiliteLieu.modifier(
+        planificateur, indisponibilite, _instant(4, 12), _instant(4, 16), "Après-midi"
+    )  # ne lève pas
+
+
+def test_modifier_avec_fin_avant_debut_est_refuse(planificateur, lieu):
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+
+    with pytest.raises(ErreurValidation):
+        ServiceIndisponibiliteLieu.modifier(
+            planificateur, indisponibilite, _instant(4, 12), _instant(4, 8), "Incohérent"
+        )
+
+
+def test_modification_est_journalisee(planificateur, lieu):
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+
+    ServiceIndisponibiliteLieu.modifier(
+        planificateur, indisponibilite, _instant(4, 8), _instant(4, 12), "Motif corrigé"
+    )
+
+    assert EntreeJournal.objects.filter(
+        objet_type="indisponibilite_lieu",
+        objet_identifiant=str(indisponibilite.pk),
+        type_action=TypeAction.MODIFICATION_ELEMENT_GESTION,
+    ).exists()
+
+
 def test_suppression_d_un_lieu_supprime_ses_indisponibilites(planificateur, lieu):
     ServiceIndisponibiliteLieu.declarer(
         planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
@@ -123,3 +227,75 @@ def test_suppression_d_un_lieu_supprime_ses_indisponibilites(planificateur, lieu
     lieu.delete()
 
     assert not IndisponibiliteLieu.objects.exists()
+
+
+def test_suppression_d_une_indisponibilite_par_le_service(planificateur, lieu):
+    """Prompt 16, cause racine n° 3 : `ServiceIndisponibiliteLieu` n'avait
+    aucun moyen de supprimer une déclaration erronée — signalé en recette."""
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+
+    ServiceIndisponibiliteLieu.supprimer(planificateur, indisponibilite)
+
+    assert not IndisponibiliteLieu.objects.filter(pk=indisponibilite.pk).exists()
+
+
+def test_modification_d_une_indisponibilite_reussit_depuis_l_ecran(client, planificateur, lieu):
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+    client.force_login(planificateur)
+
+    reponse_get = client.get(
+        reverse("ressources:modifier_indisponibilite_lieu", args=[indisponibilite.pk])
+    )
+    assert reponse_get.status_code == 200
+
+    reponse_post = client.post(
+        reverse("ressources:modifier_indisponibilite_lieu", args=[indisponibilite.pk]),
+        {"debut": "2027-01-04T08:00", "fin": "2027-01-04T12:00", "motif": "Motif corrigé"},
+    )
+
+    assert reponse_post.status_code == 302
+    indisponibilite.refresh_from_db()
+    assert indisponibilite.motif == "Motif corrigé"
+
+
+def test_modification_vers_un_chevauchement_est_refusee_depuis_l_ecran(client, planificateur, lieu):
+    ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(5, 8), _instant(5, 12), "Désinfection"
+    )
+    client.force_login(planificateur)
+
+    reponse = client.post(
+        reverse("ressources:modifier_indisponibilite_lieu", args=[indisponibilite.pk]),
+        {"debut": "2027-01-04T10:00", "fin": "2027-01-04T14:00", "motif": "Désinfection"},
+    )
+
+    assert reponse.status_code == 200
+    assert "Réfection du sol" in reponse.content.decode()
+    indisponibilite.refresh_from_db()
+    assert indisponibilite.debut == _instant(5, 8)
+
+
+def test_suppression_d_une_indisponibilite_reussit_depuis_l_ecran(client, planificateur, lieu):
+    indisponibilite = ServiceIndisponibiliteLieu.declarer(
+        planificateur, lieu, _instant(4, 8), _instant(4, 12), "Réfection du sol"
+    )
+    client.force_login(planificateur)
+
+    reponse_get = client.get(
+        reverse("ressources:supprimer_indisponibilite_lieu", args=[indisponibilite.pk])
+    )
+    assert reponse_get.status_code == 200
+
+    reponse_post = client.post(
+        reverse("ressources:supprimer_indisponibilite_lieu", args=[indisponibilite.pk])
+    )
+
+    assert reponse_post.status_code == 302
+    assert not IndisponibiliteLieu.objects.filter(pk=indisponibilite.pk).exists()

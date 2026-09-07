@@ -1,5 +1,6 @@
 {% extends "noyau/base.html" %}
 {% load static %}
+{% load pagination %}
 
 {% block titre %}Comptes utilisateurs — {{ block.super }}{% endblock %}
 
@@ -205,34 +206,7 @@
       </table>
     </div>
 
-    <nav class="flex items-center justify-between border-t border-gris-trait bg-fond-bande px-3 py-2 text-xs"
-         aria-label="Pagination">
-      <p class="tabular-nums text-gris-lecture">
-        Éléments <strong class="text-encre">{{ page.start_index }} à {{ page.end_index }}</strong>
-        sur <strong class="text-encre">{{ page.paginator.count }}</strong>
-      </p>
-      <div class="flex items-center gap-1">
-        {% if page.has_previous %}
-          <a href="{% querystring page=page.previous_page_number %}"
-             class="border border-gris-trait bg-fond-bloc px-2.5 py-1 no-underline text-encre
-                    transition-colors duration-survol hover:bg-fond-bande">Précédent</a>
-        {% else %}
-          <span class="cursor-not-allowed border border-gris-trait bg-fond-bloc px-2.5 py-1
-                       text-gris-eteint">Précédent</span>
-        {% endif %}
-        {% for numero in page.paginator.page_range %}
-          {% if numero == page.number %}
-            <span aria-current="page"
-                  class="border border-marine-900 bg-marine-900 px-2.5 py-1 font-semibold
-                         tabular-nums text-blanc">{{ numero }}</span>
-          {% else %}
-            <a href="{% querystring page=numero %}"
-               class="border border-gris-trait bg-fond-bloc px-2.5 py-1 tabular-nums no-underline
-                      text-encre transition-colors duration-survol hover:bg-fond-bande">{{ numero }}</a>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </nav>
+    {% pagination page %}
   {% else %}
     <div class="border-t border-gris-trait px-6 py-8">
       <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">

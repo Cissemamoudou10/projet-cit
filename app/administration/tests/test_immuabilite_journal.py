@@ -98,7 +98,11 @@ def test_service_journal_n_expose_aucune_ecriture_hors_insertion():
     for nom, membre in inspect.getmembers(ServiceJournal):
         if nom.startswith("_") or not inspect.isfunction(membre):
             continue
-        if nom in methodes_ecriture or nom in ("consulter", "natures_disponibles"):
+        if nom in methodes_ecriture or nom in (
+            "consulter",
+            "natures_disponibles",
+            "objet_types_disponibles",
+        ):
             continue
         pytest.fail(f"Méthode inattendue sur ServiceJournal : {nom}")
 

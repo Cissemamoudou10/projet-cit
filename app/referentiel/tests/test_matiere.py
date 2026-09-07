@@ -1,14 +1,17 @@
 """US-REF-02 — Gérer le catalogue des matières, CU-P2-03."""
 
 import pytest
-from django.db import IntegrityError, transaction
+from django.contrib.messages import get_messages
+from django.db import IntegrityError, connection, transaction
 from django.db.models import ForeignKey
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from administration.models import EntreeJournal, TypeAction
 from noyau.exceptions import ErreurHabilitation, ErreurModificationConcurrente, ErreurValidation
-from referentiel.models import Formation, Matiere
+from referentiel.models import ElementReferentiel, Formation, Matiere, ObjectifPedagogique
 from referentiel.services.matiere import ServiceMatiere
+from referentiel.tests.conftest import donnees_element_referentiel
 
 
 def _donnees(**supplement):
@@ -96,6 +99,43 @@ def test_code_duplique_est_refuse_en_designant_le_bon_doublon(redacteur):
     assert "Électronique numérique" in str(info.value)
 
 
+def test_colonnes_formations_et_objectifs_sont_exactes(redacteur, formation):
+    """Prompt 17, § 2.1. Le compteur d'instructeurs qualifiés (relation vers
+    `ressources`) est vérifié séparément dans
+    `ressources/tests/test_qualification.py` : `referentiel` ne peut pas
+    importer `ressources` (ordre des dépendances)."""
+    matiere = ServiceMatiere.creer(redacteur, _donnees())
+    ElementReferentiel.objects.create(
+        formation=formation, matiere=matiere, **donnees_element_referentiel()
+    )
+    ObjectifPedagogique.objects.create(matiere=matiere, libelle="Un objectif", ordre=1)
+    ObjectifPedagogique.objects.create(matiere=matiere, libelle="Un autre", ordre=2)
+
+    page = ServiceMatiere.lister(redacteur, {}, None)
+    ligne = next(m for m in page if m.pk == matiere.pk)
+
+    assert ligne.nombre_formations == 1
+    assert ligne.nombre_objectifs == 2
+
+
+def test_nombre_de_requetes_de_la_liste_ne_depend_pas_du_nombre_de_lignes(client, redacteur):
+    """Prompt 17, § 2.6 — le test obligatoire : compter les requêtes sur
+    cinq lignes puis sur vingt, le nombre doit être identique."""
+    client.force_login(redacteur)
+    url = reverse("referentiel:liste_matieres")
+    for i in range(5):
+        ServiceMatiere.creer(redacteur, {"intitule": f"Matière {i:02d}", "code": ""})
+    with CaptureQueriesContext(connection) as capture_cinq:
+        client.get(url)
+
+    for i in range(5, 20):
+        ServiceMatiere.creer(redacteur, {"intitule": f"Matière {i:02d}", "code": ""})
+    with CaptureQueriesContext(connection) as capture_vingt:
+        client.get(url)
+
+    assert len(capture_vingt) == len(capture_cinq)
+
+
 def test_liste_paginee_au_dela_de_vingt_matieres(redacteur):
     for i in range(21):
         ServiceMatiere.creer(redacteur, {"intitule": f"Matière {i:02d}", "code": ""})
@@ -115,15 +155,59 @@ def test_recherche_par_intitule(redacteur):
 
 
 def test_methode_d_enumeration_des_bloquants_existe_et_ne_trouve_rien(redacteur):
-    """§ 5 : les critères 3 et 5 (référentiel, matrice de qualification) ne
-    sont pas testables aujourd'hui — la suppression ne doit rien trouver qui
-    s'y oppose, en attendant US-REF-03 et US-INS-02.
-    """
     matiere = ServiceMatiere.creer(redacteur, _donnees())
 
     ServiceMatiere.supprimer(redacteur, matiere.pk)  # ne lève pas
 
     assert not Matiere.objects.filter(pk=matiere.pk).exists()
+
+
+def test_suppression_d_une_matiere_rattachee_a_un_referentiel_est_refusee_par_le_service(
+    redacteur, formation, matiere
+):
+    """Prompt 16, cause racine n° 3, critère 3 : US-REF-03 est livrée depuis,
+    ce cas est désormais testable — voir referentiel/tests/test_referentiel.py
+    pour l'équivalent en base (`matiere.delete()`, IntegrityError)."""
+    ElementReferentiel.objects.create(
+        formation=formation, matiere=matiere, **donnees_element_referentiel()
+    )
+
+    with pytest.raises(ErreurValidation) as info:
+        ServiceMatiere.supprimer(redacteur, matiere.pk)
+    assert formation.intitule in str(info.value)
+    assert Matiere.objects.filter(pk=matiere.pk).exists()
+
+
+def test_suppression_d_une_matiere_jamais_utilisee_reussit_depuis_l_ecran(client, redacteur):
+    """Prompt 16, cause racine n° 3 : aucune route de suppression n'existait
+    pour les matières."""
+    matiere = ServiceMatiere.creer(redacteur, _donnees())
+    client.force_login(redacteur)
+
+    reponse_get = client.get(reverse("referentiel:supprimer_matiere", args=[matiere.pk]))
+    assert reponse_get.status_code == 200
+
+    reponse_post = client.post(reverse("referentiel:supprimer_matiere", args=[matiere.pk]))
+
+    assert reponse_post.status_code == 302
+    assert not Matiere.objects.filter(pk=matiere.pk).exists()
+
+
+def test_suppression_d_une_matiere_rattachee_est_refusee_depuis_l_ecran_en_enumerant_la_formation(
+    client, redacteur, formation, matiere
+):
+    """E3 : le refus énumère l'élément qui s'oppose, pas un refus sec."""
+    ElementReferentiel.objects.create(
+        formation=formation, matiere=matiere, **donnees_element_referentiel()
+    )
+    client.force_login(redacteur)
+
+    reponse = client.post(reverse("referentiel:supprimer_matiere", args=[matiere.pk]))
+
+    assert reponse.status_code == 302
+    assert Matiere.objects.filter(pk=matiere.pk).exists()
+    messages_affiches = [str(m) for m in get_messages(reponse.wsgi_request)]
+    assert any(formation.intitule in message for message in messages_affiches)
 
 
 def test_matiere_archivee_absente_de_la_selection_presente_en_consultation(redacteur):
@@ -163,6 +247,20 @@ def test_creation_modification_archivage_sont_journalises(redacteur):
     assert TypeAction.CREATION_ELEMENT_GESTION in natures
     assert TypeAction.MODIFICATION_ELEMENT_GESTION in natures
     assert TypeAction.ARCHIVAGE_ELEMENT_GESTION in natures
+
+
+def test_suppression_est_journalisee(redacteur):
+    """Prompt 16, cause racine n° 3, § 5 — relevé en relecture, voir
+    referentiel/tests/test_type_formation.py."""
+    matiere = ServiceMatiere.creer(redacteur, _donnees())
+
+    ServiceMatiere.supprimer(redacteur, matiere.pk)
+
+    assert EntreeJournal.objects.filter(
+        objet_type="matiere",
+        objet_identifiant__icontains="électronique numérique",
+        type_action=TypeAction.SUPPRESSION_ELEMENT_GESTION,
+    ).exists()
 
 
 def test_les_trois_ecrans_du_referentiel_sont_croises(client, redacteur):

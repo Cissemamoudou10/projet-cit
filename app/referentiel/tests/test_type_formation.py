@@ -1,13 +1,16 @@
 """US-REF-00 — Gérer les types de formation, CU-P2-01."""
 
 import pytest
+from django.contrib.messages import get_messages
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 
 from administration.models import EntreeJournal, TypeAction
 from noyau.exceptions import ErreurHabilitation
 from referentiel.models import TypeFormation
+from referentiel.services.formation import ServiceFormation
 from referentiel.services.type_formation import ServiceTypeFormation
+from referentiel.tests.test_formation import _donnees
 
 
 def test_intitule_unique_en_base_en_contournant_l_orm(db):
@@ -87,3 +90,55 @@ def test_planification_examens_direction_lisent_seulement(lecteur):
 
     with pytest.raises(ErreurHabilitation):
         ServiceTypeFormation.creer(lecteur, {"intitule": "Sous-officiers"})
+
+
+def test_suppression_est_journalisee(redacteur):
+    """Prompt 16, cause racine n° 3, § 5 : « chaque suppression est
+    journalisée » — relevé en relecture, `ServiceGestion.supprimer` ne
+    journalisait rien, contrairement à `creer`/`modifier`/`archiver`."""
+    type_formation = ServiceTypeFormation.creer(redacteur, {"intitule": "Officiers"})
+
+    ServiceTypeFormation.supprimer(redacteur, type_formation.pk)
+
+    assert EntreeJournal.objects.filter(
+        objet_type="type_formation",
+        objet_identifiant="Officiers",
+        type_action=TypeAction.SUPPRESSION_ELEMENT_GESTION,
+    ).exists()
+
+
+def test_suppression_d_un_type_jamais_utilise_reussit_depuis_l_ecran(client, redacteur):
+    """Prompt 16, cause racine n° 3 : aucune route de suppression n'existait
+    pour les types de formation — seul `ServiceGestion.supprimer` (déjà prêt)
+    était atteignable, jamais l'écran. Confirmation par dialogue (BNF-09),
+    comme l'archivage, mais avec un texte distinct — une suppression est
+    définitive."""
+    type_formation = ServiceTypeFormation.creer(redacteur, {"intitule": "Officiers"})
+    client.force_login(redacteur)
+
+    reponse_get = client.get(
+        reverse("referentiel:supprimer_type_formation", args=[type_formation.pk])
+    )
+    assert reponse_get.status_code == 200
+
+    reponse_post = client.post(
+        reverse("referentiel:supprimer_type_formation", args=[type_formation.pk])
+    )
+
+    assert reponse_post.status_code == 302
+    assert not TypeFormation.objects.filter(pk=type_formation.pk).exists()
+
+
+def test_suppression_d_un_type_utilise_est_refusee_en_enumerant_les_formations(
+    client, redacteur, type_officiers
+):
+    """E3 : le refus énumère l'élément qui s'oppose, pas un refus sec."""
+    formation = ServiceFormation.creer(redacteur, _donnees(type_officiers))
+    client.force_login(redacteur)
+
+    reponse = client.post(reverse("referentiel:supprimer_type_formation", args=[type_officiers.pk]))
+
+    assert reponse.status_code == 302
+    assert TypeFormation.objects.filter(pk=type_officiers.pk).exists()
+    messages_affiches = [str(m) for m in get_messages(reponse.wsgi_request)]
+    assert any(formation.intitule in message for message in messages_affiches)

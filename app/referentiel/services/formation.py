@@ -4,8 +4,13 @@ Tout vient du patron `ServiceGestion`, sauf l'unicité composite (écart 1,
 Prompt 06 § 2.1) : `_erreur_unicite` est surchargée parce que le patron ne
 connaît qu'une unicité à un seul champ (`CHAMP_UNICITE`). `_queryset` charge
 le type en une requête (`select_related`) — la liste affiche son intitulé
-sur chaque ligne.
+sur chaque ligne — et annote, Prompt 17 § 2.3, le nombre de matières et le
+volume prescrit total : une seule relation jointe (`elements_referentiel`),
+`Count` et `Sum` peuvent donc partager la même agrégation sans double
+comptage.
 """
+
+from django.db.models import Count, Sum
 
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
@@ -32,10 +37,14 @@ class ServiceFormation(ServiceGestion):
     NATURE_CREATION = TypeAction.CREATION_ELEMENT_GESTION
     NATURE_MODIFICATION = TypeAction.MODIFICATION_ELEMENT_GESTION
     NATURE_ARCHIVAGE = TypeAction.ARCHIVAGE_ELEMENT_GESTION
+    NATURE_SUPPRESSION = TypeAction.SUPPRESSION_ELEMENT_GESTION
 
     @classmethod
     def _queryset(cls):
-        return cls.MODELE.objects.select_related("type_formation")
+        return cls.MODELE.objects.select_related("type_formation").annotate(
+            nombre_matieres=Count("elements_referentiel", distinct=True),
+            volume_prescrit_total=Sum("elements_referentiel__volume_horaire_prescrit"),
+        )
 
     @classmethod
     def _erreur_unicite(cls, instance):

@@ -35,6 +35,7 @@ class ServiceObjectifPedagogique(ServiceGestion):
     DONNEES_JOURNAL = DonneesEntreeJournal
     NATURE_CREATION = TypeAction.CREATION_ELEMENT_GESTION
     NATURE_MODIFICATION = TypeAction.MODIFICATION_ELEMENT_GESTION
+    NATURE_SUPPRESSION = TypeAction.SUPPRESSION_ELEMENT_GESTION
 
     @classmethod
     def _erreur_unicite(cls, instance):

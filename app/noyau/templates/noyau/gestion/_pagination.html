@@ -6,23 +6,51 @@
   </p>
   <div class="flex items-center gap-1">
     {% if page.has_previous %}
-      <a href="{% querystring page=page.previous_page_number %}"
+      <a href="{% querystring page=page.previous_page_number %}" aria-label="Page précédente"
          class="border border-gris-trait bg-fond-bloc px-2.5 py-1 no-underline text-encre
                 transition-colors duration-survol hover:bg-fond-bande">Précédent</a>
     {% else %}
       <span class="cursor-not-allowed border border-gris-trait bg-fond-bloc px-2.5 py-1
                    text-gris-eteint">Précédent</span>
     {% endif %}
-    {% for numero in page.paginator.page_range %}
+
+    {% if montrer_premiere %}
+      <a href="{% querystring page=1 %}" aria-label="Page 1"
+         class="border border-gris-trait bg-fond-bloc px-2.5 py-1 tabular-nums no-underline
+                text-encre transition-colors duration-survol hover:bg-fond-bande">1</a>
+    {% endif %}
+    {% if omission_avant %}
+      <span aria-hidden="true" class="px-1 text-gris-eteint">…</span>
+    {% endif %}
+
+    {% for numero in fenetre %}
       {% if numero == page.number %}
-        <span aria-current="page"
+        <span aria-current="page" aria-label="Page {{ numero }}"
               class="border border-marine-900 bg-marine-900 px-2.5 py-1 font-semibold
                      tabular-nums text-blanc">{{ numero }}</span>
       {% else %}
-        <a href="{% querystring page=numero %}"
+        <a href="{% querystring page=numero %}" aria-label="Page {{ numero }}"
            class="border border-gris-trait bg-fond-bloc px-2.5 py-1 tabular-nums no-underline
                   text-encre transition-colors duration-survol hover:bg-fond-bande">{{ numero }}</a>
       {% endif %}
     {% endfor %}
+
+    {% if omission_apres %}
+      <span aria-hidden="true" class="px-1 text-gris-eteint">…</span>
+    {% endif %}
+    {% if montrer_derniere %}
+      <a href="{% querystring page=page.paginator.num_pages %}" aria-label="Page {{ page.paginator.num_pages }}"
+         class="border border-gris-trait bg-fond-bloc px-2.5 py-1 tabular-nums no-underline
+                text-encre transition-colors duration-survol hover:bg-fond-bande">{{ page.paginator.num_pages }}</a>
+    {% endif %}
+
+    {% if page.has_next %}
+      <a href="{% querystring page=page.next_page_number %}" aria-label="Page suivante"
+         class="border border-gris-trait bg-fond-bloc px-2.5 py-1 no-underline text-encre
+                transition-colors duration-survol hover:bg-fond-bande">Suivant</a>
+    {% else %}
+      <span class="cursor-not-allowed border border-gris-trait bg-fond-bloc px-2.5 py-1
+                   text-gris-eteint">Suivant</span>
+    {% endif %}
   </div>
 </nav>

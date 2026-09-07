@@ -94,6 +94,9 @@ def _ligne(type_formation, peut_ecrire):
         ligne["url_desarchiver"] = reverse(
             "referentiel:desarchiver_type_formation", args=[type_formation.pk]
         )
+        ligne["url_supprimer"] = reverse(
+            "referentiel:supprimer_type_formation", args=[type_formation.pk]
+        )
     return ligne
 
 
@@ -196,3 +199,27 @@ def vue_desarchiver_type_formation(request, pk):
     ServiceTypeFormation.desarchiver(request.user, pk)
     messages.success(request, "Type de formation désarchivé.")
     return redirect("referentiel:liste_types_formation")
+
+
+@exige_habilitation(ServiceTypeFormation.PERMISSION_ECRITURE)
+def vue_confirmer_suppression_type_formation(request, pk):
+    type_formation = _type_formation_ou_404(pk)
+    if request.method == "POST":
+        try:
+            ServiceTypeFormation.supprimer(request.user, pk)
+        except ErreurValidation as erreur:
+            messages.error(request, str(erreur))
+        else:
+            messages.success(request, "Type de formation supprimé.")
+        return redirect("referentiel:liste_types_formation")
+    return render(
+        request,
+        "noyau/gestion/confirmer_suppression.html",
+        {
+            "titre_dialogue": f"Supprimer le type « {type_formation.intitule} »",
+            "texte_explication": (
+                f"Le type « {type_formation.intitule} » sera supprimé définitivement."
+            ),
+            "url_annuler": reverse("referentiel:liste_types_formation"),
+        },
+    )

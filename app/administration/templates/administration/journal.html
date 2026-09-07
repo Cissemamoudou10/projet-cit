@@ -1,5 +1,6 @@
 {% extends "noyau/base.html" %}
 {% load static %}
+{% load pagination %}
 
 {% block titre %}Journal — {{ block.super }}{% endblock %}
 
@@ -57,17 +58,21 @@
   <div>
     <label for="filtre-objet-type"
            class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Type d'objet</label>
-    <input type="text" id="filtre-objet-type" name="objet_type" value="{{ filtres.objet_type }}"
-           placeholder="utilisateur, permission…"
-           class="h-controle w-40 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
-                  outline-none hover:border-marine-700
-                  focus:border-marine-700 focus:ring-2 focus:ring-focus">
+    <select id="filtre-objet-type" name="objet_type"
+            class="h-controle w-48 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700
+                   focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Tous</option>
+      {% for valeur, libelle in objet_types %}
+        <option value="{{ valeur }}" {% if valeur == filtres.objet_type %}selected{% endif %}>{{ libelle }}</option>
+      {% endfor %}
+    </select>
   </div>
   <div>
     <label for="filtre-objet-identifiant"
-           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Objet</label>
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Identifiant</label>
     <input type="text" id="filtre-objet-identifiant" name="objet_identifiant"
-           value="{{ filtres.objet_identifiant }}"
+           value="{{ filtres.objet_identifiant }}" placeholder="facultatif"
            class="h-controle w-40 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
                   outline-none hover:border-marine-700
                   focus:border-marine-700 focus:ring-2 focus:ring-focus">
@@ -224,12 +229,14 @@
                       <div>
                         <p class="mb-1 font-titre text-2xs font-semibold uppercase tracking-wide text-marine-900">
                           Valeur avant</p>
-                        <p class="text-gris-lecture">{{ entree.valeur_avant|default:"—" }}</p>
+                        <p class="text-gris-lecture">
+                          {{ entree.valeur_avant|default:"Sans objet pour cette nature d'action." }}</p>
                       </div>
                       <div>
                         <p class="mb-1 font-titre text-2xs font-semibold uppercase tracking-wide text-marine-900">
                           Valeur après</p>
-                        <p class="text-gris-lecture">{{ entree.valeur_apres|default:"—" }}</p>
+                        <p class="text-gris-lecture">
+                          {{ entree.valeur_apres|default:"Sans objet pour cette nature d'action." }}</p>
                       </div>
                     </div>
                   </details>
@@ -241,34 +248,7 @@
       </table>
     </div>
 
-    <nav class="flex items-center justify-between border-t border-gris-trait bg-fond-bande px-3 py-2 text-xs"
-         aria-label="Pagination">
-      <p class="tabular-nums text-gris-lecture">
-        Éléments <strong class="text-encre">{{ page.start_index }} à {{ page.end_index }}</strong>
-        sur <strong class="text-encre">{{ page.paginator.count }}</strong>
-      </p>
-      <div class="flex items-center gap-1">
-        {% if page.has_previous %}
-          <a href="{% querystring page=page.previous_page_number %}"
-             class="border border-gris-trait bg-fond-bloc px-2.5 py-1 no-underline text-encre
-                    transition-colors duration-survol hover:bg-fond-bande">Précédent</a>
-        {% else %}
-          <span class="cursor-not-allowed border border-gris-trait bg-fond-bloc px-2.5 py-1
-                       text-gris-eteint">Précédent</span>
-        {% endif %}
-        {% for numero in page.paginator.page_range %}
-          {% if numero == page.number %}
-            <span aria-current="page"
-                  class="border border-marine-900 bg-marine-900 px-2.5 py-1 font-semibold
-                         tabular-nums text-blanc">{{ numero }}</span>
-          {% else %}
-            <a href="{% querystring page=numero %}"
-               class="border border-gris-trait bg-fond-bloc px-2.5 py-1 tabular-nums no-underline
-                      text-encre transition-colors duration-survol hover:bg-fond-bande">{{ numero }}</a>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </nav>
+    {% pagination page %}
   {% else %}
     <div class="border-t border-gris-trait px-6 py-8">
       <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">

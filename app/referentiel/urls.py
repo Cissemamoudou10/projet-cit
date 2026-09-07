@@ -36,6 +36,11 @@ urlpatterns = [
         type_formation.vue_desarchiver_type_formation,
         name="desarchiver_type_formation",
     ),
+    path(
+        "types-formation/<int:pk>/supprimer/",
+        type_formation.vue_confirmer_suppression_type_formation,
+        name="supprimer_type_formation",
+    ),
     path("formations/", formation.vue_liste_formations, name="liste_formations"),
     path("formations/creer/", formation.vue_creer_formation, name="creer_formation"),
     path("formations/<int:pk>/", formation.vue_detail_formation, name="detail_formation"),
@@ -57,6 +62,11 @@ urlpatterns = [
         formation.vue_desarchiver_formation,
         name="desarchiver_formation",
     ),
+    path(
+        "formations/<int:pk>/supprimer/",
+        formation.vue_confirmer_suppression_formation,
+        name="supprimer_formation",
+    ),
     path("matieres/", matiere.vue_liste_matieres, name="liste_matieres"),
     path("matieres/creer/", matiere.vue_creer_matiere, name="creer_matiere"),
     path("matieres/<int:pk>/", matiere.vue_detail_matiere, name="detail_matiere"),
@@ -70,6 +80,11 @@ urlpatterns = [
         "matieres/<int:pk>/desarchiver/",
         matiere.vue_desarchiver_matiere,
         name="desarchiver_matiere",
+    ),
+    path(
+        "matieres/<int:pk>/supprimer/",
+        matiere.vue_confirmer_suppression_matiere,
+        name="supprimer_matiere",
     ),
     path(
         "formations/<int:formation_pk>/referentiel/",

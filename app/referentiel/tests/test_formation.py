@@ -4,14 +4,16 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from administration.models import EntreeJournal, TypeAction
 from noyau.exceptions import ErreurHabilitation, ErreurModificationConcurrente, ErreurValidation
-from referentiel.models import Formation, TypeFormation
+from referentiel.models import ElementReferentiel, Formation, Matiere, TypeFormation
 from referentiel.services.formation import ServiceFormation
 from referentiel.services.type_formation import ServiceTypeFormation
+from referentiel.tests.conftest import donnees_element_referentiel
 
 
 @pytest.fixture
@@ -231,6 +233,20 @@ def test_creation_modification_archivage_sont_journalises(redacteur, type_offici
     assert TypeAction.ARCHIVAGE_ELEMENT_GESTION in natures
 
 
+def test_suppression_est_journalisee(redacteur, type_officiers):
+    """Prompt 16, cause racine n° 3, § 5 — relevé en relecture, voir
+    referentiel/tests/test_type_formation.py."""
+    formation = ServiceFormation.creer(redacteur, _donnees(type_officiers))
+
+    ServiceFormation.supprimer(redacteur, formation.pk)
+
+    assert EntreeJournal.objects.filter(
+        objet_type="formation",
+        objet_identifiant__icontains="formation initiale",
+        type_action=TypeAction.SUPPRESSION_ELEMENT_GESTION,
+    ).exists()
+
+
 def test_modifier_par_le_vrai_formulaire_html_ne_declenche_pas_a_tort_e5(
     client, redacteur, type_officiers
 ):
@@ -297,3 +313,66 @@ def test_la_colonne_nombre_de_formations_du_type_est_exacte(
     comptes = {type_formation.pk: type_formation.nombre_formations for type_formation in page}
     assert comptes[type_officiers.pk] == 2
     assert comptes[type_sous_officiers.pk] == 1
+
+
+def test_colonnes_matieres_et_volume_prescrit_sont_exactes(redacteur, type_officiers):
+    """Prompt 17, § 2.3 — symétrie avec le compteur de formations par type
+    (US-REF-00)."""
+    formation = ServiceFormation.creer(redacteur, _donnees(type_officiers))
+    formation_vide = ServiceFormation.creer(
+        redacteur, _donnees(type_officiers, intitule="Formation continue")
+    )
+    ElementReferentiel.objects.create(
+        formation=formation,
+        matiere=Matiere.objects.create(intitule="Matière 1"),
+        **donnees_element_referentiel(volume_horaire_prescrit=40),
+    )
+    ElementReferentiel.objects.create(
+        formation=formation,
+        matiere=Matiere.objects.create(intitule="Matière 2"),
+        **donnees_element_referentiel(volume_horaire_prescrit=15),
+    )
+
+    page = ServiceFormation.lister(redacteur, {}, None)
+    lignes = {f.pk: f for f in page}
+
+    assert lignes[formation.pk].nombre_matieres == 2
+    assert lignes[formation.pk].volume_prescrit_total == 55
+    assert lignes[formation_vide.pk].nombre_matieres == 0
+    assert lignes[formation_vide.pk].volume_prescrit_total is None
+
+
+def test_nombre_de_requetes_de_la_liste_des_formations_ne_depend_pas_du_nombre_de_lignes(
+    client, redacteur, type_officiers
+):
+    """Prompt 17, § 2.6 — le test obligatoire."""
+    client.force_login(redacteur)
+    url = reverse("referentiel:liste_formations")
+    for i in range(5):
+        ServiceFormation.creer(redacteur, _donnees(type_officiers, intitule=f"Formation {i:02d}"))
+    with CaptureQueriesContext(connection) as capture_cinq:
+        client.get(url)
+
+    for i in range(5, 20):
+        ServiceFormation.creer(redacteur, _donnees(type_officiers, intitule=f"Formation {i:02d}"))
+    with CaptureQueriesContext(connection) as capture_vingt:
+        client.get(url)
+
+    assert len(capture_vingt) == len(capture_cinq)
+
+
+def test_suppression_d_une_formation_jamais_utilisee_reussit_depuis_l_ecran(
+    client, redacteur, type_officiers
+):
+    """Prompt 16, cause racine n° 3 : aucune route de suppression n'existait
+    pour les formations."""
+    formation = ServiceFormation.creer(redacteur, _donnees(type_officiers))
+    client.force_login(redacteur)
+
+    reponse_get = client.get(reverse("referentiel:supprimer_formation", args=[formation.pk]))
+    assert reponse_get.status_code == 200
+
+    reponse_post = client.post(reverse("referentiel:supprimer_formation", args=[formation.pk]))
+
+    assert reponse_post.status_code == 302
+    assert not Formation.objects.filter(pk=formation.pk).exists()
