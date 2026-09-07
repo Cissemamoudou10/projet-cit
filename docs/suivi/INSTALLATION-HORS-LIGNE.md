@@ -58,14 +58,53 @@ corrigé par une seconde exécution de cette seule étape, réseau rétabli).
 | `compose/` (composition, `.env.exemple`, script de rôles) | 12 Ko |
 | **Total** | **330 Mo** |
 
-`installer.sh` (Phase 2-3, exécuté sur la machine isolée) **n'est pas encore
-écrit** — à faire avant le transfert vers la VM, voir la réserve de Lt Cissé
-sur l'arrêt au démarrage de la pile (migrations et compte administrateur en
-commandes séparées, documentées).
+## Test réel sur VM Debian 12 (`192.168.56.101`) — 2026-09-07
 
-Non exécuté au-delà de ce qui précède. Le socle produit les fichiers de
-dépendances ; l'installation elle-même reste à faire au moment du test, sur
-la machine virtuelle Debian 12 (BNF-06).
+**Verdict : réussi.** Les quatre phases du protocole (§ 2) ont été exécutées
+pour de vrai, sur une machine isolée (aucune passerelle réseau — vérifié par
+`ip route` et `getent hosts` avant d'incriminer quoi que ce soit d'autre) :
+installation du moteur Docker depuis les `.deb` locaux, chargement des deux
+images, démarrage de la pile, migrations, tri accentué réel, rendu PDF,
+création du premier compte, redémarrage complet de la machine avec retour
+autonome de la pile — sans aucune commande manuelle après le redémarrage.
+
+Trois défauts réels ont été trouvés et corrigés en cours de test — exactement
+ce que ce test est censé révéler, jamais visible sur un poste encore
+connecté :
+
+1. **`installer.sh` réclamait des paquets jamais embarqués** (`git`, `pigz`,
+   `liberror-perl`...) — l'installation utilisait `apt-get install ./*.deb`
+   sans `--no-install-recommends`, alors que le téléchargement
+   (`constituer-paquet.sh`) l'avait utilisé. Voir `docs/suivi/PROBLEMES.md`,
+   P-33.
+2. **`docker-compose.production.yml` ne transmettait jamais `BASE_NOM`** au
+   conteneur `base` — seulement `POSTGRES_DB` (pour l'image officielle) ;
+   `01_roles.sh`, qui lit `$BASE_NOM`, échouait donc systématiquement à
+   créer les rôles. Corrigé par l'ajout de la variable manquante.
+3. **Un `SECRET_KEY` généré contenant un `$` littéral** (charset de
+   `get_random_secret_key()`) a été mal réinterprété par l'interpolation de
+   variables de `docker compose` (`.env`) — `docs/exploitation/INSTALLATION.md`
+   recommande désormais `secrets.token_urlsafe(50)` pour `SECRET_KEY` aussi,
+   pas seulement pour les mots de passe.
+
+Deux imprécisions de `docs/exploitation/INSTALLATION.md` ont aussi été
+corrigées en cours de route : la fixture de vérification PDF a besoin d'un
+dossier de sortie accessible en écriture à l'utilisateur non-root du
+conteneur (`chmod 777`) ; `manage.py createsuperuser` ne convient pas au
+modèle `Utilisateur` du projet (champs `profil`/`grade` obligatoires, non
+connus de la commande générique) — remplacé par la création via le shell
+Django, `Utilisateur.objects.create_superuser(...)`.
+
+Un `WORKER TIMEOUT` Gunicorn observé juste après le démarrage s'est révélé
+être un artefact de charge CPU transitoire de la VM de test (2 vCPU,
+saturée par nos propres opérations d'installation), sans récidive une fois
+la charge retombée — voir P-34, à surveiller si la machine réelle du CIT a
+des ressources plus limitées.
+
+Le paquet transféré (330 Mo, intégrité vérifiée par somme SHA-256 des deux
+images entre le poste de développement et la VM) inclut désormais
+`verification-pdf/`, absent de la première construction — corrigé dans
+`scripts/constituer-paquet.sh` avant le transfert.
 
 ## Dépendances Python
 

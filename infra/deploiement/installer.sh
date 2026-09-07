@@ -23,7 +23,11 @@ ENV_FICHIER="$RACINE_PAQUET/compose/.env"
 
 echo "== Phase 2 — installation du moteur Docker (paquets locaux) =="
 cd "$RACINE_PAQUET/moteur-docker/debian-12"
-apt-get install -y ./*.deb
+# --no-install-recommends : symétrique au téléchargement (constituer-paquet.sh,
+# étape 4, même option). Sans elle, apt réclame des paquets « recommandés »
+# (git, pigz, liberror-perl...) jamais embarqués dans le paquet — dépendance
+# manquante visible seulement à l'installation réelle, hors ligne.
+apt-get install -y --no-install-recommends ./*.deb
 cd "$RACINE_PAQUET"
 systemctl enable --now docker
 

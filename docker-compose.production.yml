@@ -29,8 +29,10 @@ services:
       # Irrattrapable sans reconstruction de la base — § 4.1 du protocole,
       # vérifié par un tri réel, pas seulement par cette configuration.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=fr-FR --locale=C"
-      # Lus par infra/postgres/init-production/01_roles.sh — les deux rôles
-      # restreints qu'il crée (RG-27, § 4.1).
+      # Lus par infra/postgres/init-production/01_roles.sh — POSTGRES_DB sert
+      # à l'image officielle pour créer la base, mais le script lit son propre
+      # nom de variable (BASE_NOM), jamais POSTGRES_DB (RG-27, § 4.1).
+      BASE_NOM: ${BASE_NOM}
       BASE_UTILISATEUR_MIGRATION: ${BASE_UTILISATEUR_MIGRATION}
       BASE_MOT_DE_PASSE_MIGRATION: ${BASE_MOT_DE_PASSE_MIGRATION}
       BASE_UTILISATEUR: ${BASE_UTILISATEUR}
