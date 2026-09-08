@@ -82,6 +82,51 @@ def test_retrait_confirme_supprime_l_element(client, redacteur, formation, matie
     assert not ElementReferentiel.objects.filter(pk=element.pk).exists()
 
 
+# Bloc D.2 du Prompt 19 — priorité 3 : preuve d'un effet réel, pas d'un code
+# de retour (P-21). Aucun des tests ci-dessus de ce fichier ne passe par le
+# vrai formulaire HTML pour rattacher_matiere/modifier_element_referentiel,
+# seulement par ServiceReferentiel directement.
+
+
+def test_rattacher_par_l_ecran_rattache_reellement_la_matiere(
+    client, redacteur, formation, matiere
+):
+    client.force_login(redacteur)
+
+    client.post(
+        reverse("referentiel:rattacher_matiere", args=[formation.pk]),
+        {
+            "matiere": matiere.pk,
+            "volume_horaire_prescrit": 40,
+            "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
+            "type_lieu_partage": "",
+        },
+    )
+
+    assert ElementReferentiel.objects.filter(formation=formation, matiere=matiere).exists()
+
+
+def test_modifier_l_element_par_l_ecran_change_reellement_le_volume(
+    client, redacteur, formation, matiere
+):
+    element = ServiceReferentiel.rattacher(
+        redacteur, formation, matiere, _donnees(volume_horaire_prescrit=40)
+    )
+    client.force_login(redacteur)
+
+    client.post(
+        reverse("referentiel:modifier_element_referentiel", args=[formation.pk, element.pk]),
+        {
+            "volume_horaire_prescrit": 60,
+            "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
+            "type_lieu_partage": "",
+        },
+    )
+
+    element.refresh_from_db()
+    assert element.volume_horaire_prescrit == 60
+
+
 def test_methode_d_enumeration_des_bloquants_existe_et_ne_trouve_rien(
     redacteur, formation, matiere
 ):

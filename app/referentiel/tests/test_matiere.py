@@ -193,6 +193,37 @@ def test_suppression_d_une_matiere_jamais_utilisee_reussit_depuis_l_ecran(client
     assert not Matiere.objects.filter(pk=matiere.pk).exists()
 
 
+# Bloc D.2 du Prompt 19 — priorité 3 : preuve d'un effet réel, pas d'un code
+# de retour (P-21).
+
+
+def test_creer_par_l_ecran_cree_reellement_la_matiere(client, redacteur):
+    client.force_login(redacteur)
+
+    client.post(reverse("referentiel:creer_matiere"), _donnees())
+
+    assert Matiere.objects.filter(intitule="Électronique numérique").exists()
+
+
+def test_archiver_par_l_ecran_la_retire_reellement_de_la_selection(client, redacteur):
+    matiere = ServiceMatiere.creer(redacteur, _donnees())
+    client.force_login(redacteur)
+
+    client.post(reverse("referentiel:archiver_matiere", args=[matiere.pk]))
+
+    assert matiere.pk not in [m.pk for m in ServiceMatiere.disponibles_pour_selection()]
+
+
+def test_desarchiver_par_l_ecran_la_rend_reellement_a_la_selection(client, redacteur):
+    matiere = ServiceMatiere.creer(redacteur, _donnees())
+    ServiceMatiere.archiver(redacteur, matiere.pk)
+    client.force_login(redacteur)
+
+    client.post(reverse("referentiel:desarchiver_matiere", args=[matiere.pk]))
+
+    assert matiere.pk in [m.pk for m in ServiceMatiere.disponibles_pour_selection()]
+
+
 def test_suppression_d_une_matiere_rattachee_est_refusee_depuis_l_ecran_en_enumerant_la_formation(
     client, redacteur, formation, matiere
 ):

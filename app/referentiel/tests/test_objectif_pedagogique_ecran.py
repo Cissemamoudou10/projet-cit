@@ -66,6 +66,21 @@ def test_monter_et_descendre_echangent_les_positions(client, redacteur, matiere)
     assert second.ordre == 1
 
 
+def test_monter_par_l_ecran_echange_reellement_les_positions(client, redacteur, matiere):
+    """Bloc D.2 du Prompt 19 — priorité 3 : `descendre` a un test HTTP réel
+    ci-dessus, `monter` n'en avait aucun."""
+    premier = ServiceObjectifPedagogique.ajouter(redacteur, matiere, "Premier")
+    second = ServiceObjectifPedagogique.ajouter(redacteur, matiere, "Second")
+    client.force_login(redacteur)
+
+    client.post(reverse("referentiel:monter_objectif_pedagogique", args=[matiere.pk, second.pk]))
+
+    premier.refresh_from_db()
+    second.refresh_from_db()
+    assert second.ordre == 1
+    assert premier.ordre == 2
+
+
 def test_suppression_demande_confirmation_avant_execution(client, redacteur, matiere):
     objectif = ServiceObjectifPedagogique.ajouter(redacteur, matiere, "Premier")
     client.force_login(redacteur)

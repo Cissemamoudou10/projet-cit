@@ -85,6 +85,37 @@ def test_modifier_par_le_vrai_formulaire_html_ne_declenche_pas_a_tort_e5(client,
     assert type_formation.intitule == "Officiers supérieurs"
 
 
+def test_creer_par_l_ecran_cree_reellement_le_type(client, redacteur):
+    """Bloc D.2 du Prompt 19 : preuve d'un effet réel, pas d'un code de
+    retour (P-21)."""
+    client.force_login(redacteur)
+
+    client.post(reverse("referentiel:creer_type_formation"), {"intitule": "Sous-officiers"})
+
+    assert TypeFormation.objects.filter(intitule="Sous-officiers").exists()
+
+
+def test_archiver_par_l_ecran_le_retire_reellement_de_la_selection(client, redacteur):
+    type_formation = ServiceTypeFormation.creer(redacteur, {"intitule": "Officiers"})
+    client.force_login(redacteur)
+
+    client.post(reverse("referentiel:archiver_type_formation", args=[type_formation.pk]))
+
+    assert type_formation.pk not in [
+        t.pk for t in ServiceTypeFormation.disponibles_pour_selection()
+    ]
+
+
+def test_desarchiver_par_l_ecran_le_rend_reellement_a_la_selection(client, redacteur):
+    type_formation = ServiceTypeFormation.creer(redacteur, {"intitule": "Officiers"})
+    ServiceTypeFormation.archiver(redacteur, type_formation.pk)
+    client.force_login(redacteur)
+
+    client.post(reverse("referentiel:desarchiver_type_formation", args=[type_formation.pk]))
+
+    assert type_formation.pk in [t.pk for t in ServiceTypeFormation.disponibles_pour_selection()]
+
+
 def test_planification_examens_direction_lisent_seulement(lecteur):
     ServiceTypeFormation.lister(lecteur, {}, None)  # ne lève pas
 
