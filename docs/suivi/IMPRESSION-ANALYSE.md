@@ -131,7 +131,16 @@ une seule modification pour les cinq écrans. Remesuré le 2026-09-08 :
 | Instructeurs | 113 px | 33 px — déborde encore |
 | Lieux | 146 px | 74 px — déborde encore |
 
-Formations est réglé par le seul masquage. Instructeurs et Lieux débordent
-encore : l'arbitrage se poursuit avec le paysage pour ces deux écrans
-seulement, avec une mention imprimée indiquant l'orientation attendue —
-voir la suite de ce document une fois implantée.
+Formations est réglé par le seul masquage — suffisant pour clore le
+contrôle K3 sur cet écran au sprint 1.
+
+## 5. Clôture du sprint 1, point ouvert reporté au sprint 4
+
+**Instructeurs (33 px) et Lieux (74 px) débordent encore.** Le principe
+retenu pour la suite reste le paysage plutôt qu'un masquage de donnée (§ 4),
+avec une mention visible uniquement à l'impression indiquant l'orientation
+attendue — sans elle, un tableau coupé sans explication serait imprimé
+plusieurs fois avant d'être compris. **Rien n'est implanté** : reporté au
+sprint 4, avec les gabarits des documents imprimables déjà prévus à ce
+sprint (`docs/suivi/sprint-4.md`) plutôt que traité isolément ici — voir ce
+fichier pour le point de suivi.

@@ -30,6 +30,12 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 
 - [ ] Gabarits des documents imprimables (procès-verbal, progression réalisée)
 - [ ] Wireframes des écrans du paquetage Évaluations, non produits en phase 4
+- [ ] Contrôle K3, point ouvert du sprint 1 (Prompt 19, bloc B) — les écrans
+      Instructeurs et Lieux débordent encore de la largeur imprimable en
+      portrait une fois la colonne Actions retirée (33 px et 74 px
+      respectivement, mesuré le 2026-09-08 ; Formations et Matières tiennent
+      déjà). À traiter avec les gabarits imprimables de ce sprint, voir
+      `docs/suivi/IMPRESSION-ANALYSE.md` pour l'analyse chiffrée complète.
 
 ## Revue et rétrospective
 
