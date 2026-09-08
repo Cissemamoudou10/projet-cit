@@ -106,9 +106,32 @@ débordement mesuré au § 1, à chaque fois qu'il oublie de sélectionner
 répéter à chaque impression, sur un centre où plusieurs profils impriment
 ces écrans sans consigne écrite pour l'orientation.
 
-## 4. Ce que je n'ai pas tranché
+## 4. Arbitrage du 2026-09-08 (D-63)
 
-Les deux voies ne s'excluent pas nécessairement — masquer la colonne
-Actions (coût nul, bénéfice réel sur les trois écrans) est indépendant du
-choix portrait/paysage. Cet arbitrage revient au chef de projet ; aucune
-implantation n'a été faite dans le cadre de ce bloc.
+**Retenu : le paysage — mais après le masquage de la colonne Actions, pas à
+sa place.** Les deux voies ne s'excluaient pas : masquer une commande n'est
+pas masquer une donnée (voir D-63), c'est une étape distincte, appliquée en
+premier.
+
+**Le masquage d'une colonne de DONNÉE est explicitement refusé**, quel que
+soit le débordement résiduel : retirer silencieusement une information d'un
+document qui circule dans le centre est pire qu'une mise en page
+imparfaite — le lecteur n'a aucun moyen de savoir qu'il lui manque quelque
+chose, même principe que la règle de la charte sur les couleurs doublées
+d'un mot. La piste envisagée au § 2 pour Lieux (abréger ou retirer
+« Indisponibilités à venir ») est donc écartée, pas seulement reportée.
+
+**Étape 1, implantée** — `data-impression="masquer"` posé sur la colonne
+Actions du patron de gestion (`noyau/templates/noyau/gestion/liste.html`),
+une seule modification pour les cinq écrans. Remesuré le 2026-09-08 :
+
+| Écran | Avant (Actions visible) | Après (Actions masquée) |
+|---|---|---|
+| Formations | 60 px de dépassement | **Tient** (-2 px de marge) |
+| Instructeurs | 113 px | 33 px — déborde encore |
+| Lieux | 146 px | 74 px — déborde encore |
+
+Formations est réglé par le seul masquage. Instructeurs et Lieux débordent
+encore : l'arbitrage se poursuit avec le paysage pour ces deux écrans
+seulement, avec une mention imprimée indiquant l'orientation attendue —
+voir la suite de ce document une fois implantée.
