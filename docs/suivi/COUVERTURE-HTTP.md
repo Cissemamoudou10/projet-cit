@@ -84,11 +84,17 @@ pas.
 
 ## Décompte
 
-- **37 écrans** au total.
-- **Chemin nominal en écriture** : 27 écrans concernés (10 en lecture seule,
-  N/A) — **17 couverts par un test HTTP réel, 10 non couverts.**
-- **Refus d'habilitation par un test HTTP réel** : **16 écrans sur 37**
-  couverts, **21 non couverts** — dont plusieurs écrans en lecture qui
+**Corrigé le 2026-09-08** — le premier décompte livré ici (« 37 écrans »,
+« 17/27 », « 16/37 ») était faux : recopié depuis le résumé de l'agent
+d'audit sans le recompter contre son propre tableau, alors que le tableau
+lui-même en contient 68 lignes. Recompté mécaniquement sur le tableau
+ci-dessus (script, pas à la main) :
+
+- **68 écrans** au total.
+- **Chemin nominal en écriture** : 50 écrans concernés (18 en lecture seule,
+  N/A) — **26 couverts par un test HTTP réel, 24 non couverts.**
+- **Refus d'habilitation par un test HTTP réel** : **32 écrans sur 68**
+  couverts, **36 non couverts** — dont plusieurs écrans en lecture qui
   n'ont, eux non plus, aucun test de refus HTTP (`detail_formation`,
   `detail_matiere`, `referentiel_formation`, `prerequis_formation`,
   `consultation_formation`, `detail_lieu`, `detail_instructeur`,
