@@ -60,6 +60,52 @@ suffit pas à lui seul à le déclarer franchi.
 **R19, cohérence documentaire.** Toute décision prise en développement qui
 s'écarte de la conception doit entrer dans `DECISIONS.md` le jour même.
 
+## État consolidé des reports de critères — premier point de la revue du 26 septembre
+
+Neuf reports de critères d'acceptation sont consignés dans `docs/suivi/DECISIONS.md`
+(un report = un critère qui suppose un modèle hors périmètre de la story qui
+l'a rencontré, réputé refermé automatiquement dès que le modèle manquant
+existe — jamais supposé, toujours revérifié : voir la leçon de P-25).
+Revérifié le 2026-09-08 sur le code réel, pas sur la déclaration des décisions
+elles-mêmes : **un seul est réellement et entièrement refermé**, deux sont
+partiellement refermés.
+
+| Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
+|---|---|---|---|---|
+| D-22 | 2, 4 (type de la formation) | US-REF-00 | US-REF-01 | **Fermé** — `Formation.type_formation` en `PROTECT`, filtre par type (`CHAMPS_FILTRABLES`) confirmés dans le code |
+| D-30 | 3 (fiche affiche les formations utilisatrices) | US-REF-02 | US-REF-03 | **Ouvert** — c'est P-25 : `matiere_detail.html` toujours vide, revérifié ce jour |
+| D-30 | 5 (suppression bloquée) | US-REF-02 | US-REF-03 / US-INS-02 | **Fermé** — `Qualification.matiere`/`ElementReferentiel.matiere` en `PROTECT`, deux tests confirmés (D-50) |
+| D-35 | 6 / RG-07, source prérequis | US-REF-03 | US-REF-06 | **Fermé** — `Prerequis`, contrôle explicite (D-40) |
+| D-35 | 6 / RG-07, sources séance et évaluation | US-REF-03 | sprint 2 (séance) / sprint 4 (évaluation) | Ouvert |
+| D-23 | 4 (session ouverte bloque la suppression) | US-REF-01 | US-SES-01 (sprint 2) | Ouvert — `Session` n'existe pas encore |
+| D-34 | 3, 4 (contrainte de catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | Ouvert |
+| D-39 | 3, 4 (prérequis exploités par le moteur / signalés en saisie) | US-REF-06 | moteur de génération / saisie manuelle (sprint 2/3) | Ouvert |
+| D-45 | 4 (instructeur affecté à un programme en cours) | US-INS-01 | séance programmée (sprint 2) | Ouvert |
+| D-51 | E1 (instructeur affecté à des séances futures) | US-INS-02 | séance programmée (sprint 2) | Ouvert |
+| D-54 | 4, volet brigade (lieu affecté à une brigade) | US-PLAN-02 | US-SES-02 (sprint 2) | Ouvert |
+| D-54 | 4, volet séance (lieu affecté à une séance) | US-PLAN-02 | séance programmée (sprint 2) | Ouvert |
+
+**Écart avec le décompte donné en revue** (« neuf reports, trois refermés,
+six des sept ouverts se referment au sprint 2 ») : la vérification sur le code
+ne confirme qu'**une** fermeture complète (D-22) et **deux** fermetures
+partielles (un volet de D-30, un volet de D-35) — pas trois fermetures
+entières. Le chiffre « sept ouverts » de la revue est lui-même incohérent
+avec « neuf... trois refermés » (9 − 3 = 6, pas 7). À signaler en revue plutôt
+qu'à corriger silencieusement ici : seul le compte ci-dessus, vérifié sur le
+code, doit servir de référence au 26 septembre.
+
+**Écart de numérotation à signaler, non corrigé ici** (hors périmètre —
+`.claude/rules` réserve le backlog au chef de projet) : plusieurs reports
+(D-34, D-39, D-45, D-51, D-54) citent des codes de story (« US-PLAN-01 »,
+« US-PLAN-03 », « US-PLAN-04 », « US-PLAN-05 ») qui ne correspondent plus à
+la numérotation actuelle de `docs/suivi/sprint-2.md` — par exemple, la
+« US-PLAN-01 » citée pour le moteur de génération (D-34) y désigne en
+réalité « Élaborer le calendrier académique annuel » ; le moteur de
+génération porte aujourd'hui le code US-PLAN-03. Les correspondances
+fonctionnelles ci-dessus (colonne « Referme ») sont établies par la
+description du besoin, pas par le code de story cité dans `DECISIONS.md` —
+à faire arbitrer par le chef de projet avant le 26 septembre.
+
 ## Questions de terrain encore ouvertes
 
 Aucune n'est bloquante.
