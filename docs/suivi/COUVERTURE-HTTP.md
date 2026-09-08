@@ -100,6 +100,20 @@ ci-dessus (script, pas à la main) :
   `consultation_formation`, `detail_lieu`, `detail_instructeur`,
   `couverture_qualifications`).
 
+## État après le bloc D.2 (2026-09-08)
+
+Ce tableau reste un instantané de l'audit — non remis à jour ligne par
+ligne — mais les manques qu'il désignait sont comblés :
+
+- **Refus d'habilitation, les 36 manquants** : table déclarative unique
+  (`tests/architecture/test_ecrans_ecriture.py`, 48 écrans d'écriture, 192
+  cas de refus) plus un test de garde qui échoue si une future vue
+  d'écriture manque à la table — voir le commit « Table unique de refus
+  d'habilitation + test de garde ».
+- **Chemin nominal en écriture, les 24 manquants** : un test par écran,
+  chacun prouvant un effet réel en base (jamais un simple code de retour) —
+  voir les commits « Chemins nominaux en écriture ».
+
 ## Angles morts les plus nets, relevés par l'audit
 
 - **`administration:modifier_compte`, `desactiver_compte`, `reactiver_compte`**
