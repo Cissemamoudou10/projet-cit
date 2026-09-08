@@ -162,6 +162,48 @@ def test_methode_d_enumeration_des_bloquants_existe_et_ne_trouve_rien(redacteur)
     assert not Matiere.objects.filter(pk=matiere.pk).exists()
 
 
+# P-25 / D-30, refermé pour de bon (docs/suivi/DECISIONS.md, docs/suivi/
+# PROBLEMES.md) : la fiche d'une matière indique désormais réellement les
+# formations qui l'utilisent, critère 3 d'US-REF-02.
+
+
+def test_formations_utilisatrices_liste_les_formations_reellement_rattachees(
+    redacteur, formation, matiere
+):
+    assert list(ServiceMatiere.formations_utilisatrices(redacteur, matiere)) == []
+
+    ElementReferentiel.objects.create(
+        formation=formation, matiere=matiere, **donnees_element_referentiel()
+    )
+
+    assert list(ServiceMatiere.formations_utilisatrices(redacteur, matiere)) == [formation]
+
+
+def test_la_fiche_affiche_reellement_la_formation_qui_utilise_la_matiere(
+    client, redacteur, formation, matiere
+):
+    """P-25 : la section affichait toujours l'état vide statique, quelle
+    que soit la matière — vérifié par le vrai cycle HTTP, pas par le
+    service seul (leçon du bloc C, Prompt 19)."""
+    ElementReferentiel.objects.create(
+        formation=formation, matiere=matiere, **donnees_element_referentiel()
+    )
+    client.force_login(redacteur)
+
+    contenu = client.get(reverse("referentiel:detail_matiere", args=[matiere.pk])).content.decode()
+
+    assert formation.intitule in contenu
+    assert "Aucun référentiel ne la cite encore" not in contenu
+
+
+def test_la_fiche_garde_l_etat_vide_quand_aucune_formation_ne_l_utilise(client, redacteur, matiere):
+    client.force_login(redacteur)
+
+    contenu = client.get(reverse("referentiel:detail_matiere", args=[matiere.pk])).content.decode()
+
+    assert "Aucun référentiel ne la cite encore" in contenu
+
+
 def test_suppression_d_une_matiere_rattachee_a_un_referentiel_est_refusee_par_le_service(
     redacteur, formation, matiere
 ):

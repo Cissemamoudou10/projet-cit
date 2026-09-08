@@ -67,13 +67,18 @@ Neuf reports de critères d'acceptation sont consignés dans `docs/suivi/DECISIO
 l'a rencontré, réputé refermé automatiquement dès que le modèle manquant
 existe — jamais supposé, toujours revérifié : voir la leçon de P-25).
 Revérifié le 2026-09-08 sur le code réel, pas sur la déclaration des décisions
-elles-mêmes : **un seul est réellement et entièrement refermé**, deux sont
-partiellement refermés.
+elles-mêmes. **Mise à jour du 2026-09-08, en fin de journée** : le premier
+volet de D-30 (critère 3, ci-dessous « Ouvert ») a été corrigé dans le lot de
+clôture du sprint 1 — traité comme une correction rattachée au report, pas
+comme une story (le chef de projet l'a explicitement refusée en ce sens) —
+voir P-25 (`docs/suivi/PROBLEMES.md`) et D-64 (`docs/suivi/DECISIONS.md`).
+**Deux reports sont donc désormais entièrement refermés (D-22, D-30)**, un
+partiellement (D-35).
 
 | Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
 |---|---|---|---|---|
 | D-22 | 2, 4 (type de la formation) | US-REF-00 | US-REF-01 | **Fermé** — `Formation.type_formation` en `PROTECT`, filtre par type (`CHAMPS_FILTRABLES`) confirmés dans le code |
-| D-30 | 3 (fiche affiche les formations utilisatrices) | US-REF-02 | US-REF-03 | **Ouvert** — c'est P-25 : `matiere_detail.html` toujours vide, revérifié ce jour |
+| D-30 | 3 (fiche affiche les formations utilisatrices) | US-REF-02 | US-REF-03 | **Fermé le 2026-09-08** — `ServiceMatiere.formations_utilisatrices`, corrigé dans le lot de clôture (D-64) — c'était P-25, ouvert de 2026-09-04 à 2026-09-08 |
 | D-30 | 5 (suppression bloquée) | US-REF-02 | US-REF-03 / US-INS-02 | **Fermé** — `Qualification.matiere`/`ElementReferentiel.matiere` en `PROTECT`, deux tests confirmés (D-50) |
 | D-35 | 6 / RG-07, source prérequis | US-REF-03 | US-REF-06 | **Fermé** — `Prerequis`, contrôle explicite (D-40) |
 | D-35 | 6 / RG-07, sources séance et évaluation | US-REF-03 | sprint 2 (séance) / sprint 4 (évaluation) | Ouvert |

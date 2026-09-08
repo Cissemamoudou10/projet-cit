@@ -56,15 +56,27 @@
             font-semibold uppercase tracking-wide text-marine-900">
     Formations utilisatrices
   </p>
-  <div class="px-4 py-8 text-center">
-    <svg class="mx-auto mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
-      <use href="{% static 'icones/planche.svg' %}#matiere"></use>
-    </svg>
-    <p class="mb-1 font-titre text-sm font-semibold">Aucun référentiel ne la cite encore</p>
-    <p class="mx-auto max-w-xs text-xs text-gris-lecture">
-      Se remplit quand un référentiel de formation référence cette matière.
-    </p>
-  </div>
+  {% if formations_utilisatrices %}
+    <ul class="divide-y divide-gris-trait px-4">
+      {% for formation in formations_utilisatrices %}
+        <li class="py-2 text-sm">
+          <a href="{% url 'referentiel:detail_formation' formation.pk %}"
+             class="text-marine-900 no-underline hover:underline">{{ formation.intitule }}</a>
+          <span class="text-gris-lecture">— {{ formation.type_formation }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="px-4 py-8 text-center">
+      <svg class="mx-auto mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#matiere"></use>
+      </svg>
+      <p class="mb-1 font-titre text-sm font-semibold">Aucun référentiel ne la cite encore</p>
+      <p class="mx-auto max-w-xs text-xs text-gris-lecture">
+        Se remplit quand un référentiel de formation référence cette matière.
+      </p>
+    </div>
+  {% endif %}
 </section>
 
 {% if perms.noyau.instructeurs_qualifications_lecture %}

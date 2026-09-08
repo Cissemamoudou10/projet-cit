@@ -129,6 +129,9 @@ def vue_detail_matiere(request, pk):
         {
             "matiere": matiere,
             "url_modifier": reverse("referentiel:modifier_matiere", args=[matiere.pk]),
+            "formations_utilisatrices": ServiceMatiere.formations_utilisatrices(
+                request.user, matiere
+            ),
             "objectifs": ServiceObjectifPedagogique.lister_pour_matiere(request.user, matiere),
             "formulaire_objectif": FormulaireObjectifPedagogique(),
             "url_ajouter_objectif": reverse(

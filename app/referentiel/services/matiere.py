@@ -15,7 +15,7 @@ from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.gestion import ServiceGestion
-from referentiel.models import Matiere
+from referentiel.models import Formation, Matiere
 
 
 class ServiceMatiere(ServiceGestion):
@@ -47,6 +47,18 @@ class ServiceMatiere(ServiceGestion):
             ),
             nombre_objectifs=Count("objectifs_pedagogiques", distinct=True),
         )
+
+    @classmethod
+    def formations_utilisatrices(cls, agissant, matiere):
+        """Critère 3, US-REF-02 — referme le premier volet de D-30
+        (`docs/suivi/DECISIONS.md`) : « la fiche d'une matière indique les
+        formations qui l'utilisent dans leur référentiel ». `Formation` ne
+        recopie jamais la matière (D-29) : `ElementReferentiel` est l'unique
+        lien, et sa contrainte d'unicité (formation, matiere) garantit
+        qu'aucune formation n'apparaît deux fois ici.
+        """
+        cls._verifier(agissant, lecture=True)
+        return Formation.objects.filter(elements_referentiel__matiere=matiere).order_by("intitule")
 
     @classmethod
     def _erreur_unicite(cls, instance):

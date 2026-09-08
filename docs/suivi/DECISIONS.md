@@ -31,6 +31,15 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-64 — D-30 est refermé pour de bon : son premier volet (critère 3) était resté ouvert malgré D-50
+**Date** 2026-09-08 · **Story** aucune (correction rattachée à D-30, lot de clôture du sprint 1, Prompt 19) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — D-50 (US-INS-02) affirmait refermer D-30 « sur ses deux volets », mais ne traitait en réalité que le second (critère 5, suppression protégée). Le premier volet — critère 3, « la fiche d'une matière indique les formations qui l'utilisent dans leur référentiel » — était resté ouvert sans que D-50 s'en aperçoive : c'est exactement P-25 (`docs/suivi/PROBLEMES.md`), trouvé indépendamment le 2026-09-04 et laissé ouvert jusqu'à ce lot de clôture. La revue du 7 septembre (Prompt 19) a proposé une story dédiée pour P-25 ; le chef de projet l'a refusée : un critère d'acceptation non tenu n'est pas un besoin nouveau, une story lui donnerait un statut d'évolution qu'il n'a pas et brouillerait la traçabilité que ce même prompt vient de consolider (bloc D).
+**Décision** — Traité comme une correction rattachée au report D-30, dans le lot de clôture, pas comme une story. `ServiceMatiere.formations_utilisatrices(agissant, matiere)` ajouté (`referentiel/services/matiere.py`), interrogeant `Formation` via la relation inverse `elements_referentiel__matiere` — la contrainte d'unicité (formation, matiere) garantit qu'aucune formation n'apparaît deux fois, aucun `.distinct()` nécessaire. `matiere_detail.html` affiche la liste réelle (intitulé, lien, type de formation) et ne garde l'état vide statique que si elle est réellement vide.
+**Alternative écartée** — Une story dédiée (proposée en premier lieu) : écartée par le chef de projet, voir contexte ci-dessus.
+**Impact sur les livrables** — aucun sur la conception.
+**Vérification** — `ServiceMatiere.formations_utilisatrices` testé côté service et par le vrai cycle HTTP (`referentiel/tests/test_matiere.py`), rendu confirmé à l'écran. **D-30 est maintenant réellement refermé sur ses deux volets** — voir P-25, `docs/suivi/PROBLEMES.md`, mis à jour en conséquence.
+**Reporté au livrable** — non applicable.
+
 ## D-63 — La colonne Actions disparaît à l'impression parce que c'est une commande, jamais pour gagner de la place
 **Date** 2026-09-08 · **Story** aucune (tâche transverse, bloc B du Prompt 19) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Trois des cinq écrans de liste modifiés par le bloc B du Prompt 17 débordent à l'impression navigateur (`docs/suivi/IMPRESSION-ANALYSE.md`). Deux voies étaient en balance : masquer des colonnes de données pour gagner de la place, ou autoriser le paysage. Le chef de projet a explicitement refusé tout masquage de donnée — un document qui circule dans le centre ne doit jamais faire disparaître silencieusement une information sans que le lecteur puisse le savoir, même principe que la règle de la charte sur les couleurs toujours doublées d'un mot.
