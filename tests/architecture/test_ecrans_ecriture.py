@@ -302,20 +302,49 @@ def _toutes_les_vues():
     return resultat
 
 
+def _permission_requise(vue):
+    """`permission_requise` se trouve directement sur une vue fonction
+    décorée par `exige_habilitation`. Sur une vue basée sur une classe,
+    `View.as_view()` ne copie que `dispatch`, jamais les attributs de
+    classe : `HabilitationMixin.permission_requise` (posé sur la classe,
+    pas la fonction retournée) n'est visible qu'en passant par l'attribut
+    `view_class` que Django pose lui-même sur la fonction — sans ce détour,
+    une future vue à base de `HabilitationMixin` échapperait silencieusement
+    à ce test de garde, alors même que ce mixin existe pour ce cas.
+    """
+    permission = getattr(vue, "permission_requise", None)
+    if permission is not None:
+        return permission
+    return getattr(getattr(vue, "view_class", None), "permission_requise", "") or ""
+
+
+def test_permission_requise_detecte_aussi_une_vue_a_base_de_classe():
+    """Preuve directe du détour par `view_class` ci-dessus — relevé en
+    relecture (Prompt 19) : sans lui, une vue à base de `HabilitationMixin`
+    échapperait silencieusement au test de garde qui suit.
+    """
+    from django.views import View
+
+    from administration.habilitations import HabilitationMixin
+
+    class VueEssai(HabilitationMixin, View):
+        permission_requise = "noyau.exemple_ecriture"
+
+    assert _permission_requise(VueEssai.as_view()) == "noyau.exemple_ecriture"
+
+
 def test_toute_vue_ecriture_figure_dans_la_table():
     """Test de garde : sans lui, la règle du bloc C (Prompt 19) reste
     volontaire — une story du sprint 2 qui ajoute un écran sans l'inscrire
     ici rouvrirait l'angle mort mécaniquement, pas seulement par oubli de
-    revue. Compare aux vues réellement décorées par `exige_habilitation`
-    avec une permission d'écriture (`administration.habilitations.
-    exige_habilitation` expose `permission_requise` sur la vue décorée),
-    jamais à une convention de nommage d'URL.
+    revue. Compare aux vues réellement gardées par une permission
+    d'écriture — décorateur `exige_habilitation` ou mixin
+    `HabilitationMixin`, les deux mécanismes du projet — jamais à une
+    convention de nommage d'URL.
     """
     noms_en_table = {ecran.nom for ecran in ECRANS_ECRITURE}
     vues_ecriture_reelles = {
-        nom
-        for nom, vue in _toutes_les_vues()
-        if getattr(vue, "permission_requise", "").endswith("_ecriture")
+        nom for nom, vue in _toutes_les_vues() if _permission_requise(vue).endswith("_ecriture")
     }
 
     manquantes = vues_ecriture_reelles - noms_en_table
