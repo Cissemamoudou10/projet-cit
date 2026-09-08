@@ -149,6 +149,37 @@ def test_suppression_d_un_lieu_jamais_utilise_reussit_depuis_l_ecran(client, pla
     assert not Lieu.objects.filter(pk=lieu.pk).exists()
 
 
+# Bloc D.2 du Prompt 19 — priorité 3 : preuve d'un effet réel, pas d'un
+# code de retour (P-21).
+
+
+def test_creer_par_l_ecran_cree_reellement_le_lieu(client, planificateur):
+    client.force_login(planificateur)
+
+    client.post(reverse("ressources:creer_lieu"), _donnees())
+
+    assert Lieu.objects.filter(intitule="Salle 101").exists()
+
+
+def test_archiver_par_l_ecran_le_retire_reellement_de_la_selection(client, planificateur):
+    lieu = ServiceLieu.creer(planificateur, _donnees())
+    client.force_login(planificateur)
+
+    client.post(reverse("ressources:archiver_lieu", args=[lieu.pk]))
+
+    assert lieu.pk not in [ligne.pk for ligne in ServiceLieu.disponibles_pour_selection()]
+
+
+def test_desarchiver_par_l_ecran_le_rend_reellement_a_la_selection(client, planificateur):
+    lieu = ServiceLieu.creer(planificateur, _donnees())
+    ServiceLieu.archiver(planificateur, lieu.pk)
+    client.force_login(planificateur)
+
+    client.post(reverse("ressources:desarchiver_lieu", args=[lieu.pk]))
+
+    assert lieu.pk in [ligne.pk for ligne in ServiceLieu.disponibles_pour_selection()]
+
+
 def test_declarer_une_indisponibilite_par_le_formulaire(client, planificateur, lieu):
     client.force_login(planificateur)
 

@@ -6,6 +6,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from ressources.models import Instructeur
 from ressources.services.instructeur import ServiceInstructeur
 from ressources.tests.test_instructeur import _donnees
 
@@ -78,6 +79,35 @@ def test_le_badge_de_statut_distingue_les_trois_valeurs_par_le_mot(client, redac
     assert "MILITAIRE DU CENTRE" in contenu
     assert "VACATAIRE" in contenu
     assert "CIVIL" in contenu
+
+
+def test_creer_par_l_ecran_cree_reellement_l_instructeur(client, redacteur):
+    """Bloc D.2 du Prompt 19 — priorité 3 : preuve d'un effet réel, pas d'un
+    code de retour (P-21)."""
+    client.force_login(redacteur)
+
+    client.post(reverse("ressources:creer_instructeur"), _donnees())
+
+    assert Instructeur.objects.filter(matricule="M12345").exists()
+
+
+def test_archiver_par_l_ecran_le_retire_reellement_de_la_selection(client, redacteur):
+    instructeur = ServiceInstructeur.creer(redacteur, _donnees())
+    client.force_login(redacteur)
+
+    client.post(reverse("ressources:archiver_instructeur", args=[instructeur.pk]))
+
+    assert instructeur.pk not in [i.pk for i in ServiceInstructeur.disponibles_pour_selection()]
+
+
+def test_desarchiver_par_l_ecran_le_rend_reellement_a_la_selection(client, redacteur):
+    instructeur = ServiceInstructeur.creer(redacteur, _donnees())
+    ServiceInstructeur.archiver(redacteur, instructeur.pk)
+    client.force_login(redacteur)
+
+    client.post(reverse("ressources:desarchiver_instructeur", args=[instructeur.pk]))
+
+    assert instructeur.pk in [i.pk for i in ServiceInstructeur.disponibles_pour_selection()]
 
 
 def test_modifier_par_le_vrai_formulaire_html_ne_declenche_pas_a_tort_e5(client, redacteur):

@@ -96,6 +96,25 @@ def test_cellule_examens_n_a_aucun_acces_a_l_ecran(client, cellule_examens, inst
     assert reponse.status_code == 403
 
 
+def test_retirer_depuis_la_matiere_retire_reellement_des_deux_cotes(
+    client, redacteur, instructeur, matiere
+):
+    """Bloc D.2 du Prompt 19 — priorité 3 : `retirer_qualification_
+    instructeur` a un test HTTP réel ci-dessous, `retirer_qualification_
+    matiere` (même vue, `origine="matiere"`) n'en avait aucun. Une seule
+    ligne `Qualification` : le retrait doit disparaître des deux relations
+    inverses (`instructeur.qualifications`, `matiere.qualifications`), pas
+    seulement de l'une des deux vues qui les affichent.
+    """
+    qualification = ServiceQualification.ajouter(redacteur, instructeur, matiere)
+    client.force_login(redacteur)
+
+    client.post(reverse("ressources:retirer_qualification_matiere", args=[qualification.pk]))
+
+    assert not instructeur.qualifications.filter(matiere=matiere).exists()
+    assert not matiere.qualifications.filter(instructeur=instructeur).exists()
+
+
 def test_retrait_affiche_la_confirmation_puis_aboutit(client, redacteur, instructeur, matiere):
     qualification = ServiceQualification.ajouter(redacteur, instructeur, matiere)
     client.force_login(redacteur)
