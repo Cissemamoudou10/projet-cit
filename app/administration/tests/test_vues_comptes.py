@@ -165,3 +165,81 @@ def test_mot_de_passe_initial_absent_de_toute_reponse_apres_creation(client, adm
     )
 
     assert secret not in reponse.content.decode()
+
+
+# Bloc D.2 du Prompt 19 — priorité 2 : trois écrans sans aucun test HTTP réel
+# avant ce prompt (ni écriture, ni refus), révélé par l'audit
+# docs/suivi/COUVERTURE-HTTP.md. Chaque test prouve un effet réel en base,
+# pas seulement un code de retour (leçon de P-21).
+
+
+def test_le_compte_existe_reellement_apres_creation_par_l_ecran(client, administrateur):
+    client.force_login(administrateur)
+
+    client.post(
+        reverse("administration:creer_compte"),
+        {
+            "identifiant": "cree-par-ecran",
+            "grade": "Sgt",
+            "prenom": "Amine",
+            "nom": "Test",
+            "profil": Profil.CELLULE_PLANIFICATION,
+            "mot_de_passe": "un-mot-de-passe-suffisamment-long",
+        },
+    )
+
+    compte = get_user_model().objects.get(username="cree-par-ecran")
+    assert compte.profil == Profil.CELLULE_PLANIFICATION
+    assert compte.groups.filter(name="Cellule planification").exists()
+
+
+def test_modifier_par_l_ecran_change_reellement_le_compte(client, administrateur):
+    cible = get_user_model().objects.create_user(
+        username="a-modifier", password="x", grade="Sgt", profil=Profil.CELLULE_PEDAGOGIQUE
+    )
+    client.force_login(administrateur)
+
+    client.post(
+        reverse("administration:modifier_compte", args=[cible.pk]),
+        {
+            "identifiant": "a-modifier",
+            "grade": "Cne",
+            "prenom": "",
+            "nom": "Nom modifié",
+            "profil": Profil.CELLULE_PLANIFICATION,
+        },
+    )
+
+    cible.refresh_from_db()
+    assert cible.grade == "Cne"
+    assert cible.last_name == "Nom modifié"
+    assert cible.profil == Profil.CELLULE_PLANIFICATION
+    assert cible.groups.filter(name="Cellule planification").exists()
+    assert not cible.groups.filter(name="Cellule pédagogique").exists()
+
+
+def test_desactiver_par_l_ecran_desactive_reellement_le_compte(client, administrateur):
+    cible = get_user_model().objects.create_user(
+        username="a-desactiver", password="x", grade="Sgt", profil=Profil.CELLULE_PEDAGOGIQUE
+    )
+    client.force_login(administrateur)
+    assert cible.is_active
+
+    client.post(reverse("administration:desactiver_compte", args=[cible.pk]))
+
+    cible.refresh_from_db()
+    assert not cible.is_active
+
+
+def test_reactiver_par_l_ecran_reactive_reellement_le_compte(client, administrateur):
+    cible = get_user_model().objects.create_user(
+        username="a-reactiver", password="x", grade="Sgt", profil=Profil.CELLULE_PEDAGOGIQUE
+    )
+    cible.is_active = False
+    cible.save()
+    client.force_login(administrateur)
+
+    client.post(reverse("administration:reactiver_compte", args=[cible.pk]))
+
+    cible.refresh_from_db()
+    assert cible.is_active
