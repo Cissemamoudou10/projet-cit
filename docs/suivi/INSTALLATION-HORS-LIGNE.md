@@ -27,22 +27,38 @@ dépendances transitives — `cffi`, `Pillow`, `fonttools`, `brotli`, `zopfli`,
 (`cp314-manylinux*` ou `py3-none-any`) — aucune compilation. **Rien à
 replier : l'image de base reste Python 3.14.4-slim-bookworm.**
 
-## Dette identifiée
+## Dette identifiée — résolue le 2026-09-08 (bloc E, Prompt 19)
 
-**Deux scripts de rôles PostgreSQL redondants** — `infra/postgres/init/01_roles.sql`
-(développement, mots de passe fixes) et `infra/postgres/init-production/01_roles.sh`
-(production, mots de passe lus dans l'environnement) posent les deux mêmes
-rôles (`pfe_cit_migration`, `pfe_cit_app`) par la même suite d'instructions
-SQL, recopiée une seconde fois plutôt que partagée. Non corrigé maintenant —
-hors périmètre du test d'installation hors ligne. **Cible à terme : un script
-unique, lisant les mots de passe dans l'environnement des deux côtés** (le
-développement fixerait simplement des valeurs par défaut dans son `.env`,
-comme il le fait déjà pour `BASE_MOT_DE_PASSE`/`BASE_MOT_DE_PASSE_MIGRATION`).
-Sans cette unification, un correctif appliqué à l'un des deux scripts (une
-nouvelle table par défaut, une permission supplémentaire) sera oublié dans
-l'autre — la même classe de défaut que P-32 (`docs/suivi/PROBLEMES.md`),
-où un correctif de pagination n'avait touché qu'une seule des copies d'un
-balisage dupliqué.
+**Deux scripts de rôles PostgreSQL redondants** existaient —
+`infra/postgres/init/01_roles.sql` (développement, mots de passe fixes) et
+`infra/postgres/init-production/01_roles.sh` (production, mots de passe lus
+dans l'environnement) — posant les deux mêmes rôles (`pfe_cit_migration`,
+`pfe_cit_app`) par la même suite d'instructions SQL, recopiée une seconde
+fois plutôt que partagée. Signalé ici comme dette, hors périmètre du test
+d'installation hors ligne lui-même.
+
+**Unifiés** en un script unique, `infra/postgres/init/01_roles.sh`, lisant
+toujours les mots de passe dans l'environnement — développement compris, via
+des valeurs par défaut (`${BASE_UTILISATEUR_MIGRATION:-pfe_cit_migration}`,
+etc.) posées dans `docker-compose.yml`, reprenant celles déjà déclarées dans
+`.env.exemple` pour l'usage hors conteneur. `docker-compose.production.yml`
+pointe désormais vers le même dossier `infra/postgres/init/` ;
+`infra/postgres/init-production/` a disparu, de même que
+`scripts/constituer-paquet.sh` qui le référençait. Détail : D-62,
+`docs/suivi/DECISIONS.md`.
+
+**Vérification de démarrage sur base neuve, faite réellement** (pas
+supposée) : suite `pytest` complète rejouée côté développement, et la pile
+de production elle-même démarrée localement (`docker compose -f
+docker-compose.production.yml`, image `pfe-cit-application:hors-ligne` déjà
+construite, volume neuf, noms de conteneurs et port isolés du poste de
+développement pour ne pas perturber la base de travail) — `01_roles.sh`
+s'exécute, les deux rôles sont créés, le conteneur passe *healthy*. Pile
+démontée et volume détruit aussitôt après. Rejeu complet du protocole
+d'installation hors ligne sur VM Debian 12 isolée non refait pour ce seul
+changement (aucune ligne de logique SQL modifiée, seul l'emplacement du
+fichier change) — à confirmer à la prochaine installation réelle plutôt qu'à
+rejouer tout le protocole pour ce seul changement.
 
 ## Paquet constitué (`scripts/constituer-paquet.sh`)
 

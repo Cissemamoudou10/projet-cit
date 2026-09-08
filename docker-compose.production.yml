@@ -21,17 +21,17 @@ services:
       # Rôle superutilisateur, créé par l'image officielle au premier
       # démarrage, employé uniquement par le script d'initialisation
       # ci-dessous pour créer les deux rôles applicatifs restreints — jamais
-      # utilisé ensuite. Voir infra/postgres/init-production/01_roles.sh et
-      # infra/postgres/init/01_roles.sql (développement, même schéma).
+      # utilisé ensuite. Voir infra/postgres/init/01_roles.sh, script unique
+      # partagé avec le développement (D-62).
       POSTGRES_USER: ${BASE_UTILISATEUR_INITDB}
       POSTGRES_PASSWORD: ${BASE_MOT_DE_PASSE_INITDB}
       # Tri respectant les accents : Électronique se classe avant Zoologie.
       # Irrattrapable sans reconstruction de la base — § 4.1 du protocole,
       # vérifié par un tri réel, pas seulement par cette configuration.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=fr-FR --locale=C"
-      # Lus par infra/postgres/init-production/01_roles.sh — POSTGRES_DB sert
-      # à l'image officielle pour créer la base, mais le script lit son propre
-      # nom de variable (BASE_NOM), jamais POSTGRES_DB (RG-27, § 4.1).
+      # Lus par infra/postgres/init/01_roles.sh — POSTGRES_DB sert à l'image
+      # officielle pour créer la base, mais le script lit son propre nom de
+      # variable (BASE_NOM), jamais POSTGRES_DB (RG-27, § 4.1).
       BASE_NOM: ${BASE_NOM}
       BASE_UTILISATEUR_MIGRATION: ${BASE_UTILISATEUR_MIGRATION}
       BASE_MOT_DE_PASSE_MIGRATION: ${BASE_MOT_DE_PASSE_MIGRATION}
@@ -39,7 +39,7 @@ services:
       BASE_MOT_DE_PASSE: ${BASE_MOT_DE_PASSE}
     volumes:
       - donnees_pfe_cit:/var/lib/postgresql/data
-      - ./infra/postgres/init-production:/docker-entrypoint-initdb.d:ro
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${BASE_UTILISATEUR_INITDB} -d ${BASE_NOM}"]
       interval: 10s

@@ -17,11 +17,26 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: pfe_cit
+      # Rôle superutilisateur transitoire, créé par l'image officielle au
+      # premier démarrage et employé uniquement par
+      # infra/postgres/init/01_roles.sh pour créer les deux rôles restreints
+      # ci-dessous. Jamais utilisé par l'application ensuite (même schéma
+      # qu'en production, D-61).
       POSTGRES_USER: pfe_cit
       POSTGRES_PASSWORD: developpement_local
       # Tri respectant les accents : Émile se classe avec les E, non après Z.
       # Le fournisseur ICU est fourni par l'image ; vérifier au premier lancement.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=fr-FR --locale=C"
+      # Lus par infra/postgres/init/01_roles.sh, script partagé avec la
+      # production (D-62). Valeurs par défaut (`:-`) reprenant celles de
+      # .env.exemple, pour que `docker compose up` continue de fonctionner
+      # sans .env local ; un .env créé pour l'usage hors conteneur
+      # (`python manage.py runserver`) les prend automatiquement le pas.
+      BASE_NOM: ${BASE_NOM:-pfe_cit}
+      BASE_UTILISATEUR_MIGRATION: ${BASE_UTILISATEUR_MIGRATION:-pfe_cit_migration}
+      BASE_MOT_DE_PASSE_MIGRATION: ${BASE_MOT_DE_PASSE_MIGRATION:-developpement_local_migration}
+      BASE_UTILISATEUR: ${BASE_UTILISATEUR:-pfe_cit_app}
+      BASE_MOT_DE_PASSE: ${BASE_MOT_DE_PASSE:-developpement_local_app}
     ports:
       - "5432:5432"
     volumes:

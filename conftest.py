@@ -1,7 +1,7 @@
 """Reproduit dans `test_pfe_cit` les privilèges du rôle applicatif de
 production — voir Prompt 04, § 2.1 et 2.2.
 
-`ALTER DEFAULT PRIVILEGES` (posé dans `infra/postgres/init/01_roles.sql`) ne
+`ALTER DEFAULT PRIVILEGES` (posé dans `infra/postgres/init/01_roles.sh`) ne
 s'applique qu'à la base où il s'exécute (`pfe_cit`) : il ne se propage pas à
 `test_pfe_cit`, une base distincte créée après coup par `pfe_cit_migration`.
 Sans ce correctif, `pfe_cit_app` n'a strictement aucun privilège sur
