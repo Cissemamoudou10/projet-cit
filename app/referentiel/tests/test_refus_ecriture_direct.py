@@ -1,8 +1,10 @@
-"""US-REF-07, critère 3 — refus côté serveur de toute adresse d'écriture du
-paquetage, pour les trois profils en lecture seule, appel direct compris.
-Le masquage du balisage est testé dans test_masquage_ecriture.py ; ici on
-vérifie uniquement la réponse serveur et la journalisation (§ 2.2 : un refus
-journalise une fois, un affichage masqué ne journalise rien).
+"""US-REF-07, critère 3 — journalisation du refus et non-divulgation d'un
+identifiant inexistant. Le refus HTTP lui-même, pour toute adresse
+d'écriture du système (pas seulement de ce paquetage), est couvert une
+fois pour toutes par tests/architecture/test_ecrans_ecriture.py (bloc D.2
+du Prompt 19) — l'ancienne liste locale de 23 adresses, propre à ce
+fichier, y a été reprise et étendue à administration et ressources. Le
+masquage du balisage est testé dans test_masquage_ecriture.py.
 """
 
 import pytest
@@ -14,18 +16,13 @@ from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 from referentiel.services.prerequis import ServicePrerequis
 from referentiel.tests.conftest import creer_element, donnees_element_referentiel
 
-PROFILS_LECTURE_SEULE = [
-    pytest.param("lecteur", id="examens"),
-    pytest.param("planificateur", id="planification"),
-    pytest.param("direction_formation", id="direction_formation"),
-]
-
 
 @pytest.fixture
 def contexte_ecriture(redacteur, formation, matiere, type_officiers):
-    """Deux éléments de référentiel, un objectif, un lien de prérequis —
-    tout ce dont les 23 adresses d'écriture du paquetage ont besoin comme
-    ressource cible, créé par un profil habilité pour ne tester que le refus.
+    """Un élément de référentiel, un objectif, un lien de prérequis — les
+    ressources cibles des trois tests ci-dessous (journalisation, masquage,
+    non-divulgation), créées par un profil habilité pour ne tester que le
+    refus des tests qui suivent.
     """
     element = ElementReferentiel.objects.create(
         formation=formation, matiere=matiere, **donnees_element_referentiel()
@@ -42,52 +39,6 @@ def contexte_ecriture(redacteur, formation, matiere, type_officiers):
         "objectif": objectif,
         "prerequis": prerequis,
     }
-
-
-def _adresses_ecriture(ctx):
-    formation = ctx["formation"]
-    matiere = ctx["matiere"]
-    type_formation = ctx["type_formation"]
-    element = ctx["element"]
-    objectif = ctx["objectif"]
-    prerequis = ctx["prerequis"]
-    return [
-        ("referentiel:creer_type_formation", []),
-        ("referentiel:modifier_type_formation", [type_formation.pk]),
-        ("referentiel:archiver_type_formation", [type_formation.pk]),
-        ("referentiel:desarchiver_type_formation", [type_formation.pk]),
-        ("referentiel:creer_formation", []),
-        ("referentiel:modifier_formation", [formation.pk]),
-        ("referentiel:archiver_formation", [formation.pk]),
-        ("referentiel:desarchiver_formation", [formation.pk]),
-        ("referentiel:creer_matiere", []),
-        ("referentiel:modifier_matiere", [matiere.pk]),
-        ("referentiel:archiver_matiere", [matiere.pk]),
-        ("referentiel:desarchiver_matiere", [matiere.pk]),
-        ("referentiel:rattacher_matiere", [formation.pk]),
-        ("referentiel:creer_matiere_depuis_referentiel", [formation.pk]),
-        ("referentiel:modifier_element_referentiel", [formation.pk, element.pk]),
-        ("referentiel:retirer_element_referentiel", [formation.pk, element.pk]),
-        ("referentiel:ajouter_objectif_pedagogique", [matiere.pk]),
-        ("referentiel:modifier_objectif_pedagogique", [matiere.pk, objectif.pk]),
-        ("referentiel:monter_objectif_pedagogique", [matiere.pk, objectif.pk]),
-        ("referentiel:descendre_objectif_pedagogique", [matiere.pk, objectif.pk]),
-        ("referentiel:supprimer_objectif_pedagogique", [matiere.pk, objectif.pk]),
-        ("referentiel:ajouter_prerequis", [formation.pk, element.pk]),
-        ("referentiel:supprimer_prerequis", [formation.pk, prerequis.pk]),
-    ]
-
-
-@pytest.mark.parametrize("profil", PROFILS_LECTURE_SEULE)
-def test_appel_direct_en_ecriture_refuse_pour_chaque_adresse(
-    client, request, profil, contexte_ecriture
-):
-    utilisateur = request.getfixturevalue(profil)
-    client.force_login(utilisateur)
-
-    for nom_url, args in _adresses_ecriture(contexte_ecriture):
-        reponse = client.post(reverse(nom_url, args=args))
-        assert reponse.status_code == 403, f"{nom_url} aurait dû être refusée à {profil}"
 
 
 def test_le_refus_est_journalise_une_fois_par_tentative(client, lecteur, contexte_ecriture):

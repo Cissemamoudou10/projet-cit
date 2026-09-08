@@ -1,0 +1,332 @@
+"""Un seul endroit pour toute adresse d'écriture du système, et le refus
+qu'elle doit opposer à qui n'a pas la permission requise — bloc D.2 du
+Prompt 19. Même mécanisme que la matrice d'US-ADM-03
+(administration/tests/test_matrice_habilitations.py) et le masquage
+d'US-REF-07 (referentiel/tests/test_masquage_ecriture.py) : une table
+déclarative, un test qui l'itère.
+
+Remplace l'ancienne liste locale de `referentiel/tests/test_refus_ecriture_
+direct.py` (23 adresses, US-REF-07 seulement) par une table couvrant les
+trois applications — cette table est désormais la source unique, croisée
+par `test_toute_vue_ecriture_figure_dans_la_table` avec les vues réellement
+décorées par `exige_habilitation` dans tout le projet.
+"""
+
+import dataclasses
+from collections.abc import Callable
+
+import pytest
+from django.urls import URLPattern, URLResolver, get_resolver, reverse
+
+from administration.constantes import GROUPES, MATRICE
+
+
+@dataclasses.dataclass(frozen=True)
+class EcranEcriture:
+    nom: str
+    permission: str
+    args: Callable[[dict], list] = lambda objets: []
+    methode: str = "POST"
+
+
+ECRANS_ECRITURE = [
+    # --- administration : comptes et habilitations (US-ADM-02, US-ADM-03) ---
+    # liste_comptes est un écran de LECTURE, mais § 11.2 ne donne aucune
+    # lecture séparée du domaine administration aux profils non-administrateur
+    # (voir HABILITATIONS.md) : la vue est gardée par la même permission
+    # d'écriture, la table de garde le détecte donc à raison — déjà couvert
+    # par ailleurs (test_vues_authentification.py), entrée redondante mais
+    # honnête plutôt qu'une exception silencieuse au mécanisme de garde.
+    EcranEcriture("administration:liste_comptes", "noyau.administration_ecriture"),
+    EcranEcriture("administration:creer_compte", "noyau.administration_ecriture"),
+    EcranEcriture(
+        "administration:modifier_compte",
+        "noyau.administration_ecriture",
+        lambda objets: [objets["compte_cible"].pk],
+    ),
+    EcranEcriture(
+        "administration:desactiver_compte",
+        "noyau.administration_ecriture",
+        lambda objets: [objets["compte_cible"].pk],
+    ),
+    EcranEcriture(
+        "administration:reactiver_compte",
+        "noyau.administration_ecriture",
+        lambda objets: [objets["compte_cible"].pk],
+    ),
+    EcranEcriture("administration:habilitations", "noyau.administration_ecriture"),
+    # --- referentiel : types de formation (US-REF-00) ---
+    EcranEcriture("referentiel:creer_type_formation", "noyau.referentiel_ecriture"),
+    EcranEcriture(
+        "referentiel:modifier_type_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["type_formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:archiver_type_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["type_formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:desarchiver_type_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["type_formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:supprimer_type_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["type_formation"].pk],
+    ),
+    # --- referentiel : formations (US-REF-01) ---
+    EcranEcriture("referentiel:creer_formation", "noyau.referentiel_ecriture"),
+    EcranEcriture(
+        "referentiel:modifier_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:archiver_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:desarchiver_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:supprimer_formation",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk],
+    ),
+    # --- referentiel : matières (US-REF-02) ---
+    EcranEcriture("referentiel:creer_matiere", "noyau.referentiel_ecriture"),
+    EcranEcriture(
+        "referentiel:modifier_matiere",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:archiver_matiere",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:desarchiver_matiere",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:supprimer_matiere",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk],
+    ),
+    # --- referentiel : composition du référentiel (US-REF-03/04) ---
+    EcranEcriture(
+        "referentiel:rattacher_matiere",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:creer_matiere_depuis_referentiel",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:modifier_element_referentiel",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk, objets["element"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:retirer_element_referentiel",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk, objets["element"].pk],
+    ),
+    # --- referentiel : objectifs pédagogiques (US-REF-05) ---
+    EcranEcriture(
+        "referentiel:ajouter_objectif_pedagogique",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:modifier_objectif_pedagogique",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk, objets["objectif"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:monter_objectif_pedagogique",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk, objets["objectif"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:descendre_objectif_pedagogique",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk, objets["objectif"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:supprimer_objectif_pedagogique",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["matiere"].pk, objets["objectif"].pk],
+    ),
+    # --- referentiel : prérequis (US-REF-06) ---
+    EcranEcriture(
+        "referentiel:ajouter_prerequis",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk, objets["element"].pk],
+    ),
+    EcranEcriture(
+        "referentiel:supprimer_prerequis",
+        "noyau.referentiel_ecriture",
+        lambda objets: [objets["formation"].pk, objets["prerequis"].pk],
+    ),
+    # --- ressources : lieux (US-PLAN-02) ---
+    EcranEcriture("ressources:creer_lieu", "noyau.lieux_calendrier_ecriture"),
+    EcranEcriture(
+        "ressources:modifier_lieu",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["lieu"].pk],
+    ),
+    EcranEcriture(
+        "ressources:archiver_lieu",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["lieu"].pk],
+    ),
+    EcranEcriture(
+        "ressources:desarchiver_lieu",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["lieu"].pk],
+    ),
+    EcranEcriture(
+        "ressources:supprimer_lieu",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["lieu"].pk],
+    ),
+    EcranEcriture(
+        "ressources:declarer_indisponibilite_lieu",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["lieu"].pk],
+    ),
+    EcranEcriture(
+        "ressources:modifier_indisponibilite_lieu",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["indisponibilite"].pk],
+    ),
+    EcranEcriture(
+        "ressources:supprimer_indisponibilite_lieu",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["indisponibilite"].pk],
+    ),
+    # --- ressources : instructeurs (US-INS-01) ---
+    EcranEcriture("ressources:creer_instructeur", "noyau.instructeurs_qualifications_ecriture"),
+    EcranEcriture(
+        "ressources:modifier_instructeur",
+        "noyau.instructeurs_qualifications_ecriture",
+        lambda objets: [objets["instructeur"].pk],
+    ),
+    EcranEcriture(
+        "ressources:archiver_instructeur",
+        "noyau.instructeurs_qualifications_ecriture",
+        lambda objets: [objets["instructeur"].pk],
+    ),
+    EcranEcriture(
+        "ressources:desarchiver_instructeur",
+        "noyau.instructeurs_qualifications_ecriture",
+        lambda objets: [objets["instructeur"].pk],
+    ),
+    # --- ressources : qualifications (US-INS-02) ---
+    EcranEcriture(
+        "ressources:ajouter_qualification_instructeur",
+        "noyau.instructeurs_qualifications_ecriture",
+        lambda objets: [objets["instructeur"].pk, objets["autre_element"].matiere_id],
+    ),
+    EcranEcriture(
+        "ressources:ajouter_qualification_matiere",
+        "noyau.instructeurs_qualifications_ecriture",
+        lambda objets: [objets["autre_element"].matiere_id, objets["instructeur"].pk],
+    ),
+    EcranEcriture(
+        "ressources:retirer_qualification_instructeur",
+        "noyau.instructeurs_qualifications_ecriture",
+        lambda objets: [objets["qualification"].pk],
+    ),
+    EcranEcriture(
+        "ressources:retirer_qualification_matiere",
+        "noyau.instructeurs_qualifications_ecriture",
+        lambda objets: [objets["qualification"].pk],
+    ),
+]
+
+# 48 adresses : les 47 de COUVERTURE-HTTP.md (2026-09-08) plus liste_comptes,
+# gardée par la même permission d'écriture faute de lecture séparée sur le
+# domaine administration (voir le commentaire sur son entrée ci-dessus).
+assert len(ECRANS_ECRITURE) == 48
+
+
+def _groupes_sans(permission):
+    codename = permission.removeprefix("noyau.")
+    return [groupe for groupe in GROUPES if codename not in MATRICE.get(groupe, [])]
+
+
+CAS_REFUS = [
+    pytest.param(ecran, groupe, id=f"{ecran.nom}-{groupe}")
+    for ecran in ECRANS_ECRITURE
+    for groupe in _groupes_sans(ecran.permission)
+]
+
+
+@pytest.mark.parametrize("ecran, groupe", CAS_REFUS)
+def test_refus_habilitation_pour_chaque_ecran_ecriture(client, utilisateurs, objets, ecran, groupe):
+    """Un utilisateur du groupe `groupe`, qui ne détient pas `ecran.permission`,
+    reçoit 403 en appel direct — pas un simple masquage de lien."""
+    client.force_login(utilisateurs[groupe])
+    reponse = client.post(reverse(ecran.nom, args=ecran.args(objets)))
+    assert (
+        reponse.status_code == 403
+    ), f"{ecran.nom} aurait dû refuser {groupe} (permission {ecran.permission})"
+
+
+def _toutes_les_vues():
+    """(nom d'URL complet, fonction vue) pour toute route du projet, en
+    reconstruisant le préfixe de namespace comme reverse() l'attend."""
+    resultat = []
+
+    def _parcourir(motifs, prefixe):
+        for motif in motifs:
+            if isinstance(motif, URLResolver):
+                espace = f"{motif.namespace}:" if motif.namespace else ""
+                _parcourir(motif.url_patterns, f"{prefixe}{espace}")
+            elif isinstance(motif, URLPattern) and motif.name:
+                resultat.append((f"{prefixe}{motif.name}", motif.callback))
+
+    _parcourir(get_resolver().url_patterns, "")
+    return resultat
+
+
+def test_toute_vue_ecriture_figure_dans_la_table():
+    """Test de garde : sans lui, la règle du bloc C (Prompt 19) reste
+    volontaire — une story du sprint 2 qui ajoute un écran sans l'inscrire
+    ici rouvrirait l'angle mort mécaniquement, pas seulement par oubli de
+    revue. Compare aux vues réellement décorées par `exige_habilitation`
+    avec une permission d'écriture (`administration.habilitations.
+    exige_habilitation` expose `permission_requise` sur la vue décorée),
+    jamais à une convention de nommage d'URL.
+    """
+    noms_en_table = {ecran.nom for ecran in ECRANS_ECRITURE}
+    vues_ecriture_reelles = {
+        nom
+        for nom, vue in _toutes_les_vues()
+        if getattr(vue, "permission_requise", "").endswith("_ecriture")
+    }
+
+    manquantes = vues_ecriture_reelles - noms_en_table
+    assert not manquantes, (
+        "Adresse(s) d'écriture absente(s) de ECRANS_ECRITURE : "
+        + ", ".join(sorted(manquantes))
+        + " — ajoute une entrée dans tests/architecture/test_ecrans_ecriture.py."
+    )
+
+    perimees = noms_en_table - vues_ecriture_reelles
+    assert not perimees, (
+        "Entrée(s) de ECRANS_ECRITURE qui ne correspond(ent) plus à une vue "
+        "d'écriture réelle : " + ", ".join(sorted(perimees))
+    )

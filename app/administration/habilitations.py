@@ -55,6 +55,10 @@ def exige_habilitation(permission: str):
                 raise PermissionDenied(str(erreur)) from erreur
             return vue(request, *args, **kwargs)
 
+        # Exposée en attribut simple (même nom que HabilitationMixin.permission_requise)
+        # pour que tests/architecture/test_ecrans_ecriture.py puisse découvrir la
+        # permission d'une vue par introspection, sans lire la fermeture du décorateur.
+        enveloppe.permission_requise = permission
         return enveloppe
 
     return decorateur
