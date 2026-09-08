@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-36 — Troisième occurrence : une recherche par motif qui ne trouve rien a été prise pour une preuve d'absence
+**Date** 2026-09-08 · **Story** transverse — revue de sprint du 7 septembre (bloc A du Prompt 19) · **État** : résolu
+**Symptôme** — `docs/suivi/PROMPT-17-tracabilite.md` § 2.7 concluait « aucune règle d'impression n'existe encore nulle part dans le dépôt », en s'appuyant sur une recherche des motifs `print:` et `@media print`. C'est faux : `app/noyau/static/css/impression.css` existe depuis le socle graphique, chargé par `base.html` en `<link media="print">`, et documenté à `docs/suivi/CHARTE-INTEGRATION.md` § 172.
+**Cause** — Le fichier est nativement scopé à l'impression par l'attribut `media` du `<link>` qui le charge, pas par un `@media print { }` interne — il n'a donc aucune raison de contenir l'un ou l'autre des deux motifs cherchés. La recherche a conclu à une absence réelle alors qu'elle n'avait prouvé que l'inadéquation de son propre motif.
+**Résolution** — § 2.7 corrigé, avec la véritable évaluation qu'il prétendait avoir faite (débordement réel sur trois des cinq écrans du bloc B — voir la correction du 2026-09-08 dans ce même document).
+**Risque concerné** — aucun du registre ; défaut de méthode de vérification, pas un défaut du code.
+**Leçon** — Troisième occurrence du même mécanisme, après P-26 (recherche de chemin de navigation) et P-32 (recherche de copies dupliquées d'un balisage) : une recherche par motif qui ne trouve rien ne prouve jamais l'absence de la chose cherchée, seulement que le motif n'était pas le bon. Avant de conclure à une absence, chercher le mécanisme par un second angle indépendant (ici : comment un fichier CSS d'impression serait-il *chargé*, pas seulement comment il serait *écrit*) plutôt que de s'arrêter au premier grep négatif. Inscrite en règle, `.claude/rules/tests.md`.
+
 ## P-35 — Aucune habilitation cochée et erreur 500 à la création d'un compte, sur la VM après installation
 **Date** 2026-09-07 · **Story** transverse — Prompt 18, usage réel après le test d'installation · **État** : résolu
 **Symptôme** — Signalé par Lt Cissé en testant l'application dans son navigateur, une fois la pile en service sur la VM : tous les profils affichent « aucune habilitation », et créer un compte ou cocher une habilitation renvoie une erreur 500.

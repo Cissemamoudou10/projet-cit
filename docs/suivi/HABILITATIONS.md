@@ -42,11 +42,13 @@ Reproduit tel quel depuis § 11.2 — aucun écart.
 | `evaluations` | — | — | **É** | L | — |
 | `suivi` | **É** | L | L | L | — |
 
-**Vérification croisée** (35 croisements marqués sur 45 possibles — 5 groupes
-× 9 domaines) : chaque ligne porte exactement un **É**, jamais deux — c'est ce
-qui porte la validation croisée entre planification (écrit le programme,
-§ P5 génération) et pédagogique (le valide, § P5 validation), sans qu'aucun
-profil ne cumule les deux.
+**Vérification croisée** (27 croisements marqués sur 45 possibles — 5 groupes
+× 9 domaines : 9 en écriture, 18 en lecture — correction du 2026-09-08, la
+version précédente confondait croisements marqués et octrois de permission,
+voir ci-dessous) : chaque ligne porte exactement un **É**, jamais deux —
+c'est ce qui porte la validation croisée entre planification (écrit le
+programme, § P5 génération) et pédagogique (le valide, § P5 validation), sans
+qu'aucun profil ne cumule les deux.
 
 ## Total de permissions par groupe
 

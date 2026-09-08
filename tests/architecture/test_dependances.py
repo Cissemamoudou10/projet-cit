@@ -25,6 +25,8 @@ DEPENDANCES_VALIDEES = {
     "pytest-django",
     "ruff",
     "python-dateutil",
+    "gunicorn",
+    "whitenoise",
 }
 
 

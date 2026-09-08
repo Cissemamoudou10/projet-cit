@@ -31,6 +31,15 @@ Sans ces situations, les contraintes ne sont jamais exercées.
 
 **Données entièrement fictives.** Aucun nom réel, aucun matricule réel.
 
+## Vérifier une absence
+
+Une recherche par motif qui ne trouve rien ne prouve pas que la chose
+cherchée n'existe pas — seulement que le motif n'était pas le bon (troisième
+occurrence : P-26, P-32, P-36, `docs/suivi/PROBLEMES.md`). Avant de conclure
+à une absence dans le dépôt, vérifier par un second angle indépendant —
+comment le mécanisme serait *chargé* ou *appelé*, pas seulement comment il
+serait *écrit* littéralement.
+
 ## Contrôles d'architecture
 
 `tests/architecture/` vérifie ce que les consignes ne garantissent pas : aucune

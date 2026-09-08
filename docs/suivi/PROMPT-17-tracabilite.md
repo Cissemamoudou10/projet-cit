@@ -36,12 +36,38 @@ donnée nouvelle à calculer, seule la donnée déjà annotée par
 
 ## § 2.7 — effet des nouvelles colonnes sur l'impression (contrôle K3)
 
-Aucun. Vérifié par recherche (`print:`, `@media print`) : aucune règle
-d'impression n'existe encore nulle part dans le dépôt — le contrôle K3 porte
-sur un écran qui n'est pas construit avant le sprint 2/3 (progression
-d'instruction, planification). Les cinq écrans modifiés par le bloc B
-(matières, formations, instructeurs, lieux, vue consolidée du référentiel) ne
-sont concernés ni par K3 ni par une feuille d'impression existante.
+**Correction du 2026-09-08 (revue de sprint du 7 septembre).** La conclusion
+ci-dessous était fausse : `app/noyau/static/css/impression.css` existe bel et
+bien, chargé par `base.html` en `<link media="print">`, et documenté à
+`docs/suivi/CHARTE-INTEGRATION.md` § 172. La recherche initiale (`print:`,
+`@media print`) n'a rien trouvé parce que ce fichier n'a justement aucune
+raison de contenir ces motifs : chargé nativement en média d'impression via
+l'attribut `media` du `<link>`, il n'a pas besoin de s'enrober lui-même d'un
+`@media print { }`. Un motif absent ne prouve pas l'absence de la chose
+cherchée, seulement que le motif choisi n'est pas le bon — voir la leçon
+consignée en P-36 (`docs/suivi/PROBLEMES.md`).
+
+**Évaluation réelle, faite a posteriori** (aperçu émulé — feuille
+`impression.css` injectée en `media="all"`, largeur du contenu contrainte à
+703 px, la largeur imprimable réelle d'une page A4 portrait avec les marges
+14/12/12/16 mm de `impression.css`, § 1) sur les cinq écrans modifiés par le
+bloc B :
+
+| Écran | Tient dans la largeur imprimable ? | Dépassement |
+|---|---|---|
+| Matières (liste) | Oui | — (2 px de marge) |
+| Formations (liste) | **Non** | 60 px (~9 %) |
+| Instructeurs (liste) | **Non** | 113 px (~17 %) |
+| Lieux (liste) | **Non** | 146 px (~22 %) |
+| Vue consolidée du référentiel (consultation) | Oui | — (2 px de marge) |
+
+Trois des cinq écrans débordent réellement à l'impression navigateur, K3
+s'applique donc bien à eux — contrairement à ce que concluait la note
+d'origine. Le contrôle K3 lui-même (progression d'instruction, planification)
+reste hors de portée avant le sprint 2/3 ; c'est le **débordement relevé en
+recette sur ces cinq écrans existants** qui appelait une analyse, indépendante
+de K3. Analyse chiffrée des deux voies de correction : voir le bloc B du
+Prompt 19, consignée dans `docs/suivi/IMPRESSION-ANALYSE.md`.
 
 ## Note — écart avec l'énoncé du prompt, § 3.1
 
