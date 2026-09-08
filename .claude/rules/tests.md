@@ -31,6 +31,28 @@ Sans ces situations, les contraintes ne sont jamais exercées.
 
 **Données entièrement fictives.** Aucun nom réel, aucun matricule réel.
 
+## Tout écran, un test par le vrai cycle HTTP
+
+Six défauts (P-09, P-21, P-23, P-26, P-30, P-31, `docs/suivi/PROBLEMES.md`)
+sont nés du même angle mort : la couche services est bien testée, presque
+rien ne traverse le cycle HTTP réel — `reverse()` et le client de test. Tout
+défaut situé **entre la vue et le service** (route manquante, décorateur
+d'habilitation jamais posé, chemin de navigation absent) reste invisible à
+un test qui appelle directement le service.
+
+**Toute story qui livre un écran comporte au moins un test empruntant le
+cycle HTTP réel, pour son chemin nominal en écriture et pour son refus
+d'habilitation.** Détail des six entrées et définition de fini complète :
+`docs/suivi/PATRON-GESTION.md`.
+
+Deux pièges voisins, même défaut de méthode :
+
+- Ne jamais fournir au test le type Python que la vue ne recevra pas (P-23) —
+  un formulaire HTTP ne reçoit que des chaînes.
+- Ne jamais faire dans une fixture ce qu'un service doit faire (P-21) — une
+  fixture qui pose à la main ce qu'un service devrait poser masque le défaut
+  du service lui-même.
+
 ## Vérifier une absence
 
 Une recherche par motif qui ne trouve rien ne prouve pas que la chose

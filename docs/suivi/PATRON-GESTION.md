@@ -101,6 +101,44 @@ le second sont des compléments génériques qui serviront aux quatre autres
 stories du sprint 2 qui en dépendent, le troisième est une règle d'usage à
 retenir, pas un défaut du code.
 
+## Définition de fini — angle mort du cycle HTTP (Prompt 19, bloc C)
+
+Six défauts distincts (`docs/suivi/PROBLEMES.md`) sont nés du même mécanisme :
+la couche services, où vit la logique, est bien testée ; presque rien ne
+traverse le cycle HTTP réel. Tout défaut situé **entre la vue et le
+service** — route manquante, décorateur jamais posé, chemin de navigation
+absent, type de donnée que seul un test fabrique — reste invisible.
+
+| Entrée | Ce qui a échappé aux tests |
+|---|---|
+| P-09 | Un refus d'habilitation renvoyait 500 au lieu de 403 — décorateur jamais posé sur une vraie vue |
+| P-21 | Un compte créé par l'écran n'avait aucune permission — la fixture faisait le travail du service |
+| P-23 | La modification concurrente échouait **toujours** — le test passait un `datetime`, la vue reçoit une chaîne |
+| P-26 | Aucun chemin de navigation ne menait aux lieux — les tests appelaient les adresses directement |
+| P-30 | La suppression n'existait sur aucun écran — les tests appelaient le service, jamais l'URL |
+| P-31 | Faux positif de recette, protocole ambigu |
+
+**Règle, à partir de maintenant.** Toute story qui livre un écran comporte
+au moins un test empruntant le cycle HTTP réel — `reverse()` et le client de
+test —, pour son chemin nominal et pour son refus d'habilitation. Répétée
+dans `.claude/rules/tests.md`.
+
+Deux leçons voisines, même défaut de méthode :
+
+- **Ne jamais fournir au test le type Python que la vue ne recevra pas**
+  (P-23) — un formulaire HTTP ne reçoit que des chaînes ; un test qui passe
+  un `datetime`, un `Decimal` ou un objet Python directement au service ne
+  prouve rien sur ce que la vue fera réellement de la même donnée.
+- **Ne jamais faire dans une fixture ce qu'un service doit faire** (P-21) —
+  une fixture qui construit un compte utilisateur « complet » à la main
+  (permissions comprises) masque un service qui, appelé par le vrai
+  parcours de création, ne les pose pas.
+
+**Ce que la définition de fini n'inclut pas encore rétroactivement.** Cette
+règle vaut pour le code à venir ; les quinze stories déjà livrées du sprint 1
+gardent leur angle mort tant que l'inventaire du bloc D (Prompt 19) n'a pas
+été comblé — voir `docs/suivi/AVANCEMENT.md`.
+
 ## Ce que `ServiceCompte` gagnerait à reprendre du patron
 
 Demandé en Étape 0, sans reprise dans cette story (décision séparée) :
