@@ -15,6 +15,7 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 
 from administration.constantes import GROUPES
+from organisation.models import Session
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 from referentiel.services.prerequis import ServicePrerequis
@@ -114,6 +115,13 @@ def objets(db, utilisateurs):
         grade="Sgt",
         profil=get_user_model().Profil.CELLULE_PEDAGOGIQUE,
     )
+    session = Session.objects.create(
+        formation=formation,
+        intitule="Session essai",
+        date_debut="2026-01-05",
+        date_fin="2026-03-27",
+        effectif_attendu=24,
+    )
     return {
         "type_formation": type_formation,
         "formation": formation,
@@ -127,4 +135,5 @@ def objets(db, utilisateurs):
         "instructeur": instructeur,
         "qualification": qualification,
         "compte_cible": compte_cible,
+        "session": session,
     }

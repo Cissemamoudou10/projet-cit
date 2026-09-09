@@ -10,7 +10,7 @@
 
 Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 
-- [ ] **US-SES-01** — Ouvrir une session de formation · 5 pts · Must
+- [x] **US-SES-01** — Ouvrir une session de formation · 5 pts · Must
 - [ ] **US-SES-02** — Constituer les brigades d'une session · 5 pts · Must
 - [ ] **US-SES-03** — Affecter une salle attitrée à chaque brigade · 3 pts · Must
 - [ ] **US-SES-04** — Consulter la composition d'une session · 3 pts · Must

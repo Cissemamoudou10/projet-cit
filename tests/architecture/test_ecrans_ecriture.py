@@ -179,6 +179,18 @@ ECRANS_ECRITURE = [
         "noyau.referentiel_ecriture",
         lambda objets: [objets["formation"].pk, objets["prerequis"].pk],
     ),
+    # --- organisation : sessions (US-SES-01) ---
+    EcranEcriture("organisation:creer_session", "noyau.organisation_ecriture"),
+    EcranEcriture(
+        "organisation:modifier_session",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "organisation:supprimer_session",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
     # --- ressources : lieux (US-PLAN-02) ---
     EcranEcriture("ressources:creer_lieu", "noyau.lieux_calendrier_ecriture"),
     EcranEcriture(
@@ -256,10 +268,9 @@ ECRANS_ECRITURE = [
     ),
 ]
 
-# 48 adresses : les 47 de COUVERTURE-HTTP.md (2026-09-08) plus liste_comptes,
-# gardée par la même permission d'écriture faute de lecture séparée sur le
-# domaine administration (voir le commentaire sur son entrée ci-dessus).
-assert len(ECRANS_ECRITURE) == 48
+# 51 adresses : les 48 précédentes (Prompt 19) plus les trois adresses
+# d'écriture de organisation:session (US-SES-01, Prompt 20).
+assert len(ECRANS_ECRITURE) == 51
 
 
 def _groupes_sans(permission):

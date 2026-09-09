@@ -133,6 +133,7 @@ class ServiceGestion:
                 )
         except IntegrityError as erreur:
             raise cls._erreur_unicite(instance) from erreur
+        instance.avertissements = cls._avertissements(instance)
         return instance
 
     @classmethod
@@ -160,6 +161,7 @@ class ServiceGestion:
                 )
         except IntegrityError as erreur:
             raise cls._erreur_unicite(instance) from erreur
+        instance.avertissements = cls._avertissements(instance)
         return instance
 
     @classmethod
@@ -225,6 +227,17 @@ class ServiceGestion:
     @classmethod
     def _capturer(cls, instance):
         return {champ: getattr(instance, champ) for champ in cls.CHAMPS_JOURNALISES}
+
+    @classmethod
+    def _avertissements(cls, instance):
+        """RG-65 (D-27, D-32) : liste de `{"code": ..., "message": ...}` posée
+        à côté de l'instance après `creer`/`modifier`, jamais avant — un
+        avertissement ne bloque jamais l'écriture, contrairement à
+        `_valider`. Vide par défaut ; une sous-classe le surcharge pour
+        signaler un écart entre un attribut déclaratif et une valeur
+        calculée (§ 5, Prompt 20).
+        """
+        return []
 
     @classmethod
     def _journaliser(cls, agissant, nature, instance, *, valeur_avant=None, valeur_apres=None):

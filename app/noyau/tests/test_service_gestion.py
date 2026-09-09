@@ -154,6 +154,46 @@ def test_queryset_surchargee_permet_d_annoter_sans_requete_en_boucle(redacteur):
     assert page[0].nombre_dependants == 1
 
 
+def test_avertissements_vides_par_defaut(redacteur):
+    """§ 5 (Prompt 20) : le patron ne bloque jamais, et n'avertit de rien
+    tant qu'aucune sous-classe ne surcharge `_avertissements`."""
+    element = ServiceElementGestionTest.creer(redacteur, {"intitule": "Sans avertissement"})
+
+    assert element.avertissements == []
+
+
+class _ServiceElementGestionTestAvertissement(ServiceElementGestionTest):
+    """Local au test : prouve que `_avertissements` est le point
+    d'extension attendu, sans modifier le service partagé — même patron que
+    `_ServiceElementGestionTestAnnote` ci-dessus.
+    """
+
+    @classmethod
+    def _avertissements(cls, instance):
+        return [{"code": "essai", "message": f"« {instance.intitule} » dépasse le seuil d'essai."}]
+
+
+def test_avertissement_accompagne_l_objet_sans_empecher_l_ecriture(redacteur):
+    element = _ServiceElementGestionTestAvertissement.creer(redacteur, {"intitule": "Avec avertissement"})
+
+    assert ElementGestionTest.objects.filter(pk=element.pk).exists()
+    assert element.avertissements == [
+        {"code": "essai", "message": "« Avec avertissement » dépasse le seuil d'essai."}
+    ]
+
+
+def test_avertissement_pose_aussi_apres_modification(redacteur):
+    element = _ServiceElementGestionTestAvertissement.creer(redacteur, {"intitule": "Original"})
+
+    modifie = _ServiceElementGestionTestAvertissement.modifier(
+        redacteur, element.pk, {"intitule": "Renommé"}, element.modifie_le
+    )
+
+    assert modifie.avertissements == [
+        {"code": "essai", "message": "« Renommé » dépasse le seuil d'essai."}
+    ]
+
+
 def test_deux_ecritures_concurrentes_la_seconde_echoue(redacteur):
     element = ServiceElementGestionTest.creer(redacteur, {"intitule": "Concurrence"})
     modifie_le_initial = element.modifie_le

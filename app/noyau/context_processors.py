@@ -31,6 +31,7 @@ from noyau.habilitations import a_permission
 
 PERMISSION_ADMINISTRATION = "noyau.administration_ecriture"
 PERMISSION_REFERENTIEL = "noyau.referentiel_lecture"
+PERMISSION_ORGANISATION = "noyau.organisation_lecture"
 PERMISSION_INSTRUCTEURS = "noyau.instructeurs_qualifications_lecture"
 PERMISSION_LIEUX = "noyau.lieux_calendrier_lecture"
 
@@ -69,6 +70,14 @@ def _rubriques(request):
                 "slug": "referentiel",
                 "libelle": "Référentiel",
                 "url": reverse("referentiel:liste_types_formation"),
+            }
+        )
+    if a_permission(request.user, PERMISSION_ORGANISATION):
+        rubriques.append(
+            {
+                "slug": "organisation",
+                "libelle": "Sessions",
+                "url": reverse("organisation:liste_sessions"),
             }
         )
     a_instructeurs = a_permission(request.user, PERMISSION_INSTRUCTEURS)

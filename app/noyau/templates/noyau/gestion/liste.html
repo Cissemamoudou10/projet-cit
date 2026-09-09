@@ -40,18 +40,20 @@
                     focus:border-marine-700 focus:ring-2 focus:ring-focus">
     </div>
   {% endif %}
-  <div>
-    <label for="filtre-etat"
-           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</label>
-    <select id="filtre-etat" name="etat"
-            class="h-controle w-40 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
-                   outline-none hover:border-marine-700
-                   focus:border-marine-700 focus:ring-2 focus:ring-focus">
-      <option value="">Tous</option>
-      <option value="actif" {% if filtres.etat == "actif" %}selected{% endif %}>Actif</option>
-      <option value="archive" {% if filtres.etat == "archive" %}selected{% endif %}>Archivé</option>
-    </select>
-  </div>
+  {% if not masquer_filtre_archive %}
+    <div>
+      <label for="filtre-etat"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</label>
+      <select id="filtre-etat" name="etat"
+              class="h-controle w-40 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                     outline-none hover:border-marine-700
+                     focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        <option value="">Tous</option>
+        <option value="actif" {% if filtres.etat == "actif" %}selected{% endif %}>Actif</option>
+        <option value="archive" {% if filtres.etat == "archive" %}selected{% endif %}>Archivé</option>
+      </select>
+    </div>
+  {% endif %}
   {% for champ in filtres_champs %}
     <div>
       <label for="filtre-{{ champ.nom }}"

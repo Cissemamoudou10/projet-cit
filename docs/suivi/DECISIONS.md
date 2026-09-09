@@ -31,6 +31,112 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-77 — Session ouverte redirige vers sa fiche, pas vers la liste, pour montrer l'avertissement E2
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 7 du Prompt 20 : l'avertissement E2 doit s'afficher « avec les deux volumes en regard » (prescrit, attendu sur la période). Le patron répliqué (`ressources`, `referentiel`) redirige systématiquement vers la liste après une création, où ces deux volumes ne sont pas affichés.
+**Décision** — `vue_creer_session`/`vue_modifier_session` redirigent vers la fiche (`detail_session`), pas vers la liste. Les avertissements retournés par `ServiceSession.creer`/`modifier` sont pris un par un et posés via `messages.warning`, qui les affiche avec le bloc « Référentiel appliqué » de la fiche (les deux volumes).
+**Alternative écartée** — Garder la redirection vers la liste, en espérant que le message Django suffise : il n'aurait alors montré que le texte de l'avertissement, jamais les deux volumes côte à côte comme demandé.
+**Impact sur les livrables** — aucun sur le modèle ; à signaler si une story ultérieure généralise ce choix aux autres écrans du patron.
+**Reporté au livrable** — non applicable.
+
+## D-76 — `ServiceGestion._capturer` ne sait pas sérialiser un `DateField` pour le journal
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `Session` est la première entité du patron `ServiceGestion` à journaliser un champ `DateField` (`date_debut`, `date_fin`). `EntreeJournal.valeur_avant`/`valeur_apres` (`JSONField`) passe par `json.dumps` sans encodeur Django : `TypeError: Object of type date is not JSON serializable` à la première création, vérifié réellement.
+**Décision** — `ServiceSession._capturer` surcharge le patron pour convertir `date_debut`/`date_fin` en `isoformat()` avant capture — même contournement que `ressources.services.indisponibilite_lieu._capturer` pour un `DateTimeField`, qui n'est pas construit sur `ServiceGestion`.
+**Alternative écartée** — Corriger `ServiceGestion._capturer` dans `noyau` pour sérialiser génériquement toute date : plus large que ce que cette story exige, et aucune autre entité du patron n'a encore ce besoin — reporté au jour où une deuxième entité le rencontrera, pour ne pas généraliser sur un seul cas.
+**Impact sur les livrables** — aucun sur le modèle ; à surveiller si une future entité du patron ajoute un champ date/heure journalisé.
+**Reporté au livrable** — non applicable.
+
+## D-75 — Le patron suppose un champ `archive` ; `Session` n'en a pas
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `ServiceGestion.lister` filtre sur `archive=False`/`True` quand `filtres["etat"]` vaut `"actif"`/`"archive"`, et `disponibles_pour_selection` filtre toujours sur `archive=False` — les deux supposent le mixin `ModeleArchivable`. `Session` ne l'hérite pas (§ 2 du Prompt 20), et `noyau/gestion/liste.html` affiche pourtant sans condition un filtre « État » à deux valeurs Actif/Archivé, qui n'a pas de sens pour `Session` et provoquerait un `FieldError` si jamais sélectionné, faute de colonne `archive`. Premier croisement réel entre le patron `ServiceGestion` et une entité sans mixin d'archivage possédant son propre écran de liste (`ressources.Qualification`, seule autre entité du patron sans archivage, n'a ni l'un ni l'autre — voir son service).
+**Décision** — Deux correctifs ciblés : (1) `noyau/gestion/liste.html` gate ce filtre derrière un contexte `masquer_filtre_archive` (par défaut absent, donc sans effet sur les écrans existants) ; `organisation:liste_sessions` le pose à `True` et fournit son propre filtre « État » (OUVERTE/CLÔTURÉE) via `filtres_champs`, comme `statut` pour `Instructeur`. (2) `ServiceSession.disponibles_pour_selection` est surchargée pour retourner `MODELE.objects.all()`, en garde — rien n'appelle encore cette méthode pour `Session` dans cette story.
+**Alternative écartée** — Rendre `ModeleArchivable` obligatoire dans `ServiceGestion` : aurait forcé `Session` à porter un champ d'archivage sans usage, contredisant directement le § 2 du prompt (« Session porte un état métier, pas un indicateur d'archivage »).
+**Impact sur les livrables** — aucun sur le modèle ; documente une limite du patron `ServiceGestion` (Prompt 05) qui ne dit rien de ce cas — à signaler si une future story bâtit un panorama du patron pour le mémoire.
+**Reporté au livrable** — non applicable.
+
+## D-74 — `ServiceReferentiel.ecart()` non réutilisée pour l'avertissement E2 de Session
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le Prompt 20, § 5, suggérait de réutiliser `ServiceReferentiel.ecart()` « si sa signature s'y prête ». Vérifié réellement (étape 0) : `ecart(formation)` calcule un attendu sur `formation.duree_semaines`, un attribut de la formation — pas sur la période de la session (`date_debut`/`date_fin`), qui est ce que E2 doit comparer.
+**Décision** — `ServiceSession._avertissements` calcule son propre attendu à partir du nombre de jours de la période de la session, en réutilisant seulement `ServiceReferentiel.total_volume(formation)` pour le volume prescrit — jamais `ecart()`.
+**Alternative écartée** — Élargir `ServiceReferentiel.ecart()` pour accepter une période en paramètre optionnel : aurait mélangé dans un même service deux préoccupations distinctes (l'écart au gabarit de la formation, propre à `referentiel` ; l'écart à la période d'une session, propre à `organisation`) pour un gain de réutilisation marginal.
+**Impact sur les livrables** — aucun sur le modèle ; à signaler dans le mémoire si RG-65 est présentée comme un mécanisme unique — elle a deux implantations distinctes, une par question posée.
+**Reporté au livrable** — non applicable.
+
+## D-73 — L'avertissement E2 est asymétrique : seul un dépassement est signalé
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — E2 de CU-P3-01 : « volume horaire total prescrit excédant les heures ouvrables de la période ». `ServiceReferentiel.ecart()` (US-REF-01) est symétrique : `abs(total - attendu)`, avertit aussi bien en cas de sous-charge que de surcharge. E2 ne parle que du dépassement.
+**Décision** — `ServiceSession._avertissements` n'avertit que si le volume prescrit dépasse le volume attendu au-delà du seuil (`ecart_pourcent`, sans valeur absolue) — un volume prescrit inférieur au volume attendu sur la période n'est jamais signalé par cette story.
+**Alternative écartée** — Reprendre le calcul symétrique de `ServiceReferentiel.ecart()` par cohérence visuelle avec RG-65 : aurait avertit dans un cas que E2 ne prévoit pas (session largement sous-chargée), au-delà du périmètre de la fiche CU-P3-01.
+**Impact sur les livrables** — aucun sur le modèle ; à confirmer auprès du chef de bureau pédagogique si une sous-charge doit, elle aussi, être signalée un jour (question ouverte, comme le seuil et le volume de référence — voir D-33).
+**Reporté au livrable** — non applicable.
+
+## D-72 — Le calcul de l'avertissement E2 est provisoire par construction
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 5 du Prompt 20 : le volume attendu se calcule aujourd'hui comme `nombre de semaines de la période × VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE` (30 h/semaine, D-33), faute de mieux — ni grille horaire active (US-PLAN-12), ni calendrier (US-PLAN-01) n'existent encore, tous deux prévus ce sprint.
+**Décision** — `ServiceSession._avertissements` porte ce calcul provisoire, isolé dans une seule méthode pour être remplacé sans toucher au reste du service dès que US-PLAN-01 et US-PLAN-12 seront livrées.
+**Alternative écartée** — Attendre que les deux stories soient livrées avant d'implanter E2 : aurait laissé cette story incomplète (E2 fait partie des exceptions à implanter, § 1).
+**Impact sur les livrables** — à noter dans le mémoire comme dette technique connue et datée, pas un oubli ; 30 h/semaine reste une question de terrain ouverte (D-33).
+**Reporté au livrable** — **oui**, remplacement du calcul dès US-PLAN-01 et US-PLAN-12 livrées (même sprint).
+
+## D-71 — Extension du patron `ServiceGestion` : avertissements non bloquants (RG-65)
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 0.5 et § 5 du Prompt 20 : RG-65 (« écart entre attribut déclaratif et valeur calculée : avertissement, jamais refus ») est transverse — E2 de cette story, critère 4 d'US-SES-02, puis US-SES-06 et US-PLAN-07. Vérifié réellement : le patron n'avait aucun mécanisme d'avertissement, `creer`/`modifier` ne retournaient que l'instance.
+**Décision** — `ServiceGestion._avertissements(instance)` (classmethod, `[]` par défaut) est le point d'extension : `creer`/`modifier` l'appellent après l'écriture réussie et posent le résultat sur `instance.avertissements` — un attribut Python porté à côté de l'objet, jamais une colonne, jamais un second retour qui aurait cassé la trentaine d'appels existants (`element = ServiceX.creer(...)`) traitant déjà le retour comme l'instance elle-même. Testé sur `essai_patron_gestion` (`app/noyau/tests/test_service_gestion.py`), pas seulement à travers `Session` — un patron testé à travers un seul usage n'est pas un patron.
+**Alternative écartée** — Faire retourner un tuple `(instance, avertissements)` à `creer`/`modifier`, lecture littérale du § 5 (« retournent à côté de l'objet ») : aurait changé la signature de retour pour les huit services déjà bâtis sur ce patron, cassant tout appelant qui traite le retour comme l'instance (`instructeur.pk`, `formation.intitule`, etc.) dans le code applicatif et dans des dizaines de tests existants — coût largement disproportionné pour cette story.
+**Impact sur les livrables** — `docs/conception/14-note-implementation.md` (ou le prompt qui documente le patron `ServiceGestion`) gagnerait une ligne sur ce point d'extension, au même titre que `_queryset`.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-70 — Enchaînement A2 de CU-P3-01 reporté à US-PLAN-03
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — A2 (modification des dates d'une session après ouverture, signalement des séances déjà programmées hors de la nouvelle période, arbitrage exigé) suppose `Seance`, qui n'existe pas avant US-PLAN-03 (même sprint, livrée plus tard).
+**Décision** — Aucun code pour A2 dans cette story. `FormulaireSession`/`ServiceSession.modifier` autorisent une modification des dates sans aucun contrôle de cohérence avec un programme déjà généré — impossible aujourd'hui, `Seance` n'existant pas encore.
+**Alternative écartée** — Anticiper un mécanisme générique de signalement avant que `Seance` existe : aurait produit du code non testable contre le modèle réel, contraire au principe constant du projet (D-23, D-30, D-35, D-45).
+**Impact sur les livrables** — aucun sur le modèle actuel ; US-PLAN-03 doit couvrir A2 explicitement à son tour.
+**Reporté au livrable** — **oui**, à US-PLAN-03 (même sprint) — dixième report du projet, à annoncer à la revue du 26 septembre.
+
+## D-69 — `PROTECT` de `Session.formation` bloque aussi une formation ne portant que des sessions clôturées
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le critère 4 d'US-REF-01 (D-23, referme ici) ne parle que des « sessions ouvertes ». Le mécanisme retenu — `on_delete=PROTECT` sur `Session.formation` — bloque en réalité la suppression d'une formation portant N'IMPORTE QUELLE session, y compris clôturée : `PROTECT` ne distingue pas les valeurs d'`etat`, seulement l'existence d'une ligne liée.
+**Décision** — Comportement gardé tel quel : une session clôturée porte l'historique réel de la formation (stagiaires évalués, programme dispensé), et sa perte silencieuse serait pire qu'un refus de suppression trop large. Test D3 (`test_d3_formation_portant_une_session_cloturee_est_aussi_protegee`) rend l'écart visible plutôt que de le documenter seulement en prose.
+**Alternative écartée** — Un contrôle explicite en service, ne protégeant que les sessions à l'état OUVERTE et autorisant la suppression d'une formation dont toutes les sessions sont clôturées : plus fidèle au libellé du critère, mais aurait autorisé la perte de l'historique d'une formation menée à son terme — jugé plus dangereux que l'écart de libellé.
+**Impact sur les livrables** — le critère 4 d'US-REF-01 gagnerait à être reformulé (« portant une ou plusieurs sessions », sans qualificatif d'état) pour refléter le mécanisme réellement retenu.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-68 — Unicité composite `(formation, intitule)` sur `Session`, proposée par analogie
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Aucun livrable n'exige d'unicité sur l'intitulé d'une session. Sans elle, rien n'empêche une double saisie accidentelle de deux sessions strictement identiques (même formation, même intitulé) — même risque que celui déjà tranché pour `Formation` par `uq_formation_type_intitule` (D-26).
+**Décision** — `uq_session_formation_intitule` posée sur `(formation_id, UPPER(intitule))`, insensible à la casse — par analogie directe avec D-26. N'interdit pas le chevauchement de périodes d'A1 : deux sessions distinctes d'une même formation continuent de nécessiter des intitulés distincts, ce qui n'a jamais été présenté comme un obstacle à A1 dans la fiche CU-P3-01.
+**Alternative écartée** — Aucune contrainte d'unicité sur l'intitulé : aurait laissé la double saisie accidentelle passer inaperçue, seul filet de sécurité restant étant la vigilance humaine — écarté par le même raisonnement que D-26.
+**Impact sur les livrables** — proposition non portée par un livrable, **arbitrable par le chef de projet** : à valider ou à retirer explicitement lors de la prochaine revue de conception.
+**Reporté au livrable** — non, décision immédiatement appliquée en base ; validation d'arbitrage à faire au prochain relevé.
+
+## D-67 — Aucune contrainte de non-chevauchement de périodes entre sessions d'une même formation
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le critère 3 du backlog v8 (« plusieurs sessions d'une même formation peuvent coexister sur des périodes différentes ») est moins précis que l'enchaînement A1 de la fiche CU-P3-01, qui autorise explicitement le chevauchement — le partage des instructeurs et des lieux s'arbitrant à la planification, pas à l'ouverture de la session.
+**Décision** — Aucune contrainte de non-chevauchement, ni en base (aucune contrainte d'exclusion sur `Session`) ni en services. Le critère 3 du backlog est lu comme une description du cas courant, pas comme une interdiction — arbitrage identique à D-26. Test A7 (`test_a1_deux_sessions_periodes_chevauchantes_acceptees_absence_de_contrainte`) nommé explicitement pour que l'intention survive à sa relecture dans six mois.
+**Alternative écartée** — Lire le critère 3 littéralement et poser une contrainte d'exclusion sur les périodes : aurait bloqué le cas nominal d'A1, explicitement autorisé par la fiche de référence, qui prime sur le libellé plus court du backlog.
+**Impact sur les livrables** — le critère 3 du backlog v8 gagnerait à être reformulé pour ne plus laisser croire à une interdiction de chevauchement.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-66 — `Session` n'hérite pas du mixin d'archivage
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le patron des sept entités de gestion hérite systématiquement de `ModeleArchivable`. `Session` porte pourtant un état métier réel (`OUVERTE`/`CLOTUREE`, RG à venir avec US-SES-09) que rien ne distingue d'un archivage au sens du patron.
+**Décision** — `Session` hérite seulement de `ModeleHorodate`, pas de `ModeleArchivable` — même raisonnement que D-37 (`ObjectifPedagogique`) et D-49 (`Qualification`) : un état métier explicite ne se confond pas avec un indicateur d'archivage générique, même quand les deux se ressemblent en surface (une session clôturée « disparaît » des listes de sélection tout comme un élément archivé, mais pour une raison différente, avec une transition contrôlée par une règle métier propre plutôt qu'un bouton archiver/désarchiver générique).
+**Alternative écartée** — Réutiliser `ModeleArchivable` et faire coïncider `archive=True` avec la clôture : aurait mélangé deux concepts (une session clôturée reste une session réelle, avec un historique et potentiellement une date de clôture distincte, pas un simple retrait de la sélection) et aurait autorisé une désarchivation générique là où seule US-SES-09 doit gouverner la réouverture, si jamais elle est permise.
+**Impact sur les livrables** — aucun sur le diagramme de classes (CLS-00 ne portait déjà pas ce mixin) ; documente pourquoi pour la suite du mémoire.
+**Reporté au livrable** — non applicable.
+
+## D-65 — Étape 0 de US-SES-01 : catalogue et dépendances déjà corrects, mécanisme d'avertissement absent
+**Date** 2026-09-09 · **Story** US-SES-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le Prompt 20 demandait de vérifier cinq hypothèses avant tout code (§ 0). Vérifié réellement : `DOMAINES_CATALOGUE` contient déjà `organisation` ; `DEPENDANCES_AUTORISEES["organisation"]` contient déjà `referentiel` et `administration` (et `ressources`, non anticipé par le prompt mais déjà correct) ; l'application `organisation` existe déjà (squelette du sprint 1) avec `models.py` vide ; le patron `ServiceGestion` ne dispose d'AUCUN mécanisme d'avertissement non bloquant.
+**Décision** — Aucune modification du catalogue de domaines ni des dépendances entre applications : les trois premières hypothèses du prompt étaient déjà correctes, à la différence du précédent D-47. Le § 0.5 (avertissement) est répondu explicitement NON, ce qui déclenche l'extension du patron — voir D-71.
+**Alternative écartée** — Sans objet, simple constat de vérification.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non applicable.
+
+---
+
 ## D-64 — D-30 est refermé pour de bon : son premier volet (critère 3) était resté ouvert malgré D-50
 **Date** 2026-09-08 · **Story** aucune (correction rattachée à D-30, lot de clôture du sprint 1, Prompt 19) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — D-50 (US-INS-02) affirmait refermer D-30 « sur ses deux volets », mais ne traitait en réalité que le second (critère 5, suppression protégée). Le premier volet — critère 3, « la fiche d'une matière indique les formations qui l'utilisent dans leur référentiel » — était resté ouvert sans que D-50 s'en aperçoive : c'est exactement P-25 (`docs/suivi/PROBLEMES.md`), trouvé indépendamment le 2026-09-04 et laissé ouvert jusqu'à ce lot de clôture. La revue du 7 septembre (Prompt 19) a proposé une story dédiée pour P-25 ; le chef de projet l'a refusée : un critère d'acceptation non tenu n'est pas un besoin nouveau, une story lui donnerait un statut d'évolution qu'il n'a pas et brouillerait la traçabilité que ce même prompt vient de consolider (bloc D).
