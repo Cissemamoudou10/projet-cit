@@ -52,7 +52,11 @@ class FormulaireSession(FormulaireGestion):
             ),
             "date_fin": forms.DateInput(attrs={"type": "date", "class": CLASSES_CHAMP_DATE}),
             "effectif_attendu": forms.NumberInput(
-                attrs={"class": CLASSES_CHAMP_UNITE, "inputmode": "numeric"}
+                attrs={
+                    "class": CLASSES_CHAMP_UNITE,
+                    "inputmode": "numeric",
+                    "unite": "stagiaires",
+                }
             ),
         }
 
