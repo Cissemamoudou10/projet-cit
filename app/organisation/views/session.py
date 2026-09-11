@@ -13,6 +13,7 @@ from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, E
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
 from organisation.forms import FormulaireSession
+from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import ServiceSession
 from referentiel.services.formation import ServiceFormation
 
@@ -100,6 +101,7 @@ def _colonnes(tri_actuel):
         {"libelle": "Période", "cle_tri": None},
         {"libelle": "Effectif attendu", "cle_tri": None},
         {"libelle": "État", "cle_tri": None},
+        {"libelle": "Brigades", "cle_tri": None},
     ]
 
 
@@ -112,6 +114,19 @@ def _colonne_tri(tri_actuel, champ, libelle):
         "sens": etat["sens"],
         "aria": etat["aria"],
     }
+
+
+def _cellule_brigades(session):
+    """Signale, sans bloquer, une session qui n'a encore aucune brigade —
+    critère 2 (§ 4, Prompt 21) : une postcondition de CU-P3-02, pas un
+    invariant — une session ouverte ce matin n'est pas en faute."""
+    if session.nombre_brigades:
+        return format_html('<span class="tabular-nums">{}</span>', session.nombre_brigades)
+    return format_html(
+        '<span class="bg-etat-attention px-2 py-px text-2xs font-semibold '
+        'tracking-wide text-blanc">{}</span>',
+        "AUCUNE BRIGADE",
+    )
 
 
 def _ligne(session, peut_ecrire):
@@ -128,6 +143,7 @@ def _ligne(session, peut_ecrire):
             f"{session.date_debut:%d/%m/%Y} — {session.date_fin:%d/%m/%Y}",
             format_html('<span class="tabular-nums">{}</span>', session.effectif_attendu),
             session.get_etat_display(),
+            _cellule_brigades(session),
         ],
         "libelle": session.intitule,
     }
@@ -174,6 +190,7 @@ def vue_liste_sessions(request):
 def vue_detail_session(request, pk):
     session = _session_ou_404(pk)
     resume = ServiceSession.referentiel_resume(request.user, session)
+    brigades = ServiceBrigade.lister(request.user, session)
     return render(
         request,
         "organisation/session_detail.html",
@@ -183,8 +200,10 @@ def vue_detail_session(request, pk):
             "url_referentiel": reverse(
                 "referentiel:referentiel_formation", args=[session.formation.pk]
             ),
+            "url_brigades": reverse("organisation:brigades_session", args=[session.pk]),
             "nombre_matieres": resume["nombre_matieres"],
             "volume_total_referentiel": resume["volume_total"],
+            "nombre_brigades": len(brigades),
         },
     )
 

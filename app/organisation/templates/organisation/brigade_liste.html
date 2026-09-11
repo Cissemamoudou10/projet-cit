@@ -1,0 +1,193 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Brigades — {{ session.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{% url 'organisation:detail_session' session.pk %}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour à la session
+  </a>
+  <h1 class="font-titre text-xl font-semibold leading-tight">Brigades — {{ session.intitule }}</h1>
+  <p class="text-sm text-gris-lecture">
+    {{ session.formation }} · du {{ session.date_debut|date:"d/m/Y" }} au
+    {{ session.date_fin|date:"d/m/Y" }} · effectif attendu {{ session.effectif_attendu }}
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% if indicateur.ecart == 0 %}
+  <div class="mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+              border-l-etat-conforme bg-etat-conforme-fond px-4 py-3">
+    <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-conforme" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#validation"></use>
+    </svg>
+    <div>
+      <p class="font-titre text-base font-semibold text-etat-conforme">Conforme</p>
+      <p class="text-xs text-gris-lecture">
+        Effectif attendu {{ indicateur.effectif_attendu }}, somme des brigades
+        {{ indicateur.somme_prevue }} — les deux coïncident (RG-15).
+      </p>
+    </div>
+  </div>
+{% else %}
+  <div class="mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+              border-l-etat-attention bg-etat-attention-fond px-4 py-3">
+    <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-attention" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+    </svg>
+    <div>
+      <p class="font-titre text-base font-semibold text-etat-attention">Écart d'effectif</p>
+      <p class="text-xs text-gris-lecture">
+        Effectif attendu {{ indicateur.effectif_attendu }}, somme des brigades
+        {{ indicateur.somme_prevue }} — écart de {{ indicateur.ecart }}. Prévisionnel : l'effectif
+        réel ne sera connu qu'à l'inscription des stagiaires (RG-15).
+      </p>
+    </div>
+  </div>
+{% endif %}
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Brigades constituées
+  </p>
+  {% if brigades %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Désignation</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">
+            Effectif prévisionnel</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Effectif réel</th>
+          {% if perms.noyau.organisation_ecriture %}
+            <th scope="col" data-impression="masquer"
+                class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                       font-semibold uppercase tracking-wider text-blanc">Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for brigade in brigades %}
+          <tr class="h-ligne border-t border-gris-trait">
+            {% if perms.noyau.organisation_ecriture %}
+              <td class="px-3 py-1.5">
+                <input type="text" name="designation" form="brigade-{{ brigade.pk }}"
+                       value="{{ brigade.designation }}" maxlength="50"
+                       aria-label="Désignation"
+                       class="h-ligne w-full rounded border border-gris-trait bg-fond-bloc px-2
+                              text-xs outline-none hover:border-marine-700
+                              focus:border-marine-700 focus:ring-2 focus:ring-focus">
+              </td>
+              <td class="px-3 py-1.5">
+                <span class="flex w-28 items-stretch border border-gris-trait bg-fond-bloc">
+                  <input type="number" min="1" inputmode="numeric" name="effectif_previsionnel"
+                         form="brigade-{{ brigade.pk }}" value="{{ brigade.effectif_previsionnel }}"
+                         aria-label="Effectif prévisionnel — {{ brigade.designation }}"
+                         class="h-ligne w-full border-0 bg-transparent px-2 text-right text-xs
+                                tabular-nums outline-none">
+                  <span class="flex items-center border-l border-gris-trait bg-fond-bande px-2
+                               text-2xs text-gris-lecture">stag.</span>
+                </span>
+              </td>
+            {% else %}
+              <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ brigade.designation }}</th>
+              <td class="px-3 py-1.5 tabular-nums">{{ brigade.effectif_previsionnel }}</td>
+            {% endif %}
+            {# Effectif réel — réservé à US-SES-06 : affectations ouvertes de #}
+            {# stagiaires non radiés (CLS-00, § 9), non calculable avant US-SES-05. #}
+            <td class="px-3 py-1.5 text-gris-lecture">—</td>
+            {% if perms.noyau.organisation_ecriture %}
+              <td data-impression="masquer" class="px-3 py-1.5 text-right">
+                <button type="submit" form="brigade-{{ brigade.pk }}"
+                        title="Enregistrer" aria-label="Enregistrer {{ brigade.designation }}"
+                        class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                               hover:border-marine-700 hover:bg-fond-survol">
+                  <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#validation"></use>
+                  </svg>
+                </button>
+                <a href="{% url 'organisation:supprimer_brigade' session.pk brigade.pk %}"
+                   title="Supprimer" aria-label="Supprimer {{ brigade.designation }}"
+                   class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                          hover:border-etat-ecart hover:bg-etat-ecart-fond">
+                  <svg class="h-4 w-4 text-etat-ecart" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#suppression"></use>
+                  </svg>
+                </a>
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if perms.noyau.organisation_ecriture %}
+      {% for brigade in brigades %}
+        <form id="brigade-{{ brigade.pk }}" method="post"
+              action="{% url 'organisation:modifier_brigade' session.pk brigade.pk %}"
+              hidden>{% csrf_token %}</form>
+      {% endfor %}
+    {% endif %}
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#recherche"></use>
+      </svg>
+      <p class="mb-1 font-titre text-lg font-semibold">Aucune brigade constituée</p>
+      <p class="mb-3.5 max-w-lg text-sm text-gris-lecture">
+        La session comporte au minimum une brigade avant sa mise en œuvre (critère 2).
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+{% if perms.noyau.organisation_ecriture %}
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Constituer une brigade
+  </p>
+  <form method="post" action="{{ url_creer }}" class="flex flex-wrap items-end gap-3 px-4 py-3.5">
+    {% csrf_token %}
+    <div class="w-64">
+      <label for="{{ formulaire_creation.designation.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Désignation</label>
+      {{ formulaire_creation.designation }}
+      {% if formulaire_creation.designation.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">{{ formulaire_creation.designation.errors|first }}</p>
+      {% endif %}
+    </div>
+    <div class="w-40">
+      <label for="{{ formulaire_creation.effectif_previsionnel.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+        Effectif prévisionnel</label>
+      <div class="flex items-stretch rounded border border-gris-trait bg-fond-bloc
+                  hover:border-marine-700
+                  focus-within:border-marine-700 focus-within:ring-2 focus-within:ring-focus">
+        {{ formulaire_creation.effectif_previsionnel }}
+        <span class="flex items-center border-l border-gris-trait bg-fond-bande px-2.5
+                     text-xs font-medium text-gris-lecture">stag.</span>
+      </div>
+      {% if formulaire_creation.effectif_previsionnel.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">
+          {{ formulaire_creation.effectif_previsionnel.errors|first }}</p>
+      {% endif %}
+    </div>
+    <button type="submit"
+            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700">
+      Constituer la brigade
+    </button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

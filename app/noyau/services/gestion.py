@@ -46,6 +46,19 @@ def valider_instance(instance):
         raise ErreurValidation(_decrire_erreurs(erreur)) from erreur
 
 
+def avertissement(code: str, message: str) -> dict:
+    """Structure `{"code", "message"}` d'un avertissement RG-65 (D-27, D-32)
+    — jamais un refus, toujours posé à côté d'une instance déjà enregistrée.
+    Fonction libre, comme `decrire_opposants`/`valider_instance` : un
+    service qui compose une sous-ressource sans hériter de `ServiceGestion`
+    (`ServiceReferentiel`, `ServiceBrigade` — US-SES-02, étape 0.3) a le même
+    besoin de ce format que `ServiceGestion._avertissements`, qui s'appuie
+    dessus. La forme vit ici, à un seul endroit, jamais recopiée en dict
+    littéral service par service.
+    """
+    return {"code": code, "message": message}
+
+
 def _decrire_erreurs(erreur):
     if hasattr(erreur, "message_dict"):
         messages = [message for liste in erreur.message_dict.values() for message in liste]

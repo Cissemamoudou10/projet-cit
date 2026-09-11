@@ -15,7 +15,7 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 
 from administration.constantes import GROUPES
-from organisation.models import Session
+from organisation.models import Brigade, Session
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 from referentiel.services.prerequis import ServicePrerequis
@@ -122,6 +122,9 @@ def objets(db, utilisateurs):
         date_fin="2026-03-27",
         effectif_attendu=24,
     )
+    brigade = Brigade.objects.create(
+        session=session, designation="EXP1", effectif_previsionnel=20
+    )
     return {
         "type_formation": type_formation,
         "formation": formation,
@@ -136,4 +139,5 @@ def objets(db, utilisateurs):
         "qualification": qualification,
         "compte_cible": compte_cible,
         "session": session,
+        "brigade": brigade,
     }

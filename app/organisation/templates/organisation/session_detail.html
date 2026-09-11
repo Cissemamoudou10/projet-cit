@@ -81,8 +81,25 @@
     </div>
   </section>
 
-  {# Brigades — réservé à US-SES-02 : le remplissage sera un ajout de contenu, #}
-  {# pas une refonte de cette fiche (même méthode que D-30). #}
-  {# <section class="border border-gris-trait bg-fond-bloc"> ... </section> #}
+  <section class="border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Brigades
+    </p>
+    <dl class="grid gap-3 px-4 py-3.5 text-sm">
+      <div>
+        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Constituées</dt>
+        <dd>{{ nombre_brigades }}</dd>
+      </div>
+    </dl>
+    <div class="border-t border-gris-trait px-4 py-3">
+      <a href="{{ url_brigades }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Constituer les brigades
+      </a>
+    </div>
+  </section>
 </div>
 {% endblock %}

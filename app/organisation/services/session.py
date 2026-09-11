@@ -5,12 +5,13 @@ ne s'importent jamais dans `noyau` — D-19.
 """
 
 from django.conf import settings
+from django.db.models import Count
 
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
-from noyau.services.gestion import ServiceGestion
+from noyau.services.gestion import ServiceGestion, avertissement
 from organisation.models import EtatSession, Session
 from referentiel.services.referentiel import ServiceReferentiel
 
@@ -45,9 +46,12 @@ class ServiceSession(ServiceGestion):
 
     @classmethod
     def _queryset(cls):
-        """La liste affiche le type de formation ; sans cela, une requête
-        par ligne."""
-        return cls.MODELE.objects.select_related("formation", "formation__type_formation")
+        """La liste affiche le type de formation et signale une session sans
+        aucune brigade (critère 2, US-SES-02) ; sans l'annotation, une
+        requête par ligne pour compter les brigades."""
+        return cls.MODELE.objects.select_related(
+            "formation", "formation__type_formation"
+        ).annotate(nombre_brigades=Count("brigades"))
 
     @classmethod
     def disponibles_pour_selection(cls):
@@ -156,16 +160,12 @@ class ServiceSession(ServiceGestion):
         if ecart_pourcent <= settings.SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT:
             return []
         return [
-            {
-                "code": "volume_excede_heures_ouvrables",
-                "message": (
-                    f"Le volume horaire prescrit ({volume_prescrit} h) dépasse le volume "
-                    f"disponible estimé sur la période ({volume_attendu:.0f} h) au-delà du "
-                    f"seuil de {settings.SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT} % (RG-65)."
-                ),
-                "volume_prescrit": volume_prescrit,
-                "volume_attendu": round(volume_attendu),
-            }
+            avertissement(
+                "volume_excede_heures_ouvrables",
+                f"Le volume horaire prescrit ({volume_prescrit} h) dépasse le volume "
+                f"disponible estimé sur la période ({volume_attendu:.0f} h) au-delà du "
+                f"seuil de {settings.SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT} % (RG-65).",
+            )
         ]
 
     @staticmethod

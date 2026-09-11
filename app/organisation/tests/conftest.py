@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
+from organisation.services.session import ServiceSession
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 
 
@@ -138,13 +139,36 @@ def formation_vide(db, type_officiers):
 
 def donnees_session(formation, **supplement):
     """Pas une fixture — un helper : plusieurs tests ont besoin d'une
-    formation différente ou d'une période différente."""
+    formation différente ou d'une période différente.
+
+    Dates relatives à aujourd'hui, jamais figées : US-SES-02 compare la date
+    de début d'une session à la date réelle du jour (A3, RG-16) — des dates
+    calendaires fixes auraient fini, avec le temps, par tomber dans le passé
+    et déclencher cet avertissement par accident dans des tests qui n'en
+    parlent pas.
+    """
+    aujourd_hui = datetime.date.today()
     donnees = {
         "formation": formation,
         "intitule": "Session 1",
-        "date_debut": datetime.date(2026, 1, 5),
-        "date_fin": datetime.date(2026, 3, 27),
+        "date_debut": aujourd_hui + datetime.timedelta(days=30),
+        "date_fin": aujourd_hui + datetime.timedelta(days=111),
         "effectif_attendu": 24,
     }
+    donnees.update(supplement)
+    return donnees
+
+
+@pytest.fixture
+def session(redacteur, formation):
+    """Construite par le service, jamais par écriture directe (P-21,
+    .claude/rules/tests.md) : une fixture ne doit pas poser à la main ce
+    qu'un service garantit déjà."""
+    return ServiceSession.creer(redacteur, donnees_session(formation))
+
+
+def donnees_brigade(**supplement):
+    """Pas une fixture — un helper, même raison que `donnees_session`."""
+    donnees = {"designation": "EXP1", "effectif_previsionnel": 20}
     donnees.update(supplement)
     return donnees

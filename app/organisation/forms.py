@@ -27,6 +27,8 @@ CLASSES_CHAMP_DATE = (
     "focus:border-marine-700 focus:ring-2 focus:ring-focus"
 )
 
+FORMAT_DATE = "%Y-%m-%d"
+
 
 class FormulaireSession(FormulaireGestion):
     """Deux colonnes (§ 7, Prompt 20) : « Rattachement » — la formation —
@@ -48,9 +50,11 @@ class FormulaireSession(FormulaireGestion):
             "formation": forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
             "intitule": forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
             "date_debut": forms.DateInput(
-                attrs={"type": "date", "class": CLASSES_CHAMP_DATE}
+                attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE
             ),
-            "date_fin": forms.DateInput(attrs={"type": "date", "class": CLASSES_CHAMP_DATE}),
+            "date_fin": forms.DateInput(
+                attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE
+            ),
             "effectif_attendu": forms.NumberInput(
                 attrs={
                     "class": CLASSES_CHAMP_UNITE,
@@ -72,3 +76,21 @@ class FormulaireSession(FormulaireGestion):
         if self.instance.pk and self.instance.formation_id:
             disponibles = disponibles | Formation.objects.filter(pk=self.instance.formation_id)
         self.fields["formation"].queryset = disponibles.distinct().order_by("intitule")
+
+
+class FormulaireBrigade(forms.Form):
+    """`forms.Form`, pas `ModelForm` : `session` vient de l'URL, jamais de la
+    saisie — même patron que `FormulaireRattachementMatiere` (US-SES-02,
+    étape 0.2), la brigade étant une sous-ressource composée depuis l'écran
+    de la session, pas une entité de gestion autonome."""
+
+    designation = forms.CharField(
+        label="Désignation",
+        max_length=50,
+        widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+    )
+    effectif_previsionnel = forms.IntegerField(
+        label="Effectif prévisionnel",
+        min_value=1,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "inputmode": "numeric"}),
+    )

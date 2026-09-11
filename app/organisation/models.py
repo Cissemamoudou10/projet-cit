@@ -83,3 +83,52 @@ class Session(ModeleHorodate):
 
     def __str__(self):
         return f"{self.intitule} — {self.formation}"
+
+
+class Brigade(ModeleHorodate):
+    """Brigade constituée au sein d'une session — CU-P3-02, RG-12.
+
+    Saisie manuelle uniquement : RG-12 interdit tout calcul de composition
+    — voir `organisation.services.brigade`. Pas de `ModeleArchivable` : une
+    brigade se supprime ou se conserve, elle ne s'archive pas (Prompt 21,
+    § 2).
+
+    `session` en `PROTECT`, pas `CASCADE` : `.claude/rules/modeles.md` ne
+    réserve `CASCADE` qu'à la composition stricte. Supprimer une session
+    emporterait ses brigades, donc à terme les affectations de stagiaires,
+    les programmes et les notes qui en dépendent — le refus explicite avec
+    énumération des opposants est ce qu'exige E3 de la fiche générique.
+    Conséquence assumée : une session constituée devient non supprimable
+    tant que ses brigades existent.
+
+    Aucun champ `effectif_reel` : attribut dérivé de CLS-00 (§ 9 du diagramme
+    de classes — affectations ouvertes de stagiaires non radiés), non
+    calculable avant `Stagiaire` (US-SES-05).
+    """
+
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.PROTECT,
+        related_name="brigades",
+        verbose_name="session",
+    )
+    designation = models.CharField(max_length=50, verbose_name="désignation")
+    effectif_previsionnel = models.PositiveIntegerField(
+        verbose_name="effectif prévisionnel", validators=[MinValueValidator(1)]
+    )
+
+    class Meta:
+        db_table = "organisation_brigade"
+        verbose_name = "brigade"
+        verbose_name_plural = "brigades"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(effectif_previsionnel__gt=0), name="ck_brigade_effectif"
+            ),
+            models.UniqueConstraint(
+                models.F("session"), Upper("designation"), name="uq_brigade_session_designation"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.designation} — {self.session}"

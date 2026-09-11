@@ -191,6 +191,22 @@ ECRANS_ECRITURE = [
         "noyau.organisation_ecriture",
         lambda objets: [objets["session"].pk],
     ),
+    # --- organisation : brigades (US-SES-02) ---
+    EcranEcriture(
+        "organisation:creer_brigade",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "organisation:modifier_brigade",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["brigade"].pk],
+    ),
+    EcranEcriture(
+        "organisation:supprimer_brigade",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["brigade"].pk],
+    ),
     # --- ressources : lieux (US-PLAN-02) ---
     EcranEcriture("ressources:creer_lieu", "noyau.lieux_calendrier_ecriture"),
     EcranEcriture(
@@ -268,9 +284,9 @@ ECRANS_ECRITURE = [
     ),
 ]
 
-# 51 adresses : les 48 précédentes (Prompt 19) plus les trois adresses
-# d'écriture de organisation:session (US-SES-01, Prompt 20).
-assert len(ECRANS_ECRITURE) == 51
+# 54 adresses : les 51 précédentes (Prompt 20) plus les trois adresses
+# d'écriture de organisation:brigade (US-SES-02, Prompt 21).
+assert len(ECRANS_ECRITURE) == 54
 
 
 def _groupes_sans(permission):

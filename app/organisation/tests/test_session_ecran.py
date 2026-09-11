@@ -9,14 +9,7 @@ import pytest
 from django.urls import reverse
 
 from organisation.models import Session
-from organisation.services.session import ServiceSession
-from organisation.tests.conftest import donnees_session
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere
-
-
-@pytest.fixture
-def session(redacteur, formation):
-    return ServiceSession.creer(redacteur, donnees_session(formation))
 
 
 def test_c1_creer_par_l_ecran_cree_reellement_la_session(client, redacteur, formation):
