@@ -1,9 +1,14 @@
+import datetime
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
-from referentiel.models import Formation, Matiere, TypeFormation
+from organisation.services.brigade import ServiceBrigade
+from organisation.services.session import ServiceSession
+from referentiel.models import CategorieLieu as CategorieLieuReferentiel
+from referentiel.models import ElementReferentiel, Formation, Matiere, TypeFormation
 from ressources.models import CategorieLieu, Instructeur, Lieu, Statut
 
 
@@ -88,4 +93,48 @@ def instructeur(db):
 def lieu(db):
     return Lieu.objects.create(
         intitule="Salle 101", capacite=30, categorie=CategorieLieu.SALLE_ATTITREE
+    )
+
+
+@pytest.fixture
+def administrateur(db):
+    modele = get_user_model()
+    return _utilisateur("administrateur-ins", "Cdt", modele.Profil.ADMINISTRATEUR, "Administrateur")
+
+
+@pytest.fixture
+def session(db, redacteur, type_officiers):
+    """US-SES-03 : `organisation` est désormais importable depuis
+    `ressources` (D-85) — construite par le service, jamais à la main
+    (P-21, .claude/rules/tests.md)."""
+    formation = Formation.objects.create(
+        intitule="Formation session salle",
+        specialite="Transmissions",
+        duree_semaines=10,
+        type_formation=type_officiers,
+    )
+    ElementReferentiel.objects.create(
+        formation=formation,
+        matiere=Matiere.objects.create(intitule="Antennes", code="ANT01"),
+        volume_horaire_prescrit=40,
+        categorie_lieu=CategorieLieuReferentiel.SALLE_ATTITREE,
+        type_lieu_partage=None,
+    )
+    aujourd_hui = datetime.date.today()
+    return ServiceSession.creer(
+        redacteur,
+        {
+            "formation": formation,
+            "intitule": "Session salle attitrée",
+            "date_debut": aujourd_hui + datetime.timedelta(days=30),
+            "date_fin": aujourd_hui + datetime.timedelta(days=111),
+            "effectif_attendu": 24,
+        },
+    )
+
+
+@pytest.fixture
+def brigade(db, redacteur, session):
+    return ServiceBrigade.creer(
+        redacteur, session, {"designation": "EXP1", "effectif_previsionnel": 20}
     )

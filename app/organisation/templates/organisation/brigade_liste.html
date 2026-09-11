@@ -68,6 +68,8 @@
             Effectif prévisionnel</th>
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Effectif réel</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Salle attitrée</th>
           {% if perms.noyau.organisation_ecriture %}
             <th scope="col" data-impression="masquer"
                 class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
@@ -105,6 +107,22 @@
             {# Effectif réel — réservé à US-SES-06 : affectations ouvertes de #}
             {# stagiaires non radiés (CLS-00, § 9), non calculable avant US-SES-05. #}
             <td class="px-3 py-1.5 text-gris-lecture">—</td>
+            <td class="px-3 py-1.5">
+              {% if brigade.salle_attitree %}
+                {% if perms.noyau.lieux_calendrier_ecriture %}
+                  <a href="{% url 'ressources:affecter_salle' brigade.pk %}"
+                     class="text-marine-900 no-underline hover:underline">
+                    {{ brigade.salle_attitree.lieu.intitule }}</a>
+                {% else %}
+                  {{ brigade.salle_attitree.lieu.intitule }}
+                {% endif %}
+              {% elif perms.noyau.lieux_calendrier_ecriture %}
+                <a href="{% url 'ressources:affecter_salle' brigade.pk %}"
+                   class="text-marine-700 no-underline hover:underline">Attitrer une salle</a>
+              {% else %}
+                <span class="text-gris-lecture">—</span>
+              {% endif %}
+            </td>
             {% if perms.noyau.organisation_ecriture %}
               <td data-impression="masquer" class="px-3 py-1.5 text-right">
                 <button type="submit" form="brigade-{{ brigade.pk }}"

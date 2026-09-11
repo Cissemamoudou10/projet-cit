@@ -1,10 +1,25 @@
 from django.urls import path
 
-from ressources.views import indisponibilite_lieu, instructeur, lieu, qualification
+from ressources.views import indisponibilite_lieu, instructeur, lieu, qualification, salle_attitree
 
 app_name = "ressources"
 
 urlpatterns = [
+    path(
+        "brigades/<int:brigade_pk>/salle/",
+        salle_attitree.vue_affecter_salle,
+        name="affecter_salle",
+    ),
+    path(
+        "brigades/<int:brigade_pk>/salle/soumettre/",
+        salle_attitree.vue_soumettre_salle,
+        name="soumettre_salle",
+    ),
+    path(
+        "brigades/<int:brigade_pk>/salle/retirer/",
+        salle_attitree.vue_retirer_salle,
+        name="retirer_salle",
+    ),
     path("lieux/", lieu.vue_liste_lieux, name="liste_lieux"),
     path("lieux/creer/", lieu.vue_creer_lieu, name="creer_lieu"),
     path("lieux/<int:pk>/", lieu.vue_detail_lieu, name="detail_lieu"),

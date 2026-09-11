@@ -115,3 +115,38 @@ class FormulaireDeclarationIndisponibilite(forms.Form):
         label="Motif",
         widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 4, "maxlength": 500}),
     )
+
+
+class ChampSalleAttitrable(forms.ModelChoiceField):
+    """N'affiche jamais silencieusement une salle de capacité insuffisante
+    (§ 5, Prompt 22) : elle reste proposée, signalée dans son propre
+    libellé — même raisonnement que D-63."""
+
+    def __init__(self, *args, capacites_suffisantes=None, **kwargs):
+        self.capacites_suffisantes = capacites_suffisantes or {}
+        super().__init__(*args, **kwargs)
+
+    def label_from_instance(self, obj):
+        libelle = f"{obj.intitule} ({obj.capacite} places)"
+        if not self.capacites_suffisantes.get(obj.pk, True):
+            libelle += " — capacité insuffisante"
+        return libelle
+
+
+class FormulaireAttitrerSalle(forms.Form):
+    """`forms.Form`, pas `ModelForm` : `brigade` vient de l'URL, jamais de
+    la saisie — même patron que `FormulaireRattachementMatiere`, la salle
+    attitrée étant une sous-ressource composée depuis l'écran d'affectation
+    (US-SES-03, étape 0.2)."""
+
+    lieu = ChampSalleAttitrable(
+        queryset=Lieu.objects.none(),
+        label="Salle",
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+
+    def __init__(self, *args, salles_candidates, **kwargs):
+        capacites = {candidat["lieu"].pk: candidat["capacite_suffisante"] for candidat in salles_candidates}
+        super().__init__(*args, **kwargs)
+        self.fields["lieu"].capacites_suffisantes = capacites
+        self.fields["lieu"].queryset = Lieu.objects.filter(pk__in=capacites.keys()).order_by("intitule")

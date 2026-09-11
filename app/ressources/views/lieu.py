@@ -20,6 +20,7 @@ from ressources.forms import FormulaireLieu
 from ressources.navigation import onglets_ressources
 from ressources.services.indisponibilite_lieu import ServiceIndisponibiliteLieu
 from ressources.services.lieu import ServiceLieu
+from ressources.services.salle_attitree import ServiceSalleAttitree
 
 CLASSES_BADGE_CATEGORIE = {
     "salle_attitree": "bg-marine-900 text-blanc",
@@ -241,6 +242,7 @@ def vue_detail_lieu(request, pk):
             "lieu": lieu,
             "url_modifier": reverse("ressources:modifier_lieu", args=[lieu.pk]),
             "indisponibilites": ServiceIndisponibiliteLieu.lister_pour_lieu(request.user, lieu),
+            "brigades_attitrees": ServiceSalleAttitree.lister_pour_lieu(request.user, lieu),
         },
     )
 

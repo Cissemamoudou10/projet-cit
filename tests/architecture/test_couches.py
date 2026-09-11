@@ -19,15 +19,18 @@ APPLICATIONS = [
 ]
 
 # Ordre de dépendance arrêté en conception : une application ne peut importer
-# que celles qui la précèdent.
+# que celles qui la précèdent. `organisation` (P3) précède `ressources` (P4)
+# — sens inversé le 2026-09-11 (US-SES-03, D-85) : `SalleAttitree` et
+# `PeriodeCalendrier` associent toutes deux `ressources` à `organisation`
+# dans ce sens, jamais l'inverse. Voir docs/suivi/DECISIONS.md, D-78/D-85.
 DEPENDANCES_AUTORISEES = {
     "noyau": set(),
     "administration": {"noyau"},
     "referentiel": {"noyau", "administration"},
-    "ressources": {"noyau", "administration", "referentiel"},
-    "organisation": {"noyau", "administration", "referentiel", "ressources"},
-    "planification": {"noyau", "administration", "referentiel", "ressources", "organisation"},
-    "evaluations": {"noyau", "administration", "referentiel", "ressources", "organisation", "planification"},
+    "organisation": {"noyau", "administration", "referentiel"},
+    "ressources": {"noyau", "administration", "referentiel", "organisation"},
+    "planification": {"noyau", "administration", "referentiel", "organisation", "ressources"},
+    "evaluations": {"noyau", "administration", "referentiel", "organisation", "ressources", "planification"},
 }
 
 ATTRIBUTS_DERIVES = [

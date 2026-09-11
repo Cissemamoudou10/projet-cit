@@ -207,6 +207,17 @@ ECRANS_ECRITURE = [
         "noyau.organisation_ecriture",
         lambda objets: [objets["session"].pk, objets["brigade"].pk],
     ),
+    # --- ressources : salle attitrée (US-SES-03) ---
+    EcranEcriture(
+        "ressources:soumettre_salle",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["brigade"].pk],
+    ),
+    EcranEcriture(
+        "ressources:retirer_salle",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["brigade"].pk],
+    ),
     # --- ressources : lieux (US-PLAN-02) ---
     EcranEcriture("ressources:creer_lieu", "noyau.lieux_calendrier_ecriture"),
     EcranEcriture(
@@ -284,9 +295,9 @@ ECRANS_ECRITURE = [
     ),
 ]
 
-# 54 adresses : les 51 précédentes (Prompt 20) plus les trois adresses
-# d'écriture de organisation:brigade (US-SES-02, Prompt 21).
-assert len(ECRANS_ECRITURE) == 54
+# 56 adresses : les 54 précédentes (Prompt 21) plus les deux adresses
+# d'écriture de ressources:salle_attitree (US-SES-03, Prompt 22).
+assert len(ECRANS_ECRITURE) == 56
 
 
 def _groupes_sans(permission):

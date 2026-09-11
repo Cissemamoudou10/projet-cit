@@ -33,8 +33,13 @@ class ServiceBrigade:
 
     @staticmethod
     def lister(agissant, session):
+        """`select_related("salle_attitree__lieu")` sur une chaîne de
+        caractères, résolue par l'ORM au moment de la requête — jamais un
+        `import ressources` (méthode D-52, US-SES-03) : c'est ce qui permet
+        d'afficher la salle attitrée de chaque brigade sans une requête par
+        ligne."""
         verifier_habilitation(agissant, PERMISSION_LECTURE)
-        return session.brigades.order_by("designation")
+        return session.brigades.select_related("salle_attitree__lieu").order_by("designation")
 
     @staticmethod
     def indicateur_effectif(session):
