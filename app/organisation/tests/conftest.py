@@ -5,7 +5,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
+from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import ServiceSession
+from organisation.services.stagiaire import ServiceStagiaire
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 
 
@@ -172,3 +174,27 @@ def donnees_brigade(**supplement):
     donnees = {"designation": "EXP1", "effectif_previsionnel": 20}
     donnees.update(supplement)
     return donnees
+
+
+@pytest.fixture
+def brigade(redacteur, session):
+    return ServiceBrigade.creer(redacteur, session, donnees_brigade())
+
+
+def donnees_stagiaire(**supplement):
+    """Pas une fixture — un helper, même raison que `donnees_session`.
+    Données entièrement fictives."""
+    donnees = {
+        "matricule": "M001",
+        "nom": "Ziani",
+        "prenom": "Karim",
+        "grade": "Lt",
+        "unite": "1er RTR",
+    }
+    donnees.update(supplement)
+    return donnees
+
+
+@pytest.fixture
+def stagiaire(redacteur, session):
+    return ServiceStagiaire.creer(redacteur, session, donnees_stagiaire())

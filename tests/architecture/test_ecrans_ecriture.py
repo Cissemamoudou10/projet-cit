@@ -207,6 +207,47 @@ ECRANS_ECRITURE = [
         "noyau.organisation_ecriture",
         lambda objets: [objets["session"].pk, objets["brigade"].pk],
     ),
+    # --- organisation : stagiaires (US-SES-05) ---
+    EcranEcriture(
+        "organisation:creer_stagiaire",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "organisation:modifier_stagiaire",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
+    EcranEcriture(
+        "organisation:radier_stagiaire",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
+    EcranEcriture(
+        "organisation:deradier_stagiaire",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
+    EcranEcriture(
+        "organisation:supprimer_stagiaire",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
+    EcranEcriture(
+        "organisation:importer_stagiaires",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "organisation:confirmer_import_stagiaires",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "organisation:modele_import_stagiaires",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
     # --- ressources : salle attitrée (US-SES-03) ---
     EcranEcriture(
         "ressources:soumettre_salle",
@@ -295,9 +336,9 @@ ECRANS_ECRITURE = [
     ),
 ]
 
-# 56 adresses : les 54 précédentes (Prompt 21) plus les deux adresses
-# d'écriture de ressources:salle_attitree (US-SES-03, Prompt 22).
-assert len(ECRANS_ECRITURE) == 56
+# 64 adresses : les 56 précédentes (Prompt 22) plus les huit adresses
+# d'écriture de organisation:stagiaire/import_stagiaires (US-SES-05, Prompt 24).
+assert len(ECRANS_ECRITURE) == 64
 
 
 def _groupes_sans(permission):

@@ -21,36 +21,9 @@
 {% endblock %}
 
 {% block contenu %}
-{% if indicateur.ecart == 0 %}
-  <div class="mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
-              border-l-etat-conforme bg-etat-conforme-fond px-4 py-3">
-    <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-conforme" aria-hidden="true">
-      <use href="{% static 'icones/planche.svg' %}#validation"></use>
-    </svg>
-    <div>
-      <p class="font-titre text-base font-semibold text-etat-conforme">Conforme</p>
-      <p class="text-xs text-gris-lecture">
-        Effectif attendu {{ indicateur.effectif_attendu }}, somme des brigades
-        {{ indicateur.somme_prevue }} — les deux coïncident (RG-15).
-      </p>
-    </div>
-  </div>
-{% else %}
-  <div class="mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
-              border-l-etat-attention bg-etat-attention-fond px-4 py-3">
-    <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-attention" aria-hidden="true">
-      <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
-    </svg>
-    <div>
-      <p class="font-titre text-base font-semibold text-etat-attention">Écart d'effectif</p>
-      <p class="text-xs text-gris-lecture">
-        Effectif attendu {{ indicateur.effectif_attendu }}, somme des brigades
-        {{ indicateur.somme_prevue }} — écart de {{ indicateur.ecart }}. Prévisionnel : l'effectif
-        réel ne sera connu qu'à l'inscription des stagiaires (RG-15).
-      </p>
-    </div>
-  </div>
-{% endif %}
+<div class="mt-4">
+  {% include "organisation/_fragments/indicateur_effectif.html" %}
+</div>
 
 <div class="mt-4 border border-gris-trait bg-fond-bloc">
   <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs

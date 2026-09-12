@@ -1,5 +1,6 @@
 {% extends "noyau/base.html" %}
 {% load static %}
+{% load pagination %}
 
 {% block titre %}{{ session.intitule }} — {{ block.super }}{% endblock %}
 
@@ -80,18 +81,95 @@
       </a>
     </div>
   </section>
+</div>
 
-  <section class="border border-gris-trait bg-fond-bloc">
-    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
-              font-semibold uppercase tracking-wide text-marine-900">
-      Brigades
-    </p>
-    <dl class="grid gap-3 px-4 py-3.5 text-sm">
-      <div>
-        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Constituées</dt>
-        <dd>{{ nombre_brigades }}</dd>
-      </div>
-    </dl>
+<section class="mt-4">
+  {% include "organisation/_fragments/indicateur_effectif.html" %}
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Composition — brigades
+  </p>
+  {% if compositions %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Désignation</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">
+            Effectif prévisionnel</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Salle attitrée</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">
+            Taux d'occupation</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Effectif réel</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for composition in compositions %}
+          {% with brigade=composition.brigade occupation=composition.occupation %}
+            <tr class="h-ligne border-t border-gris-trait">
+              <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ brigade.designation }}</th>
+              <td class="px-3 py-1.5 tabular-nums">{{ brigade.effectif_previsionnel }}</td>
+              <td class="px-3 py-1.5">
+                {% if occupation.salle %}
+                  {% if perms.noyau.lieux_calendrier_ecriture %}
+                    <a href="{% url 'ressources:affecter_salle' brigade.pk %}"
+                       class="text-marine-900 no-underline hover:underline">
+                      {{ occupation.salle.lieu.intitule }}</a>
+                  {% else %}
+                    {{ occupation.salle.lieu.intitule }}
+                  {% endif %}
+                  {% if occupation.capacite %}
+                    <span class="text-gris-lecture">({{ occupation.capacite }} places)</span>
+                  {% else %}
+                    <span class="ml-1.5 bg-etat-attention px-1.5 py-px text-2xs font-semibold
+                                 tracking-wide text-blanc">CAPACITÉ NON RENSEIGNÉE</span>
+                  {% endif %}
+                {% elif perms.noyau.lieux_calendrier_ecriture %}
+                  <a href="{% url 'ressources:affecter_salle' brigade.pk %}"
+                     class="text-marine-700 no-underline hover:underline">Attitrer une salle</a>
+                {% else %}
+                  <span class="text-gris-lecture">Aucune salle attitrée</span>
+                {% endif %}
+              </td>
+              <td class="px-3 py-1.5">
+                {% if occupation.taux is None %}
+                  <span class="text-gris-lecture">—</span>
+                {% elif occupation.depasse %}
+                  <span class="bg-etat-ecart px-1.5 py-px text-2xs font-semibold tracking-wide text-blanc">
+                    DÉPASSEMENT — {{ brigade.effectif_previsionnel }} / {{ occupation.capacite }}
+                    ({{ occupation.taux }} %)</span>
+                {% else %}
+                  <span class="tabular-nums">{{ occupation.taux }} %</span>
+                {% endif %}
+              </td>
+              {# Effectif réel — réservé à US-SES-06 : affectations ouvertes de #}
+              {# stagiaires non radiés (CLS-00, § 9), non calculable avant US-SES-05. #}
+              {# Le taux d'occupation sur l'effectif réel est le même report (§ 4, Prompt 23). #}
+              <td class="px-3 py-1.5 text-gris-lecture">—</td>
+            </tr>
+          {% endwith %}
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#recherche"></use>
+      </svg>
+      <p class="mb-1 font-titre text-lg font-semibold">Aucune brigade constituée</p>
+      <p class="mb-3.5 max-w-lg text-sm text-gris-lecture">
+        La session comporte au minimum une brigade avant sa mise en œuvre (critère 2).
+      </p>
+    </div>
+  {% endif %}
+  {% if perms.noyau.organisation_ecriture %}
     <div class="border-t border-gris-trait px-4 py-3">
       <a href="{{ url_brigades }}"
          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
@@ -100,6 +178,68 @@
         Constituer les brigades
       </a>
     </div>
-  </section>
-</div>
+  {% endif %}
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Stagiaires
+  </p>
+  <dl class="grid gap-3 px-4 py-3.5 text-sm">
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Enregistrés</dt>
+      <dd>{{ nombre_stagiaires }}</dd>
+    </div>
+  </dl>
+  <div class="border-t border-gris-trait px-4 py-3">
+    <a href="{{ url_stagiaires }}"
+       class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+              text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+              hover:bg-marine-700">
+      Voir les stagiaires
+    </a>
+  </div>
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Référentiel complet
+  </p>
+  {% if page_referentiel %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Matière</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Volume</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Catégorie de lieu</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Type de lieu partagé</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for element in page_referentiel %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ element.matiere }}</th>
+            {% include "referentiel/_fragments/cellules_matiere_volume_lecture.html" %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if page_referentiel.has_other_pages %}
+      {% pagination page_referentiel %}
+    {% endif %}
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#matiere"></use>
+      </svg>
+      <p class="mb-1 font-titre text-lg font-semibold">Référentiel non composé</p>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}

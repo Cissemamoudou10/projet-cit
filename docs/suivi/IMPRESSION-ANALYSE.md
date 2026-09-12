@@ -144,3 +144,35 @@ plusieurs fois avant d'être compris. **Rien n'est implanté** : reporté au
 sprint 4, avec les gabarits des documents imprimables déjà prévus à ce
 sprint (`docs/suivi/sprint-4.md`) plutôt que traité isolément ici — voir ce
 fichier pour le point de suivi.
+
+## 6. Sprint 2 — US-SES-04 et US-SES-05, mesuré le 2026-09-12
+
+Même protocole qu'au § 1 (feuille `impression.css` injectée, largeur
+contrainte à 703 px, graphismes d'arrière-plan désactivés), sur les deux
+écrans de liste ajoutés par ces deux stories. Les deux tiennent — aucun
+arbitrage requis :
+
+| Écran | Largeur du tableau | Dépassement |
+|---|---|---|
+| Fiche session — brigades et occupation (US-SES-04) | 701 px | — (tient, 2 px de marge) |
+| Stagiaires d'une session (US-SES-05) | 653 px | — (tient) |
+
+Ces deux écrans utilisent déjà le patron de gestion (`data-impression="masquer"`
+sur la colonne Actions, § 4) — la colonne Actions n'apparaît donc pas dans la
+largeur mesurée, conformément à D-63.
+
+**Bogue latent découvert pendant la mesure, non corrigé ici.** La méthode de
+mesure par simple injection de `<style>` (utilisée sans problème au § 1) ne
+fonctionne plus telle quelle : `noyau/base.html` pose désormais la classe
+Tailwind `min-w-[1280px]` sur `<body>`, dont la spécificité de sélecteur de
+classe l'emporte sur le sélecteur de balise `body { min-width: 0 }` de
+`impression.css`, `!important` ou pas. Contournement utilisé pour cette seule
+mesure (sonde JavaScript éphémère, pas de changement de dépôt) :
+`document.body.style.setProperty('min-width', '0', 'important')` (idem pour
+`width`/`max-width`) — seule une déclaration en ligne passe outre un
+sélecteur de classe. **Conséquence potentielle non vérifiée davantage** :
+si un navigateur réel applique la même cascade que cette émulation, la
+largeur du corps de page pourrait ne pas être réellement contrainte à
+l'impression aujourd'hui, quel que soit le contenu du tableau — à vérifier
+par un essai de boîte d'impression réelle avant le sprint 4, où le sujet est
+de toute façon repris (§ 5).

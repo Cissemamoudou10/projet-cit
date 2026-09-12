@@ -1,0 +1,123 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Compte rendu d'import — {{ session.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">
+    Compte rendu d'import — {{ session.intitule }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Aperçu seul : aucune ligne n'est encore enregistrée. La confirmation revalide
+    intégralement le fichier avant écriture.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 grid grid-cols-3 gap-6">
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Lignes valides</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">
+      {{ rapport.lignes_valides|length }}</p>
+  </div>
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Anomalies</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">
+      {{ rapport.anomalies|length }}</p>
+  </div>
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Déjà en base (ignorés)</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">
+      {{ rapport.doublons_en_base|length }}</p>
+  </div>
+</section>
+
+{% if rapport.anomalies %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Lignes en anomalie — exclues de l'import
+    </p>
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Ligne</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Motif</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for anomalie in rapport.anomalies %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <td class="px-3 py-1.5 tabular-nums">{{ anomalie.numero_ligne }}</td>
+            <td class="px-3 py-1.5">{{ anomalie.motif }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endif %}
+
+{% if rapport.doublons_en_base %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Matricules déjà enregistrés sur cette session — ignorés, pas de doublon créé
+    </p>
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Ligne</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Matricule</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doublon in rapport.doublons_en_base %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <td class="px-3 py-1.5 tabular-nums">{{ doublon.numero_ligne }}</td>
+            <td class="px-3 py-1.5">{{ doublon.matricule }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endif %}
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+  {% if rapport.lignes_valides %}
+    <form method="post" action="{{ url_confirmer }}" class="flex items-center justify-between gap-3">
+      {% csrf_token %}
+      <input type="hidden" name="fichier_b64" value="{{ fichier_b64 }}">
+      <input type="hidden" name="nom_fichier" value="{{ nom_fichier }}">
+      <p class="text-sm text-gris-lecture">
+        {{ rapport.lignes_valides|length }} ligne(s) seront enregistrées, en une seule opération.
+      </p>
+      <div class="flex gap-2">
+        <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+          Annuler</a>
+        <button type="submit"
+                class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                       px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                       hover:bg-marine-700">
+          Confirmer l'import
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <p class="text-sm text-gris-lecture">
+      Aucune ligne valide : rien à confirmer. Corrigez le fichier et déposez-le à nouveau.
+    </p>
+    <a href="{{ url_annuler }}"
+       class="mt-2 inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+      Retour aux stagiaires
+    </a>
+  {% endif %}
+</section>
+{% endblock %}

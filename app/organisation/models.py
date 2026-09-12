@@ -132,3 +132,61 @@ class Brigade(ModeleHorodate):
 
     def __str__(self):
         return f"{self.designation} — {self.session}"
+
+
+class Stagiaire(ModeleHorodate):
+    """Stagiaire enregistré sur une session — CU-P3-05, RG-17.
+
+    Rattaché à la SESSION, pas à une personne du centre (§ 2, Prompt 24) :
+    RG-17 n'impose l'unicité du matricule qu'au sein d'une session. Un même
+    militaire suivant deux formations existe deux fois dans la base, sans
+    lien entre ses deux enregistrements — conséquence de modèle consignée en
+    DECISIONS.md, cohérente avec CLS-00 (`Stagiaire` n'est pas un annuaire du
+    centre).
+
+    Pas de `ModeleArchivable` : `radie` porte un état métier réel (constat
+    qu'un stagiaire quitte la formation), pas un indicateur d'archivage —
+    même raisonnement que D-37/D-49/D-66. RADIER et SUPPRIMER sont deux
+    actes distincts (§ 7) : radier ne retire jamais la ligne, seulement son
+    éligibilité aux listes actives et aux affectations futures.
+
+    `session` en `PROTECT` : une session ne se supprime pas silencieusement
+    en emportant ses stagiaires — même motif que `Brigade.session`.
+    """
+
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.PROTECT,
+        related_name="stagiaires",
+        verbose_name="session",
+    )
+    matricule = models.CharField(max_length=30, verbose_name="matricule")
+    nom = models.CharField(max_length=100, verbose_name="nom")
+    prenom = models.CharField(max_length=100, verbose_name="prénom")
+    grade = models.CharField(max_length=50, verbose_name="grade")
+    unite = models.CharField(max_length=150, verbose_name="unité d'origine")
+    radie = models.BooleanField(default=False, verbose_name="radié")
+    motif_radiation = models.TextField(null=True, blank=True, verbose_name="motif de radiation")
+    date_radiation = models.DateField(null=True, blank=True, verbose_name="date de radiation")
+
+    class Meta:
+        db_table = "organisation_stagiaire"
+        verbose_name = "stagiaire"
+        verbose_name_plural = "stagiaires"
+        constraints = [
+            models.UniqueConstraint(
+                models.F("session"), Upper("matricule"), name="uq_stagiaire_session_matricule"
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(radie=False, motif_radiation__isnull=True, date_radiation__isnull=True)
+                    | models.Q(
+                        radie=True, motif_radiation__isnull=False, date_radiation__isnull=False
+                    )
+                ),
+                name="ck_stagiaire_radiation",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.grade} {self.nom} {self.prenom} ({self.matricule})"

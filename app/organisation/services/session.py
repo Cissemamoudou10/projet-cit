@@ -170,14 +170,18 @@ class ServiceSession(ServiceGestion):
 
     @staticmethod
     def referentiel_resume(agissant, session):
-        """Nombre de matières et volume horaire total prescrit du
+        """Nombre de matières, volume horaire total prescrit et éléments du
         référentiel de la formation de `session` — étape 2 du scénario
-        nominal et bloc « Référentiel appliqué » de la fiche. Délègue à
-        `ServiceReferentiel` ; n'interroge jamais les modèles de
-        `referentiel` en direct et ne recopie rien (§ 4, Prompt 20).
+        nominal, bloc « Référentiel appliqué » de la fiche (US-SES-01) et sa
+        consultation complète (§ 5, Prompt 23, critère 2 d'US-SES-04).
+        Délègue à `ServiceReferentiel` — n'interroge jamais les modèles de
+        `referentiel` en direct et ne recopie rien (§ 4, Prompt 20) : une
+        seule lecture, réutilisée par les deux stories plutôt que dupliquée
+        (§ 5, Prompt 23 — c'est le motif de D-32).
         """
         elements = ServiceReferentiel.lister(agissant, session.formation)
         return {
             "nombre_matieres": len(elements),
             "volume_total": ServiceReferentiel.total_volume(session.formation),
+            "elements": elements,
         }

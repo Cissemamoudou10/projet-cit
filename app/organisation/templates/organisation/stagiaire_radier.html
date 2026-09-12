@@ -1,0 +1,55 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Radier « {{ stagiaire }} » — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[520px] animate-ouvrir border border-etat-attention bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <!-- arbitraire : w-[520px], largeur fixe de dialogue -->
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-etat-attention px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Radier « {{ stagiaire }} »
+    </p>
+    <div class="px-4 py-4 text-sm">
+      <p class="mb-3 border border-gris-trait bg-sable px-3 py-2.5 text-xs text-gris-lecture">
+        Le stagiaire n'est pas supprimé : il disparaît des listes actives et reste consultable,
+        ses éventuelles évaluations sont conservées. À distinguer de la suppression, réservée à
+        la correction d'une erreur de saisie.
+      </p>
+      <div class="grid gap-3">
+        <div>
+          <label for="{{ form.motif.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+            {{ form.motif.label }} — <span class="text-etat-ecart">obligatoire</span></label>
+          {{ form.motif }}
+          {% if form.motif.errors %}
+            <p class="mt-1 text-2xs text-etat-ecart">{{ form.motif.errors|first }}</p>
+          {% endif %}
+        </div>
+        <div>
+          <label for="{{ form.date_radiation.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+            {{ form.date_radiation.label }} — <span class="text-etat-ecart">obligatoire</span></label>
+          {{ form.date_radiation }}
+          {% if form.date_radiation.errors %}
+            <p class="mt-1 text-2xs text-etat-ecart">{{ form.date_radiation.errors|first }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-etat-attention bg-etat-attention
+                     px-3.5 py-1.5 text-sm font-semibold text-blanc
+                     transition-colors duration-survol">Radier</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

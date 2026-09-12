@@ -125,6 +125,15 @@ SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT = int(
     os.environ.get("SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT", "10")
 )
 
+# Bornes de l'import de stagiaires (US-SES-05, § 4, Prompt 24) : une session
+# du CIT compte quelques dizaines de stagiaires, jamais des milliers — un
+# fichier de cent mille lignes est une erreur ou une attaque, pas un cas
+# d'usage. Paramétrable (BNF-13), jamais codé en dur.
+IMPORT_STAGIAIRES_TAILLE_MAX_OCTETS = int(
+    os.environ.get("IMPORT_STAGIAIRES_TAILLE_MAX_OCTETS", str(300 * 1024))
+)
+IMPORT_STAGIAIRES_LIGNES_MAX = int(os.environ.get("IMPORT_STAGIAIRES_LIGNES_MAX", "500"))
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

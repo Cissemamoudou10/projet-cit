@@ -1,6 +1,6 @@
 from django.urls import path
 
-from organisation.views import brigade, session
+from organisation.views import brigade, import_stagiaires, session, stagiaire
 
 app_name = "organisation"
 
@@ -33,5 +33,50 @@ urlpatterns = [
         "sessions/<int:session_pk>/brigades/<int:brigade_pk>/supprimer/",
         brigade.vue_confirmer_suppression_brigade,
         name="supprimer_brigade",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/",
+        stagiaire.vue_liste_stagiaires,
+        name="liste_stagiaires",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/creer/",
+        stagiaire.vue_creer_stagiaire,
+        name="creer_stagiaire",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/modifier/",
+        stagiaire.vue_modifier_stagiaire,
+        name="modifier_stagiaire",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/radier/",
+        stagiaire.vue_confirmer_radiation_stagiaire,
+        name="radier_stagiaire",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/deradier/",
+        stagiaire.vue_deradier_stagiaire,
+        name="deradier_stagiaire",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/supprimer/",
+        stagiaire.vue_confirmer_suppression_stagiaire,
+        name="supprimer_stagiaire",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/importer/",
+        import_stagiaires.vue_importer_stagiaires,
+        name="importer_stagiaires",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/importer/confirmer/",
+        import_stagiaires.vue_confirmer_import_stagiaires,
+        name="confirmer_import_stagiaires",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/modele/",
+        import_stagiaires.vue_telecharger_modele,
+        name="modele_import_stagiaires",
     ),
 ]

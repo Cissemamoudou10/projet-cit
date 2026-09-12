@@ -27,6 +27,41 @@ dépendances transitives — `cffi`, `Pillow`, `fonttools`, `brotli`, `zopfli`,
 (`cp314-manylinux*` ou `py3-none-any`) — aucune compilation. **Rien à
 replier : l'image de base reste Python 3.14.4-slim-bookworm.**
 
+## Dépendance ajoutée le 2026-09-12 — `openpyxl` (US-SES-05, Prompt 24)
+
+**Motif.** L'import de stagiaires (critère 3 d'US-SES-05) exige la lecture de
+fichiers `.xlsx`, format que le terrain transmettra de façon certaine (§ 3 du
+Prompt 24). `openpyxl==3.1.5` est une roue pure Python (`py2.py3-none-any`),
+sans dépendance native — contrairement à WeasyPrint, dont la question s'est
+posée avant D-60. Sa seule dépendance transitive, `et-xmlfile`, est également
+une roue pure Python, non listée explicitement dans `requirements.txt` ni
+`DEPENDANCES_VALIDEES` — même traitement que les dépendances transitives de
+WeasyPrint (`cssselect2`, `tinycss2`, etc.), résolues automatiquement par
+`pip` sans suivi individuel.
+
+**Vérifié réellement le 2026-09-12** : `pip install openpyxl` dans le `.venv`
+de développement (Python 3.14, Windows) installe `openpyxl-3.1.5` et
+`et_xmlfile-2.0.0` sans erreur ni compilation. `requirements.txt` et
+`tests/architecture/test_dependances.py::DEPENDANCES_VALIDEES` mis à jour
+dans le même commit (règle du fichier).
+
+**Paquet hors ligne reconstitué** avec `scripts/constituer-paquet.sh` le
+2026-09-12 : `docker run --rm pfe-cit-application:hors-ligne pip show
+openpyxl` confirme la présence réelle de la roue dans l'image reconstruite
+(`Version: 3.1.5`), et l'image exportée (`paquet-deploiement/images/
+application.tar`, 94,8 Mo) porte cette version.
+
+**Rejeu complet du protocole sur VM isolée : pas nécessaire dans l'immédiat.**
+Argumentaire (D-62 s'applique) : `openpyxl` ne touche aucune logique native
+(contrairement à WeasyPrint, seule dépendance ayant jamais motivé un rejeu
+complet) — le risque d'échec sur un poste réellement isolé est du même ordre
+que n'importe quel autre paquet pure Python déjà validé (Django, psycopg
+excepté pour sa partie binaire). **À confirmer à la prochaine installation
+réelle sur VM ou sur le poste du CIT**, sans quoi R9 resterait éteint sur la
+base d'un raisonnement jamais revérifié en conditions réelles pour cette
+dépendance précise — décision proposée, pas tranchée seul (voir
+`docs/suivi/DECISIONS.md`).
+
 ## Dette identifiée — résolue le 2026-09-08 (bloc E, Prompt 19)
 
 **Deux scripts de rôles PostgreSQL redondants** existaient —

@@ -27,6 +27,12 @@ CLASSES_CHAMP_DATE = (
     "focus:border-marine-700 focus:ring-2 focus:ring-focus"
 )
 
+CLASSES_ZONE_TEXTE = (
+    "w-full resize-y rounded border border-gris-trait bg-fond-bloc px-2.5 py-2 "
+    "text-sm leading-normal outline-none "
+    "focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+
 FORMAT_DATE = "%Y-%m-%d"
 
 
@@ -94,3 +100,54 @@ class FormulaireBrigade(forms.Form):
         min_value=1,
         widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "inputmode": "numeric"}),
     )
+
+
+class FormulaireStagiaire(forms.Form):
+    """`forms.Form`, même patron que `FormulaireBrigade` : `session` vient de
+    l'URL. `etat`/`radie`/`motif_radiation`/`date_radiation` sont absents à
+    dessein — seules `radier`/`deradier` les modifient (§ 7, Prompt 24)."""
+
+    matricule = forms.CharField(
+        label="Matricule",
+        max_length=30,
+        widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+    )
+    nom = forms.CharField(
+        label="Nom", max_length=100, widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE})
+    )
+    prenom = forms.CharField(
+        label="Prénom",
+        max_length=100,
+        widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+    )
+    grade = forms.CharField(
+        label="Grade", max_length=50, widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE})
+    )
+    unite = forms.CharField(
+        label="Unité d'origine",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+    )
+
+
+class FormulaireRadiationStagiaire(forms.Form):
+    """Confirmation distincte de celle de la suppression (BNF-09, § 7,
+    Prompt 24) : radier exige un motif et une date, jamais silencieux."""
+
+    motif = forms.CharField(
+        label="Motif de la radiation",
+        widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 3}),
+    )
+    date_radiation = forms.DateField(
+        label="Date de radiation",
+        input_formats=[FORMAT_DATE],
+        widget=forms.DateInput(attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE),
+    )
+
+
+class FormulaireImportStagiaires(forms.Form):
+    """Dépôt du fichier — temps 1 (§ 4, Prompt 24). Le format (.csv/.xlsx)
+    n'est pas contrôlé ici : le refus (E1) est la décision du service, ce
+    formulaire ne fait que transporter le fichier déposé."""
+
+    fichier = forms.FileField(label="Fichier de stagiaires (.csv ou .xlsx)")

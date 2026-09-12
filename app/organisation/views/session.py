@@ -12,9 +12,11 @@ from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
+from noyau.pagination import paginer
 from organisation.forms import FormulaireSession
 from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import ServiceSession
+from organisation.services.stagiaire import ServiceStagiaire
 from referentiel.services.formation import ServiceFormation
 
 GROUPES_FORMULAIRE = [
@@ -186,6 +188,16 @@ def vue_liste_sessions(request):
     return render(request, "noyau/gestion/liste.html", contexte)
 
 
+def _compositions(brigades):
+    """Une ligne par brigade, taux d'occupation déjà calculé (§ 4, Prompt 23)
+    — aucune requête supplémentaire, `ServiceBrigade.lister` a déjà chargé
+    `salle_attitree__lieu` par `select_related`."""
+    return [
+        {"brigade": brigade, "occupation": ServiceBrigade.taux_occupation(brigade)}
+        for brigade in brigades
+    ]
+
+
 @exige_habilitation(ServiceSession.PERMISSION_LECTURE)
 def vue_detail_session(request, pk):
     session = _session_ou_404(pk)
@@ -201,9 +213,13 @@ def vue_detail_session(request, pk):
                 "referentiel:referentiel_formation", args=[session.formation.pk]
             ),
             "url_brigades": reverse("organisation:brigades_session", args=[session.pk]),
+            "url_stagiaires": reverse("organisation:liste_stagiaires", args=[session.pk]),
             "nombre_matieres": resume["nombre_matieres"],
             "volume_total_referentiel": resume["volume_total"],
-            "nombre_brigades": len(brigades),
+            "page_referentiel": paginer(resume["elements"], request.GET.get("page")),
+            "indicateur": ServiceBrigade.indicateur_effectif(session),
+            "compositions": _compositions(brigades),
+            "nombre_stagiaires": ServiceStagiaire.compter(request.user, session),
         },
     )
 

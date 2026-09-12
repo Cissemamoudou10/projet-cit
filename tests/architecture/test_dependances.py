@@ -21,6 +21,7 @@ DEPENDANCES_VALIDEES = {
     "psycopg2-binary",
     "ortools",
     "weasyprint",
+    "openpyxl",
     "pytest",
     "pytest-django",
     "ruff",

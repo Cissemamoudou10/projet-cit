@@ -9,6 +9,7 @@ que `ServiceReferentiel`.
 Un service ne connaît pas la requête HTTP — voir .claude/rules/services.md.
 """
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from django.db.models import Sum
 from django.db.models.deletion import ProtectedError
@@ -52,6 +53,34 @@ class ServiceBrigade:
             "somme_prevue": somme,
             "ecart": somme - session.effectif_attendu,
         }
+
+    @staticmethod
+    def taux_occupation(brigade):
+        """Effectif prévisionnel rapporté à la capacité de la salle attitrée,
+        en pourcentage arrondi à l'entier (§ 4, Prompt 23) — lu par la
+        relation inverse posée à US-SES-03 (`brigade.salle_attitree`),
+        jamais par un service de `ressources` (sens de dépendance interdit,
+        D-85). `ObjectDoesNotExist` plutôt que `SalleAttitree.DoesNotExist` :
+        `organisation` ne peut pas importer cette classe.
+
+        Trois cas sans taux calculable, aucun ne produisant de case vide ni
+        de zéro trompeur : brigade sans salle attitrée (état transitoire
+        légitime, D-90) ; salle sans capacité renseignée (impossible depuis
+        US-SES-03 — `Lieu.capacite` est `NOT NULL` — mais des données
+        antérieures pourraient exister, même prudence que D-88) ; taux
+        supérieur à 100 % (RG-13 l'a refusé à l'attribution, mais un
+        effectif relevé APRÈS coup peut le produire — la limite consignée à
+        US-SES-03, D-90, se constate ici, à la lecture).
+        """
+        try:
+            salle = brigade.salle_attitree
+        except ObjectDoesNotExist:
+            return {"salle": None, "capacite": None, "taux": None, "depasse": False}
+        capacite = salle.lieu.capacite
+        if not capacite:
+            return {"salle": salle, "capacite": None, "taux": None, "depasse": False}
+        taux = round(brigade.effectif_previsionnel / capacite * 100)
+        return {"salle": salle, "capacite": capacite, "taux": taux, "depasse": taux > 100}
 
     @staticmethod
     def obtenir(pk):

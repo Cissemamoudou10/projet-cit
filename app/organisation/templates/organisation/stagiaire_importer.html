@@ -1,0 +1,75 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Importer des stagiaires — {{ session.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_annuler }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux stagiaires
+  </a>
+  <h1 class="font-titre text-xl font-semibold leading-tight">
+    Importer des stagiaires — {{ session.intitule }}</h1>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Format attendu
+  </p>
+  <div class="px-4 py-3.5 text-sm">
+    <p class="mb-2">
+      Fichier CSV ou Excel (.xlsx), colonnes obligatoires — ordre indifférent, identifiées par
+      leur en-tête :
+    </p>
+    <ul class="mb-3 list-disc pl-5 text-sm">
+      <li>Matricule</li>
+      <li>Nom</li>
+      <li>Prénom</li>
+      <li>Grade</li>
+      <li>Unité</li>
+    </ul>
+    <a href="{{ url_modele }}"
+       class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
+              text-sm font-semibold text-marine-900 no-underline transition-colors duration-survol
+              hover:bg-fond-survol">
+      Télécharger le modèle
+    </a>
+  </div>
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Déposer le fichier
+  </p>
+  <form method="post" enctype="multipart/form-data" class="px-4 py-3.5">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="{{ form.fichier.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+        {{ form.fichier.label }}</label>
+      {{ form.fichier }}
+      {% if form.fichier.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">{{ form.fichier.errors|first }}</p>
+      {% endif %}
+    </div>
+    <div class="flex gap-2">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      <button type="submit"
+              class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        Analyser le fichier
+      </button>
+    </div>
+  </form>
+</section>
+{% endblock %}
