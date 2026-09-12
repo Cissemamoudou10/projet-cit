@@ -6,7 +6,7 @@ organisation.services.stagiaire.ServiceStagiaire.
 import datetime
 
 from django.contrib import messages
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import format_html
@@ -16,8 +16,10 @@ from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.habilitations import a_permission
 from organisation.forms import FormulaireRadiationStagiaire, FormulaireStagiaire
+from organisation.import_stagiaires.ecrivain import ecrire_csv, ecrire_xlsx, nom_fichier_export
+from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import ServiceSession
-from organisation.services.stagiaire import ServiceStagiaire
+from organisation.services.stagiaire import NON_AFFECTES, ServiceStagiaire
 
 GROUPES_FORMULAIRE = [
     {"legende": "Identité", "champs": ["matricule", "nom", "prenom", "grade", "unite"]},
@@ -45,22 +47,67 @@ def _url_sans_parametre(request, nom):
     return f"{request.path}?{chaine}" if chaine else request.path
 
 
-def _filtres_champs(etat):
+def _filtres_champs(brigades, etat, brigade):
     return [
         {
             "nom": "etat",
             "libelle": "État",
             "valeur": etat,
             "choix": [("actifs", "Actifs"), ("radies", "Radiés")],
-        }
+        },
+        {
+            "nom": "brigade",
+            "libelle": "Brigade",
+            "valeur": brigade,
+            "choix": [(str(b.pk), b.designation) for b in brigades]
+            + [(NON_AFFECTES, "Non affectés")],
+        },
     ]
 
 
-def _filtres_actifs(request, etat):
-    if not etat:
-        return []
-    libelle = "Actifs" if etat == "actifs" else "Radiés"
-    return [{"libelle": f"État : {libelle}", "url_retrait": _url_sans_parametre(request, "etat")}]
+def _libelle_brigade(brigades, brigade):
+    if brigade == NON_AFFECTES:
+        return "Non affectés"
+    if brigade:
+        for b in brigades:
+            if str(b.pk) == brigade:
+                return b.designation
+    return ""
+
+
+def _description_filtre(session, brigade_libelle, etat):
+    """Le rappel en toutes lettres exigé au § 5, Prompt 26 — une phrase,
+    jamais une icône ni une couleur seule : « Session X — brigade EXP1 —
+    stagiaires actifs uniquement »."""
+    segments = [f"Session {session.intitule}"]
+    if brigade_libelle == "Non affectés":
+        segments.append("stagiaires non affectés")
+    elif brigade_libelle:
+        segments.append(f"brigade {brigade_libelle}")
+    if etat == "actifs":
+        segments.append("stagiaires actifs uniquement")
+    elif etat == "radies":
+        segments.append("stagiaires radiés uniquement")
+    else:
+        segments.append("tous statuts")
+    return " — ".join(segments)
+
+
+def _filtres_actifs(request, etat, brigade_libelle):
+    actifs = []
+    if etat:
+        libelle = "Actifs" if etat == "actifs" else "Radiés"
+        actifs.append(
+            {"libelle": f"État : {libelle}", "url_retrait": _url_sans_parametre(request, "etat")}
+        )
+    if brigade_libelle:
+        actifs.append(
+            {
+                "libelle": f"Brigade : {brigade_libelle}",
+                "url_retrait": _url_sans_parametre(request, "brigade"),
+            }
+        )
+    return actifs
 
 
 def _colonnes():
@@ -126,13 +173,27 @@ def _ligne(stagiaire, peut_ecrire):
     return ligne
 
 
+def _urls_export(session, request):
+    parametres = request.GET.urlencode()
+    base_csv = reverse("organisation:exporter_stagiaires", args=[session.pk, "csv"])
+    base_xlsx = reverse("organisation:exporter_stagiaires", args=[session.pk, "xlsx"])
+    return (
+        f"{base_csv}?{parametres}" if parametres else base_csv,
+        f"{base_xlsx}?{parametres}" if parametres else base_xlsx,
+    )
+
+
 @exige_habilitation(ServiceStagiaire.PERMISSION_LECTURE)
 def vue_liste_stagiaires(request, session_pk):
     session = _session_ou_404(session_pk)
     etat = request.GET.get("etat", "")
-    filtres = {"recherche": request.GET.get("recherche", ""), "etat": etat}
+    brigade = request.GET.get("brigade", "")
+    filtres = {"recherche": request.GET.get("recherche", ""), "etat": etat, "brigade": brigade}
     page = ServiceStagiaire.lister(request.user, session, filtres, request.GET.get("page"))
     peut_ecrire = a_permission(request.user, ServiceStagiaire.PERMISSION_ECRITURE)
+    brigades = list(ServiceBrigade.lister(request.user, session))
+    brigade_libelle = _libelle_brigade(brigades, brigade)
+    url_export_csv, url_export_xlsx = _urls_export(session, request)
     contexte = {
         "session": session,
         "titre": f"Stagiaires — {session.intitule}",
@@ -145,10 +206,13 @@ def vue_liste_stagiaires(request, session_pk):
         "url_importer": reverse("organisation:importer_stagiaires", args=[session.pk])
         if peut_ecrire
         else "",
+        "url_export_csv": url_export_csv,
+        "url_export_xlsx": url_export_xlsx,
+        "description_filtre": _description_filtre(session, brigade_libelle, etat),
         "champ_recherche_libelle": "Matricule, nom ou prénom",
         "filtres": filtres,
-        "filtres_champs": _filtres_champs(etat),
-        "filtres_actifs": _filtres_actifs(request, etat),
+        "filtres_champs": _filtres_champs(brigades, etat, brigade),
+        "filtres_actifs": _filtres_actifs(request, etat, brigade_libelle),
         "url_liste": reverse("organisation:liste_stagiaires", args=[session.pk]),
         "colonnes": _colonnes(),
         "lignes": [_ligne(stagiaire, peut_ecrire) for stagiaire in page] if page else [],
@@ -158,6 +222,33 @@ def vue_liste_stagiaires(request, session_pk):
         "masquer_filtre_archive": True,
     }
     return render(request, "organisation/stagiaire_liste.html", contexte)
+
+
+ECRIVAINS_EXPORT = {
+    "csv": (ecrire_csv, "text/csv"),
+    "xlsx": (ecrire_xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+}
+
+
+@exige_habilitation(ServiceStagiaire.PERMISSION_LECTURE)
+def vue_exporter_stagiaires(request, session_pk, format_fichier):
+    session = _session_ou_404(session_pk)
+    if format_fichier not in ECRIVAINS_EXPORT:
+        raise Http404
+    etat = request.GET.get("etat", "")
+    brigade = request.GET.get("brigade", "")
+    filtres = {"recherche": request.GET.get("recherche", ""), "etat": etat, "brigade": brigade}
+    brigades = list(ServiceBrigade.lister(request.user, session))
+    brigade_libelle = _libelle_brigade(brigades, brigade)
+    description = _description_filtre(session, brigade_libelle, etat)
+    stagiaires = ServiceStagiaire.exporter(request.user, session, filtres, description)
+    ecrivain, type_contenu = ECRIVAINS_EXPORT[format_fichier]
+    nom_fichier = nom_fichier_export(
+        session, {"brigade_libelle": brigade_libelle, "etat": etat}, format_fichier
+    )
+    reponse = HttpResponse(ecrivain(stagiaires), content_type=type_contenu)
+    reponse["Content-Disposition"] = f'attachment; filename="{nom_fichier}"'
+    return reponse
 
 
 @exige_habilitation(ServiceStagiaire.PERMISSION_ECRITURE)

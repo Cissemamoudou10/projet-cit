@@ -72,6 +72,11 @@ urlpatterns = [
         name="supprimer_stagiaire",
     ),
     path(
+        "sessions/<int:session_pk>/stagiaires/exporter/<str:format_fichier>/",
+        stagiaire.vue_exporter_stagiaires,
+        name="exporter_stagiaires",
+    ),
+    path(
         "sessions/<int:session_pk>/stagiaires/importer/",
         import_stagiaires.vue_importer_stagiaires,
         name="importer_stagiaires",

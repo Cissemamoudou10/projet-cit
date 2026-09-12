@@ -157,6 +157,7 @@ arbitrage requis :
 | Fiche session — brigades et occupation (US-SES-04) | 701 px | — (tient, 2 px de marge) |
 | Stagiaires d'une session (US-SES-05) | 653 px | — (tient) |
 | Écran de répartition — affectations par brigade (US-SES-06, mesuré le 2026-09-12) | 653 px | — (tient) |
+| Liste des stagiaires, colonne Brigade ajoutée, sept colonnes (US-SES-07, mesuré le 2026-09-12) | 653 px | — (tient, malgré la mise en garde du § 7 du Prompt 26 sur les écrans à sept colonnes textuelles) |
 
 Ces deux écrans utilisent déjà le patron de gestion (`data-impression="masquer"`
 sur la colonne Actions, § 4) — la colonne Actions n'apparaît donc pas dans la

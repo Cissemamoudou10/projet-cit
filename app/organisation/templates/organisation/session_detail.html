@@ -152,7 +152,10 @@
                   <span class="tabular-nums">{{ occupation.taux }} %</span>
                 {% endif %}
               </td>
-              <td class="px-3 py-1.5 tabular-nums">{{ brigade.effectif_reel }}</td>
+              <td class="px-3 py-1.5 tabular-nums">
+                <a href="{% url 'organisation:liste_stagiaires' session.pk %}?brigade={{ brigade.pk }}"
+                   class="text-marine-900 no-underline hover:underline">{{ brigade.effectif_reel }}</a>
+              </td>
               <td class="px-3 py-1.5">
                 {% if occupation_reelle.taux is None %}
                   <span class="text-gris-lecture">—</span>

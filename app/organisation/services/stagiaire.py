@@ -8,7 +8,7 @@ réellement ici.
 """
 
 from django.db import IntegrityError, transaction
-from django.db.models import OuterRef, Q, Subquery
+from django.db.models import OuterRef, Subquery
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
@@ -19,11 +19,18 @@ from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.pagination import paginer
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import decrire_opposants, valider_instance
-from organisation.import_stagiaires.constantes import CHAMPS_OBLIGATOIRES, libelle_champ
+from organisation.import_stagiaires.constantes import (
+    CHAMPS_OBLIGATOIRES,
+    libelle_champ,
+    normaliser_texte,
+)
 from organisation.models import AffectationBrigade, Stagiaire
 from organisation.services.session import PERMISSION_ECRITURE, PERMISSION_LECTURE
 
 OBJET_TYPE = "stagiaire"
+OBJET_TYPE_EXPORT = "export_stagiaires"
+
+NON_AFFECTES = "non_affectes"
 
 
 class ServiceStagiaire:
@@ -33,11 +40,23 @@ class ServiceStagiaire:
 
     @staticmethod
     def lister(agissant, session, filtres, page):
+        queryset = ServiceStagiaire._queryset_filtree(agissant, session, filtres)
+        return paginer(queryset, page)
+
+    @staticmethod
+    def lister_pour_export(agissant, session, filtres):
+        """Mêmes filtres que `lister`, sans pagination — § 3, Prompt 26 :
+        « ce qui est exporté, c'est exactement ce que l'écran montre »."""
+        return ServiceStagiaire._queryset_filtree(agissant, session, filtres)
+
+    @staticmethod
+    def _queryset_filtree(agissant, session, filtres):
         """`brigade_designation` annoté par sous-requête corrélée (§ 9,
         Prompt 25) : la brigade d'affectation de chaque stagiaire, sans
         requête par ligne — US-SES-06 remplit cet emplacement, réservé
         implicitement par le modèle de liste avant que `AffectationBrigade`
-        existe."""
+        existe. Filtre de brigade (§ 2, Prompt 26) et recherche accent
+        insensible (A5) ajoutés à US-SES-07."""
         verifier_habilitation(agissant, PERMISSION_LECTURE)
         brigade_ouverte = AffectationBrigade.objects.filter(
             stagiaire=OuterRef("pk"), date_fin__isnull=True
@@ -49,15 +68,18 @@ class ServiceStagiaire:
             queryset = queryset.filter(radie=False)
         elif etat == "radies":
             queryset = queryset.filter(radie=True)
-        recherche = filtres.get("recherche")
-        if recherche:
+        brigade = filtres.get("brigade")
+        if brigade == NON_AFFECTES:
+            queryset = queryset.filter(brigade_designation__isnull=True)
+        elif brigade:
             queryset = queryset.filter(
-                Q(matricule__icontains=recherche)
-                | Q(nom__icontains=recherche)
-                | Q(prenom__icontains=recherche)
+                affectations__brigade_id=brigade, affectations__date_fin__isnull=True
             )
         queryset = queryset.order_by("nom", "prenom")
-        return paginer(queryset, page)
+        recherche = filtres.get("recherche")
+        if recherche:
+            queryset = queryset.filter(pk__in=_pks_correspondant(queryset, recherche))
+        return queryset
 
     @staticmethod
     def compter(agissant, session):
@@ -174,12 +196,53 @@ class ServiceStagiaire:
             ) from erreur
 
     @staticmethod
+    def exporter(agissant, session, filtres, description_filtre):
+        """Un export fait sortir des données nominatives du périmètre du
+        système (§ 6, Prompt 26) : journalisé, avec le contexte et le
+        compte, JAMAIS les identités — même règle qu'à l'import (RG-27,
+        D-98). Retourne les stagiaires à écrire, l'appelant choisit le
+        format."""
+        stagiaires = list(ServiceStagiaire.lister_pour_export(agissant, session, filtres))
+        ServiceJournal.enregistrer_detaillee(
+            DonneesEntreeJournal(
+                type_action=TypeAction.EXPORT_DONNEES,
+                identifiant_saisi=f"Export des stagiaires — {session}",
+                auteur=agissant,
+                objet_type=OBJET_TYPE_EXPORT,
+                objet_identifiant=str(session.pk),
+                valeur_apres={
+                    "session": str(session),
+                    "filtre": description_filtre,
+                    "nombre_lignes": len(stagiaires),
+                },
+            )
+        )
+        return stagiaires
+
+    @staticmethod
     def _verifier_champs_obligatoires(donnees):
         """BNF-10 : nomme le champ manquant, pas un refus générique — même
         exigence que le compte rendu d'import (A4, § 12, Prompt 24)."""
         for champ in CHAMPS_OBLIGATOIRES:
             if not (donnees.get(champ) or "").strip():
                 raise ErreurValidation(f"Le champ « {libelle_champ(champ)} » est obligatoire.")
+
+
+def _pks_correspondant(queryset, recherche):
+    """Recherche insensible à la casse ET aux accents (A5, § 2, Prompt 26) :
+    PostgreSQL n'a pas l'extension `unaccent` installée (seule `btree_gist`
+    l'est, pour RG-24) — comparaison en Python avec la même normalisation
+    que le lecteur de fichier d'US-SES-05 (`normaliser_texte`), au lieu
+    d'introduire une nouvelle dépendance PostgreSQL pour une liste bornée à
+    l'échelle d'une session."""
+    cible = normaliser_texte(recherche)
+    return [
+        stagiaire.pk
+        for stagiaire in queryset.only("pk", "matricule", "nom", "prenom")
+        if cible in normaliser_texte(stagiaire.matricule)
+        or cible in normaliser_texte(stagiaire.nom)
+        or cible in normaliser_texte(stagiaire.prenom)
+    ]
 
 
 def _erreur_doublon(stagiaire):

@@ -73,10 +73,10 @@ class TypeAction(models.TextChoices):
     sprints 2 à 4 n'aient qu'à s'y rattacher — aucune n'est encore
     atteignable depuis un service ou une vue.
 
-    Quatre natures s'ajoutent, hors RG-26 — voir docs/suivi/DECISIONS.md :
+    Cinq natures s'ajoutent, hors RG-26 — voir docs/suivi/DECISIONS.md :
     `ACCES_REFUSE` (US-ADM-03), `MODIFICATION_HABILITATIONS` (US-ADM-03,
     jamais signalée comme extension en son temps — corrigé en D-16),
-    `CONSULTATION_JOURNAL` (US-ADM-04), et les natures génériques du patron
+    `CONSULTATION_JOURNAL` (US-ADM-04), les natures génériques du patron
     de gestion (US-REF-00, D-18 ; `SUPPRESSION_ELEMENT_GESTION` ajoutée à
     US-REF-05, la première story du patron où une suppression est réelle,
     pas seulement théorique) — `CREATION_ELEMENT_GESTION`,
@@ -84,7 +84,11 @@ class TypeAction(models.TextChoices):
     `SUPPRESSION_ELEMENT_GESTION` comptent pour une seule extension au sens
     de RG-26, bien que quatre valeurs d'énumération : elles ne se
     distinguent pas par nature d'action mais par `objet_type`, réutilisées
-    telles quelles par les stories qui partagent le patron.
+    telles quelles par les stories qui partagent le patron — et
+    `EXPORT_DONNEES` (US-SES-07), la première nature qui journalise une
+    LECTURE plutôt qu'une écriture : un export fait sortir des données
+    nominatives du périmètre du système, RG-26 s'applique à ce geste-là,
+    pas à la simple consultation d'un écran (voir docs/suivi/DECISIONS.md).
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -111,6 +115,7 @@ class TypeAction(models.TextChoices):
         "suppression_element_gestion",
         "Suppression d'un élément de gestion",
     )
+    EXPORT_DONNEES = "export_donnees", "Export de données"
 
 
 class EntreeJournal(ModeleHorodate):

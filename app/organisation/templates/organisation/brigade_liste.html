@@ -77,7 +77,10 @@
               <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ brigade.designation }}</th>
               <td class="px-3 py-1.5 tabular-nums">{{ brigade.effectif_previsionnel }}</td>
             {% endif %}
-            <td class="px-3 py-1.5 tabular-nums">{{ brigade.effectif_reel }}</td>
+            <td class="px-3 py-1.5 tabular-nums">
+              <a href="{% url 'organisation:liste_stagiaires' session.pk %}?brigade={{ brigade.pk }}"
+                 class="text-marine-900 no-underline hover:underline">{{ brigade.effectif_reel }}</a>
+            </td>
             <td class="px-3 py-1.5">
               {% if brigade.salle_attitree %}
                 {% if perms.noyau.lieux_calendrier_ecriture %}

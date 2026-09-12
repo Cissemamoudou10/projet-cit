@@ -16,7 +16,7 @@ from noyau.exceptions import ErreurValidation
 from organisation.import_stagiaires.constantes import (
     CHAMPS_OBLIGATOIRES,
     CHAMPS_PAR_ENTETE_NORMALISE,
-    normaliser_entete,
+    normaliser_texte,
 )
 
 ENCODAGES_ESSAYES = ("utf-8-sig", "cp1252")
@@ -96,7 +96,7 @@ def _mapper_colonnes(lignes_brutes):
     entete = lignes_brutes[0]
     correspondance = {}
     for indice, libelle in enumerate(entete):
-        champ = CHAMPS_PAR_ENTETE_NORMALISE.get(normaliser_entete(libelle))
+        champ = CHAMPS_PAR_ENTETE_NORMALISE.get(normaliser_texte(libelle))
         if champ:
             correspondance[champ] = indice
     manquants = [champ for champ in CHAMPS_OBLIGATOIRES if champ not in correspondance]

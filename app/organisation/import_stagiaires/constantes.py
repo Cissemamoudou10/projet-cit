@@ -34,9 +34,13 @@ def libelle_champ(champ):
     return LIBELLES_CHAMPS.get(champ, champ)
 
 
-def normaliser_entete(valeur):
-    """Accent et casse indifférents (§ 5) : « Prénom », « PRENOM » et
-    « prénom » désignent la même colonne."""
+def normaliser_texte(valeur):
+    """Accent et casse indifférents — sert à la fois la reconnaissance d'un
+    en-tête de colonne (§ 5, Prompt 24 : « Prénom », « PRENOM » et
+    « prénom » désignent la même colonne) et la recherche de la liste des
+    stagiaires (§ 2, Prompt 26 : A5 exige l'insensibilité aux accents, sans
+    installer l'extension PostgreSQL `unaccent` — un seul endroit pour la
+    même normalisation, jamais recopiée."""
     sans_accents = (
         unicodedata.normalize("NFKD", valeur or "").encode("ascii", "ignore").decode("ascii")
     )

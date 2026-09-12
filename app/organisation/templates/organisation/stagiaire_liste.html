@@ -18,7 +18,19 @@
       <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ titre }}</h1>
       <p class="text-sm text-gris-lecture">{{ sous_titre }}</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div data-impression="masquer" class="flex items-center gap-2">
+      <a href="{{ url_export_csv }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
+                text-sm font-semibold text-marine-900 no-underline transition-colors duration-survol
+                hover:bg-fond-survol">
+        Exporter en CSV
+      </a>
+      <a href="{{ url_export_xlsx }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
+                text-sm font-semibold text-marine-900 no-underline transition-colors duration-survol
+                hover:bg-fond-survol">
+        Exporter en Excel
+      </a>
       {% if url_importer %}
         <a href="{{ url_importer }}"
            class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
@@ -37,6 +49,7 @@
       {% endif %}
     </div>
   </div>
+  <p class="mt-2 text-sm font-medium text-marine-900">{{ description_filtre }}</p>
 </div>
 {% endblock %}
 
