@@ -1,0 +1,55 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Déplacer « {{ stagiaire }} » — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[520px] animate-ouvrir border border-gris-trait bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <!-- arbitraire : w-[520px], largeur fixe de dialogue -->
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-marine-900 px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Déplacer « {{ stagiaire }} »
+    </p>
+    <div class="px-4 py-4 text-sm">
+      <p class="mb-3 border border-gris-trait bg-sable px-3 py-2.5 text-xs text-gris-lecture">
+        Actuellement affecté à « {{ brigade_actuelle.designation }} ». Ses évaluations et sa
+        progression restent rattachées à son parcours : cette brigade figurera dans son
+        historique d'affectations.
+      </p>
+      <div class="grid gap-3">
+        <div>
+          <label for="{{ form.brigade.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+            {{ form.brigade.label }}</label>
+          {{ form.brigade }}
+          {% if form.brigade.errors %}
+            <p class="mt-1 text-2xs text-etat-ecart">{{ form.brigade.errors|first }}</p>
+          {% endif %}
+        </div>
+        <div>
+          <label for="{{ form.date_effet.id_for_label }}"
+                 class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+            {{ form.date_effet.label }}</label>
+          {{ form.date_effet }}
+          {% if form.date_effet.errors %}
+            <p class="mt-1 text-2xs text-etat-ecart">{{ form.date_effet.errors|first }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 py-1.5 text-sm font-semibold text-blanc
+                     transition-colors duration-survol">Déplacer</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

@@ -108,11 +108,14 @@
             Taux d'occupation</th>
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Effectif réel</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">
+            Taux d'occupation réel</th>
         </tr>
       </thead>
       <tbody>
         {% for composition in compositions %}
-          {% with brigade=composition.brigade occupation=composition.occupation %}
+          {% with brigade=composition.brigade occupation=composition.occupation occupation_reelle=composition.occupation_reelle %}
             <tr class="h-ligne border-t border-gris-trait">
               <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ brigade.designation }}</th>
               <td class="px-3 py-1.5 tabular-nums">{{ brigade.effectif_previsionnel }}</td>
@@ -149,10 +152,18 @@
                   <span class="tabular-nums">{{ occupation.taux }} %</span>
                 {% endif %}
               </td>
-              {# Effectif réel — réservé à US-SES-06 : affectations ouvertes de #}
-              {# stagiaires non radiés (CLS-00, § 9), non calculable avant US-SES-05. #}
-              {# Le taux d'occupation sur l'effectif réel est le même report (§ 4, Prompt 23). #}
-              <td class="px-3 py-1.5 text-gris-lecture">—</td>
+              <td class="px-3 py-1.5 tabular-nums">{{ brigade.effectif_reel }}</td>
+              <td class="px-3 py-1.5">
+                {% if occupation_reelle.taux is None %}
+                  <span class="text-gris-lecture">—</span>
+                {% elif occupation_reelle.depasse %}
+                  <span class="bg-etat-ecart px-1.5 py-px text-2xs font-semibold tracking-wide text-blanc">
+                    DÉPASSEMENT — {{ brigade.effectif_reel }} / {{ occupation_reelle.capacite }}
+                    ({{ occupation_reelle.taux }} %)</span>
+                {% else %}
+                  <span class="tabular-nums">{{ occupation_reelle.taux }} %</span>
+                {% endif %}
+              </td>
             </tr>
           {% endwith %}
         {% endfor %}
@@ -192,13 +203,21 @@
       <dd>{{ nombre_stagiaires }}</dd>
     </div>
   </dl>
-  <div class="border-t border-gris-trait px-4 py-3">
+  <div class="border-t border-gris-trait px-4 py-3 flex gap-2">
     <a href="{{ url_stagiaires }}"
        class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
               text-sm font-semibold text-blanc no-underline transition-colors duration-survol
               hover:bg-marine-700">
       Voir les stagiaires
     </a>
+    {% if perms.noyau.organisation_ecriture %}
+      <a href="{{ url_repartition }}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
+                text-sm font-semibold text-marine-900 no-underline transition-colors duration-survol
+                hover:bg-fond-survol">
+        Répartir les stagiaires
+      </a>
+    {% endif %}
   </div>
 </section>
 

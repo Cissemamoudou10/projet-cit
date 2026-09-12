@@ -4,12 +4,10 @@ dans `organisation.import_stagiaires`.
 
 ÉTAT ENTRE LES DEUX REQUÊTES (§ 4) : le contenu du fichier déposé au temps 1
 est encodé en base64 dans un champ caché du compte rendu, jamais stocké côté
-serveur. Voir docs/suivi/DECISIONS.md pour les deux voies écartées
-(session Django, fichier temporaire) et pourquoi.
+serveur — `noyau.services.etat_transitoire`, généralisé à US-SES-06 (D-100,
+D-101). Voir docs/suivi/DECISIONS.md pour les deux voies écartées (session
+Django, fichier temporaire) et pourquoi.
 """
-
-import base64
-import binascii
 
 from django.contrib import messages
 from django.http import Http404, HttpResponse
@@ -19,6 +17,7 @@ from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.services import etat_transitoire
 from organisation.forms import FormulaireImportStagiaires
 from organisation.import_stagiaires.analyse import analyser
 from organisation.import_stagiaires.confirmation import confirmer
@@ -71,7 +70,7 @@ def vue_importer_stagiaires(request, session_pk):
         {
             "session": session,
             "rapport": rapport,
-            "fichier_b64": base64.b64encode(contenu).decode("ascii"),
+            "fichier_b64": etat_transitoire.encoder(contenu),
             "nom_fichier": fichier.name,
             "url_confirmer": reverse("organisation:confirmer_import_stagiaires", args=[session.pk]),
             "url_annuler": reverse("organisation:liste_stagiaires", args=[session.pk]),
@@ -95,18 +94,12 @@ def vue_confirmer_import_stagiaires(request, session_pk):
         messages.error(request, str(erreur))
         return redirect("organisation:importer_stagiaires", session.pk)
 
-    messages.success(
-        request, f"{len(rapport.lignes_valides)} stagiaire(s) enregistré(s)."
-    )
+    messages.success(request, f"{len(rapport.lignes_valides)} stagiaire(s) enregistré(s).")
     return redirect("organisation:liste_stagiaires", session.pk)
 
 
 def _decoder_fichier_depose(request):
-    fichier_b64 = request.POST.get("fichier_b64", "")
-    try:
-        return base64.b64decode(fichier_b64, validate=True)
-    except (binascii.Error, ValueError):
-        return None
+    return etat_transitoire.decoder(request.POST.get("fichier_b64", ""))
 
 
 @exige_habilitation(ServiceStagiaire.PERMISSION_ECRITURE)

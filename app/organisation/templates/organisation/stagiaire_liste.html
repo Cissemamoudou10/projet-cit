@@ -122,6 +122,14 @@
               {% endfor %}
               <td data-impression="masquer" class="px-3 text-right">
                 <div class="inline-flex flex-nowrap items-center justify-end gap-1">
+                <a href="{{ ligne.url_historique }}"
+                   title="Historique des affectations" aria-label="Historique des affectations de {{ ligne.libelle }}"
+                   class="inline-flex border border-transparent p-1 transition-colors duration-survol
+                          hover:border-marine-700 hover:bg-fond-survol">
+                  <svg class="h-4 w-4 text-marine-900" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#historique"></use>
+                  </svg>
+                </a>
                 {% if ligne.url_modifier %}
                   <a href="{{ ligne.url_modifier }}"
                      title="Modifier" aria-label="Modifier {{ ligne.libelle }}"

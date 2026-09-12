@@ -15,7 +15,7 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 - [x] **US-SES-03** — Affecter une salle attitrée à chaque brigade · 3 pts · Must
 - [x] **US-SES-04** — Consulter la composition d'une session · 3 pts · Must
 - [x] **US-SES-05** — Enregistrer les stagiaires d'une session · 5 pts · Must
-- [ ] **US-SES-06** — Affecter les stagiaires aux brigades · 5 pts · Must
+- [x] **US-SES-06** — Affecter les stagiaires aux brigades · 5 pts · Must
 - [ ] **US-SES-07** — Consulter la liste des stagiaires · 3 pts · Must
 - [ ] **US-INS-03** — Enregistrer les indisponibilités transmises · 3 pts · Must
 - [ ] **US-PLAN-01** — Élaborer le calendrier académique annuel · 8 pts · Must

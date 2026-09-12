@@ -189,11 +189,15 @@ def vue_liste_sessions(request):
 
 
 def _compositions(brigades):
-    """Une ligne par brigade, taux d'occupation déjà calculé (§ 4, Prompt 23)
-    — aucune requête supplémentaire, `ServiceBrigade.lister` a déjà chargé
-    `salle_attitree__lieu` par `select_related`."""
+    """Une ligne par brigade, taux d'occupation déjà calculé (§ 4, Prompt 23,
+    § 7 Prompt 25) — aucune requête supplémentaire, `ServiceBrigade.lister` a
+    déjà chargé `salle_attitree__lieu` et annoté `effectif_reel`."""
     return [
-        {"brigade": brigade, "occupation": ServiceBrigade.taux_occupation(brigade)}
+        {
+            "brigade": brigade,
+            "occupation": ServiceBrigade.taux_occupation(brigade),
+            "occupation_reelle": ServiceBrigade.taux_occupation_reel(brigade),
+        }
         for brigade in brigades
     ]
 
@@ -214,6 +218,7 @@ def vue_detail_session(request, pk):
             ),
             "url_brigades": reverse("organisation:brigades_session", args=[session.pk]),
             "url_stagiaires": reverse("organisation:liste_stagiaires", args=[session.pk]),
+            "url_repartition": reverse("organisation:repartition_session", args=[session.pk]),
             "nombre_matieres": resume["nombre_matieres"],
             "volume_total_referentiel": resume["volume_total"],
             "page_referentiel": paginer(resume["elements"], request.GET.get("page")),

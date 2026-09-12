@@ -70,8 +70,15 @@ def _colonnes():
         {"libelle": "Prénom", "cle_tri": None},
         {"libelle": "Grade", "cle_tri": None},
         {"libelle": "Unité d'origine", "cle_tri": None},
+        {"libelle": "Brigade", "cle_tri": None},
         {"libelle": "État", "cle_tri": None},
     ]
+
+
+def _cellule_brigade(stagiaire):
+    if stagiaire.brigade_designation:
+        return stagiaire.brigade_designation
+    return format_html('<span class="text-gris-lecture">Non affecté</span>')
 
 
 def _badge_etat(stagiaire):
@@ -93,9 +100,13 @@ def _ligne(stagiaire, peut_ecrire):
             stagiaire.prenom,
             stagiaire.grade,
             stagiaire.unite,
+            _cellule_brigade(stagiaire),
             _badge_etat(stagiaire),
         ],
         "libelle": f"{stagiaire.nom} {stagiaire.prenom}",
+        "url_historique": reverse(
+            "organisation:historique_affectations", args=[stagiaire.session_id, stagiaire.pk]
+        ),
     }
     if peut_ecrire:
         ligne["url_modifier"] = reverse(
@@ -127,7 +138,9 @@ def vue_liste_stagiaires(request, session_pk):
         "titre": f"Stagiaires — {session.intitule}",
         "sous_titre": f"{session.formation} · du {session.date_debut:%d/%m/%Y} au "
         f"{session.date_fin:%d/%m/%Y}",
-        "url_creer": reverse("organisation:creer_stagiaire", args=[session.pk]) if peut_ecrire else "",
+        "url_creer": reverse("organisation:creer_stagiaire", args=[session.pk])
+        if peut_ecrire
+        else "",
         "libelle_creer": "Enregistrer un stagiaire",
         "url_importer": reverse("organisation:importer_stagiaires", args=[session.pk])
         if peut_ecrire

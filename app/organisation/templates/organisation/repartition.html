@@ -1,0 +1,110 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Répartition — {{ session.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{% url 'organisation:detail_session' session.pk %}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour à la session
+  </a>
+  <h1 class="font-titre text-xl font-semibold leading-tight">Répartition — {{ session.intitule }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Effectif réel, effectif déclaré et capacité de la salle attitrée de chaque brigade.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% for entree in brigades %}
+  <div class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="flex items-center justify-between border-b border-gris-trait bg-fond-bande px-4 py-2
+              font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+      <span>{{ entree.designation }} — effectif réel {{ entree.effectif_reel }} /
+        déclaré {{ entree.effectif_previsionnel }}
+        {% if entree.salle_attitree %} / capacité {{ entree.salle_attitree.lieu.capacite }}{% endif %}</span>
+    </p>
+    {% if entree.affectations_ouvertes %}
+      <table class="w-full border-collapse text-sm">
+        <tbody>
+          {% for affectation in entree.affectations_ouvertes %}
+            <tr class="h-ligne border-t border-gris-trait">
+              <td class="px-3 py-1.5">{{ affectation.stagiaire }}</td>
+              {% if perms.noyau.organisation_ecriture %}
+                <td data-impression="masquer" class="px-3 py-1.5 text-right">
+                  <a href="{% url 'organisation:deplacer_stagiaire' session.pk affectation.stagiaire_id %}"
+                     class="text-marine-700 no-underline hover:underline">Déplacer</a>
+                  ·
+                  <a href="{% url 'organisation:retirer_affectation' session.pk affectation.stagiaire_id %}"
+                     class="text-etat-ecart no-underline hover:underline">Retirer</a>
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="px-4 py-3 text-sm text-gris-lecture">Aucun stagiaire affecté.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Stagiaires non affectés ({{ non_affectes|length }})
+  </p>
+  {% if non_affectes %}
+    <table class="w-full border-collapse text-sm">
+      <tbody>
+        {% for stagiaire in non_affectes %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <td class="px-3 py-1.5">{{ stagiaire }}</td>
+            {% if perms.noyau.organisation_ecriture %}
+              <td class="px-3 py-1.5 text-right">
+                <form method="post"
+                      action="{% url 'organisation:affecter_stagiaire' session.pk stagiaire.pk %}"
+                      class="inline-flex items-center justify-end gap-1.5">
+                  {% csrf_token %}
+                  <select name="brigade_id" aria-label="Brigade pour {{ stagiaire }}"
+                          class="h-controle rounded border border-gris-trait bg-fond-bloc px-2 text-xs
+                                 outline-none hover:border-marine-700
+                                 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+                    <option value="">Choisir une brigade</option>
+                    {% for entree in brigades %}
+                      <option value="{{ entree.pk }}">{{ entree.designation }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit"
+                          class="inline-flex h-controle items-center border border-marine-900
+                                 bg-marine-900 px-2.5 text-xs font-semibold text-blanc
+                                 transition-colors duration-survol hover:bg-marine-700">
+                    Affecter
+                  </button>
+                </form>
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="px-4 py-3 text-sm text-gris-lecture">Tous les stagiaires actifs sont affectés.</p>
+  {% endif %}
+  {% if perms.noyau.organisation_ecriture and non_affectes %}
+    <form method="post" action="{{ url_proposer }}" class="border-t border-gris-trait px-4 py-3">
+      {% csrf_token %}
+      <button type="submit"
+              class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        Produire une proposition automatique
+      </button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

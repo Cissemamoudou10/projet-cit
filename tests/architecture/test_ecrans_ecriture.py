@@ -248,6 +248,37 @@ ECRANS_ECRITURE = [
         "noyau.organisation_ecriture",
         lambda objets: [objets["session"].pk],
     ),
+    # --- organisation : répartition dans les brigades (US-SES-06) ---
+    EcranEcriture(
+        "organisation:deplacer_stagiaire",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
+    EcranEcriture(
+        "organisation:retirer_affectation",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
+    EcranEcriture(
+        "organisation:affecter_stagiaire",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
+    EcranEcriture(
+        "organisation:proposer_repartition",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "organisation:ajuster_repartition",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "organisation:valider_repartition",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
     # --- ressources : salle attitrée (US-SES-03) ---
     EcranEcriture(
         "ressources:soumettre_salle",
@@ -338,7 +369,7 @@ ECRANS_ECRITURE = [
 
 # 64 adresses : les 56 précédentes (Prompt 22) plus les huit adresses
 # d'écriture de organisation:stagiaire/import_stagiaires (US-SES-05, Prompt 24).
-assert len(ECRANS_ECRITURE) == 64
+assert len(ECRANS_ECRITURE) == 70
 
 
 def _groupes_sans(permission):

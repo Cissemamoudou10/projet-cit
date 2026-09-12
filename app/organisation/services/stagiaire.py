@@ -8,7 +8,7 @@ réellement ici.
 """
 
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
@@ -20,7 +20,7 @@ from noyau.pagination import paginer
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import decrire_opposants, valider_instance
 from organisation.import_stagiaires.constantes import CHAMPS_OBLIGATOIRES, libelle_champ
-from organisation.models import Stagiaire
+from organisation.models import AffectationBrigade, Stagiaire
 from organisation.services.session import PERMISSION_ECRITURE, PERMISSION_LECTURE
 
 OBJET_TYPE = "stagiaire"
@@ -33,8 +33,16 @@ class ServiceStagiaire:
 
     @staticmethod
     def lister(agissant, session, filtres, page):
+        """`brigade_designation` annoté par sous-requête corrélée (§ 9,
+        Prompt 25) : la brigade d'affectation de chaque stagiaire, sans
+        requête par ligne — US-SES-06 remplit cet emplacement, réservé
+        implicitement par le modèle de liste avant que `AffectationBrigade`
+        existe."""
         verifier_habilitation(agissant, PERMISSION_LECTURE)
-        queryset = session.stagiaires.all()
+        brigade_ouverte = AffectationBrigade.objects.filter(
+            stagiaire=OuterRef("pk"), date_fin__isnull=True
+        ).values("brigade__designation")[:1]
+        queryset = session.stagiaires.annotate(brigade_designation=Subquery(brigade_ouverte))
         filtres = filtres or {}
         etat = filtres.get("etat")
         if etat == "actifs":

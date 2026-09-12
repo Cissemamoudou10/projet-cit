@@ -1,6 +1,13 @@
 from django.urls import path
 
-from organisation.views import brigade, import_stagiaires, session, stagiaire
+from organisation.views import (
+    affectation,
+    brigade,
+    import_stagiaires,
+    repartition,
+    session,
+    stagiaire,
+)
 
 app_name = "organisation"
 
@@ -78,5 +85,45 @@ urlpatterns = [
         "sessions/<int:session_pk>/stagiaires/modele/",
         import_stagiaires.vue_telecharger_modele,
         name="modele_import_stagiaires",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/historique/",
+        affectation.vue_historique_affectations,
+        name="historique_affectations",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/deplacer/",
+        affectation.vue_deplacer_stagiaire,
+        name="deplacer_stagiaire",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/retirer/",
+        affectation.vue_retirer_affectation,
+        name="retirer_affectation",
+    ),
+    path(
+        "sessions/<int:session_pk>/stagiaires/<int:pk>/affecter/",
+        repartition.vue_affecter_stagiaire,
+        name="affecter_stagiaire",
+    ),
+    path(
+        "sessions/<int:session_pk>/repartition/",
+        repartition.vue_repartition,
+        name="repartition_session",
+    ),
+    path(
+        "sessions/<int:session_pk>/repartition/proposer/",
+        repartition.vue_proposer_repartition,
+        name="proposer_repartition",
+    ),
+    path(
+        "sessions/<int:session_pk>/repartition/ajuster/",
+        repartition.vue_ajuster_repartition,
+        name="ajuster_repartition",
+    ),
+    path(
+        "sessions/<int:session_pk>/repartition/valider/",
+        repartition.vue_valider_repartition,
+        name="valider_repartition",
     ),
 ]

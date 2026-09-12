@@ -1,0 +1,83 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Proposition de répartition — {{ session.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{% url 'organisation:repartition_session' session.pk %}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Annuler
+  </a>
+  <h1 class="font-titre text-xl font-semibold leading-tight">Proposition de répartition — {{ session.intitule }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Aperçu seul : aucune affectation n'est encore enregistrée. Ajustez puis validez.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% for entree in par_brigade %}
+  <div class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      {{ entree.brigade.designation }} — {{ entree.stagiaires|length }} proposé(s)
+    </p>
+    {% if entree.stagiaires %}
+      <table class="w-full border-collapse text-sm">
+        <tbody>
+          {% for stagiaire in entree.stagiaires %}
+            <tr class="h-ligne border-t border-gris-trait">
+              <td class="px-3 py-1.5">{{ stagiaire }}</td>
+              <td class="px-3 py-1.5 text-right">
+                {% include "organisation/_fragments/ajuster_repartition.html" with brigade_courante=entree.brigade.pk %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="px-4 py-3 text-sm text-gris-lecture">Aucun stagiaire proposé.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Stagiaires non affectés par la proposition ({{ non_affectes|length }})
+  </p>
+  {% if non_affectes %}
+    <table class="w-full border-collapse text-sm">
+      <tbody>
+        {% for stagiaire in non_affectes %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <td class="px-3 py-1.5">{{ stagiaire }}</td>
+            <td class="px-3 py-1.5 text-right">
+              {% include "organisation/_fragments/ajuster_repartition.html" with brigade_courante=None %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="px-4 py-3 text-sm text-gris-lecture">Aucun stagiaire non affecté.</p>
+  {% endif %}
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  <form method="post" action="{% url 'organisation:valider_repartition' session.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="proposition_b64" value="{{ proposition_b64 }}">
+    <button type="submit"
+            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700">
+      Valider la répartition
+    </button>
+  </form>
+</div>
+{% endblock %}

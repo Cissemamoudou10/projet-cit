@@ -11,7 +11,7 @@ Un service ne connaît pas la requête HTTP — voir .claude/rules/services.md.
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
-from django.db.models import Sum
+from django.db.models import Count, Q, Sum
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
@@ -38,9 +38,34 @@ class ServiceBrigade:
         caractères, résolue par l'ORM au moment de la requête — jamais un
         `import ressources` (méthode D-52, US-SES-03) : c'est ce qui permet
         d'afficher la salle attitrée de chaque brigade sans une requête par
-        ligne."""
+        ligne. `effectif_reel` annoté de même : remplit en une seule requête
+        les deux emplacements réservés (écran des brigades, fiche de
+        composition — § 7, Prompt 25), sans requête dans une boucle."""
         verifier_habilitation(agissant, PERMISSION_LECTURE)
-        return session.brigades.select_related("salle_attitree__lieu").order_by("designation")
+        return (
+            session.brigades.select_related("salle_attitree__lieu")
+            .annotate(
+                effectif_reel=Count(
+                    "affectations",
+                    filter=Q(
+                        affectations__date_fin__isnull=True,
+                        affectations__stagiaire__radie=False,
+                    ),
+                    distinct=True,
+                )
+            )
+            .order_by("designation")
+        )
+
+    @staticmethod
+    def effectif_reel(brigade):
+        """Attribut dérivé de CLS-00 (§ 9 du diagramme de classes) : jamais
+        stocké. Affectations ouvertes de stagiaires non radiés (US-SES-06,
+        § 3, Prompt 25) — lecture littérale, radier ne ferme jamais
+        l'affectation (DECISIONS.md). Requête isolée, à la différence de
+        l'annotation de `lister` : usage individuel (contrôle RG-19 à
+        l'affectation), pas d'affichage en liste."""
+        return brigade.affectations.filter(date_fin__isnull=True, stagiaire__radie=False).count()
 
     @staticmethod
     def indicateur_effectif(session):
@@ -72,6 +97,19 @@ class ServiceBrigade:
         effectif relevé APRÈS coup peut le produire — la limite consignée à
         US-SES-03, D-90, se constate ici, à la lecture).
         """
+        return ServiceBrigade._taux(brigade, brigade.effectif_previsionnel)
+
+    @staticmethod
+    def taux_occupation_reel(brigade):
+        """Même calcul que `taux_occupation`, sur l'effectif RÉEL plutôt que
+        prévisionnel — emplacement réservé à US-SES-04 (§ 4, Prompt 23,
+        « à réserver, non à implanter » faute d'`AffectationBrigade »),
+        rempli ici (§ 7, Prompt 25). Suppose `brigade.effectif_reel` déjà
+        annoté par `ServiceBrigade.lister`."""
+        return ServiceBrigade._taux(brigade, brigade.effectif_reel)
+
+    @staticmethod
+    def _taux(brigade, effectif):
         try:
             salle = brigade.salle_attitree
         except ObjectDoesNotExist:
@@ -79,7 +117,7 @@ class ServiceBrigade:
         capacite = salle.lieu.capacite
         if not capacite:
             return {"salle": salle, "capacite": None, "taux": None, "depasse": False}
-        taux = round(brigade.effectif_previsionnel / capacite * 100)
+        taux = round(effectif / capacite * 100)
         return {"salle": salle, "capacite": capacite, "taux": taux, "depasse": taux > 100}
 
     @staticmethod
@@ -137,9 +175,7 @@ class ServiceBrigade:
                 brigade.delete()
                 _journaliser(agissant, TypeAction.SUPPRESSION_ELEMENT_GESTION, brigade)
         except ProtectedError as erreur:
-            raise ErreurValidation(
-                decrire_opposants(brigade, erreur.protected_objects)
-            ) from erreur
+            raise ErreurValidation(decrire_opposants(brigade, erreur.protected_objects)) from erreur
 
 
 def _erreur_doublon(brigade):

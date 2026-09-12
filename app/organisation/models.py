@@ -190,3 +190,67 @@ class Stagiaire(ModeleHorodate):
 
     def __str__(self):
         return f"{self.grade} {self.nom} {self.prenom} ({self.matricule})"
+
+
+class AffectationBrigade(ModeleHorodate):
+    """Affectation d'un stagiaire à une brigade — CU-P3-06, RG-19, RG-20.
+
+    HISTORISÉE, à la différence de `SalleAttitree` (D-87) : RG-20 l'exige
+    nommément (« un changement de brigade est daté et historisé, il ne crée
+    pas une seconde affectation »), et l'effectif réel de CLS-00 se définit
+    par les affectations OUVERTES — un attribut qui suppose des affectations
+    qui se ferment, contrairement à la salle attitrée qui n'a qu'un état
+    courant. Deux associations voisines, deux traitements opposés : voir
+    DECISIONS.md.
+
+    `date_fin` nulle tant que l'affectation est ouverte — jamais une ligne
+    écrasée pour changer de brigade, toujours une fermeture suivie d'une
+    ouverture (§ 6, Prompt 25).
+
+    RADIATION ET FERMETURE SONT DEUX MÉCANISMES INDÉPENDANTS. Radier un
+    stagiaire ne ferme jamais automatiquement son affectation (ce serait une
+    règle métier posée dans un signal, interdit par `.claude/rules/python.md`) :
+    l'effectif réel l'exclut par la jointure sur `stagiaire.radie`, lecture
+    littérale de CLS-00 (« affectations ouvertes de stagiaires NON RADIÉS »).
+    Voir DECISIONS.md.
+
+    `stagiaire`/`brigade` en `PROTECT` : une affectation, ouverte ou fermée,
+    est un fait historique qui ne s'efface pas silencieusement avec son
+    origine.
+    """
+
+    stagiaire = models.ForeignKey(
+        Stagiaire,
+        on_delete=models.PROTECT,
+        related_name="affectations",
+        verbose_name="stagiaire",
+    )
+    brigade = models.ForeignKey(
+        Brigade,
+        on_delete=models.PROTECT,
+        related_name="affectations",
+        verbose_name="brigade",
+    )
+    date_effet = models.DateField(verbose_name="date d'effet")
+    date_fin = models.DateField(null=True, blank=True, verbose_name="date de fin")
+
+    class Meta:
+        db_table = "organisation_affectation_brigade"
+        verbose_name = "affectation à une brigade"
+        verbose_name_plural = "affectations à une brigade"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["stagiaire"],
+                condition=models.Q(date_fin__isnull=True),
+                name="uq_affectation_ouverte",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(date_fin__isnull=True) | models.Q(date_fin__gt=models.F("date_effet"))
+                ),
+                name="ck_affectation_dates",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.stagiaire} — {self.brigade}"

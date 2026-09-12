@@ -1,0 +1,65 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Historique — {{ stagiaire }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_retour }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux stagiaires
+  </a>
+  <h1 class="font-titre text-xl font-semibold leading-tight">Historique des affectations — {{ stagiaire }}</h1>
+  <p class="text-sm text-gris-lecture">{{ session.intitule }}</p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if historique %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Brigade</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Date d'effet</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Date de fin</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">État</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for affectation in historique %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ affectation.brigade.designation }}</th>
+            <td class="px-3 py-1.5 tabular-nums">{{ affectation.date_effet|date:"d/m/Y" }}</td>
+            <td class="px-3 py-1.5 tabular-nums">
+              {% if affectation.date_fin %}{{ affectation.date_fin|date:"d/m/Y" }}{% else %}—{% endif %}
+            </td>
+            <td class="px-3 py-1.5">
+              {% if affectation.date_fin %}
+                <span class="text-gris-lecture">Fermée</span>
+              {% else %}
+                <span class="border border-etat-conforme px-2 py-px text-2xs font-semibold
+                             tracking-wide text-etat-conforme">OUVERTE</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <p class="mb-1 font-titre text-lg font-semibold">Aucune affectation</p>
+      <p class="max-w-lg text-sm text-gris-lecture">
+        « {{ stagiaire }} » n'a jamais été affecté à une brigade de cette session.
+      </p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

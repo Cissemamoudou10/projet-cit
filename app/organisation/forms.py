@@ -141,7 +141,44 @@ class FormulaireRadiationStagiaire(forms.Form):
     date_radiation = forms.DateField(
         label="Date de radiation",
         input_formats=[FORMAT_DATE],
-        widget=forms.DateInput(attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE),
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE
+        ),
+    )
+
+
+class FormulaireDeplacementStagiaire(forms.Form):
+    """Enchaînement A2 (§ 6, Prompt 25) : sélection de la brigade de
+    destination et de la date d'effet, un formulaire — pas de
+    glisser-déposer (§ 7). `brigade` restreinte aux brigades de la session
+    par la vue, jamais recopiée ici (`session` vient de l'URL)."""
+
+    brigade = forms.ChoiceField(
+        label="Nouvelle brigade", widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE})
+    )
+    date_effet = forms.DateField(
+        label="Date d'effet",
+        input_formats=[FORMAT_DATE],
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE
+        ),
+    )
+
+    def __init__(self, *args, brigades=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["brigade"].choices = [(b.pk, b.designation) for b in brigades]
+
+
+class FormulaireRetraitAffectation(forms.Form):
+    """Retrait pur et simple, sans nouvelle brigade (§ 6, Prompt 25) — le cas
+    d'un stagiaire radié en cours de session."""
+
+    date_fin = forms.DateField(
+        label="Date de fin",
+        input_formats=[FORMAT_DATE],
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE
+        ),
     )
 
 
