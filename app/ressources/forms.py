@@ -117,6 +117,70 @@ class FormulaireDeclarationIndisponibilite(forms.Form):
     )
 
 
+class FormulaireIndisponibiliteInstructeur(forms.Form):
+    """Modification d'une période d'indisponibilité d'instructeur existante
+    (§ 2, Prompt 27) — l'instructeur d'une période déjà créée ne se
+    réaffecte pas depuis ce formulaire, il vient de l'objet en base."""
+
+    FORMAT_DATE_HEURE = "%Y-%m-%dT%H:%M"
+
+    debut = forms.DateTimeField(
+        label="Début",
+        input_formats=[FORMAT_DATE_HEURE],
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": CLASSES_CHAMP_DATETIME},
+            format=FORMAT_DATE_HEURE,
+        ),
+    )
+    fin = forms.DateTimeField(
+        label="Fin",
+        input_formats=[FORMAT_DATE_HEURE],
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": CLASSES_CHAMP_DATETIME},
+            format=FORMAT_DATE_HEURE,
+        ),
+    )
+    motif = forms.CharField(
+        label="Motif",
+        widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 4, "maxlength": 500}),
+    )
+
+
+class FormulaireDeclarationIndisponibiliteInstructeur(forms.Form):
+    """Écran autonome « Indisponibilités des instructeurs » (DECISIONS.md,
+    D-115) : l'instructeur est un champ du formulaire, jamais un segment
+    d'URL — la saisie s'amorce aussi bien depuis la liste que depuis un lien
+    pré-rempli sur la fiche d'un instructeur (`?instructeur=<pk>`)."""
+
+    FORMAT_DATE_HEURE = "%Y-%m-%dT%H:%M"
+
+    instructeur = forms.ModelChoiceField(
+        queryset=Instructeur.objects.filter(archive=False).order_by("nom", "prenom"),
+        label="Instructeur",
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    debut = forms.DateTimeField(
+        label="Début",
+        input_formats=[FORMAT_DATE_HEURE],
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": CLASSES_CHAMP_DATETIME},
+            format=FORMAT_DATE_HEURE,
+        ),
+    )
+    fin = forms.DateTimeField(
+        label="Fin",
+        input_formats=[FORMAT_DATE_HEURE],
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": CLASSES_CHAMP_DATETIME},
+            format=FORMAT_DATE_HEURE,
+        ),
+    )
+    motif = forms.CharField(
+        label="Motif",
+        widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 4, "maxlength": 500}),
+    )
+
+
 class ChampSalleAttitrable(forms.ModelChoiceField):
     """N'affiche jamais silencieusement une salle de capacité insuffisante
     (§ 5, Prompt 22) : elle reste proposée, signalée dans son propre
@@ -146,7 +210,11 @@ class FormulaireAttitrerSalle(forms.Form):
     )
 
     def __init__(self, *args, salles_candidates, **kwargs):
-        capacites = {candidat["lieu"].pk: candidat["capacite_suffisante"] for candidat in salles_candidates}
+        capacites = {
+            candidat["lieu"].pk: candidat["capacite_suffisante"] for candidat in salles_candidates
+        }
         super().__init__(*args, **kwargs)
         self.fields["lieu"].capacites_suffisantes = capacites
-        self.fields["lieu"].queryset = Lieu.objects.filter(pk__in=capacites.keys()).order_by("intitule")
+        self.fields["lieu"].queryset = Lieu.objects.filter(pk__in=capacites.keys()).order_by(
+            "intitule"
+        )

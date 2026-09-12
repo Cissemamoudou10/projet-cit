@@ -7,6 +7,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
@@ -96,6 +97,8 @@ def _colonnes(tri_actuel):
         {"libelle": "Spécialité", "cle_tri": None},
         {"libelle": "Statut", "cle_tri": None},
         {"libelle": "Qualifications", "cle_tri": None},
+        {"libelle": "Disponibilité", "cle_tri": None},
+        {"libelle": "Indispo. à venir", "cle_tri": None},
         {"libelle": "État", "cle_tri": None},
     ]
 
@@ -126,6 +129,10 @@ def _ligne(instructeur, peut_ecrire):
             instructeur.specialite,
             _badge_statut(instructeur.statut),
             format_html('<span class="tabular-nums">{}</span>', instructeur.nombre_qualifications),
+            _badge_disponibilite(instructeur.est_indisponible_maintenant),
+            format_html(
+                '<span class="tabular-nums">{}</span>', instructeur.nombre_indisponibilites_a_venir
+            ),
             "Archivé" if instructeur.archive else "Actif",
         ],
         "libelle": f"{instructeur.nom} {instructeur.prenom}",
@@ -138,6 +145,20 @@ def _ligne(instructeur, peut_ecrire):
             "ressources:desarchiver_instructeur", args=[instructeur.pk]
         )
     return ligne
+
+
+def _badge_disponibilite(est_indisponible):
+    """Colonne de DONNÉE, imprimée (D-63) — symétrique à
+    `ressources.views.lieu._badge_disponibilite` (§ 7, Prompt 27)."""
+    if est_indisponible:
+        return mark_safe(
+            '<span class="border border-etat-ecart px-2 py-px text-2xs font-semibold '
+            'tracking-wide text-etat-ecart">INDISPONIBLE</span>'
+        )
+    return mark_safe(
+        '<span class="border border-etat-conforme px-2 py-px text-2xs font-semibold '
+        'tracking-wide text-etat-conforme">DISPONIBLE</span>'
+    )
 
 
 def _badge_statut(statut):
@@ -190,6 +211,11 @@ def vue_liste_instructeurs(request):
 
 @exige_habilitation(ServiceInstructeur.PERMISSION_LECTURE)
 def vue_detail_instructeur(request, pk):
+    """Ne porte plus les indisponibilités de l'instructeur (DECISIONS.md,
+    D-115) : la donnée relève du domaine `lieux_calendrier`, distinct de
+    celui qui garde cette page (`instructeurs_qualifications_lecture`) — le
+    gabarit affiche seulement un lien, pré-filtré, vers l'écran autonome qui
+    les porte, sans appeler ici un service d'un autre domaine."""
     instructeur = _instructeur_ou_404(pk)
     return render(
         request,

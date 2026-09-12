@@ -1,0 +1,86 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Proposition de fusion — {{ instructeur }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">
+    Proposition de fusion — {{ instructeur }}</h1>
+  <p class="text-sm text-gris-lecture">
+    RG-24 : les périodes sécantes d'un même instructeur sont fusionnées, jamais dupliquées.
+    Aperçu seul : rien n'est encore enregistré.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Périodes absorbées par la fusion
+  </p>
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Début</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Fin</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Motif</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for absorbee in proposition.absorbees %}
+        <tr class="h-ligne border-t border-gris-trait">
+          <td class="px-3 py-1.5 tabular-nums">{{ absorbee.debut|date:"d/m/Y H:i" }}</td>
+          <td class="px-3 py-1.5 tabular-nums">{{ absorbee.fin|date:"d/m/Y H:i" }}</td>
+          <td class="px-3 py-1.5">{{ absorbee.motif }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+  <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+    Période résultante proposée</p>
+  <p class="font-titre text-lg font-semibold tabular-nums">
+    {{ proposition.debut|date:"d/m/Y H:i" }} → {{ proposition.fin|date:"d/m/Y H:i" }}
+  </p>
+  {% if proposition.sans_effet %}
+    <p class="mt-2 text-sm text-gris-lecture">
+      Cette période est déjà entièrement couverte par une indisponibilité existante :
+      aucune modification de bornes, rien à enregistrer.
+    </p>
+    <a href="{{ url_annuler }}"
+       class="mt-3 inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+      Retour à la liste des indisponibilités
+    </a>
+  {% else %}
+    <form method="post" action="{{ url_confirmer }}" class="mt-3">
+      {% csrf_token %}
+      <input type="hidden" name="instructeur" value="{{ instructeur.pk }}">
+      <input type="hidden" name="debut" value="{{ form.debut.value }}">
+      <input type="hidden" name="fin" value="{{ form.fin.value }}">
+      <div class="mb-3">
+        <label for="{{ form.motif.id_for_label }}"
+               class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+          Motif de la période fusionnée — pré-rempli avec le nouveau, modifiable</label>
+        {{ form.motif }}
+      </div>
+      <div class="flex justify-end gap-2">
+        <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+          Annuler</a>
+        <button type="submit"
+                class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                       px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                       hover:bg-marine-700">
+          Confirmer la fusion
+        </button>
+      </div>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

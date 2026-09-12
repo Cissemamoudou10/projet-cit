@@ -20,7 +20,14 @@ from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Mat
 from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 from referentiel.services.prerequis import ServicePrerequis
 from ressources.models import CategorieLieu as CategorieLieuRessource
-from ressources.models import IndisponibiliteLieu, Instructeur, Lieu, Qualification, Statut
+from ressources.models import (
+    IndisponibiliteInstructeur,
+    IndisponibiliteLieu,
+    Instructeur,
+    Lieu,
+    Qualification,
+    Statut,
+)
 
 
 @pytest.fixture
@@ -109,6 +116,12 @@ def objets(db, utilisateurs):
         statut=Statut.MILITAIRE_DU_CENTRE,
     )
     qualification = Qualification.objects.create(instructeur=instructeur, matiere=matiere)
+    indisponibilite_instructeur = IndisponibiliteInstructeur.objects.create(
+        instructeur=instructeur,
+        debut="2026-09-08T08:00:00Z",
+        fin="2026-09-08T09:45:00Z",
+        motif="Essai",
+    )
     compte_cible = get_user_model().objects.create_user(
         username="compte-cible-essai",
         password="x",
@@ -145,6 +158,7 @@ def objets(db, utilisateurs):
         "indisponibilite": indisponibilite,
         "instructeur": instructeur,
         "qualification": qualification,
+        "indisponibilite_instructeur": indisponibilite_instructeur,
         "compte_cible": compte_cible,
         "session": session,
         "brigade": brigade,

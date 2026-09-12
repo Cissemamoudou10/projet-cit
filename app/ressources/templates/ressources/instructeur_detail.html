@@ -98,13 +98,20 @@
   </div>
 </section>
 
+{% if perms.noyau.lieux_calendrier_lecture %}
 <section class="mt-4 border border-gris-trait bg-fond-bloc">
-  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
-            font-semibold uppercase tracking-wide text-marine-900">
-    Indisponibilités
-  </p>
-  <div class="px-4 py-8 text-center">
-    <p class="text-xs text-gris-lecture">À venir — US-INS-03, sprint 2.</p>
+  <div class="flex items-center justify-between px-4 py-3.5">
+    <p class="text-sm">
+      Les périodes d'indisponibilité de cet instructeur se consultent et se
+      déclarent depuis l'écran dédié.
+    </p>
+    <a href="{% url 'ressources:liste_indisponibilites_instructeurs' %}?instructeur={{ instructeur.pk }}"
+       class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+              text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+              hover:bg-marine-700">
+      Voir les indisponibilités
+    </a>
   </div>
 </section>
+{% endif %}
 {% endblock %}

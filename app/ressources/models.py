@@ -3,11 +3,25 @@
 Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
 
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import DateTimeRangeField, RangeBoundary, RangeOperators
 from django.db import models
+from django.utils import timezone
 
 from noyau.models import ModeleArchivable, ModeleHorodate
 from organisation.models import Brigade
 from referentiel.models import Matiere
+
+
+class _PeriodeTstz(models.Func):
+    """`TSTZRANGE(debut, fin, '[)')` — borne inférieure incluse, supérieure
+    exclue : deux périodes contiguës (la fin de l'une égale au début de
+    l'autre) ne se chevauchent pas. Fonction nommée, jamais recopiée en
+    ligne : c'est l'expression que `ExclusionConstraint` évalue pour RG-24.
+    """
+
+    function = "TSTZRANGE"
+    output_field = DateTimeRangeField()
 
 
 class Statut(models.TextChoices):
@@ -56,6 +70,75 @@ class Instructeur(ModeleHorodate, ModeleArchivable):
 
     def __str__(self):
         return f"{self.grade} {self.nom} {self.prenom}"
+
+
+class IndisponibiliteInstructeur(ModeleHorodate):
+    """Période où `instructeur` ne peut pas être affecté — CU-P4-03, RG-23,
+    RG-24, Prompt 27.
+
+    SAISIE DÉLÉGUÉE (RG-23) : l'instructeur n'a aucun accès au système,
+    aucune relation ne le lie à `Utilisateur` (`ressources.tests.
+    test_architecture` le vérifie explicitement). `cree_par`/`modifie_par`
+    (`ModeleHorodate`) portent l'AGENT de la cellule planification qui
+    saisit, jamais l'instructeur concerné — rien de spécial à coder, la
+    classe de base porte déjà la règle.
+
+    GRANULARITÉ HORAIRE (`DateTimeField`, pas `DateField`) : la fiche est
+    explicite, une indisponibilité d'un après-midi doit coexister avec des
+    séances du matin. `IndisponibiliteLieu` (US-PLAN-02) est déjà à cette
+    granularité — aucune incohérence entre les deux modèles jumeaux.
+
+    `motif` en texte libre, comme `IndisponibiliteLieu` : CLS-04 le dit
+    explicitement (« motif : texte »), le diagramme de classes fait foi.
+
+    Pas de mixin d'archivage : une indisponibilité passée est un fait
+    historique, jamais réactivé — même raisonnement que sa jumelle.
+    """
+
+    instructeur = models.ForeignKey(
+        Instructeur,
+        on_delete=models.PROTECT,
+        related_name="indisponibilites",
+        verbose_name="instructeur",
+    )
+    debut = models.DateTimeField(verbose_name="début")
+    fin = models.DateTimeField(verbose_name="fin")
+    motif = models.TextField(verbose_name="motif")
+
+    class Meta:
+        db_table = "ressources_indisponibilite_instructeur"
+        verbose_name = "indisponibilité d'instructeur"
+        verbose_name_plural = "indisponibilités d'instructeur"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(fin__gt=models.F("debut")),
+                name="ck_indisponibilite_instructeur_bornes",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(motif=""), name="ck_indispo_instructeur_motif_non_vide"
+            ),
+            ExclusionConstraint(
+                name="ex_indispo_instructeur_chevauchement",
+                expressions=[
+                    (_PeriodeTstz("debut", "fin", RangeBoundary()), RangeOperators.OVERLAPS),
+                    ("instructeur", RangeOperators.EQUAL),
+                ],
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.instructeur} — {self.debut:%d/%m/%Y %H:%M} → {self.fin:%d/%m/%Y %H:%M}"
+
+    @property
+    def est_passee(self):
+        """Attribut dérivé, jamais stocké (.claude/rules/modeles.md) : à
+        venir/en cours/passée se recalcule à la lecture, sur `timezone.now()`
+        — distinction exigée à l'écran (§ 7, Prompt 27, critère 6)."""
+        return self.fin <= timezone.now()
+
+    @property
+    def est_en_cours(self):
+        return self.debut <= timezone.now() < self.fin
 
 
 class Qualification(ModeleHorodate):

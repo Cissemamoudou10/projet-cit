@@ -1,6 +1,13 @@
 from django.urls import path
 
-from ressources.views import indisponibilite_lieu, instructeur, lieu, qualification, salle_attitree
+from ressources.views import (
+    indisponibilite_instructeur,
+    indisponibilite_lieu,
+    instructeur,
+    lieu,
+    qualification,
+    salle_attitree,
+)
 
 app_name = "ressources"
 
@@ -41,6 +48,31 @@ urlpatterns = [
         "indisponibilites/<int:pk>/supprimer/",
         indisponibilite_lieu.vue_confirmer_suppression_indisponibilite,
         name="supprimer_indisponibilite_lieu",
+    ),
+    path(
+        "indisponibilites-instructeurs/",
+        indisponibilite_instructeur.vue_liste_indisponibilites_instructeurs,
+        name="liste_indisponibilites_instructeurs",
+    ),
+    path(
+        "indisponibilites-instructeurs/declarer/",
+        indisponibilite_instructeur.vue_declarer_indisponibilite_instructeur,
+        name="declarer_indisponibilite_instructeur",
+    ),
+    path(
+        "indisponibilites-instructeurs/confirmer-fusion/",
+        indisponibilite_instructeur.vue_confirmer_fusion_indisponibilite,
+        name="confirmer_fusion_indisponibilite",
+    ),
+    path(
+        "indisponibilites-instructeurs/<int:pk>/modifier/",
+        indisponibilite_instructeur.vue_modifier_indisponibilite_instructeur,
+        name="modifier_indisponibilite_instructeur",
+    ),
+    path(
+        "indisponibilites-instructeurs/<int:pk>/supprimer/",
+        indisponibilite_instructeur.vue_confirmer_suppression_indisponibilite_instructeur,
+        name="supprimer_indisponibilite_instructeur",
     ),
     path("instructeurs/", instructeur.vue_liste_instructeurs, name="liste_instructeurs"),
     path("instructeurs/creer/", instructeur.vue_creer_instructeur, name="creer_instructeur"),

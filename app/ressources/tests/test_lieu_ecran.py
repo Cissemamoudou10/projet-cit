@@ -23,15 +23,19 @@ def test_l_onglet_lieux_permet_d_atteindre_les_lieux_depuis_les_instructeurs(cli
     assert reverse("ressources:liste_lieux") in reponse
 
 
-def test_aucun_onglet_pour_la_cellule_examens_qui_n_a_que_les_lieux(client, cellule_examens):
-    """La cellule examens n'a pas `instructeurs_qualifications_lecture`
-    (§ 4.1 du Prompt 12) : rien à choisir, la barre d'onglets ne doit pas
-    apparaître sur son unique écran accessible."""
+def test_deux_onglets_pour_la_cellule_examens_lieux_et_indisponibilites_jamais_instructeurs(
+    client, cellule_examens
+):
+    """DECISIONS.md D-115 : la cellule examens gagne un second onglet
+    (Indisponibilités des instructeurs, domaine `lieux_calendrier`, qu'elle
+    détient) sans jamais gagner l'onglet Instructeurs — elle n'a toujours
+    pas `instructeurs_qualifications_lecture` (§ 4.1 du Prompt 12)."""
     client.force_login(cellule_examens)
 
     reponse = client.get(reverse("ressources:liste_lieux"))
 
-    assert reponse.context["onglets"] == []
+    slugs = {onglet["slug"] for onglet in reponse.context["onglets"]}
+    assert slugs == {"lieux", "indisponibilites-instructeurs"}
     assert "Instructeurs" not in reponse.content.decode()
 
 

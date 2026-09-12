@@ -178,3 +178,27 @@ largeur du corps de page pourrait ne pas être réellement contrainte à
 l'impression aujourd'hui, quel que soit le contenu du tableau — à vérifier
 par un essai de boîte d'impression réelle avant le sprint 4, où le sujet est
 de toute façon repris (§ 5).
+
+## 7. Sprint 2 — US-INS-03, mesuré le 2026-09-12
+
+Même protocole (feuille `impression.css` injectée, `<body>` contraint à
+703 px par déclaration en ligne — § 6 — colonne Actions déjà masquée par
+`data-impression="masquer"`), sur les deux écrans touchés par cette story.
+
+| Écran | Largeur du tableau | Dépassement |
+|---|---|---|
+| Instructeurs (liste), deux colonnes ajoutées (Disponibilité, Indispo. à venir) | 871 px | **168 px (~24 %)** |
+| Indisponibilités des instructeurs (nouvel écran autonome, DECISIONS.md D-120) | 653 px | — (tient) |
+
+**Confirme exactement la mise en garde du § 7 du Prompt 27** : « L'écran
+Instructeurs débordait déjà de 33 px au 2026-09-08 : une colonne de plus
+l'aggravera. » Deux colonnes ajoutées ici (pas une), dépassement porté de
+33 px à 168 px. Conformément à la même consigne (« Ne corrige pas ici »),
+AUCUN correctif n'est appliqué — la mesure est seulement mise à jour pour
+l'arbitrage déjà ouvert au § 5 (reporté au sprint 4, avec Lieux).
+
+Le nouvel écran autonome des indisponibilités tient sans arbitrage : cinq
+colonnes de données (Instructeur, Début, Fin, Motif, État), aucune ne porte
+d'intitulé aussi long que « Indisponibilités à venir » sur Lieux — même
+ordre de grandeur que les écrans de liste à cinq-sept colonnes déjà mesurés
+au § 6 (653 px, tient systématiquement).

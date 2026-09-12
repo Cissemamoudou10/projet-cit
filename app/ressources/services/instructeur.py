@@ -11,14 +11,15 @@ apparaîtrait comme « None », exactement le défaut déjà corrigé en P-24
 désigner le `matricule`, seule contrainte d'unicité réelle du modèle.
 """
 
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef, Q
+from django.utils import timezone
 
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.gestion import ServiceGestion
-from ressources.models import Instructeur, Statut
+from ressources.models import IndisponibiliteInstructeur, Instructeur, Statut
 
 
 class ServiceInstructeur(ServiceGestion):
@@ -42,9 +43,26 @@ class ServiceInstructeur(ServiceGestion):
 
     @classmethod
     def _queryset(cls):
-        """Prompt 17, § 2.4 : nombre de qualifications, une seule requête
-        agrégée pour toute la page."""
-        return cls.MODELE.objects.annotate(nombre_qualifications=Count("qualifications"))
+        """Prompt 17, § 2.4 : nombre de qualifications. § 7, Prompt 27 :
+        colonne symétrique à celle des lieux (`ServiceLieu._queryset`) —
+        `est_indisponible_maintenant` (`Exists`, sous-requête corrélée) et
+        `nombre_indisponibilites_a_venir` (`Count` filtré), une seule
+        requête pour toute la page, jamais une par ligne. `distinct=True`
+        sur LES DEUX `Count` : combiner deux agrégats sur deux relations
+        inverses différentes (qualifications, indisponibilités) sans lui
+        gonflerait chacun par le produit cartésien de l'autre jointure."""
+        maintenant = timezone.now()
+        return cls.MODELE.objects.annotate(
+            nombre_qualifications=Count("qualifications", distinct=True),
+            est_indisponible_maintenant=Exists(
+                IndisponibiliteInstructeur.objects.filter(
+                    instructeur=OuterRef("pk"), debut__lte=maintenant, fin__gt=maintenant
+                )
+            ),
+            nombre_indisponibilites_a_venir=Count(
+                "indisponibilites", filter=Q(indisponibilites__fin__gt=maintenant), distinct=True
+            ),
+        )
 
     @staticmethod
     def choix_statut():

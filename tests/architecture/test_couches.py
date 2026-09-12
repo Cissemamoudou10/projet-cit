@@ -174,6 +174,47 @@ def test_aucun_controle_de_profil_ecrit_en_dur():
     assert not fautifs, "Contrôle de profil écrit en dur (permission de modèle) :\n" + "\n".join(fautifs)
 
 
+def test_instructeur_n_a_aucune_relation_vers_utilisateur():
+    """RG-23, § 4, Prompt 27 : l'instructeur n'a aucun accès au système —
+    aucune saisie en libre-service, donc aucune relation, dans un sens ou
+    dans l'autre, entre `Instructeur` et le modèle utilisateur. Contrainte
+    de conception durable, pas une préférence du moment (§ 4).
+
+    Deux angles indépendants (.claude/rules/tests.md, « vérifier une
+    absence ») : les champs déclarés sur `Instructeur` lui-même, ET les
+    relations inverses exposées par le modèle utilisateur. `cree_par`/
+    `modifie_par` (`ModeleHorodate`) sont exclus : ils tracent l'AGENT qui a
+    saisi la fiche, présents sur tous les modèles, pas un accès de
+    l'instructeur — exactement la distinction que RG-23 pose.
+    """
+    from django.conf import settings
+
+    from ressources.models import Instructeur
+
+    champs_provenance = {"cree_par", "modifie_par"}
+    champs_relation = [
+        champ
+        for champ in Instructeur._meta.get_fields()
+        if champ.is_relation and champ.concrete and champ.name not in champs_provenance
+    ]
+    cibles = {champ.related_model._meta.label for champ in champs_relation if champ.related_model}
+    assert settings.AUTH_USER_MODEL not in cibles, (
+        f"Instructeur porte une relation vers {settings.AUTH_USER_MODEL} : {cibles}"
+    )
+
+    from django.contrib.auth import get_user_model
+
+    relations_inverses = {
+        champ.name
+        for champ in get_user_model()._meta.get_fields()
+        if champ.is_relation and champ.related_model is Instructeur
+    }
+    assert not relations_inverses, (
+        "Le modèle utilisateur porte une relation vers Instructeur : "
+        + ", ".join(relations_inverses)
+    )
+
+
 def test_ordre_des_dependances_entre_applications():
     """P1 → P2 → P3/P4 → P5 → P6. Aucune dépendance inverse."""
     fautifs = []

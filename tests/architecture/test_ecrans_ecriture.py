@@ -327,6 +327,25 @@ ECRANS_ECRITURE = [
         "noyau.lieux_calendrier_ecriture",
         lambda objets: [objets["indisponibilite"].pk],
     ),
+    # --- ressources : indisponibilités d'instructeur (US-INS-03) ---
+    # Écran autonome depuis DECISIONS.md D-115 : l'instructeur est un champ
+    # du formulaire, jamais un segment d'URL — args par défaut ([]).
+    EcranEcriture(
+        "ressources:declarer_indisponibilite_instructeur", "noyau.lieux_calendrier_ecriture"
+    ),
+    EcranEcriture(
+        "ressources:confirmer_fusion_indisponibilite", "noyau.lieux_calendrier_ecriture"
+    ),
+    EcranEcriture(
+        "ressources:modifier_indisponibilite_instructeur",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["indisponibilite_instructeur"].pk],
+    ),
+    EcranEcriture(
+        "ressources:supprimer_indisponibilite_instructeur",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["indisponibilite_instructeur"].pk],
+    ),
     # --- ressources : instructeurs (US-INS-01) ---
     EcranEcriture("ressources:creer_instructeur", "noyau.instructeurs_qualifications_ecriture"),
     EcranEcriture(
@@ -369,7 +388,7 @@ ECRANS_ECRITURE = [
 
 # 64 adresses : les 56 précédentes (Prompt 22) plus les huit adresses
 # d'écriture de organisation:stagiaire/import_stagiaires (US-SES-05, Prompt 24).
-assert len(ECRANS_ECRITURE) == 70
+assert len(ECRANS_ECRITURE) == 74
 
 
 def _groupes_sans(permission):

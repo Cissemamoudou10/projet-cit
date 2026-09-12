@@ -62,7 +62,7 @@ s'écarte de la conception doit entrer dans `DECISIONS.md` le jour même.
 
 ## État consolidé des reports de critères — premier point de la revue du 26 septembre
 
-Neuf reports de critères d'acceptation sont consignés dans `docs/suivi/DECISIONS.md`
+Douze reports de critères d'acceptation sont consignés dans `docs/suivi/DECISIONS.md`
 (un report = un critère qui suppose un modèle hors périmètre de la story qui
 l'a rencontré, réputé refermé automatiquement dès que le modèle manquant
 existe — jamais supposé, toujours revérifié : voir la leçon de P-25).
@@ -73,7 +73,11 @@ clôture du sprint 1 — traité comme une correction rattachée au report, pas
 comme une story (le chef de projet l'a explicitement refusée en ce sens) —
 voir P-25 (`docs/suivi/PROBLEMES.md`) et D-64 (`docs/suivi/DECISIONS.md`).
 **Deux reports sont donc désormais entièrement refermés (D-22, D-30)**, un
-partiellement (D-35).
+partiellement (D-35). **Mise à jour du 2026-09-12** : trois nouveaux reports
+ouverts par US-INS-03 (D-119, ci-dessous) — compte porté de neuf à douze, en
+repartant du compte vérifié sur le code et non de celui annoncé en revue
+(§ 8, Prompt 27) ; le compte des reports refermés (deux) est inchangé, ces
+trois-là s'ajoutent tous aux « Ouverts ».
 
 | Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
 |---|---|---|---|---|
@@ -89,6 +93,9 @@ partiellement (D-35).
 | D-51 | E1 (instructeur affecté à des séances futures) | US-INS-02 | séance programmée (sprint 2) | Ouvert |
 | D-54 | 4, volet brigade (lieu affecté à une brigade) | US-PLAN-02 | US-SES-03 (sprint 2) | **Fermé le 2026-09-11** — `SalleAttitree.lieu` en `PROTECT` (D-92), testé par le cycle HTTP réel (C9) |
 | D-54 | 4, volet séance (lieu affecté à une séance) | US-PLAN-02 | séance programmée (sprint 2) | Ouvert |
+| D-119 | 4, RG-25 (indisponibilité comme contrainte dure à la génération) | US-INS-03 | US-PLAN-04 (sprint 2) | Ouvert |
+| D-119 | 5, points 4-5 (recherche des séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-03 puis US-PLAN-09 (sprint 3) | Ouvert |
+| D-119 | A3 (restriction à l'extension), A4 (séances passées en suivi prescrit/réalisé) | US-INS-03 | mêmes destinations que ci-dessus | Ouvert |
 
 **Écart avec le décompte donné en revue** (« neuf reports, trois refermés,
 six des sept ouverts se referment au sprint 2 ») : la vérification sur le code
