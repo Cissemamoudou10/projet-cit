@@ -1,0 +1,73 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ periode.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_annuel }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour au calendrier
+  </a>
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ periode.intitule }}</h1>
+      <p class="text-sm text-gris-lecture">{{ periode.nature.libelle }}</p>
+    </div>
+    {% if perms.noyau.lieux_calendrier_ecriture %}
+      <div class="flex gap-2">
+        <a href="{{ url_modifier }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Modifier
+        </a>
+        <a href="{{ url_supprimer }}"
+           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                  text-sm font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-etat-ecart hover:text-etat-ecart">
+          Supprimer
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Détail
+  </p>
+  <dl class="grid grid-cols-3 gap-3 px-4 py-3.5 text-sm">
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Début</dt>
+      <dd class="tabular-nums">{{ periode.debut|date:"d/m/Y H:i" }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Fin</dt>
+      <dd class="tabular-nums">{{ periode.fin|date:"d/m/Y H:i" }}</dd>
+    </div>
+    <div>
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Effet</dt>
+      <dd>
+        {% if periode.effet == "bloquant" %}
+          <span class="border border-etat-ecart px-2 py-px text-2xs font-semibold
+                       tracking-wide text-etat-ecart">BLOQUANT</span>
+        {% else %}
+          <span class="border border-marine-700 px-2 py-px text-2xs font-semibold
+                       tracking-wide text-marine-700">INFORMATIF</span>
+        {% endif %}
+      </dd>
+    </div>
+    <div class="col-span-3">
+      <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Portée</dt>
+      <dd>{{ periode.portee }}</dd>
+    </div>
+  </dl>
+</section>
+{% endblock %}

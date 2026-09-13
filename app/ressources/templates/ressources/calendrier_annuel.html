@@ -1,0 +1,102 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ titre }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ titre }}</h1>
+      <p class="text-sm text-gris-lecture">{{ sous_titre }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{{ url_natures }}" class="text-sm text-marine-700 no-underline hover:underline">
+        Gérer les natures d'événement
+      </a>
+      {% if peut_ecrire %}
+        <a href="{{ url_declarer }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Déclarer une période
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% include "noyau/composants/_onglets.html" %}
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 flex items-center justify-between">
+  <a href="?annee={{ annee_precedente }}" class="text-sm text-marine-700 no-underline hover:underline">
+    ← {{ annee_precedente }}-{{ annee }}</a>
+  <p class="font-titre text-sm font-semibold uppercase tracking-wide text-marine-900">
+    Année de formation {{ annee }}-{{ annee|add:1 }}</p>
+  <a href="?annee={{ annee_suivante }}" class="text-sm text-marine-700 no-underline hover:underline">
+    {{ annee_suivante }}-{{ annee_suivante|add:1 }} →</a>
+</div>
+
+<form method="get"
+      class="mt-3 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
+  <input type="hidden" name="annee" value="{{ annee }}">
+  {% for champ in filtres_champs %}
+    <div>
+      <label for="filtre-{{ champ.nom }}"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ champ.libelle }}</label>
+      <select id="filtre-{{ champ.nom }}" name="{{ champ.nom }}"
+              class="h-controle w-52 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                     outline-none hover:border-marine-700
+                     focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        <option value="">Tous</option>
+        {% for valeur, libelle in champ.choix %}
+          <option value="{{ valeur }}" {% if valeur|stringformat:"s" == champ.valeur|stringformat:"s" %}selected{% endif %}>
+            {{ libelle }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  {% endfor %}
+  <button type="submit"
+          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                 hover:bg-marine-700">
+    Appliquer
+  </button>
+  <a href="?annee={{ annee }}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
+</form>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="w-40 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Mois</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Périodes et sessions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in mois %}
+        {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
+        <tr class="{% cycle bande %} border-t border-gris-trait">
+          <td class="px-3 py-2 align-top">
+            <a href="{{ m.url_mensuel }}" class="font-semibold text-marine-900 no-underline hover:underline">
+              {{ m.libelle }}</a>
+          </td>
+          <td class="px-3 py-2">
+            <div class="flex flex-wrap gap-1.5">
+              {% for pastille in m.pastilles %}
+                <a href="{{ pastille.url }}" class="no-underline">{{ pastille.texte }}</a>
+              {% empty %}
+                <span class="text-xs text-gris-lecture">—</span>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

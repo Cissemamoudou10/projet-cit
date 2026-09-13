@@ -9,7 +9,7 @@ from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import ServiceSession
 from referentiel.models import CategorieLieu as CategorieLieuReferentiel
 from referentiel.models import ElementReferentiel, Formation, Matiere, TypeFormation
-from ressources.models import CategorieLieu, Instructeur, Lieu, Statut
+from ressources.models import CategorieLieu, Instructeur, Lieu, NatureEvenement, Statut
 
 
 def _utilisateur(username, grade, profil, groupe):
@@ -138,3 +138,77 @@ def brigade(db, redacteur, session):
     return ServiceBrigade.creer(
         redacteur, session, {"designation": "EXP1", "effectif_previsionnel": 20}
     )
+
+
+@pytest.fixture
+def autre_session(db, redacteur, type_officiers):
+    """Une seconde session, aux dates disjointes de `session` — nécessaire
+    pour tester les cibles multiples (C2/C3/D4) et la projection RG-30 bis
+    sans dépendre d'une seule session partagée."""
+    formation = Formation.objects.create(
+        intitule="Formation session calendrier B",
+        specialite="Transmissions",
+        duree_semaines=10,
+        type_formation=type_officiers,
+    )
+    ElementReferentiel.objects.create(
+        formation=formation,
+        matiere=Matiere.objects.create(intitule="Propagation", code="PRO01"),
+        volume_horaire_prescrit=40,
+        categorie_lieu=CategorieLieuReferentiel.SALLE_ATTITREE,
+        type_lieu_partage=None,
+    )
+    aujourd_hui = datetime.date.today()
+    return ServiceSession.creer(
+        redacteur,
+        {
+            "formation": formation,
+            "intitule": "Session calendrier B",
+            "date_debut": aujourd_hui + datetime.timedelta(days=200),
+            "date_fin": aujourd_hui + datetime.timedelta(days=280),
+            "effectif_attendu": 24,
+        },
+    )
+
+
+@pytest.fixture
+def autre_brigade(db, redacteur, autre_session):
+    return ServiceBrigade.creer(
+        redacteur, autre_session, {"designation": "EXP2", "effectif_previsionnel": 18}
+    )
+
+
+@pytest.fixture
+def troisieme_session(db, redacteur, type_officiers):
+    """Nécessaire à D4 (Prompt 28) : intersection partielle entre une
+    période ciblant A et B et une période ciblant B et C — trois sessions
+    distinctes, dont une commune."""
+    formation = Formation.objects.create(
+        intitule="Formation session calendrier C",
+        specialite="Transmissions",
+        duree_semaines=10,
+        type_formation=type_officiers,
+    )
+    ElementReferentiel.objects.create(
+        formation=formation,
+        matiere=Matiere.objects.create(intitule="Cryptographie", code="CRY01"),
+        volume_horaire_prescrit=40,
+        categorie_lieu=CategorieLieuReferentiel.SALLE_ATTITREE,
+        type_lieu_partage=None,
+    )
+    aujourd_hui = datetime.date.today()
+    return ServiceSession.creer(
+        redacteur,
+        {
+            "formation": formation,
+            "intitule": "Session calendrier C",
+            "date_debut": aujourd_hui + datetime.timedelta(days=300),
+            "date_fin": aujourd_hui + datetime.timedelta(days=380),
+            "effectif_attendu": 24,
+        },
+    )
+
+
+@pytest.fixture
+def nature_evenement(db):
+    return NatureEvenement.objects.create(libelle="Nature essai", effet_par_defaut="bloquant")

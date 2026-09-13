@@ -8,7 +8,7 @@ paths:
 
 Toute la logique métier vit ici. Les vues appellent des services, jamais l'inverse.
 
-## Les sept contraintes qui ne descendent pas en base
+## Les huit contraintes qui ne descendent pas en base
 
 Elles sont ici et nulle part ailleurs. Aucune ne s'exprime en SQL déclaratif.
 
@@ -26,6 +26,11 @@ Elles sont ici et nulle part ailleurs. Aucune ne s'exprime en SQL déclaratif.
 6. **Volume programmé n'excédant pas le prescrit** — porte sur une somme.
 7. **Unicité de désignation de brigade par type de formation** — remonte trois
    niveaux de relations.
+8. **Doublon exact d'une période de calendrier** (RG-29, US-PLAN-01) — mêmes
+   bornes, mêmes cibles (deux relations multiples indépendantes), même nature ;
+   `ServicePeriodeCalendrier._analyser_chevauchement` compare une période
+   proposée à toute période existante dont les bornes se recoupent, portée par
+   portée. Voir `docs/suivi/DECISIONS.md`, D-127.
 
 ## Le service de contrôle des contraintes dures
 

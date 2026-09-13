@@ -202,3 +202,33 @@ colonnes de données (Instructeur, Début, Fin, Motif, État), aucune ne porte
 d'intitulé aussi long que « Indisponibilités à venir » sur Lieux — même
 ordre de grandeur que les écrans de liste à cinq-sept colonnes déjà mesurés
 au § 6 (653 px, tient systématiquement).
+
+## 8. Sprint 2 — US-PLAN-01, mesuré le 2026-09-13, portrait ET paysage
+
+§ 6, Prompt 28 demande les deux orientations pour le calendrier annuel,
+premier écran du projet où le paysage était pressenti comme le format
+naturel. Budget portrait 703 px (§ 1) ; budget paysage recalculé sur le
+même principe — A4 paysage, mêmes marges (`impression.css`, 14/12/12/16 mm),
+soit 297 mm − 24 mm = 273 mm × 3,7795 px/mm ≈ **1 032 px**.
+
+| Écran | Largeur du tableau (portrait, 703 px) | Dépassement | Paysage nécessaire ? |
+|---|---|---|---|
+| Calendrier — vue annuelle (douze lignes-mois, pastilles) | 653 px | — (tient) | Non |
+| Calendrier — vue mensuelle (détail horaire, une ligne par jour) | 653 px | — (tient) | Non |
+
+**Contrairement à l'attente du § 6, le paysage n'est PAS nécessaire ici** —
+et c'est un choix de conception délibéré, pas une mesure de chance. Le
+piège que le prompt signale explicitement (« une grille annuelle horaire...
+illisible et impossible à imprimer ») a été évité en amont : la vue annuelle
+n'est pas une grille de jours (sept colonnes de semaine × un nombre de
+semaines), c'est un TABLEAU DE DEUX COLONNES (mois, pastilles), fluide comme
+tout autre écran de liste du patron de gestion — sa largeur ne dépend que du
+texte des pastilles, pas d'une géométrie de calendrier. La vue mensuelle
+suit le même principe (jour, texte). Le paysage aurait été nécessaire avec
+une grille à cases fixes (semaines en lignes, jours en colonnes) : ce
+découpage a été écarté au § 6 précisément pour cette raison, parmi
+d'autres — voir le choix de vues motivé dans le compte rendu de la story.
+
+**Conséquence pour le lot d'impression du sprint 4** : cet écran ne
+rejoint PAS la liste des écrans nécessitant l'arbitrage paysage/masquage
+ouvert au § 5 — aucune action requise ici.

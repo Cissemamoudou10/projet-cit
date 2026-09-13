@@ -62,7 +62,7 @@ s'écarte de la conception doit entrer dans `DECISIONS.md` le jour même.
 
 ## État consolidé des reports de critères — premier point de la revue du 26 septembre
 
-Douze reports de critères d'acceptation sont consignés dans `docs/suivi/DECISIONS.md`
+Quinze reports de critères d'acceptation sont consignés dans `docs/suivi/DECISIONS.md`
 (un report = un critère qui suppose un modèle hors périmètre de la story qui
 l'a rencontré, réputé refermé automatiquement dès que le modèle manquant
 existe — jamais supposé, toujours revérifié : voir la leçon de P-25).
@@ -77,7 +77,9 @@ partiellement (D-35). **Mise à jour du 2026-09-12** : trois nouveaux reports
 ouverts par US-INS-03 (D-119, ci-dessous) — compte porté de neuf à douze, en
 repartant du compte vérifié sur le code et non de celui annoncé en revue
 (§ 8, Prompt 27) ; le compte des reports refermés (deux) est inchangé, ces
-trois-là s'ajoutent tous aux « Ouverts ».
+trois-là s'ajoutent tous aux « Ouverts ». **Mise à jour du 2026-09-13** :
+trois nouveaux reports ouverts par US-PLAN-01 (D-121, ci-dessous) — compte
+porté de douze à quinze, même méthode (§ 9, Prompt 28).
 
 | Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
 |---|---|---|---|---|
@@ -96,6 +98,9 @@ trois-là s'ajoutent tous aux « Ouverts ».
 | D-119 | 4, RG-25 (indisponibilité comme contrainte dure à la génération) | US-INS-03 | US-PLAN-04 (sprint 2) | Ouvert |
 | D-119 | 5, points 4-5 (recherche des séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-03 puis US-PLAN-09 (sprint 3) | Ouvert |
 | D-119 | A3 (restriction à l'extension), A4 (séances passées en suivi prescrit/réalisé) | US-INS-03 | mêmes destinations que ci-dessus | Ouvert |
+| D-121 | 5, RG-38 (exclusion des périodes bloquantes à la génération) | US-PLAN-01 | US-PLAN-03 / US-PLAN-04 (sprint 2) | Ouvert |
+| D-121 | E2 (période bloquante recouvrant des séances programmées, arbitrage explicite) | US-PLAN-01 | US-PLAN-03 puis US-PLAN-05 (sprint 3) | Ouvert |
+| D-121 | A3 (séances redevenues programmables à la suppression d'une période) | US-PLAN-01 | mêmes destinations que ci-dessus | Ouvert |
 
 **Écart avec le décompte donné en revue** (« neuf reports, trois refermés,
 six des sept ouverts se referment au sprint 2 ») : la vérification sur le code

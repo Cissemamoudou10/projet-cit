@@ -1,0 +1,51 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ titre }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_annuel }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour au calendrier annuel
+  </a>
+  <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ titre }}</h1>
+  <p class="text-sm text-gris-lecture">{{ sous_titre }}</p>
+</div>
+{% include "noyau/composants/_onglets.html" %}
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Jour</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Périodes et sessions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for jour in jours %}
+        {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
+        <tr class="{% cycle bande %} h-ligne border-t border-gris-trait">
+          <td class="px-3 text-left tabular-nums">{{ jour.date|date:"D d/m" }}</td>
+          <td class="px-3 py-1.5">
+            {% if jour.entrees %}
+              <ul class="list-disc pl-4">
+                {% for entree in jour.entrees %}<li>{{ entree }}</li>{% endfor %}
+              </ul>
+            {% else %}
+              <span class="text-xs text-gris-lecture">—</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,7 +1,8 @@
 from django import forms
 
 from noyau.forms import FormulaireGestion
-from ressources.models import Instructeur, Lieu
+from organisation.models import Brigade, Session
+from ressources.models import EffetPeriode, Instructeur, Lieu, NatureEvenement
 
 CLASSES_CHAMP_TEXTE = (
     "h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm "
@@ -28,6 +29,12 @@ CLASSES_CHAMP_DATETIME = (
 CLASSES_ZONE_TEXTE = (
     "w-full resize-y rounded border border-gris-trait bg-fond-bloc px-2.5 py-2 "
     "text-sm leading-normal outline-none "
+    "focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+
+CLASSES_SELECTION_MULTIPLE = (
+    "w-full rounded border border-gris-trait bg-fond-bloc px-2.5 py-1.5 text-sm "
+    "outline-none hover:border-marine-700 "
     "focus:border-marine-700 focus:ring-2 focus:ring-focus"
 )
 
@@ -83,6 +90,21 @@ class FormulaireLieu(FormulaireGestion):
             ),
             "categorie": forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
             "type_partage": forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+        }
+
+
+class FormulaireNatureEvenement(FormulaireGestion):
+    """Patron de gestion, même famille que `FormulaireTypeFormation`
+    (US-REF-00) — CLS-03 marque `NatureEvenement` `<<paramétrable>>`
+    (§ 3, Prompt 28)."""
+
+    class Meta:
+        model = NatureEvenement
+        fields = ["libelle", "effet_par_defaut"]
+        labels = {"libelle": "Libellé", "effet_par_defaut": "Effet par défaut"}
+        widgets = {
+            "libelle": forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+            "effet_par_defaut": forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
         }
 
 
@@ -178,6 +200,61 @@ class FormulaireDeclarationIndisponibiliteInstructeur(forms.Form):
     motif = forms.CharField(
         label="Motif",
         widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 4, "maxlength": 500}),
+    )
+
+
+class FormulaireDeclarationPeriodeCalendrier(forms.Form):
+    """Saisie d'une période de calendrier — CU-P4-05, Prompt 28.
+    `forms.Form`, jamais `ModelForm` : `effet` vide n'est pas une valeur du
+    modèle (`PeriodeCalendrier.effet` n'admet pas de blanc), c'est un signal
+    pour le service — « reprendre l'effet par défaut de la nature » (§ 3) —
+    jamais tranché dans le gabarit ni par du JavaScript de préremplissage,
+    la charte excluant tout script hors des ressources déjà en place."""
+
+    FORMAT_DATE_HEURE = "%Y-%m-%dT%H:%M"
+
+    nature = forms.ModelChoiceField(
+        queryset=NatureEvenement.objects.order_by("libelle"),
+        label="Nature",
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    intitule = forms.CharField(
+        label="Intitulé",
+        widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+    )
+    debut = forms.DateTimeField(
+        label="Début",
+        input_formats=[FORMAT_DATE_HEURE],
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": CLASSES_CHAMP_DATETIME},
+            format=FORMAT_DATE_HEURE,
+        ),
+    )
+    fin = forms.DateTimeField(
+        label="Fin",
+        input_formats=[FORMAT_DATE_HEURE],
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": CLASSES_CHAMP_DATETIME},
+            format=FORMAT_DATE_HEURE,
+        ),
+    )
+    effet = forms.ChoiceField(
+        label="Effet",
+        required=False,
+        choices=[("", "Reprendre l'effet par défaut de la nature")] + EffetPeriode.choices,
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    sessions = forms.ModelMultipleChoiceField(
+        queryset=Session.objects.order_by("intitule"),
+        label="Sessions ciblées",
+        required=False,
+        widget=forms.SelectMultiple(attrs={"class": CLASSES_SELECTION_MULTIPLE, "size": 6}),
+    )
+    brigades = forms.ModelMultipleChoiceField(
+        queryset=Brigade.objects.order_by("designation"),
+        label="Brigades ciblées",
+        required=False,
+        widget=forms.SelectMultiple(attrs={"class": CLASSES_SELECTION_MULTIPLE, "size": 6}),
     )
 
 

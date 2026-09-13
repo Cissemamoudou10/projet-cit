@@ -1,7 +1,8 @@
-"""Onglets internes à la rubrique « Ressources » — Instructeurs, Lieux et
-Indisponibilités des instructeurs partagent le même `app_name` Django pour
-des permissions distinctes (US-INS-01, US-PLAN-02, US-INS-03). Voir
-docs/suivi/DECISIONS.md, D-57 et D-115.
+"""Onglets internes à la rubrique « Ressources » — Instructeurs, Lieux,
+Indisponibilités des instructeurs et Calendrier partagent le même
+`app_name` Django pour des permissions distinctes (US-INS-01, US-PLAN-02,
+US-INS-03, US-PLAN-01). Voir docs/suivi/DECISIONS.md, D-57, D-115 et D-120
+et suivants.
 
 Pas d'onglet affiché si l'utilisateur n'a accès qu'à un seul domaine : rien
 à choisir, la barre n'ajoute aucune information.
@@ -13,6 +14,7 @@ from noyau.habilitations import a_permission
 from ressources.services.indisponibilite_instructeur import ServiceIndisponibiliteInstructeur
 from ressources.services.instructeur import ServiceInstructeur
 from ressources.services.lieu import ServiceLieu
+from ressources.services.periode_calendrier import ServicePeriodeCalendrier
 
 
 def onglets_ressources(utilisateur, actif):
@@ -39,6 +41,14 @@ def onglets_ressources(utilisateur, actif):
                 "slug": "indisponibilites-instructeurs",
                 "libelle": "Indisponibilités",
                 "url": reverse("ressources:liste_indisponibilites_instructeurs"),
+            }
+        )
+    if a_permission(utilisateur, ServicePeriodeCalendrier.PERMISSION_LECTURE):
+        onglets.append(
+            {
+                "slug": "calendrier",
+                "libelle": "Calendrier",
+                "url": reverse("ressources:calendrier_annuel"),
             }
         )
     if len(onglets) < 2:

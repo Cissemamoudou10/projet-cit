@@ -134,6 +134,13 @@ IMPORT_STAGIAIRES_TAILLE_MAX_OCTETS = int(
 )
 IMPORT_STAGIAIRES_LIGNES_MAX = int(os.environ.get("IMPORT_STAGIAIRES_LIGNES_MAX", "500"))
 
+# Calendrier académique (US-PLAN-01, § 6, Prompt 28) : rien, dans aucun
+# livrable, ne fixe la borne de l'« année de formation » du critère 1 — ni
+# janvier, ni un cycle propre au CIT. Réponse de terrain confirmée : le mois
+# de septembre. Paramétrable (BNF-13), jamais codé en dur dans les vues du
+# calendrier — voir docs/suivi/DECISIONS.md.
+MOIS_DEBUT_ANNEE_FORMATION = int(os.environ.get("MOIS_DEBUT_ANNEE_FORMATION", "9"))
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

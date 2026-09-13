@@ -1,10 +1,13 @@
 from django.urls import path
 
 from ressources.views import (
+    calendrier_lecture,
     indisponibilite_instructeur,
     indisponibilite_lieu,
     instructeur,
     lieu,
+    nature_evenement,
+    periode_calendrier,
     qualification,
     salle_attitree,
 )
@@ -130,5 +133,47 @@ urlpatterns = [
         "qualifications/formations/<int:formation_pk>/couverture/",
         qualification.vue_couverture_qualifications,
         name="couverture_qualifications",
+    ),
+    path("calendrier/", calendrier_lecture.vue_calendrier_annuel, name="calendrier_annuel"),
+    path("calendrier/mois/", calendrier_lecture.vue_calendrier_mensuel, name="calendrier_mensuel"),
+    path(
+        "calendrier/declarer/",
+        periode_calendrier.vue_declarer_periode_calendrier,
+        name="declarer_periode_calendrier",
+    ),
+    path(
+        "calendrier/<int:pk>/",
+        periode_calendrier.vue_detail_periode_calendrier,
+        name="detail_periode_calendrier",
+    ),
+    path(
+        "calendrier/<int:pk>/modifier/",
+        periode_calendrier.vue_modifier_periode_calendrier,
+        name="modifier_periode_calendrier",
+    ),
+    path(
+        "calendrier/<int:pk>/supprimer/",
+        periode_calendrier.vue_confirmer_suppression_periode_calendrier,
+        name="supprimer_periode_calendrier",
+    ),
+    path(
+        "natures-evenement/",
+        nature_evenement.vue_liste_natures_evenement,
+        name="liste_natures_evenement",
+    ),
+    path(
+        "natures-evenement/creer/",
+        nature_evenement.vue_creer_nature_evenement,
+        name="creer_nature_evenement",
+    ),
+    path(
+        "natures-evenement/<int:pk>/modifier/",
+        nature_evenement.vue_modifier_nature_evenement,
+        name="modifier_nature_evenement",
+    ),
+    path(
+        "natures-evenement/<int:pk>/supprimer/",
+        nature_evenement.vue_confirmer_suppression_nature_evenement,
+        name="supprimer_nature_evenement",
     ),
 ]

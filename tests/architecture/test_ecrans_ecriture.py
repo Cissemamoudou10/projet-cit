@@ -384,11 +384,36 @@ ECRANS_ECRITURE = [
         "noyau.instructeurs_qualifications_ecriture",
         lambda objets: [objets["qualification"].pk],
     ),
+    # --- ressources : natures d'événement du calendrier (US-PLAN-01) ---
+    EcranEcriture("ressources:creer_nature_evenement", "noyau.lieux_calendrier_ecriture"),
+    EcranEcriture(
+        "ressources:modifier_nature_evenement",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["nature_evenement"].pk],
+    ),
+    EcranEcriture(
+        "ressources:supprimer_nature_evenement",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["nature_evenement"].pk],
+    ),
+    # --- ressources : périodes de calendrier (US-PLAN-01) ---
+    EcranEcriture("ressources:declarer_periode_calendrier", "noyau.lieux_calendrier_ecriture"),
+    EcranEcriture(
+        "ressources:modifier_periode_calendrier",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["periode_calendrier"].pk],
+    ),
+    EcranEcriture(
+        "ressources:supprimer_periode_calendrier",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["periode_calendrier"].pk],
+    ),
 ]
 
-# 64 adresses : les 56 précédentes (Prompt 22) plus les huit adresses
-# d'écriture de organisation:stagiaire/import_stagiaires (US-SES-05, Prompt 24).
-assert len(ECRANS_ECRITURE) == 74
+# 80 adresses : les 74 précédentes (Prompt 27) plus les six adresses
+# d'écriture de ressources:nature_evenement/periode_calendrier (US-PLAN-01,
+# Prompt 28).
+assert len(ECRANS_ECRITURE) == 80
 
 
 def _groupes_sans(permission):

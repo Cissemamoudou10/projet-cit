@@ -25,6 +25,8 @@ from ressources.models import (
     IndisponibiliteLieu,
     Instructeur,
     Lieu,
+    NatureEvenement,
+    PeriodeCalendrier,
     Qualification,
     Statut,
 )
@@ -146,6 +148,16 @@ def objets(db, utilisateurs):
         grade="Lt",
         unite="1er RTR",
     )
+    nature_evenement = NatureEvenement.objects.create(
+        libelle="Nature essai", effet_par_defaut="bloquant"
+    )
+    periode_calendrier = PeriodeCalendrier.objects.create(
+        nature=nature_evenement,
+        intitule="Période essai",
+        debut="2026-09-08T08:00:00Z",
+        fin="2026-09-08T09:45:00Z",
+        effet="bloquant",
+    )
     return {
         "type_formation": type_formation,
         "formation": formation,
@@ -163,4 +175,6 @@ def objets(db, utilisateurs):
         "session": session,
         "brigade": brigade,
         "stagiaire": stagiaire,
+        "nature_evenement": nature_evenement,
+        "periode_calendrier": periode_calendrier,
     }
