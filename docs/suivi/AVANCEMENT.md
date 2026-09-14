@@ -79,7 +79,14 @@ repartant du compte vérifié sur le code et non de celui annoncé en revue
 (§ 8, Prompt 27) ; le compte des reports refermés (deux) est inchangé, ces
 trois-là s'ajoutent tous aux « Ouverts ». **Mise à jour du 2026-09-13** :
 trois nouveaux reports ouverts par US-PLAN-01 (D-121, ci-dessous) — compte
-porté de douze à quinze, même méthode (§ 9, Prompt 28).
+porté de douze à quinze, même méthode (§ 9, Prompt 28). **Mise à jour du
+2026-09-14** : trois nouveaux reports ouverts par US-PLAN-12 (D-133,
+ci-dessous), même méthode — compte porté de quinze à dix-huit. Cette même
+story referme aussi, dans son usage nominal, le volet
+`VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE` de D-33 — non compté ici, D-33
+n'avait jamais figuré dans ce tableau (c'était une valeur provisoire, pas un
+report de critère au sens de ce tableau) ; le volet
+`SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT` de D-33 reste ouvert.
 
 | Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
 |---|---|---|---|---|
@@ -101,6 +108,9 @@ porté de douze à quinze, même méthode (§ 9, Prompt 28).
 | D-121 | 5, RG-38 (exclusion des périodes bloquantes à la génération) | US-PLAN-01 | US-PLAN-03 / US-PLAN-04 (sprint 2) | Ouvert |
 | D-121 | E2 (période bloquante recouvrant des séances programmées, arbitrage explicite) | US-PLAN-01 | US-PLAN-03 puis US-PLAN-05 (sprint 3) | Ouvert |
 | D-121 | A3 (séances redevenues programmables à la suppression d'une période) | US-PLAN-01 | mêmes destinations que ci-dessus | Ouvert |
+| D-133 | 6 (changer de grille active ne modifie pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2), fermeture par constat d'absence de code | Ouvert |
+| D-133 | RG-64 (relation facultative séance ↔ créneau type) | US-PLAN-12 | US-PLAN-03 | Ouvert |
+| D-133 | refus de générer en l'absence de grille active | US-PLAN-12 | US-PLAN-03 | Ouvert |
 
 **Écart avec le décompte donné en revue** (« neuf reports, trois refermés,
 six des sept ouverts se referment au sprint 2 ») : la vérification sur le code
@@ -132,3 +142,7 @@ Aucune n'est bloquante.
 - Un cours manqué est-il replacé ou seulement noté ? *(les deux sont prévus)*
 - Frontière de périmètre avec l'écran d'affichage devant la direction
 - Format réglementaire du procès-verbal et de la convocation *(risque R18)*
+- Existe-t-il au CIT un horaire autre que l'ordinaire et le Ramadan — horaire
+  d'été, horaire de période d'examens, horaire de fin de stage ? *(US-PLAN-12 :
+  seules ces deux grilles sont relevées, mai et février respectivement — rien
+  n'affirme qu'elles couvrent l'année entière)*

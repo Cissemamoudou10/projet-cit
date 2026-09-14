@@ -1,0 +1,45 @@
+"""Résolution de données qu'une couche basse consomme mais que seule une
+couche haute peut calculer — US-PLAN-12, § 7, Prompt 29 (arbitrage du chef
+de projet, docs/suivi/DECISIONS.md).
+
+`noyau` ne dépend d'aucune application (`tests/architecture/test_couches.py`)
+et `referentiel`/`organisation` ne peuvent pas importer `ressources` (sens de
+dépendance interdit — `ressources` importe déjà `organisation`, l'inverse
+créerait un cycle réel, pas seulement une garantie affaiblie). La couche qui
+détient la vraie donnée installe donc son fournisseur ICI, au démarrage de
+l'application (`AppConfig.ready()`), jamais l'inverse — même sens que
+l'injection de D-19, un nouveau point d'extension.
+
+Un point de résolution par donnée, jamais un registre générique par clé :
+plus simple à lire, et la règle de repli reste écrite une seule fois, à
+côté de la donnée qu'elle concerne — jamais dupliquée chez chaque
+consommateur (deux de plus arrivent : US-PLAN-03, US-SUI-06).
+"""
+
+from django.conf import settings
+
+
+class ResolveurVolumeHoraireReference:
+    """Volume horaire hebdomadaire de référence (BNF-13) — RG-65, consommé
+    par `ServiceReferentiel.ecart` (US-REF-03) et l'exception E2 de
+    `ServiceSession` (US-SES-01).
+
+    Repli sur `settings.VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE` tant qu'aucun
+    fournisseur n'est installé, ou si le fournisseur installé ne trouve
+    aucune grille active (il retourne alors `None`) — cette règle de repli
+    vit ICI et nulle part ailleurs.
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls) -> float:
+        if cls._fournisseur is not None:
+            valeur = cls._fournisseur()
+            if valeur is not None:
+                return valeur
+        return settings.VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE

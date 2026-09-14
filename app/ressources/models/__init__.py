@@ -15,6 +15,7 @@ from ressources.models.calendrier import (
     PeriodeCalendrierSession,
     decrire_cibles,
 )
+from ressources.models.grille_horaire import CreneauType, GrilleHoraire, JourSemaine
 from ressources.models.instructeur import (
     IndisponibiliteInstructeur,
     Instructeur,
@@ -32,11 +33,14 @@ from ressources.models.lieu import (
 
 __all__ = [
     "CategorieLieu",
+    "CreneauType",
     "EffetPeriode",
     "decrire_cibles",
+    "GrilleHoraire",
     "IndisponibiliteInstructeur",
     "IndisponibiliteLieu",
     "Instructeur",
+    "JourSemaine",
     "Lieu",
     "NatureEvenement",
     "PeriodeCalendrier",

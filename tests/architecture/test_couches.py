@@ -6,6 +6,7 @@ Ces tests vérifient ce que les consignes ne garantissent pas. Une instruction
 
 Lancer après chaque série d'éditions : pytest tests/architecture -q
 """
+
 import ast
 import pathlib
 import re
@@ -14,8 +15,13 @@ RACINE = pathlib.Path(__file__).resolve().parents[2]
 SRC = RACINE / "app"
 
 APPLICATIONS = [
-    "noyau", "administration", "referentiel", "organisation",
-    "ressources", "planification", "evaluations",
+    "noyau",
+    "administration",
+    "referentiel",
+    "organisation",
+    "ressources",
+    "planification",
+    "evaluations",
 ]
 
 # Ordre de dépendance arrêté en conception : une application ne peut importer
@@ -30,12 +36,25 @@ DEPENDANCES_AUTORISEES = {
     "organisation": {"noyau", "administration", "referentiel"},
     "ressources": {"noyau", "administration", "referentiel", "organisation"},
     "planification": {"noyau", "administration", "referentiel", "organisation", "ressources"},
-    "evaluations": {"noyau", "administration", "referentiel", "organisation", "ressources", "planification"},
+    "evaluations": {
+        "noyau",
+        "administration",
+        "referentiel",
+        "organisation",
+        "ressources",
+        "planification",
+    },
 }
 
 ATTRIBUTS_DERIVES = [
-    "volume_programme", "volume_realise", "volume_restant", "effectif_reel",
-    "charge_hebdomadaire", "portee", "duree_heures", "est_regroupee",
+    "volume_programme",
+    "volume_realise",
+    "volume_restant",
+    "effectif_reel",
+    "charge_hebdomadaire",
+    "portee",
+    "duree_heures",
+    "est_regroupee",
     "volume_cumule",
 ]
 
@@ -43,9 +62,15 @@ ATTRIBUTS_DERIVES = [
 # docs/suivi/HABILITATIONS.md. noyau n'y figure pas : c'est l'application
 # technique, elle ne porte aucune opération soumise à une habilitation.
 DOMAINES_CATALOGUE = {
-    "administration", "referentiel", "organisation",
-    "instructeurs_qualifications", "lieux_calendrier",
-    "programme", "programme_validation", "evaluations", "suivi",
+    "administration",
+    "referentiel",
+    "organisation",
+    "instructeurs_qualifications",
+    "lieux_calendrier",
+    "programme",
+    "programme_validation",
+    "evaluations",
+    "suivi",
 }
 
 
@@ -70,7 +95,10 @@ def test_aucune_vue_n_importe_un_modele():
         for noeud in ast.walk(ast.parse(texte)):
             if isinstance(noeud, ast.ImportFrom) and noeud.module:
                 if noeud.module.endswith("models") or ".models" in noeud.module:
-                    fautifs.append("%s ligne %d : %s" % (chemin.relative_to(RACINE), noeud.lineno, noeud.module))
+                    fautifs.append(
+                        "%s ligne %d : %s"
+                        % (chemin.relative_to(RACINE), noeud.lineno, noeud.module)
+                    )
     assert not fautifs, "Import de modèle dans une vue :\n" + "\n".join(fautifs)
 
 
@@ -143,15 +171,22 @@ def test_toute_classe_de_service_declare_un_domaine():
                 if not isinstance(element, ast.Assign):
                     continue
                 for cible in element.targets:
-                    if (isinstance(cible, ast.Name) and cible.id == "DOMAINE"
-                            and isinstance(element.value, ast.Constant)):
+                    if (
+                        isinstance(cible, ast.Name)
+                        and cible.id == "DOMAINE"
+                        and isinstance(element.value, ast.Constant)
+                    ):
                         domaine = element.value.value
             if domaine is None:
-                fautifs.append("%s ligne %d : %s sans DOMAINE"
-                               % (chemin.relative_to(RACINE), noeud.lineno, noeud.name))
+                fautifs.append(
+                    "%s ligne %d : %s sans DOMAINE"
+                    % (chemin.relative_to(RACINE), noeud.lineno, noeud.name)
+                )
             elif domaine not in DOMAINES_CATALOGUE:
-                fautifs.append("%s ligne %d : %s, domaine %r hors catalogue"
-                               % (chemin.relative_to(RACINE), noeud.lineno, noeud.name, domaine))
+                fautifs.append(
+                    "%s ligne %d : %s, domaine %r hors catalogue"
+                    % (chemin.relative_to(RACINE), noeud.lineno, noeud.name, domaine)
+                )
     assert not fautifs, "Service sans domaine valide du catalogue :\n" + "\n".join(fautifs)
 
 
@@ -171,7 +206,9 @@ def test_aucun_controle_de_profil_ecrit_en_dur():
                 continue
             if motif.search(ligne):
                 fautifs.append("%s ligne %d : %s" % (chemin.relative_to(RACINE), i, ligne.strip()))
-    assert not fautifs, "Contrôle de profil écrit en dur (permission de modèle) :\n" + "\n".join(fautifs)
+    assert not fautifs, "Contrôle de profil écrit en dur (permission de modèle) :\n" + "\n".join(
+        fautifs
+    )
 
 
 def test_instructeur_n_a_aucune_relation_vers_utilisateur():
@@ -198,9 +235,9 @@ def test_instructeur_n_a_aucune_relation_vers_utilisateur():
         if champ.is_relation and champ.concrete and champ.name not in champs_provenance
     ]
     cibles = {champ.related_model._meta.label for champ in champs_relation if champ.related_model}
-    assert settings.AUTH_USER_MODEL not in cibles, (
-        f"Instructeur porte une relation vers {settings.AUTH_USER_MODEL} : {cibles}"
-    )
+    assert (
+        settings.AUTH_USER_MODEL not in cibles
+    ), f"Instructeur porte une relation vers {settings.AUTH_USER_MODEL} : {cibles}"
 
     from django.contrib.auth import get_user_model
 
@@ -211,6 +248,38 @@ def test_instructeur_n_a_aucune_relation_vers_utilisateur():
     }
     assert not relations_inverses, (
         "Le modèle utilisateur porte une relation vers Instructeur : "
+        + ", ".join(relations_inverses)
+    )
+
+
+def test_grille_horaire_n_a_aucune_relation_vers_periode_calendrier():
+    """RG-63, § 4, Prompt 29 : l'activation n'est jamais déduite du
+    calendrier — le passage à l'horaire de Ramadan est un acte de
+    commandement, non la conséquence d'une date. Aucune association, dans
+    aucun sens, entre `GrilleHoraire`/`CreneauType` et `PeriodeCalendrier`.
+    Même méthode que `test_instructeur_n_a_aucune_relation_vers_utilisateur`
+    (deux angles indépendants) : les champs déclarés sur les grilles et les
+    créneaux, ET les relations inverses exposées par `PeriodeCalendrier`.
+    """
+    from ressources.models import CreneauType, GrilleHoraire, PeriodeCalendrier
+
+    for modele in (GrilleHoraire, CreneauType):
+        cibles = {
+            champ.related_model._meta.label
+            for champ in modele._meta.get_fields()
+            if champ.is_relation and champ.concrete and champ.related_model
+        }
+        assert (
+            PeriodeCalendrier._meta.label not in cibles
+        ), f"{modele.__name__} porte une relation vers PeriodeCalendrier : {cibles}"
+
+    relations_inverses = {
+        champ.name
+        for champ in PeriodeCalendrier._meta.get_fields()
+        if champ.is_relation and champ.related_model in (GrilleHoraire, CreneauType)
+    }
+    assert not relations_inverses, (
+        "PeriodeCalendrier porte une relation vers une grille ou un créneau : "
         + ", ".join(relations_inverses)
     )
 
@@ -229,6 +298,8 @@ def test_ordre_des_dependances_entre_applications():
             if isinstance(noeud, ast.ImportFrom) and module:
                 for autre in APPLICATIONS:
                     if module.split(".")[0] == autre and autre not in autorisees:
-                        fautifs.append("%s ligne %d : %s importe %s"
-                                       % (chemin.relative_to(RACINE), noeud.lineno, app, autre))
+                        fautifs.append(
+                            "%s ligne %d : %s importe %s"
+                            % (chemin.relative_to(RACINE), noeud.lineno, app, autre)
+                        )
     assert not fautifs, "Dépendance inverse entre applications :\n" + "\n".join(fautifs)

@@ -2,7 +2,14 @@ from django import forms
 
 from noyau.forms import FormulaireGestion
 from organisation.models import Brigade, Session
-from ressources.models import EffetPeriode, Instructeur, Lieu, NatureEvenement
+from ressources.models import (
+    EffetPeriode,
+    GrilleHoraire,
+    Instructeur,
+    JourSemaine,
+    Lieu,
+    NatureEvenement,
+)
 
 CLASSES_CHAMP_TEXTE = (
     "h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm "
@@ -35,6 +42,12 @@ CLASSES_ZONE_TEXTE = (
 CLASSES_SELECTION_MULTIPLE = (
     "w-full rounded border border-gris-trait bg-fond-bloc px-2.5 py-1.5 text-sm "
     "outline-none hover:border-marine-700 "
+    "focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+
+CLASSES_CHAMP_HEURE = (
+    "h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm "
+    "tabular-nums outline-none hover:border-marine-700 "
     "focus:border-marine-700 focus:ring-2 focus:ring-focus"
 )
 
@@ -295,3 +308,56 @@ class FormulaireAttitrerSalle(forms.Form):
         self.fields["lieu"].queryset = Lieu.objects.filter(pk__in=capacites.keys()).order_by(
             "intitule"
         )
+
+
+class FormulaireGrilleHoraire(FormulaireGestion):
+    """Patron de gestion — création et modification de l'intitulé d'une
+    grille. Les autres champs (`active`, `date_activation`, `activee_par`)
+    ne se saisissent jamais ici : ils sont posés par `ServiceGrilleHoraire.
+    activer` (§ 4, Prompt 29)."""
+
+    class Meta:
+        model = GrilleHoraire
+        fields = ["intitule"]
+        labels = {"intitule": "Intitulé"}
+        widgets = {"intitule": forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE})}
+
+
+class FormulaireDuplicationGrilleHoraire(forms.Form):
+    """`forms.Form`, pas `ModelForm` : la grille source vient de l'URL,
+    jamais de la saisie — même patron que `FormulaireAttitrerSalle`. A3,
+    Prompt 29 : point de départ réel d'une nouvelle grille."""
+
+    intitule = forms.CharField(
+        label="Intitulé de la nouvelle grille",
+        widget=forms.TextInput(attrs={"class": CLASSES_CHAMP_TEXTE}),
+    )
+
+
+class FormulaireCreneauType(forms.Form):
+    """`forms.Form`, pas `ModelForm` : `grille` vient de l'URL, jamais de la
+    saisie — sous-ressource composée depuis la fiche de sa grille (§ 0.3,
+    Prompt 29), même patron que `FormulaireRattachementMatiere`."""
+
+    FORMAT_HEURE = "%H:%M"
+
+    jour_semaine = forms.ChoiceField(
+        label="Jour",
+        choices=JourSemaine.choices,
+        widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    ordre = forms.IntegerField(
+        label="Rang",
+        min_value=1,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "inputmode": "numeric"}),
+    )
+    heure_debut = forms.TimeField(
+        label="Début",
+        input_formats=[FORMAT_HEURE],
+        widget=forms.TimeInput(attrs={"type": "time", "class": CLASSES_CHAMP_HEURE}),
+    )
+    heure_fin = forms.TimeField(
+        label="Fin",
+        input_formats=[FORMAT_HEURE],
+        widget=forms.TimeInput(attrs={"type": "time", "class": CLASSES_CHAMP_HEURE}),
+    )

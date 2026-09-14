@@ -23,18 +23,18 @@ def test_l_onglet_lieux_permet_d_atteindre_les_lieux_depuis_les_instructeurs(cli
     assert reverse("ressources:liste_lieux") in reponse
 
 
-def test_trois_onglets_pour_la_cellule_examens_jamais_instructeurs(client, cellule_examens):
+def test_quatre_onglets_pour_la_cellule_examens_jamais_instructeurs(client, cellule_examens):
     """DECISIONS.md D-115/D-120 : la cellule examens gagne les onglets du
     domaine `lieux_calendrier` qu'elle détient (Lieux, Indisponibilités,
-    Calendrier — US-PLAN-01) sans jamais gagner l'onglet Instructeurs, elle
-    n'a toujours pas `instructeurs_qualifications_lecture` (§ 4.1 du
-    Prompt 12)."""
+    Calendrier — US-PLAN-01, Grilles horaires — US-PLAN-12) sans jamais
+    gagner l'onglet Instructeurs, elle n'a toujours pas
+    `instructeurs_qualifications_lecture` (§ 4.1 du Prompt 12)."""
     client.force_login(cellule_examens)
 
     reponse = client.get(reverse("ressources:liste_lieux"))
 
     slugs = {onglet["slug"] for onglet in reponse.context["onglets"]}
-    assert slugs == {"lieux", "indisponibilites-instructeurs", "calendrier"}
+    assert slugs == {"lieux", "indisponibilites-instructeurs", "calendrier", "grilles-horaires"}
     assert "Instructeurs" not in reponse.content.decode()
 
 

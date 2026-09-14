@@ -1,0 +1,43 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Activer « {{ grille.intitule }} » — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[520px] animate-ouvrir border border-marine-900 bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-marine-900 px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Activer « {{ grille.intitule }} »
+    </p>
+    <div class="px-4 py-4 text-sm">
+      {% if grille_desactivee %}
+        <p>
+          Activer la grille <strong>{{ grille.intitule }}</strong> désactivera la grille
+          <strong>{{ grille_desactivee.intitule }}</strong>.
+        </p>
+      {% else %}
+        <p>
+          Activer la grille <strong>{{ grille.intitule }}</strong>. Aucune grille n'est
+          actuellement active.
+        </p>
+      {% endif %}
+      <p class="mt-3 border border-gris-trait bg-sable px-3 py-2.5 text-xs text-gris-lecture">
+        Ce changement modifie le fonctionnement de tout le centre : la grille activée
+        détermine désormais les créneaux proposés à la génération du programme.
+      </p>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 py-1.5 text-sm font-semibold text-blanc
+                     transition-colors duration-survol hover:bg-marine-700">Activer</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

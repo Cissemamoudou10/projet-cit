@@ -21,9 +21,12 @@ from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 from referentiel.services.prerequis import ServicePrerequis
 from ressources.models import CategorieLieu as CategorieLieuRessource
 from ressources.models import (
+    CreneauType,
+    GrilleHoraire,
     IndisponibiliteInstructeur,
     IndisponibiliteLieu,
     Instructeur,
+    JourSemaine,
     Lieu,
     NatureEvenement,
     PeriodeCalendrier,
@@ -137,9 +140,7 @@ def objets(db, utilisateurs):
         date_fin="2026-03-27",
         effectif_attendu=24,
     )
-    brigade = Brigade.objects.create(
-        session=session, designation="EXP1", effectif_previsionnel=20
-    )
+    brigade = Brigade.objects.create(session=session, designation="EXP1", effectif_previsionnel=20)
     stagiaire = Stagiaire.objects.create(
         session=session,
         matricule="M001",
@@ -157,6 +158,14 @@ def objets(db, utilisateurs):
         debut="2026-09-08T08:00:00Z",
         fin="2026-09-08T09:45:00Z",
         effet="bloquant",
+    )
+    grille_horaire = GrilleHoraire.objects.create(intitule="Grille essai")
+    creneau_type = CreneauType.objects.create(
+        grille=grille_horaire,
+        jour_semaine=JourSemaine.LUNDI,
+        ordre=1,
+        heure_debut="08:00",
+        heure_fin="09:45",
     )
     return {
         "type_formation": type_formation,
@@ -177,4 +186,6 @@ def objets(db, utilisateurs):
         "stagiaire": stagiaire,
         "nature_evenement": nature_evenement,
         "periode_calendrier": periode_calendrier,
+        "grille_horaire": grille_horaire,
+        "creneau_type": creneau_type,
     }

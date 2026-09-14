@@ -21,7 +21,7 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 - [x] **US-PLAN-01** — Élaborer le calendrier académique annuel · 8 pts · Must
 - [ ] **US-PLAN-03** — Générer le programme hebdomadaire d'une brigade · 8 pts · Must
 - [ ] **US-PLAN-04** — Garantir le respect des contraintes dures · 8 pts · Must
-- [ ] **US-PLAN-12** — Gérer les grilles horaires et désigner la grille active · 5 pts · Must
+- [x] **US-PLAN-12** — Gérer les grilles horaires et désigner la grille active · 5 pts · Must
 
 ## Tâches transverses
 

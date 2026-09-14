@@ -333,9 +333,7 @@ ECRANS_ECRITURE = [
     EcranEcriture(
         "ressources:declarer_indisponibilite_instructeur", "noyau.lieux_calendrier_ecriture"
     ),
-    EcranEcriture(
-        "ressources:confirmer_fusion_indisponibilite", "noyau.lieux_calendrier_ecriture"
-    ),
+    EcranEcriture("ressources:confirmer_fusion_indisponibilite", "noyau.lieux_calendrier_ecriture"),
     EcranEcriture(
         "ressources:modifier_indisponibilite_instructeur",
         "noyau.lieux_calendrier_ecriture",
@@ -408,12 +406,53 @@ ECRANS_ECRITURE = [
         "noyau.lieux_calendrier_ecriture",
         lambda objets: [objets["periode_calendrier"].pk],
     ),
+    # --- ressources : grilles horaires et créneaux types (US-PLAN-12) ---
+    EcranEcriture("ressources:creer_grille_horaire", "noyau.lieux_calendrier_ecriture"),
+    EcranEcriture(
+        "ressources:modifier_grille_horaire",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["grille_horaire"].pk],
+    ),
+    EcranEcriture(
+        "ressources:dupliquer_grille_horaire",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["grille_horaire"].pk],
+    ),
+    EcranEcriture(
+        "ressources:archiver_grille_horaire",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["grille_horaire"].pk],
+    ),
+    EcranEcriture(
+        "ressources:desarchiver_grille_horaire",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["grille_horaire"].pk],
+    ),
+    EcranEcriture(
+        "ressources:supprimer_grille_horaire",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["grille_horaire"].pk],
+    ),
+    EcranEcriture(
+        "ressources:confirmer_activation_grille_horaire",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["grille_horaire"].pk],
+    ),
+    EcranEcriture(
+        "ressources:ajouter_creneau",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["grille_horaire"].pk],
+    ),
+    EcranEcriture(
+        "ressources:supprimer_creneau",
+        "noyau.lieux_calendrier_ecriture",
+        lambda objets: [objets["creneau_type"].pk],
+    ),
 ]
 
-# 80 adresses : les 74 précédentes (Prompt 27) plus les six adresses
-# d'écriture de ressources:nature_evenement/periode_calendrier (US-PLAN-01,
-# Prompt 28).
-assert len(ECRANS_ECRITURE) == 80
+# 89 adresses : les 80 précédentes (Prompt 28) plus les neuf adresses
+# d'écriture de ressources:grille_horaire/creneau_type (US-PLAN-12, Prompt 29).
+assert len(ECRANS_ECRITURE) == 89
 
 
 def _groupes_sans(permission):

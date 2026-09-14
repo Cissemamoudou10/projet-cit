@@ -12,6 +12,7 @@ from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.gestion import ServiceGestion, avertissement
+from noyau.services.parametres import ResolveurVolumeHoraireReference
 from organisation.models import EtatSession, Session
 from referentiel.services.referentiel import ServiceReferentiel
 
@@ -138,21 +139,21 @@ class ServiceSession(ServiceGestion):
     @classmethod
     def _avertissements(cls, instance):
         """E2, RG-65 — jamais un refus. Volume attendu = nombre de semaines
-        de la période × volume hebdomadaire de référence (D-33) ; avertit
-        seulement si le volume prescrit le DÉPASSE au-delà du seuil (E2 :
-        un volume prescrit inférieur n'est pas signalé, à la différence de
-        `ServiceReferentiel.ecart`, symétrique, qui répond à une question
-        différente — voir docs/suivi/DECISIONS.md).
+        de la période × volume hebdomadaire de référence, résolu depuis la
+        grille horaire active (US-PLAN-12, § 7, remboursement de D-33) ;
+        avertit seulement si le volume prescrit le DÉPASSE au-delà du seuil
+        (E2 : un volume prescrit inférieur n'est pas signalé, à la
+        différence de `ServiceReferentiel.ecart`, symétrique, qui répond à
+        une question différente — voir docs/suivi/DECISIONS.md).
 
-        Calcul provisoire par construction : la vraie réponse est la grille
-        horaire active (US-PLAN-12) et le calendrier (US-PLAN-01), tous deux
-        du sprint 2.
+        `organisation` n'importe rien de `ressources` : voir
+        `noyau.services.parametres.ResolveurVolumeHoraireReference`.
         """
         nombre_jours = (instance.date_fin - instance.date_debut).days
         if nombre_jours <= 0:
             return []
         nombre_semaines = nombre_jours / 7
-        volume_attendu = nombre_semaines * settings.VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE
+        volume_attendu = nombre_semaines * ResolveurVolumeHoraireReference.resoudre()
         volume_prescrit = ServiceReferentiel.total_volume(instance.formation)
         if not volume_attendu:
             return []

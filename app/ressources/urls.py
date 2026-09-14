@@ -2,6 +2,7 @@ from django.urls import path
 
 from ressources.views import (
     calendrier_lecture,
+    grille_horaire,
     indisponibilite_instructeur,
     indisponibilite_lieu,
     instructeur,
@@ -175,5 +176,60 @@ urlpatterns = [
         "natures-evenement/<int:pk>/supprimer/",
         nature_evenement.vue_confirmer_suppression_nature_evenement,
         name="supprimer_nature_evenement",
+    ),
+    path(
+        "grilles-horaires/",
+        grille_horaire.vue_liste_grilles_horaires,
+        name="liste_grilles_horaires",
+    ),
+    path(
+        "grilles-horaires/creer/",
+        grille_horaire.vue_creer_grille_horaire,
+        name="creer_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:pk>/",
+        grille_horaire.vue_detail_grille_horaire,
+        name="detail_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:pk>/modifier/",
+        grille_horaire.vue_modifier_grille_horaire,
+        name="modifier_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:pk>/dupliquer/",
+        grille_horaire.vue_dupliquer_grille_horaire,
+        name="dupliquer_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:pk>/archiver/",
+        grille_horaire.vue_confirmer_archivage_grille_horaire,
+        name="archiver_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:pk>/desarchiver/",
+        grille_horaire.vue_desarchiver_grille_horaire,
+        name="desarchiver_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:pk>/supprimer/",
+        grille_horaire.vue_confirmer_suppression_grille_horaire,
+        name="supprimer_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:pk>/activer/",
+        grille_horaire.vue_confirmer_activation_grille_horaire,
+        name="confirmer_activation_grille_horaire",
+    ),
+    path(
+        "grilles-horaires/<int:grille_pk>/creneaux/ajouter/",
+        grille_horaire.vue_ajouter_creneau,
+        name="ajouter_creneau",
+    ),
+    path(
+        "creneaux/<int:pk>/supprimer/",
+        grille_horaire.vue_confirmer_suppression_creneau,
+        name="supprimer_creneau",
     ),
 ]

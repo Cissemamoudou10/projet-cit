@@ -1,0 +1,133 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ grille.intitule }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_liste }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux grilles
+  </a>
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ grille.intitule }}</h1>
+      <p class="text-sm text-gris-lecture">
+        {% if grille.active %}
+          <span class="border border-etat-conforme px-2 py-px text-2xs font-semibold
+                       tracking-wide text-etat-conforme">ACTIVE</span>
+          — volume hebdomadaire de référence :
+          <span class="tabular-nums font-semibold">{{ volume_hebdomadaire|floatformat:2 }} h</span>
+        {% elif grille.archive %}
+          <span class="border border-gris-trait px-2 py-px text-2xs font-semibold
+                       tracking-wide text-gris-lecture">ARCHIVÉE</span>
+        {% else %}
+          <span class="border border-marine-700 px-2 py-px text-2xs font-semibold
+                       tracking-wide text-marine-700">DISPONIBLE</span>
+        {% endif %}
+      </p>
+    </div>
+    {% if peut_ecrire %}
+      <div class="flex flex-wrap gap-2">
+        <a href="{{ url_modifier }}"
+           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                  text-sm font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-marine-700">Modifier</a>
+        <a href="{{ url_dupliquer }}"
+           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                  text-sm font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-marine-700">Dupliquer</a>
+        {% if not grille.active and not grille.archive %}
+          <a href="{{ url_activer }}"
+             class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                    text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                    hover:bg-marine-700">Activer</a>
+        {% endif %}
+        {% if grille.archive %}
+          <a href="{{ url_desarchiver }}"
+             class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                    text-sm font-medium text-encre no-underline transition-colors duration-survol
+                    hover:border-marine-700">Désarchiver</a>
+        {% elif not grille.active %}
+          <a href="{{ url_archiver }}"
+             class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                    text-sm font-medium text-encre no-underline transition-colors duration-survol
+                    hover:border-etat-ecart hover:text-etat-ecart">Archiver</a>
+        {% endif %}
+        {% if not grille.active %}
+          <a href="{{ url_supprimer }}"
+             class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                    text-sm font-medium text-encre no-underline transition-colors duration-survol
+                    hover:border-etat-ecart hover:text-etat-ecart">Supprimer</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Semaine type
+  </p>
+  <div class="divide-y divide-gris-trait">
+    {% for jour in semaine %}
+      <div class="flex flex-wrap items-start gap-3 px-4 py-2.5">
+        <p class="w-28 shrink-0 text-sm font-semibold">{{ jour.libelle }}</p>
+        <div class="flex flex-1 flex-wrap items-center gap-2">
+          {% for creneau in jour.creneaux %}
+            <span class="inline-flex items-center gap-1.5 border border-gris-trait bg-fond-bande
+                         px-2 py-1 text-xs tabular-nums">
+              {{ creneau.heure_debut|time:"H:i" }}–{{ creneau.heure_fin|time:"H:i" }}
+              {% if peut_ecrire %}
+                <a href="{% url 'ressources:supprimer_creneau' creneau.pk %}"
+                   title="Supprimer" aria-label="Supprimer ce créneau"
+                   class="text-etat-ecart no-underline hover:underline">✕</a>
+              {% endif %}
+            </span>
+          {% empty %}
+            <span class="text-xs text-gris-lecture">Aucun créneau — non programmable par défaut.</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% if peut_ecrire %}
+    <form method="post" action="{{ url_ajouter_creneau }}"
+          class="flex flex-wrap items-end gap-3 border-t border-gris-trait bg-fond-bande px-4 py-3">
+      {% csrf_token %}
+      <div>
+        <label for="{{ form_creneau.jour_semaine.id_for_label }}"
+               class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Jour</label>
+        {{ form_creneau.jour_semaine }}
+      </div>
+      <div class="w-20">
+        <label for="{{ form_creneau.ordre.id_for_label }}"
+               class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Rang</label>
+        {{ form_creneau.ordre }}
+      </div>
+      <div>
+        <label for="{{ form_creneau.heure_debut.id_for_label }}"
+               class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Début</label>
+        {{ form_creneau.heure_debut }}
+      </div>
+      <div>
+        <label for="{{ form_creneau.heure_fin.id_for_label }}"
+               class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Fin</label>
+        {{ form_creneau.heure_fin }}
+      </div>
+      <button type="submit"
+              class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        Ajouter le créneau
+      </button>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

@@ -11,46 +11,37 @@ Pas d'onglet affiché si l'utilisateur n'a accès qu'à un seul domaine : rien
 from django.urls import reverse
 
 from noyau.habilitations import a_permission
+from ressources.services.grille_horaire import ServiceGrilleHoraire
 from ressources.services.indisponibilite_instructeur import ServiceIndisponibiliteInstructeur
 from ressources.services.instructeur import ServiceInstructeur
 from ressources.services.lieu import ServiceLieu
 from ressources.services.periode_calendrier import ServicePeriodeCalendrier
 
+_DOMAINES = [
+    (ServiceInstructeur, "instructeurs", "Instructeurs", "ressources:liste_instructeurs"),
+    (ServiceLieu, "lieux", "Lieux", "ressources:liste_lieux"),
+    (
+        ServiceIndisponibiliteInstructeur,
+        "indisponibilites-instructeurs",
+        "Indisponibilités",
+        "ressources:liste_indisponibilites_instructeurs",
+    ),
+    (ServicePeriodeCalendrier, "calendrier", "Calendrier", "ressources:calendrier_annuel"),
+    (
+        ServiceGrilleHoraire,
+        "grilles-horaires",
+        "Grilles horaires",
+        "ressources:liste_grilles_horaires",
+    ),
+]
+
 
 def onglets_ressources(utilisateur, actif):
-    onglets = []
-    if a_permission(utilisateur, ServiceInstructeur.PERMISSION_LECTURE):
-        onglets.append(
-            {
-                "slug": "instructeurs",
-                "libelle": "Instructeurs",
-                "url": reverse("ressources:liste_instructeurs"),
-            }
-        )
-    if a_permission(utilisateur, ServiceLieu.PERMISSION_LECTURE):
-        onglets.append(
-            {
-                "slug": "lieux",
-                "libelle": "Lieux",
-                "url": reverse("ressources:liste_lieux"),
-            }
-        )
-    if a_permission(utilisateur, ServiceIndisponibiliteInstructeur.PERMISSION_LECTURE):
-        onglets.append(
-            {
-                "slug": "indisponibilites-instructeurs",
-                "libelle": "Indisponibilités",
-                "url": reverse("ressources:liste_indisponibilites_instructeurs"),
-            }
-        )
-    if a_permission(utilisateur, ServicePeriodeCalendrier.PERMISSION_LECTURE):
-        onglets.append(
-            {
-                "slug": "calendrier",
-                "libelle": "Calendrier",
-                "url": reverse("ressources:calendrier_annuel"),
-            }
-        )
+    onglets = [
+        {"slug": slug, "libelle": libelle, "url": reverse(nom_url)}
+        for service, slug, libelle, nom_url in _DOMAINES
+        if a_permission(utilisateur, service.PERMISSION_LECTURE)
+    ]
     if len(onglets) < 2:
         return [], None
     return onglets, actif

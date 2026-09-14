@@ -21,6 +21,7 @@ from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import decrire_opposants, valider_instance
+from noyau.services.parametres import ResolveurVolumeHoraireReference
 from referentiel.models import CategorieLieu, ElementReferentiel, TypeLieuPartage
 from referentiel.services.matiere import ServiceMatiere
 from referentiel.services.prerequis import ServicePrerequis
@@ -72,10 +73,13 @@ class ServiceReferentiel:
     @staticmethod
     def ecart(formation):
         """Critère 5 — compare le total prescrit à la durée de la formation
-        convertie en heures via le paramètre provisoire de BNF-13. Voir
-        docs/suivi/DECISIONS.md pour la question qu'il pose au terrain.
+        convertie en heures via le volume hebdomadaire de référence, résolu
+        depuis la grille horaire active (US-PLAN-12, § 7, remboursement de
+        D-33) — `referentiel` n'importe rien de `ressources` : voir
+        `noyau.services.parametres.ResolveurVolumeHoraireReference` et
+        docs/suivi/DECISIONS.md.
         """
-        attendu = formation.duree_semaines * settings.VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE
+        attendu = formation.duree_semaines * ResolveurVolumeHoraireReference.resoudre()
         total = ServiceReferentiel.total_volume(formation)
         depasse_seuil = False
         if attendu:

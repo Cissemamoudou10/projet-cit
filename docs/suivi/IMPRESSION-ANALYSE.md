@@ -232,3 +232,41 @@ d'autres — voir le choix de vues motivé dans le compte rendu de la story.
 **Conséquence pour le lot d'impression du sprint 4** : cet écran ne
 rejoint PAS la liste des écrans nécessitant l'arbitrage paysage/masquage
 ouvert au § 5 — aucune action requise ici.
+
+## 9. Sprint 2 — US-PLAN-12, mesuré le 2026-09-14
+
+§ 9, Prompt 29 : « une semaine type est un document qu'on affiche ». La fiche
+de grille horaire n'est pas construite sur le patron de liste générique
+(`noyau/gestion/liste.html`, un `<table>`) mais sur une section propre
+(sept lignes, une par jour, chacune un jour + ses créneaux en pastilles) —
+la mesure par largeur de `<table>` des § 6/7/8 ne s'applique pas telle
+quelle. Mesurée à la place la largeur de contenu réellement nécessaire pour
+la ligne la plus chargée (un jour ouvré, quatre créneaux), par lecture directe
+des rectangles DOM (bord droit de la dernière pastille moins bord gauche de
+la ligne, plus le remplissage droit de la ligne pour rester symétrique) —
+même sonde JavaScript éphémère qu'au § 6, adaptée à un contenu non tabulaire :
+
+| Jour | Créneaux | Largeur de contenu |
+|---|---|---|
+| Lundi à vendredi (4 créneaux chacun) | 4 | 600 px |
+| Samedi, dimanche (aucun créneau, ligne « non programmable par défaut ») | 0 | 416 px |
+
+**Tient largement en portrait** (600 px sur un budget de 703 px, § 1) — la
+grille de Ramadan, mêmes quatre créneaux par jour, des heures de même
+longueur (« 08:30–09:50 » compte les mêmes caractères que « 08:00–09:45 »),
+donne une largeur identique. Aucun arbitrage paysage/masquage requis, sur le
+même principe qu'au § 8 : la largeur ne dépend que du nombre de créneaux et
+de la longueur fixe d'une plage horaire, jamais d'une géométrie de calendrier
+à cases fixes — une grille à davantage de créneaux par jour (cinq au lieu de
+quatre) resterait sous le budget avec near 105 px par pastille (600 + 105 +
+12 ≈ 717 px, dépassement de 14 px seulement) ; à surveiller si une future
+grille réelle porte plus de cinq créneaux par jour, non observé à ce jour
+(§ 6, prompt 29).
+
+**Non mesuré ici, hors périmètre de la demande du § 9** : les boutons
+d'action de l'en-tête (Modifier, Dupliquer, Activer/Archiver/Supprimer) ne
+portent pas `data-impression="masquer"` — ni sur cette fiche ni sur
+`periode_calendrier_detail.html` (US-PLAN-01), qui partage le même gabarit
+d'en-tête sans ce masquage : écart préexistant à cette story, pas introduit
+ici, à traiter avec le lot d'impression du sprint 4 si les fiches (par
+opposition aux listes) rejoignent le périmètre imprimable.
