@@ -20,7 +20,8 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 - [x] **US-INS-03** — Enregistrer les indisponibilités transmises · 3 pts · Must
 - [x] **US-PLAN-01** — Élaborer le calendrier académique annuel · 8 pts · Must
 - [ ] **US-PLAN-03** — Générer le programme hebdomadaire d'une brigade · 8 pts · Must
-- [ ] **US-PLAN-04** — Garantir le respect des contraintes dures · 8 pts · Must
+- [x] **US-PLAN-04** — Garantir le respect des contraintes dures · 8 pts · Must
+  *(implantée avant US-PLAN-03, inversion d'ordre imposée par le prompt — CU-P5-02 est un cas d'utilisation inclus, appelé par la génération ; voir DECISIONS.md, D-134)*
 - [x] **US-PLAN-12** — Gérer les grilles horaires et désigner la grille active · 5 pts · Must
 
 ## Tâches transverses

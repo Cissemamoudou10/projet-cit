@@ -35,6 +35,17 @@ class TypeLieuPartage(models.TextChoices):
     SALLE_SPECIALISEE = "salle_specialisee", "Salle spécialisée"
 
 
+class ModePartage(models.TextChoices):
+    """RG-40 : « un lieu séquentiel n'accueille les brigades que l'une
+    après l'autre, jamais ensemble ». Porté par CLS-03 (`Lieu.modePartage`)
+    mais son ajout avait été explicitement écarté du périmètre du Prompt 14
+    (D-53) — refermé ici, à US-PLAN-04, premier point d'application réel
+    (RG-37, E7/E8). Voir docs/suivi/DECISIONS.md."""
+
+    SIMULTANE = "simultane", "Simultané"
+    SEQUENTIEL = "sequentiel", "Séquentiel"
+
+
 class Lieu(ModeleHorodate, ModeleArchivable):
     """Catalogue des lieux — CU-P4-06. `categorie` distingue une salle
     **attitrable** (elle *peut* être attitrée à une brigade, pas encore : ce
@@ -55,6 +66,13 @@ class Lieu(ModeleHorodate, ModeleArchivable):
         blank=True,
         verbose_name="type de lieu partagé",
     )
+    mode_partage = models.CharField(
+        max_length=20,
+        choices=ModePartage.choices,
+        null=True,
+        blank=True,
+        verbose_name="mode de partage",
+    )
 
     class Meta:
         db_table = "ressources_lieu"
@@ -74,6 +92,13 @@ class Lieu(ModeleHorodate, ModeleArchivable):
                     )
                 ),
                 name="ck_lieu_type_partage_coherent",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(mode_partage__isnull=True)
+                    | models.Q(mode_partage__in=ModePartage.values)
+                ),
+                name="ck_lieu_mode_partage",
             ),
         ]
 

@@ -27,6 +27,7 @@ from ressources.models.lieu import (
     CategorieLieu,
     IndisponibiliteLieu,
     Lieu,
+    ModePartage,
     SalleAttitree,
     TypeLieuPartage,
 )
@@ -42,6 +43,7 @@ __all__ = [
     "Instructeur",
     "JourSemaine",
     "Lieu",
+    "ModePartage",
     "NatureEvenement",
     "PeriodeCalendrier",
     "PeriodeCalendrierBrigade",

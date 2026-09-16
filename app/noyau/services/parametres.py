@@ -43,3 +43,29 @@ class ResolveurVolumeHoraireReference:
             if valeur is not None:
                 return valeur
         return settings.VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE
+
+
+class ResolveurSeancesFuturesQualification:
+    """RG-22 (D-51, US-INS-02) : retirer une qualification est refusé tant
+    que des séances futures l'exploitent — `ServiceQualification.retirer`
+    (`ressources`) doit donc savoir si `planification.Seance` en porte,
+    sans jamais importer `planification` (sens de dépendance interdit :
+    `planification` importe déjà `ressources`, l'inverse créerait un cycle
+    réel — même motif qu'à US-PLAN-12, D-128).
+
+    Repli : aucun fournisseur installé ⇒ aucune séance future connue
+    (liste vide) — c'est le comportement antérieur à cette story, où
+    `Seance` n'existait pas encore.
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, instructeur, matiere) -> list:
+        if cls._fournisseur is not None:
+            return cls._fournisseur(instructeur, matiere)
+        return []

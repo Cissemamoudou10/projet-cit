@@ -229,11 +229,16 @@ def test_retrait_ne_laissant_pas_la_matiere_decouverte_n_avertit_pas(
     assert not ServiceQualification.laisserait_la_matiere_non_couverte(qualification)
 
 
-def test_la_methode_de_verification_d_e1_existe_et_rend_une_liste_vide(
+def test_seances_futures_rend_une_liste_vide_en_l_absence_de_seance(
     redacteur, instructeur, matiere
 ):
-    """§ 3.2 : les séances arrivent au sprint 3 — US-PLAN-03 remplira cette
-    méthode."""
+    """RG-22 : aucune séance nulle part pour cette qualification — le
+    résolveur (`noyau.services.parametres.
+    ResolveurSeancesFuturesQualification`, câblé par `planification`,
+    D-51) rend une liste vide. Le cas où une séance future EXISTE et
+    bloque réellement le retrait est prouvé côté `planification`
+    (`ressources` ne peut pas construire de `Seance` — sens de
+    dépendance interdit)."""
     qualification = ServiceQualification.ajouter(redacteur, instructeur, matiere)
 
     assert ServiceQualification.seances_futures(qualification) == []

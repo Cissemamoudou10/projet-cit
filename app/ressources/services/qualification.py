@@ -13,6 +13,7 @@ from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.services.base import ServiceBase
+from noyau.services.parametres import ResolveurSeancesFuturesQualification
 from referentiel.services.matiere import ServiceMatiere
 from ressources.models import Qualification
 from ressources.services.instructeur import ServiceInstructeur
@@ -94,11 +95,16 @@ class ServiceQualification:
         return qualification
 
     @staticmethod
-    def seances_futures(_qualification):
-        """§ 3.2 : rend une liste vide aujourd'hui — les séances arrivent au
-        sprint 3, US-PLAN-03 remplira cette méthode, sans en changer la
-        signature."""
-        return []
+    def seances_futures(qualification):
+        """RG-22 (D-51, US-PLAN-04) : délègue à
+        `noyau.services.parametres.ResolveurSeancesFuturesQualification`,
+        dont le fournisseur réel est installé par `planification` au
+        démarrage de l'application — `ressources` n'importe rien de
+        `planification` (sens de dépendance interdit, même motif qu'à
+        US-PLAN-12, D-128)."""
+        return ResolveurSeancesFuturesQualification.resoudre(
+            qualification.instructeur, qualification.matiere
+        )
 
     @staticmethod
     def laisserait_la_matiere_non_couverte(qualification):

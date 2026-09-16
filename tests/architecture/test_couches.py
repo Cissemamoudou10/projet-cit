@@ -284,6 +284,42 @@ def test_grille_horaire_n_a_aucune_relation_vers_periode_calendrier():
     )
 
 
+def test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme():
+    """§ 5, Prompt 30 : garde mécanique — « l'ensemble des chemins
+    d'affectation y passe, sans exception » ne vaut rien tant que rien ne
+    la vérifie (leçon des 36 refus d'habilitation manquants du sprint 1).
+    Seul `planification.services.ecriture` (la porte d'écriture unique) a
+    le droit de construire ou d'enregistrer `Seance`/`LigneProgramme` — les
+    migrations et les fabriques de test (dossiers `tests/`) en sont
+    exemptées, comme la docstring du module le dit explicitement.
+    """
+    porte = SRC / "planification" / "services" / "ecriture.py"
+    modeles = SRC / "planification" / "models.py"
+    motifs = (
+        "Seance(",
+        "LigneProgramme(",
+        "Seance.objects.create(",
+        "LigneProgramme.objects.create(",
+    )
+    fautifs = []
+    for chemin in fichiers("*.py"):
+        if chemin in (porte, modeles) or "tests" in chemin.parts:
+            continue
+        texte = chemin.read_text(encoding="utf-8")
+        for i, ligne in enumerate(texte.splitlines(), 1):
+            if ligne.lstrip().startswith("#"):
+                continue
+            for motif in motifs:
+                if motif in ligne:
+                    fautifs.append(
+                        "%s ligne %d : %s" % (chemin.relative_to(RACINE), i, ligne.strip())
+                    )
+    assert not fautifs, (
+        "Instanciation de Seance/LigneProgramme hors de la porte d'écriture unique :\n"
+        + "\n".join(fautifs)
+    )
+
+
 def test_ordre_des_dependances_entre_applications():
     """P1 → P2 → P3/P4 → P5 → P6. Aucune dépendance inverse."""
     fautifs = []

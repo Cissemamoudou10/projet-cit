@@ -87,6 +87,29 @@ story referme aussi, dans son usage nominal, le volet
 n'avait jamais figuré dans ce tableau (c'était une valeur provisoire, pas un
 report de critère au sens de ce tableau) ; le volet
 `SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT` de D-33 reste ouvert.
+**Mise à jour du 2026-09-15** : US-PLAN-04 (Prompt 30) n'ouvre AUCUN nouveau
+report (le compte reste à dix-huit) mais en referme QUATRE, nommément
+désignés par le § 9 du Prompt 30 (pas le § 11, qui traite d'un tout autre
+sujet — erreur de citation corrigée le 2026-09-15, relevée en relecture),
+tous vérifiés par un test qui exerce réellement le refus, pas seulement la
+contrainte en base (leçon de D-50) : D-45 (critère 4), D-51 (E1), D-54 (volet
+séance), et le quatrième regroupant CRITÈRE 5 D'US-PLAN-01 (D-121, RG-38) ET
+CRITÈRE 4 D'US-INS-03 (D-119, RG-36) — le prompt les traite comme un seul
+item. Restent ouverts et NE se referment PAS ici, conformément au § 9 du
+Prompt 30, texte explicite : D-34, D-39, **D-35 volet séance** (nommément
+exclu par le prompt, alors même qu'il est techniquement refermé par
+construction — voir la ligne D-35 ci-dessous et DECISIONS.md), E2 et A3
+d'US-PLAN-01. Voir D-134 pour l'inversion d'ordre qui a permis ces
+fermetures dès ce sprint plutôt qu'au sprint 3.
+**Correction du 2026-09-15, relecture `relecteur-conception`** : la première
+rédaction de cette mise à jour refermait à tort D-35 (volet séance, exclu
+nommément par le prompt) et omettait de refermer D-119/D-121 (le quatrième
+item réel). Corrigé ci-dessus et dans le tableau. La même relecture a aussi
+relevé l'absence des index de performance prescrits par `.claude/rules/
+migrations.md` pour `Seance` (`idx_seance_debut_fin`, `idx_seance_instructeur_
+debut`, `idx_seance_lieu_debut`) — ajoutés dans la foulée
+(`planification/migrations/0002_*`), `idx_seance_element`/`idx_ligne_brigade`
+délibérément omis (doublons de l'index automatique de clé étrangère Django).
 
 | Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
 |---|---|---|---|---|
@@ -94,18 +117,19 @@ report de critère au sens de ce tableau) ; le volet
 | D-30 | 3 (fiche affiche les formations utilisatrices) | US-REF-02 | US-REF-03 | **Fermé le 2026-09-08** — `ServiceMatiere.formations_utilisatrices`, corrigé dans le lot de clôture (D-64) — c'était P-25, ouvert de 2026-09-04 à 2026-09-08 |
 | D-30 | 5 (suppression bloquée) | US-REF-02 | US-REF-03 / US-INS-02 | **Fermé** — `Qualification.matiere`/`ElementReferentiel.matiere` en `PROTECT`, deux tests confirmés (D-50) |
 | D-35 | 6 / RG-07, source prérequis | US-REF-03 | US-REF-06 | **Fermé** — `Prerequis`, contrôle explicite (D-40) |
-| D-35 | 6 / RG-07, sources séance et évaluation | US-REF-03 | sprint 2 (séance) / sprint 4 (évaluation) | Ouvert |
+| D-35 | 6 / RG-07, source séance | US-REF-03 | US-PLAN-04 (sprint 2) | Ouvert (revendication) — techniquement refermé par construction (`Seance.element_referentiel` en `PROTECT`, seul choix conforme à `.claude/rules/modeles.md`) et vérifié par un test réel (`test_retrait_d_un_element_de_referentiel_porteur_d_une_seance_refuse`), mais le Prompt 30 § 9 exclut NOMMÉMENT ce volet des quatre fermetures de cette story — non revendiqué ici sur cette base, voir DECISIONS.md D-35 et l'écart signalé en relecture |
+| D-35 | 6 / RG-07, source évaluation | US-REF-03 | sprint 4 | Ouvert |
 | D-23 | 4 (session ouverte bloque la suppression) | US-REF-01 | US-SES-01 (sprint 2) | Ouvert — `Session` n'existe pas encore |
 | D-34 | 3, 4 (contrainte de catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | Ouvert |
 | D-39 | 3, 4 (prérequis exploités par le moteur / signalés en saisie) | US-REF-06 | moteur de génération / saisie manuelle (sprint 2/3) | Ouvert |
-| D-45 | 4 (instructeur affecté à un programme en cours) | US-INS-01 | séance programmée (sprint 2) | Ouvert |
-| D-51 | E1 (instructeur affecté à des séances futures) | US-INS-02 | séance programmée (sprint 2) | Ouvert |
+| D-45 | 4 (instructeur affecté à un programme en cours) | US-INS-01 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — `Seance.instructeur` en `PROTECT` (US-PLAN-04), testé (`test_a9_suppression_instructeur_portant_une_seance_refusee`) |
+| D-51 | E1 (instructeur affecté à des séances futures) | US-INS-02 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — résolveur `noyau` câblé par `planification` (US-PLAN-04, D-143), refus exercé réellement par un test (`test_retrait_refuse_si_une_seance_future_existe`), pas seulement le câblage — leçon de D-50 |
 | D-54 | 4, volet brigade (lieu affecté à une brigade) | US-PLAN-02 | US-SES-03 (sprint 2) | **Fermé le 2026-09-11** — `SalleAttitree.lieu` en `PROTECT` (D-92), testé par le cycle HTTP réel (C9) |
-| D-54 | 4, volet séance (lieu affecté à une séance) | US-PLAN-02 | séance programmée (sprint 2) | Ouvert |
-| D-119 | 4, RG-25 (indisponibilité comme contrainte dure à la génération) | US-INS-03 | US-PLAN-04 (sprint 2) | Ouvert |
+| D-54 | 4, volet séance (lieu affecté à une séance) | US-PLAN-02 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — `Seance.lieu` en `PROTECT` (US-PLAN-04), testé (`test_a9_suppression_lieu_portant_une_seance_refusee`) |
+| D-119 | 4, RG-25 (indisponibilité comme contrainte dure à la génération) | US-INS-03 | US-PLAN-04 (sprint 2) | **Fermé le 2026-09-15** — RG-36 implantée en couche services (`planification.services.regles_instructeur.verifier_rg36`), testée (D1-D3, `test_d1_seance_recouvrant_une_indisponibilite_refus_periode_nommee` et voisins) |
 | D-119 | 5, points 4-5 (recherche des séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-03 puis US-PLAN-09 (sprint 3) | Ouvert |
 | D-119 | A3 (restriction à l'extension), A4 (séances passées en suivi prescrit/réalisé) | US-INS-03 | mêmes destinations que ci-dessus | Ouvert |
-| D-121 | 5, RG-38 (exclusion des périodes bloquantes à la génération) | US-PLAN-01 | US-PLAN-03 / US-PLAN-04 (sprint 2) | Ouvert |
+| D-121 | 5, RG-38 (exclusion des périodes bloquantes à la génération) | US-PLAN-01 | US-PLAN-03 / US-PLAN-04 (sprint 2) | **Fermé le 2026-09-15** — RG-38 implantée en couche services (`planification.services.regles_calendrier.verifier_rg38`), testée (F1-F6, `test_f1_periode_bloquante_centre_entier_refus` et voisins) |
 | D-121 | E2 (période bloquante recouvrant des séances programmées, arbitrage explicite) | US-PLAN-01 | US-PLAN-03 puis US-PLAN-05 (sprint 3) | Ouvert |
 | D-121 | A3 (séances redevenues programmables à la suppression d'une période) | US-PLAN-01 | mêmes destinations que ci-dessus | Ouvert |
 | D-133 | 6 (changer de grille active ne modifie pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2), fermeture par constat d'absence de code | Ouvert |

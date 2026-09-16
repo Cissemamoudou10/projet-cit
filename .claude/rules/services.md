@@ -43,6 +43,29 @@ Il retourne **toutes** les règles violées, pas seulement la première, et dés
 l'élément en cause — l'instructeur déjà affecté et à quelle brigade, le lieu
 occupé et par qui. Un refus non motivé est inexploitable.
 
+Il **n'écrit rien** : un contrôle appelé pour prévisualiser une modification
+envisagée doit pouvoir être appelé sans conséquence.
+
+## La garde mécanique d'une porte d'écriture unique
+
+Quand une story affirme qu'« un seul chemin » écrit une entité — le service de
+contrôle est unique et l'ensemble des chemins d'affectation y passe, sans
+exception (US-PLAN-04, § 5, Prompt 30) — l'affirmation ne vaut rien tant que
+rien ne la vérifie : c'est la leçon du sprint 1 (36 refus d'habilitation
+manquants, découverts seulement par un inventaire, refermés par un test de
+garde inscrit en définition de fini, sur le modèle de la couverture HTTP,
+`.claude/rules/tests.md`).
+
+`planification.services.ecriture.ServiceEcritureSeance` est la seule méthode
+du projet autorisée à instancier ou enregistrer `Seance`/`LigneProgramme` — un
+test d'architecture (`tests/architecture/test_couches.py::
+test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme`) scanne
+tout le projet, hors migrations et fabriques de test, et échoue si ces deux
+modèles sont construits ailleurs. Toute future entité pour laquelle plusieurs
+cas d'utilisation (génération, saisie manuelle, regroupement, duplication...)
+doivent produire le même contrôle suit ce patron : une porte d'écriture
+nommée, un test d'architecture qui vérifie qu'elle est la seule.
+
 ## Les huit services
 
 | Service | Responsabilité |
