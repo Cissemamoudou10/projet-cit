@@ -448,11 +448,13 @@ ECRANS_ECRITURE = [
         "noyau.lieux_calendrier_ecriture",
         lambda objets: [objets["creneau_type"].pk],
     ),
+    # --- planification : génération du programme hebdomadaire (US-PLAN-03) ---
+    EcranEcriture("planification:lancement_generation", "noyau.programme_ecriture"),
 ]
 
-# 89 adresses : les 80 précédentes (Prompt 28) plus les neuf adresses
-# d'écriture de ressources:grille_horaire/creneau_type (US-PLAN-12, Prompt 29).
-assert len(ECRANS_ECRITURE) == 89
+# 90 adresses : les 89 précédentes (Prompt 29) plus l'adresse d'écriture de
+# planification:lancement_generation (US-PLAN-03, Prompt 31).
+assert len(ECRANS_ECRITURE) == 90
 
 
 def _groupes_sans(permission):

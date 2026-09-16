@@ -200,3 +200,29 @@ def test_g7_matiere_sans_prerequis_acceptee_sans_controle(programme, cours, brig
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
 
     assert verdict.accepte
+
+
+# --- G8 — plafond de volume et cumul provisoire du lot (point 1, Prompt 31) -
+
+
+def test_g8_deux_candidates_du_meme_lot_meme_matiere_la_seconde_refusee_par_effet_de_lot(
+    programme, formation, matiere, instructeur, brigade
+):
+    """Sans cumul provisoire, chaque candidate ne verrait que le volume déjà
+    en base (zéro ici) et les deux passeraient — la génération dépasserait
+    le prescrit sans jamais le détecter. Motif chiffré, origine « lot »."""
+    lundi = programme.lundi_de_semaine
+    cours = Cours(creer_element(formation, matiere, volume=2), instructeur)
+    qualifier(instructeur, matiere)
+    premiere = _candidate(brigade, cours, instant(lundi, 0, 8), duree_min=120)
+    seconde = _candidate(brigade, cours, instant(lundi, 0, 14), duree_min=60)
+
+    verdicts = ServiceContraintes.verifier_lot(
+        [premiere, seconde], ServiceContraintes.contexte(programme)
+    )
+
+    assert verdicts[0].accepte
+    assert not verdicts[1].accepte
+    violation = next(v for v in verdicts[1].violations if v["code"] == "RG-39")
+    assert violation["origine"] == "lot"
+    assert "2" in violation["message"]

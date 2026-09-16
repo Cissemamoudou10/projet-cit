@@ -31,6 +31,111 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-156 — Fermeture des six reports du § 11, Prompt 31 — décompte final, un test par report
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 11 exige que chaque fermeture soit prouvée par un test, jamais déclarée (leçon D-50/D-51, quatre jours perdus la dernière fois).
+**Décision** — Les six sont refermés et vérifiés : D-34 (contrainte de catégorie de lieu exploitée par le moteur — groupe D, `test_generation_lieux.py`, les trois cas SALLE_ATTITREE/LIEU_PARTAGE/AUCUN_LIEU) ; D-39 (prérequis exploités par le moteur — critère 3, `test_generation_heuristique2.py::test_c4_...`) ; D-35, volet séance (source des prérequis pour la séance — `matieres_programmables`/`_prerequis_inacheves` lit `Prerequis` via `Seance`, prouvé indirectement par C4/G2) ; critère 5, US-PLAN-01 (périodes bloquantes exclues à la génération — `construire_cases`/`creneau_bloque`, groupe E, `test_e1_...`) ; E6/report US-PLAN-12 (refus de générer sans grille active — `test_e6_aucune_grille_active_generation_refusee`) ; critère 6, US-PLAN-12 (changer de grille active ne modifie pas les séances passées — fermeture par CONSTAT D'ABSENCE DE CODE, comme prévu par D-133 : aucune ligne de `ServiceGeneration`/`generation/*.py` ne touche à une `GrilleHoraire` ni ne modifie une `Seance` existante en dehors de la régénération explicitement sélectionnée ; vérifié par lecture, aucun test dédié n'était nécessaire au-delà de ceux du groupe B qui prouvent déjà qu'une brigade non sélectionnée n'est jamais touchée).
+**Alternative écartée** — Déclarer les fermetures dans le récit sans les lier à un test nommé : rejeté, c'est exactement l'erreur de D-50.
+**Impact sur les livrables** — `docs/suivi/AVANCEMENT.md`, tableau des reports, six lignes passées à Fermé.
+**Reporté au livrable** — non applicable.
+
+## D-155 — Impression du programme hebdomadaire : la nécessité de « par journée » est MESURÉE, pas seulement affirmée par RG-33 bis — non implantée cette story
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 9/§ 13, Prompt 31 : mesurer la largeur imprimable, portrait et paysage, et consigner dans `docs/suivi/IMPRESSION-ANALYSE.md`. RG-33 bis affirme que « l'impression par journée est un format de sortie » sans le chiffrer.
+**Décision** — Mesuré au navigateur, sur un jeu de démonstration réel généré en direct (quatre brigades, grille à quatre créneaux/jour) : la semaine entière (21 colonnes) fait 2 319 px, contre un budget de 703 px en portrait et 1 032 px en paysage — **ni l'un ni l'autre ne suffit**, contrairement au calendrier annuel (D-analysé au § 8 d'IMPRESSION-ANALYSE.md) qui avait évité ce piège par un choix de vue. Une seule journée (colonne brigade + quatre créneaux) fait 504 px — tient confortablement dans les deux orientations. RG-33 bis n'est donc pas une préférence de présentation : c'est la seule mise en page mesurée qui tienne. Cette story ne l'implante PAS — l'écran actuel imprime tel quel, en débordement, avec la feuille `impression.css` commune.
+**Alternative écartée** — Implanter la pagination par journée maintenant, hors périmètre explicite du § 14 (« Aucune anticipation ») et du lot d'impression prévu au sprint 4.
+**Impact sur les livrables** — `docs/suivi/IMPRESSION-ANALYSE.md`, § 10, nouvelle mesure ; le programme hebdomadaire rejoint la liste des écrans à traiter au lot d'impression, avec l'arbitrage déjà tranché (par journée, pas de masquage à inventer).
+**Reporté au livrable** — oui, au lot d'impression du sprint 4.
+
+## D-154 — Écart constaté, non corrigé : G5 (Prompt 31) suppose quatre profils avec `programme_lecture`, la matrice n'en porte que deux
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 12, Prompt 31, groupe G : « G5. Lecture accordée aux quatre profils habilités. » La matrice réelle (`administration/constantes.py::MATRICE`, posée à US-ADM-03/Prompt 04, § 11.2) n'accorde `programme_lecture` qu'à Cellule planification et Direction de formation — deux profils, pas quatre. Cellule pédagogique et Cellule examens n'ont ni `programme_lecture` ni `programme_ecriture`.
+**Décision** — Le test G5 (`test_generation_ecran.py`) vérifie les DEUX profils réellement habilités, pas quatre — un test qui visait quatre échouerait sur un désaccord entre le prompt et une matrice posée quatre sprints plus tôt, déjà testée et exploitée par des dizaines d'écrans. La matrice n'est pas modifiée : l'étendre est une décision de sécurité/habilitation transverse, hors périmètre de cette story et jamais demandée explicitement.
+**Alternative écartée** — Ajouter `programme_lecture` à Cellule pédagogique/Cellule examens pour faire correspondre le compte à « quatre » : écarté, une story de planification n'a pas mandat pour modifier la matrice d'habilitation transverse sans arbitrage explicite.
+**Impact sur les livrables** — aucun sur le modèle ; à signaler au chef de projet, qui tranche si la matrice doit évoluer.
+**Reporté au livrable** — non applicable, en l'état.
+
+## D-153 — Journalisation de l'acte de génération : nouvelle nature `GENERATION_PROGRAMME`, extension à RG-26
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-26 énumère cinq natures journalisées ; la génération d'un programme n'en fait pas partie (seules la validation et le rejet le sont). § 7, Prompt 31 : la génération doit journaliser l'ACTE (semaine, brigades, comptes créés/supprimés, auteur), jamais le détail des séances — un journal immuable grossirait de centaines d'entrées à chaque lancement sinon.
+**Décision** — `TypeAction.GENERATION_PROGRAMME` ajoutée (`administration/models.py`, migration `0013`), posée par `ServiceGeneration._journaliser_acte`. `ServiceEcritureSeance.creer_seances` (lot, génération) n'écrit AUCUN journal détaillé par séance ; `creer_seance` (singulier, saisie manuelle US-PLAN-05) conserve le sien, `CREATION_ELEMENT_GESTION` par séance — deux régimes délibérément distincts pour la même porte d'écriture, documentés dans le module lui-même.
+**Alternative écartée** — Réutiliser une nature existante (`CREATION_ELEMENT_GESTION`) pour l'acte de génération : rejeté, confondrait un acte de génération (un programme, un auteur, un compte) avec la création d'un élément de gestion individuel (une séance) — la distinction est le point même de cette décision.
+**Impact sur les livrables** — RG-26 porte une extension de plus (`docs/suivi/HABILITATIONS.md`/mémoire, à signaler au même titre que `EXPORT_DONNEES`, D-18).
+**Reporté au livrable** — oui, décompte des extensions à RG-26 à mettre à jour au mémoire.
+
+## D-152 — E1/E6 évalués AVANT toute création de `ProgrammeHebdomadaire` ; le lundi est validé avant le `get_or_create`
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Point 3, directive utilisateur au Prompt 31 : un programme vide créé puis abandonné occuperait l'unicité de la semaine, et la génération suivante croirait devoir le compléter. Mon plan initial commençait par le `get_or_create`.
+**Décision** — `ServiceGeneration.generer` valide le lundi (`_valider_lundi`), vérifie la grille active (`_grille_active_avec_creneaux`, lève `AucuneGrilleActive`) et construit les cases (`_cases_ou_e1`, lève `SemaineEntierementBloquee` si vide) — les TROIS AVANT tout accès à `ProgrammeHebdomadaire`. Le calcul des périodes bloquantes pour E1 réutilise `contraintes._semaine`/`_charger_periodes_bloquantes` directement sur le lundi brut, sans `Contexte` ni programme existant.
+**Alternative écartée** — Envelopper tout dans une transaction et compter sur le rollback en cas d'E1 : techniquement suffisant pour ne rien persister, mais ne respecte pas l'ordre littéral demandé et complique la lecture du service.
+**Impact sur les livrables** — aucun sur la conception ; confirme E1/E6 du Prompt 31 § 6 tels quels.
+**Reporté au livrable** — non applicable.
+
+## D-151 — La charge d'instructeur du tri glouton est un critère EMPRUNTÉ à RG-43, jamais son implantation
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Point 2, directive utilisateur : le départage à contraintes égales suit la charge d'enseignement courante croissante — le premier critère non éliminatoire de RG-43 (classement des remplaçants, US-PLAN-09/10, non implantée). Risque : en faire un service partagé qu'US-PLAN-09 hériterait à moitié fait, avec les critères RG-43 restants (antériorité, statut) absents.
+**Décision** — `planification.generation.tri.charge_instructeur` reste dans le module de tri de la stratégie, jamais promu en service partagé. Portée : la semaine en cours de génération SEULEMENT (`contexte.seances_existantes`, déjà bornée au programme) PLUS le cumul provisoire de cette génération (`provisoires`) — sans ce cumul, les premières cases iraient toutes au même instructeur.
+**Alternative écartée** — `ServiceRessources.charge_hebdomadaire(instructeur)` partagé dès maintenant : écarté, RG-43 n'est pas encore arbitrée en service, et un partage prématuré figerait une signature avant que ses vrais besoins (antériorité, statut) soient connus.
+**Impact sur les livrables** — aucun sur la conception ; note pour US-PLAN-09/10, qui devra soit réutiliser `charge_instructeur` en l'état soit refaire un calcul propre à RG-43.
+**Reporté au livrable** — non applicable.
+
+## D-150 — Stratégie et borne de temps : deux paramètres BNF-13, `GENERATION_STRATEGIE` et `GENERATION_BORNE_TEMPS_SECONDES`
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 3/§ 6, Prompt 31 : le choix de stratégie est un paramètre, jamais une branche de code, même à une seule implantation ; la borne de temps (BNF-04, cinq minutes) appartient à l'interface de stratégie dès cette story bien qu'une heuristique gloutonne ne l'atteigne jamais en pratique (temps proportionnel au nombre de cases).
+**Décision** — Deux réglages Django (`config/settings/base.py`), ni table de paramétrage (le terrain n'a aucune raison de changer la stratégie) ni constante (BNF-13 les qualifie explicitement). `STRATEGIES = {"gloutonne": StrategieGloutonne}` — sélection par indexation du dictionnaire sur `settings.GENERATION_STRATEGIE`, jamais un `if`/`elif`.
+**Alternative écartée** — Une branche `if strategie == "gloutonne"` : c'est exactement ce que le prompt interdit nommément.
+**Impact sur les livrables** — aucun sur la conception ; les deux réglages sont à documenter dans le mémoire au même titre que `VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE`.
+**Reporté au livrable** — non applicable.
+
+## D-149 — Une séance par créneau, jamais de fusion (A4)
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 4, A4 : le modèle permet une séance couvrant plusieurs créneaux consécutifs (`Seance` porte ses heures réelles, aucune référence à un créneau type), mais la génération produit UNE SÉANCE PAR CRÉNEAU.
+**Décision** — `StrategieGloutonne` ne fusionne jamais deux cases consécutives en une seule candidate, quelle que soit la matière. Fusionner des créneaux consécutifs est une optimisation de confort qui ne change rien au volume programmé — servie par la saisie manuelle (US-PLAN-05) et, le cas échéant, le solveur (US-PLAN-08).
+**Alternative écartée** — Détecter deux cases consécutives de la même matière/brigade et les fusionner en une candidate à l'écriture : rejeté, complexifie l'heuristique pour un gain de confort seul, contraire à l'INTERDIT explicite du § 4.
+**Impact sur les livrables** — aucun sur la conception ; confirme le modèle `Seance` tel que posé à US-PLAN-04.
+**Reporté au livrable** — non applicable.
+
+## D-148 — Interface `Strategie`/`StrategieGloutonne` : une abstraction posée ici, aucune au Prompt 27 — pourquoi la différence est légitime
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Au Prompt 27, une abstraction avait été déconseillée pour les modèles de période : trois cas se ressemblaient sans qu'on sache s'ils évolueraient ensemble. Ici, `StrategieSolveur` (US-PLAN-08, CU-P5-06, « extension formelle de CU-P5-01 ») est DÉJÀ spécifiée, et la comparaison des deux stratégies sur les mêmes données est un livrable attendu du mémoire.
+**Décision** — `planification.generation.strategie.Strategie` (ABC), une seule implantation (`StrategieGloutonne`) aujourd'hui. La règle retenue : on n'abstrait jamais sur une ressemblance non confirmée, on abstrait sur une VARIATION CONNUE et déjà nommée dans la conception.
+**Alternative écartée** — Attendre US-PLAN-08 pour introduire l'interface : aurait imposé de retoucher `ServiceGeneration` et tous ses appelants au sprint 4, pour un point déjà tranché en conception dès ce sprint.
+**Impact sur les livrables** — aucun sur la conception ; à citer au mémoire comme second exemple du principe d'abstraction du projet, en contraste explicite avec le Prompt 27.
+**Reporté au livrable** — non applicable.
+
+## D-147 — Régénération chirurgicale : séance regroupée à cheval PRÉSERVÉE intégralement et signalée
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 2, Prompt 31 : une régénération supprime les séances non verrouillées des brigades sélectionnées et reconstruit, sans toucher aux brigades non sélectionnées. Cas non couvert littéralement : une séance regroupée (US-PLAN-06, structure posée à US-PLAN-04) dont les lignes couvrent à la fois une brigade sélectionnée et une brigade non sélectionnée.
+**Décision** — Préservée intégralement, jamais détruite partiellement — une ligne de programme ne se supprime pas seule sans casser l'intégrité de la séance regroupée pour l'autre brigade. Signalée au compte rendu (`seances_regroupees_a_cheval_preservees`). `_supprimer_seances_regenerees` (`services/generation.py`) classe chaque séance non verrouillée en trois catégories : hors sélection (jamais touchée), entièrement dans la sélection (supprimée), à cheval (préservée + signalée).
+**Alternative écartée** — Retirer seulement la ligne de la brigade sélectionnée : rejeté, romprait RG-32 (une ligne par brigade) sans qu'aucun cas d'utilisation ne sache reconstruire l'autre ligne perdue.
+**Impact sur les livrables** — aucun sur la conception ; le cas devient un comportement documenté et testé (B5, `test_generation_regeneration.py`), utile à US-PLAN-06.
+**Reporté au livrable** — non applicable.
+
+## D-146 — Un seul programme par semaine : `get_or_create`, la génération partielle complète le même programme
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-33 bis, structurante : au plus un `ProgrammeHebdomadaire` par semaine, centre entier. § 2, Prompt 31 identifie le piège le plus coûteux que cette story puisse produire : un générateur qui crée un programme à chaque appel violerait l'unicité au second lancement, ou détruirait le travail des autres brigades en « corrigeant ».
+**Décision** — `ServiceGeneration.generer` fait `ProgrammeHebdomadaire.objects.get_or_create(lundi_de_semaine=...)` — générer pour A et B crée le programme s'il n'existe pas ; générer ensuite pour C et D AJOUTE des séances au MÊME programme, sans toucher à celles de A et B (garanti par la régénération chirurgicale, D-147, qui ne touche jamais aux brigades non sélectionnées).
+**Alternative écartée** — Un service dédié « premier lancement » distinct de « complément » : rejeté, `get_or_create` couvre les deux cas par construction, sans branche explicite à maintenir.
+**Impact sur les livrables** — aucun sur la conception ; confirme RG-33 bis telle que posée, testé A1-A5 (`test_generation.py`).
+**Reporté au livrable** — non applicable.
+
+## D-145 — `ServiceEcritureSeance.creer_seances` (lot) : contexte chargé une fois, deux régimes de journalisation
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 0.3, point 4, Prompt 31 : `creer_seance` (singulier, US-PLAN-04) recharge tout le contexte à chaque appel — correct pour la saisie manuelle, mais appelé une fois par séance à la génération multiplierait le nombre de requêtes SQL par le nombre de séances, violant I3 (§ 10 : borné, indépendant du nombre de cases).
+**Décision** — Nouvelle méthode `creer_seances(agissant, programme, groupes_de_candidates)` : contexte chargé UNE FOIS, tout le lot revérifié à plat en une seule passe (`verifier_lot`, même sémantique d'ordre que D-135), écriture de toutes les séances dans UNE transaction. Journalisation : voir D-153 — l'ACTE seul, jamais le détail par séance, contrairement à `creer_seance`.
+**Alternative écartée** — Appeler `creer_seance` en boucle depuis `ServiceGeneration` : rejeté, c'est exactement le défaut mesuré (I3) et le journal détaillé grossirait de centaines d'entrées par génération (voir D-153).
+**Impact sur les livrables** — aucun sur la conception ; `ServiceEcritureSeance` reste l'unique porte d'écriture (garde mécanique de D-142 inchangée, `_creer_une_seance` factorisée entre les deux méthodes).
+**Reporté au livrable** — non applicable.
+**Précision du 2026-09-16 (relecture `relecteur-conception`)** — « chargé une fois » désigne `creer_seances` PRISE ISOLÉMENT (un seul chargement pour tout le lot, pas un par séance). Le flux complet d'une génération charge un `Contexte` DEUX FOIS : une fois dans `ServiceGeneration._generer_dans_programme` pour piloter la stratégie, une seconde fois à l'intérieur de `creer_seances` pour revérifier le lot sans faire confiance à l'appelant (défense en profondeur, documentée dans `ecriture.py`). Reste conforme à I3 — le nombre de requêtes ne croît pas avec le nombre de CASES, seulement ce facteur constant ×2 — et la mesure du § 10/I3 (`test_i3_...`) porte sur l'appel complet, donc reflète déjà ce double chargement ; aucune correction de code nécessaire, seule cette formulation était ambiguë.
+
+## D-144 — Extension `provisoires` sur `ServiceContraintes.verifier` : le contexte provisoire de génération vit DANS `ServiceContraintes`
+**Date** 2026-09-16 · **Story** US-PLAN-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 0.2, Prompt 31 : la génération gloutonne place une candidate puis vérifie la suivante contre un état qui inclut ce placement — un mécanisme distinct de `verifier_lot` (D-135), qui reçoit une liste DÉJÀ TRANCHÉE, alors que la stratégie essaie plusieurs candidates par case avant de savoir laquelle sera retenue. Le prompt exige que l'extension se fasse DANS `ServiceContraintes`, jamais un contournement dans la stratégie (§ 14).
+**Décision** — `ServiceContraintes.verifier(candidate, contexte, provisoires=())` — réutilise tel quel le mécanisme déjà privé de `_verifier_une`/`lot_acceptees`, exposé pour un appelant qui construit son lot progressivement. `verifier(candidate, contexte)` reste valide (rétrocompatible avec tous les appels d'US-PLAN-04). Le VOLET PLAFOND de RG-39 consulte désormais `provisoires` au même titre que RG-34/RG-37 — correction du 16/09/2026, voir D-135.
+**Alternative écartée** — Un mécanisme de contexte provisoire propre à la stratégie, en dehors de `ServiceContraintes` : c'est exactement ce que § 14 interdit — aurait dupliqué la logique de fold déjà écrite pour `verifier_lot`.
+**Impact sur les livrables** — aucun sur la conception ; le contrat de `ServiceContraintes` (D-135) est complété, pas remplacé.
+**Reporté au livrable** — non applicable.
+
 ## D-143 — Résolveur de séances futures d'une qualification, dans `noyau` — même patron que D-128, D-51 en est le second cas annoncé
 **Date** 2026-09-15 · **Story** US-PLAN-04 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — RG-22 (retrait de qualification, `ServiceQualification.retirer`, `ressources`) doit refuser tant que des séances futures existent pour l'instructeur et la matière concernés — mais `Seance` vit dans `planification`, la couche la plus haute, qui importe déjà `ressources`. Le sens inverse (`ressources` important `planification`) créerait un cycle réel, exactement le motif de D-128 pour le volume horaire de référence — sauf qu'ici c'est `ressources`, pas `referentiel`/`organisation`, qui a besoin d'une donnée d'une couche encore plus haute. Le développeur avait initialement classé ce cas hors du motif « planification est la couche haute, elle n'a besoin du résolveur de personne » — l'utilisateur a corrigé : le besoin ne se lit pas à l'échelle des six règles (où `planification` importe effectivement tout ce qu'il faut), mais à l'échelle de CHAQUE donnée consommée — RG-22 vit dans `ressources`, pas dans `planification`.
@@ -103,6 +208,7 @@ reprendre. **Cette ligne n'est jamais vide.**
 **Alternative écartée** — Vérifier chaque candidate du lot indépendamment (boucle naïve sur `verifier`) : c'est exactement ce que § 3 du prompt interdit nommément — produirait des programmes invalides à la génération, le défaut ne se verrait qu'à la recette (même risque que R6).
 **Impact sur les livrables** — aucun sur la conception ; note de méthode pour US-PLAN-03, qui devra respecter l'ordre de soumission et la limite du cumul provisoire ci-dessus.
 **Reporté au livrable** — non applicable.
+**Correction du 2026-09-16 (US-PLAN-03, Prompt 31 § 0.2/point 1)** — La limite posée ci-dessus regroupait RG-38 et RG-39 sous un même « restent évaluées contre le contexte chargé une fois » : exact pour RG-38 (un blocage calendaire ne dépend d'aucun autre placement), FAUX pour le volet PLAFOND de RG-39 dès que l'appelant est une génération plaçant plusieurs séances de la même matière dans la même semaine — sans cumul provisoire, chaque candidate ne verrait que le volume déjà en base et le plafond deviendrait décoratif. `regles_volume.verifier_rg39`/`_verifier_volume` consultent désormais `lot_acceptees` au même titre que RG-34/RG-37 (testé, G8, `test_contraintes_volume.py`). Le volet PRÉREQUIS ne les consulte PAS et reste inchangé — choix conservateur délibéré : une matière prérequise achevée par une candidate placée plus tôt dans la même génération ne doit pas débloquer sa dépendante plus tard dans la même génération, et cela évite que le résultat dépende de l'ordre de placement. RG-38 reste hors cumul provisoire, motif inchangé. Erreur repérée par la relecture du plan (l'utilisateur), pas par le sous-agent — corrigée avant tout code de génération.
 
 ## D-134 — Inversion d'ordre : US-PLAN-04 avant US-PLAN-03, imposée par le prompt
 **Date** 2026-09-15 · **Story** US-PLAN-04 · **Auteur** Lt Cissé (avec Claude Code)

@@ -89,6 +89,12 @@ class TypeAction(models.TextChoices):
     LECTURE plutôt qu'une écriture : un export fait sortir des données
     nominatives du périmètre du système, RG-26 s'applique à ce geste-là,
     pas à la simple consultation d'un écran (voir docs/suivi/DECISIONS.md).
+
+    `GENERATION_PROGRAMME` (US-PLAN-03) — une extension de plus : RG-26
+    n'énumère que la validation et le rejet d'un programme, jamais sa
+    génération. `ServiceGeneration` journalise l'ACTE (semaine, brigades
+    sélectionnées, comptes créés/supprimés, auteur), jamais le détail des
+    séances — voir docs/suivi/DECISIONS.md.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -116,6 +122,7 @@ class TypeAction(models.TextChoices):
         "Suppression d'un élément de gestion",
     )
     EXPORT_DONNEES = "export_donnees", "Export de données"
+    GENERATION_PROGRAMME = "generation_programme", "Génération d'un programme"
 
 
 class EntreeJournal(ModeleHorodate):

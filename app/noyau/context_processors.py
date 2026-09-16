@@ -34,6 +34,7 @@ PERMISSION_REFERENTIEL = "noyau.referentiel_lecture"
 PERMISSION_ORGANISATION = "noyau.organisation_lecture"
 PERMISSION_INSTRUCTEURS = "noyau.instructeurs_qualifications_lecture"
 PERMISSION_LIEUX = "noyau.lieux_calendrier_lecture"
+PERMISSION_PLANIFICATION = "noyau.programme_lecture"
 
 
 def contexte_application(request):
@@ -54,41 +55,35 @@ def _rubrique_active(request):
     return correspondance.app_name if correspondance else None
 
 
-def _rubriques(request):
-    rubriques = []
-    if a_permission(request.user, PERMISSION_ADMINISTRATION):
-        rubriques.append(
-            {
-                "slug": "administration",
-                "libelle": "Administration",
-                "url": reverse("administration:liste_comptes"),
-            }
-        )
-    if a_permission(request.user, PERMISSION_REFERENTIEL):
-        rubriques.append(
-            {
-                "slug": "referentiel",
-                "libelle": "Référentiel",
-                "url": reverse("referentiel:liste_types_formation"),
-            }
-        )
-    if a_permission(request.user, PERMISSION_ORGANISATION):
-        rubriques.append(
-            {
-                "slug": "organisation",
-                "libelle": "Sessions",
-                "url": reverse("organisation:liste_sessions"),
-            }
-        )
+RUBRIQUES_SIMPLES = [
+    ("administration", "Administration", PERMISSION_ADMINISTRATION, "administration:liste_comptes"),
+    ("referentiel", "Référentiel", PERMISSION_REFERENTIEL, "referentiel:liste_types_formation"),
+    ("organisation", "Sessions", PERMISSION_ORGANISATION, "organisation:liste_sessions"),
+    ("planification", "Planification", PERMISSION_PLANIFICATION, "planification:consultation_programme"),
+]
+
+
+def _rubrique_si_habilite(request, slug, libelle, permission, url_nom):
+    if not a_permission(request.user, permission):
+        return None
+    return {"slug": slug, "libelle": libelle, "url": reverse(url_nom)}
+
+
+def _rubrique_ressources(request):
     a_instructeurs = a_permission(request.user, PERMISSION_INSTRUCTEURS)
     a_lieux = a_permission(request.user, PERMISSION_LIEUX)
-    if a_instructeurs or a_lieux:
-        url = "ressources:liste_instructeurs" if a_instructeurs else "ressources:liste_lieux"
-        rubriques.append(
-            {
-                "slug": "ressources",
-                "libelle": "Ressources",
-                "url": reverse(url),
-            }
-        )
-    return rubriques
+    if not (a_instructeurs or a_lieux):
+        return None
+    url = "ressources:liste_instructeurs" if a_instructeurs else "ressources:liste_lieux"
+    return {"slug": "ressources", "libelle": "Ressources", "url": reverse(url)}
+
+
+def _rubriques(request):
+    rubriques = [
+        _rubrique_si_habilite(request, slug, libelle, permission, url_nom)
+        for slug, libelle, permission, url_nom in RUBRIQUES_SIMPLES
+    ]
+    # "Ressources" n'est pas dans RUBRIQUES_SIMPLES (double permission) —
+    # réinséré ici entre Sessions et Planification, l'ordre du menu (D-57).
+    rubriques.insert(3, _rubrique_ressources(request))
+    return [rubrique for rubrique in rubriques if rubrique]

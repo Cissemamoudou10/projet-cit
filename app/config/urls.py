@@ -15,4 +15,5 @@ urlpatterns = [
     path("", include("referentiel.urls")),
     path("", include("organisation.urls")),
     path("", include("ressources.urls")),
+    path("", include("planification.urls")),
 ]

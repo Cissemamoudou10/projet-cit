@@ -141,6 +141,17 @@ IMPORT_STAGIAIRES_LIGNES_MAX = int(os.environ.get("IMPORT_STAGIAIRES_LIGNES_MAX"
 # calendrier — voir docs/suivi/DECISIONS.md.
 MOIS_DEBUT_ANNEE_FORMATION = int(os.environ.get("MOIS_DEBUT_ANNEE_FORMATION", "9"))
 
+# Génération du programme hebdomadaire (US-PLAN-03, § 3/§ 6, Prompt 31).
+# GENERATION_STRATEGIE : le choix de stratégie est un paramètre, jamais une
+# branche de code — même avec une seule implantation disponible aujourd'hui
+# (« gloutonne »). GENERATION_BORNE_TEMPS_SECONDES : BNF-04 borne la
+# génération à cinq minutes ; la borne appartient à l'interface de stratégie
+# et protège d'un défaut qui ferait boucler la génération, même si une
+# heuristique gloutonne (temps proportionnel au nombre de cases) ne
+# l'atteint jamais en pratique.
+GENERATION_STRATEGIE = os.environ.get("GENERATION_STRATEGIE", "gloutonne")
+GENERATION_BORNE_TEMPS_SECONDES = int(os.environ.get("GENERATION_BORNE_TEMPS_SECONDES", "300"))
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

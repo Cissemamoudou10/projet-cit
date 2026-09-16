@@ -1,0 +1,107 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Programme hebdomadaire — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="font-titre text-xl font-semibold leading-tight">
+        Programme hebdomadaire du centre — semaine du {{ lundi|date:"d/m/Y" }}
+      </h1>
+      {% if programme %}
+        <p class="text-sm text-gris-lecture">
+          État : <span class="font-semibold text-encre">{{ programme.get_etat_display|upper }}</span>
+        </p>
+      {% endif %}
+    </div>
+    {% if perms.noyau.programme_ecriture %}
+      <a href="{% url 'planification:lancement_generation' %}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                px-3.5 text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Générer / compléter
+      </a>
+    {% endif %}
+  </div>
+  <form method="get" class="mt-3 flex flex-wrap items-end gap-3 text-sm">
+    <div>
+      <label for="semaine" class="mb-1 block text-2xs font-medium uppercase tracking-wide
+                                   text-gris-lecture">Semaine du</label>
+      <input type="date" id="semaine" name="semaine" value="{{ lundi|date:'Y-m-d' }}"
+             class="border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm">
+    </div>
+    <div>
+      <label for="brigade" class="mb-1 block text-2xs font-medium uppercase tracking-wide
+                                   text-gris-lecture">Brigade</label>
+      <select id="brigade" name="brigade" class="border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm">
+        <option value="">Toutes les brigades</option>
+        {% for brigade in toutes_brigades %}
+          <option value="{{ brigade.pk }}"
+                  {% if request.GET.brigade == brigade.pk|stringformat:"s" %}selected{% endif %}>
+            {{ brigade }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit"
+            class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                   text-sm font-medium text-encre transition-colors duration-survol hover:border-marine-700">
+      Filtrer
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% if not programme %}
+  <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
+    Aucun programme généré pour cette semaine.
+  </p>
+{% else %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <div class="overflow-auto">
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="sticky left-0 top-0 z-20 bg-marine-900 px-3 py-2 text-left
+                                 font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+            Brigade
+          </th>
+          {% for creneau in creneaux %}
+            <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                                   font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              {{ creneau.get_jour_semaine_display }}<br>
+              <span class="font-normal normal-case tracking-normal">
+                {{ creneau.heure_debut|time:"H:i" }}–{{ creneau.heure_fin|time:"H:i" }}</span>
+            </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in lignes %}
+          {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
+          <tr class="{% cycle bande %} border-t border-gris-trait align-top">
+            <th scope="row" class="sticky left-0 z-10 bg-inherit px-3 py-2 text-left font-medium">
+              {{ ligne.brigade }}
+            </th>
+            {% for cellule in ligne.cellules %}
+              <td class="px-3 py-2">
+                {% if cellule.seance %}
+                  <p class="font-medium">{{ cellule.seance.element_referentiel.matiere }}</p>
+                  <p class="text-xs text-gris-lecture">
+                    {{ cellule.seance.instructeur }}
+                    {% if cellule.seance.lieu %} — {{ cellule.seance.lieu }}{% endif %}
+                  </p>
+                {% else %}
+                  <span class="text-gris-eteint">{{ cellule.libelle_vide }}</span>
+                {% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Compte rendu de génération — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <div class="flex items-end justify-between gap-6">
+    <h1 class="font-titre text-xl font-semibold leading-tight">
+      Compte rendu — semaine du {{ compte_rendu.programme.lundi_de_semaine|date:"d/m/Y" }}
+    </h1>
+    <span class="border border-marine-700 px-2 py-px text-2xs font-semibold
+                 tracking-wide text-marine-700">{{ compte_rendu.programme.get_etat_display|upper }}</span>
+  </div>
+  {% if compte_rendu.interrompu_par_la_borne %}
+    <p class="mt-2 border border-etat-ecart bg-sable px-3 py-2 text-xs text-etat-ecart">
+      Génération interrompue par la borne de temps (BNF-04) — meilleure solution admissible obtenue.
+    </p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Séances placées par brigade
+  </p>
+  <ul class="divide-y divide-gris-trait">
+    {% for brigade, nombre in compte_rendu.seances_par_brigade.items %}
+      <li class="flex items-center justify-between px-4 py-1.5 text-sm">
+        <span>{{ brigade }}</span>
+        <span class="tabular-nums font-semibold">{{ nombre }}</span>
+      </li>
+    {% empty %}
+      <li class="px-4 py-2 text-sm text-gris-lecture">Aucune séance placée.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if compte_rendu.matieres_ecartees %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Matières écartées d'emblée — {{ compte_rendu.matieres_ecartees|length }}
+  </p>
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Brigade</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Matière</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Motif</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ecartee in compte_rendu.matieres_ecartees %}
+        <tr class="border-t border-gris-trait">
+          <td class="px-3 py-1.5">{{ ecartee.brigade }}</td>
+          <td class="px-3 py-1.5">{{ ecartee.element.matiere }}</td>
+          <td class="px-3 py-1.5 text-gris-lecture">{{ ecartee.motif }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Créneaux non pourvus — {{ compte_rendu.cases_non_pourvues|length }}
+  </p>
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Brigade</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Créneau</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Motif</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for case in compte_rendu.cases_non_pourvues %}
+        <tr class="border-t border-gris-trait align-top">
+          <td class="px-3 py-1.5">{{ case.brigade }}</td>
+          <td class="px-3 py-1.5 tabular-nums">{{ case.debut|date:"D d/m H:i" }}–{{ case.fin|time:"H:i" }}</td>
+          <td class="px-3 py-1.5 text-gris-lecture">
+            {% for motif in case.motifs %}<p>{{ motif }}</p>{% endfor %}
+            {% if case.proposition %}
+              <p class="mt-1 text-marine-700">{{ case.proposition }}</p>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3" class="px-3 py-2 text-gris-lecture">Toutes les cases ont été pourvues.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Volume programmé et restant, par matière et par brigade
+  </p>
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Brigade</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Matière</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Cette semaine</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Restant (élément)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in compte_rendu.volumes %}
+        <tr class="border-t border-gris-trait">
+          <td class="px-3 py-1.5">{{ ligne.brigade }}</td>
+          <td class="px-3 py-1.5">{{ ligne.element.matiere }}</td>
+          <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.heures_cette_semaine|floatformat:2 }} h</td>
+          <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.volume_restant_element|floatformat:2 }} h</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% if compte_rendu.seances_verrouillees_preservees or compte_rendu.seances_regroupees_a_cheval_preservees %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm">
+  <p class="font-semibold">Séances préservées</p>
+  <ul class="mt-1 list-disc pl-5 text-gris-lecture">
+    {% for seance in compte_rendu.seances_verrouillees_preservees %}
+      <li>{{ seance }} — verrouillée</li>
+    {% endfor %}
+    {% for seance in compte_rendu.seances_regroupees_a_cheval_preservees %}
+      <li>{{ seance }} — regroupée, à cheval sur une brigade non sélectionnée</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'planification:consultation_programme' %}?semaine={{ compte_rendu.programme.lundi_de_semaine|date:'Y-m-d' }}"
+     class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+            text-sm font-medium text-encre no-underline transition-colors duration-survol
+            hover:border-marine-700">
+    Consulter le programme
+  </a>
+</div>
+{% endblock %}

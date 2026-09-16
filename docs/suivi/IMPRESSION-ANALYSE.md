@@ -270,3 +270,51 @@ portent pas `data-impression="masquer"` — ni sur cette fiche ni sur
 d'en-tête sans ce masquage : écart préexistant à cette story, pas introduit
 ici, à traiter avec le lot d'impression du sprint 4 si les fiches (par
 opposition aux listes) rejoignent le périmètre imprimable.
+
+## 10. Sprint 2 — US-PLAN-03, mesuré le 2026-09-16, portrait ET paysage
+
+Le programme hebdomadaire (`consultation_programme.html`) est exactement le
+cas que § 8 identifiait comme risqué et que la vue annuelle du calendrier a
+évité : une GRILLE À CASES FIXES, brigades en lignes, créneaux de la grille
+active en colonnes — la géométrie que RG-33 bis anticipe explicitement
+(« l'impression par journée est un format de sortie »). Mesuré sur un jeu
+de démonstration réel (quatre brigades, grille « Ordinaire » à quatre
+créneaux/jour, cinq jours ouvrés, soit 21 colonnes dont la colonne
+Brigade), après génération réelle au navigateur (§ 13) : feuille
+`impression.css` injectée active (hors `@media print`, même sonde qu'aux
+§ 6 à 9), largeur lue sur `table.scrollWidth`.
+
+| Mesure | Largeur | Budget | Dépassement |
+|---|---|---|---|
+| Semaine entière (21 colonnes) | **2 319 px** | 703 px (portrait) | **1 616 px (~230 %)** |
+| Semaine entière (21 colonnes) | 2 319 px | 1 032 px (paysage, § 8) | **1 287 px (~125 %)** |
+| Une seule journée (colonne Brigade + 4 créneaux) | **504 px** | 703 px (portrait) | — (tient, 199 px de marge) |
+
+**Ni le portrait ni le paysage ne suffisent pour la semaine entière.**
+Contrairement au calendrier annuel (§ 8), ici la largeur dépend bien d'une
+géométrie à cases fixes — le nombre de colonnes croît avec le nombre de
+créneaux/jour de la grille active, jamais borné par le texte affiché.
+Aucun ajustement de police ou de remplissage (option 1, § 2) ne comble un
+tel écart sans rendre les cases illisibles.
+
+**L'impression par journée n'est donc pas une préférence de présentation,
+c'est une NÉCESSITÉ mesurée** : une seule journée (504 px) tient
+confortablement dans le budget portrait, avec 199 px de marge — assez pour
+une éventuelle colonne supplémentaire si une future grille portait cinq
+créneaux/jour plutôt que quatre (628 px, tiendrait encore). Le paysage
+(1 032 px) permettrait même deux journées par page (504 × 2 = 1 008 px),
+mais rien dans le § 9 du Prompt 31 ne demande ce regroupement — non
+retenu, pour rester fidèle au document réel du centre (une page par
+journée, RG-33 bis).
+
+**Conséquence pour le lot d'impression du sprint 4** : cet écran REJOINT la
+liste des écrans nécessitant l'arbitrage paysage/masquage ouvert au § 5 —
+mais l'arbitrage lui-même est déjà tranché par la mesure ci-dessus,
+contrairement aux écrans du § 5 encore ouverts : implanter un mode
+d'impression PAR JOURNÉE (cinq pages, une par jour ouvré, la brigade en
+ligne et les créneaux de ce seul jour en colonnes) est la seule voie
+mesurée qui tienne, en portrait comme en paysage. Cette story
+(US-PLAN-03) n'implante PAS ce mode — seule la mesure est livrée ici, comme
+demandé au § 9/§ 13 du Prompt 31 ; l'écran actuel imprime tel quel (feuille
+`impression.css` commune), donc déborde en l'état. Reporté au lot
+d'impression, à consigner comme dette dans `docs/suivi/DECISIONS.md`.

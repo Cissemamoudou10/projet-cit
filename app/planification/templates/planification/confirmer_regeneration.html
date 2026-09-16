@@ -1,0 +1,50 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Confirmer la régénération — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[560px] animate-ouvrir border border-marine-900 bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-marine-900 px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Régénérer la semaine du {{ lundi|date:"d/m/Y" }}
+    </p>
+    <div class="px-4 py-4 text-sm">
+      <p>
+        Un programme existe déjà pour cette semaine. Les séances NON VERROUILLÉES des
+        brigades suivantes seront supprimées puis reconstruites :
+      </p>
+      <ul class="mt-3 divide-y divide-gris-trait border border-gris-trait">
+        {% for brigade, nombre in impact.items %}
+          <li class="flex items-center justify-between px-3 py-1.5">
+            <span>{{ brigade }}</span>
+            <span class="tabular-nums font-semibold">{{ nombre }} séance{{ nombre|pluralize }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="mt-3 border border-gris-trait bg-sable px-3 py-2.5 text-xs text-gris-lecture">
+        Les séances verrouillées et celles des brigades non sélectionnées sont préservées.
+      </p>
+    </div>
+    {{ formulaire.semaine.as_hidden }}
+    {% for valeur in formulaire.cleaned_data.brigades %}
+      <input type="hidden" name="brigades" value="{{ valeur.pk }}">
+    {% endfor %}
+    <input type="hidden" name="confirme" value="on">
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{% url 'planification:lancement_generation' %}"
+         class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 py-1.5 text-sm font-semibold text-blanc
+                     transition-colors duration-survol hover:bg-marine-700">
+        Régénérer
+      </button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Générer le programme hebdomadaire — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <div class="flex items-end justify-between gap-6">
+    <h1 class="font-titre text-xl font-semibold leading-tight">Générer le programme hebdomadaire</h1>
+    <p class="text-sm text-gris-lecture">
+      {% if grille_active %}
+        Grille active : <span class="font-semibold text-encre">{{ grille_active.intitule }}</span>
+      {% else %}
+        <span class="border border-etat-ecart px-2 py-px text-2xs font-semibold
+                     tracking-wide text-etat-ecart">AUCUNE GRILLE ACTIVE</span>
+      {% endif %}
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Sélection
+  </p>
+  <form method="post" class="flex flex-col gap-4 px-4 py-4">
+    {% csrf_token %}
+    <div>
+      <label for="{{ formulaire.semaine.id_for_label }}"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ formulaire.semaine.label }}</label>
+      {{ formulaire.semaine }}
+      {% for erreur in formulaire.semaine.errors %}
+        <p class="mt-1 text-xs text-etat-ecart">{{ erreur }}</p>
+      {% endfor %}
+    </div>
+    <div>
+      <label for="{{ formulaire.brigades.id_for_label }}"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ formulaire.brigades.label }}</label>
+      {{ formulaire.brigades }}
+      {% for erreur in formulaire.brigades.errors %}
+        <p class="mt-1 text-xs text-etat-ecart">{{ erreur }}</p>
+      {% endfor %}
+      <p class="mt-1 text-xs text-gris-lecture">
+        La lecture des affectations existantes porte sur toutes les sessions actives,
+        quelle que soit la sélection (§ 2).
+      </p>
+    </div>
+    <div>
+      <button type="submit"
+              class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        Générer
+      </button>
+    </div>
+  </form>
+</section>
+{% endblock %}

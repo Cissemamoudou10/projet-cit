@@ -43,6 +43,20 @@ def redacteur(db):
 
 
 @pytest.fixture
+def direction_formation(db):
+    modele = get_user_model()
+    return _utilisateur(
+        "direction-plan", "Col", modele.Profil.DIRECTION_FORMATION, "Direction de formation"
+    )
+
+
+@pytest.fixture
+def examens(db):
+    modele = get_user_model()
+    return _utilisateur("examens-plan", "Cne", modele.Profil.CELLULE_EXAMENS, "Cellule examens")
+
+
+@pytest.fixture
 def type_officiers(db):
     return TypeFormation.objects.create(intitule="Officiers PLAN")
 
@@ -137,6 +151,51 @@ def autre_session(db, redacteur, type_officiers):
 def brigade(db, redacteur, session):
     return ServiceBrigade.creer(
         redacteur, session, {"designation": "EXP1", "effectif_previsionnel": 20}
+    )
+
+
+@pytest.fixture
+def session_formation(db, redacteur, formation):
+    """Contrairement à `session` (qui crée sa PROPRE formation), celle-ci
+    est ouverte sur `formation` — nécessaire dès qu'un test veut que
+    `brigade.session.formation` corresponde à `element_referentiel`
+    (génération, US-PLAN-03) : `ServiceContraintes` ne le vérifie jamais
+    (`Candidate` porte les deux indépendamment), mais `ServiceGeneration`
+    en a besoin pour déterminer les matières programmables d'une brigade.
+
+    Sème un élément sur une matière DÉDIÉE, jamais sur la fixture `matiere`
+    partagée : `ServiceSession.creer` refuse une formation sans référentiel
+    composé (§ 4, Prompt 20), mais un test de génération construit souvent
+    ses propres éléments sur `matiere`/`formation` — dépendre de la fixture
+    `element_referentiel` ici créait un élément fantôme en doublon
+    (`uq_element_referentiel_formation_matiere`), piège découvert en
+    écrivant le groupe D de US-PLAN-03."""
+    aujourd_hui = datetime.date.today()
+    matiere_semence = Matiere.objects.create(intitule="Matière semence PLAN", code="SEM-PLAN")
+    creer_element(formation, matiere_semence, volume=1)
+    return ServiceSession.creer(
+        redacteur,
+        {
+            "formation": formation,
+            "intitule": "Session formation PLAN",
+            "date_debut": aujourd_hui + datetime.timedelta(days=30),
+            "date_fin": aujourd_hui + datetime.timedelta(days=200),
+            "effectif_attendu": 24,
+        },
+    )
+
+
+@pytest.fixture
+def brigade_formation(db, redacteur, session_formation):
+    return ServiceBrigade.creer(
+        redacteur, session_formation, {"designation": "GEN1", "effectif_previsionnel": 20}
+    )
+
+
+@pytest.fixture
+def autre_brigade_formation(db, redacteur, session_formation):
+    return ServiceBrigade.creer(
+        redacteur, session_formation, {"designation": "GEN2", "effectif_previsionnel": 20}
     )
 
 
@@ -247,3 +306,53 @@ def cours(element_referentiel, instructeur):
 def instant(lundi_semaine, jour_offset, heure, minute=0):
     jour = lundi_semaine + datetime.timedelta(days=jour_offset)
     return datetime.datetime(jour.year, jour.month, jour.day, heure, minute, tzinfo=datetime.UTC)
+
+
+def activer_grille(planificateur, intitule, creneaux, jours=None):
+    """`creneaux` : liste de `(heure_debut, heure_fin)` en `datetime.time`,
+    un rang par ordre d'apparition, répétés sur `jours` (tous les jours
+    ouvrés par défaut) — US-PLAN-03, groupes A à I."""
+    from ressources.models import GrilleHoraire, JourSemaine
+    from ressources.services.grille_horaire import ServiceCreneauType, ServiceGrilleHoraire
+
+    jours = jours or [
+        JourSemaine.LUNDI,
+        JourSemaine.MARDI,
+        JourSemaine.MERCREDI,
+        JourSemaine.JEUDI,
+        JourSemaine.VENDREDI,
+    ]
+    grille = GrilleHoraire.objects.create(intitule=intitule)
+    for jour in jours:
+        for ordre, (debut, fin) in enumerate(creneaux, start=1):
+            ServiceCreneauType.ajouter(
+                planificateur,
+                grille,
+                {"jour_semaine": jour, "ordre": ordre, "heure_debut": debut, "heure_fin": fin},
+            )
+    return ServiceGrilleHoraire.activer(planificateur, grille.pk)
+
+
+@pytest.fixture
+def grille_active(planificateur):
+    return activer_grille(
+        planificateur,
+        "Ordinaire PLAN",
+        [(datetime.time(8, 0), datetime.time(9, 45)), (datetime.time(10, 10), datetime.time(12, 0))],
+    )
+
+
+@dataclasses.dataclass(frozen=True)
+class ScenarioGeneration:
+    """Regroupe les trois fixtures quasi systématiques d'un test de
+    génération (US-PLAN-03) — `.claude/rules/python.md`, § 5 paramètres
+    max, la même figure que `Cours` pour US-PLAN-04."""
+
+    planificateur: object
+    lundi: object
+    grille: object
+
+
+@pytest.fixture
+def scenario(planificateur, grille_active, lundi_semaine):
+    return ScenarioGeneration(planificateur=planificateur, lundi=lundi_semaine, grille=grille_active)

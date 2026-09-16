@@ -22,12 +22,23 @@ en cascade. Ce mécanisme est donc SENSIBLE À L'ORDRE par construction
 (le premier arrivé retient le créneau) — à respecter par tout appelant
 futur, documenté ici pour que US-PLAN-03 n'ait pas à le redécouvrir.
 
-Limite assumée, à re-vérifier si le besoin apparaît : seules RG-34 et le
-sous-cas « lieu occupé/séquentiel » de RG-37 tiennent compte des candidates
-déjà acceptées du même lot — RG-38/RG-39 restent évaluées contre le contexte
-chargé une fois, jamais contre le cumul provisoire du lot (deux candidates
-du même lot qui, ensemble, dépasseraient un volume prescrit ne se
-détectent pas mutuellement ici). Voir docs/suivi/DECISIONS.md.
+Limite assumée : RG-38 reste évaluée contre le contexte chargé une fois,
+jamais contre le cumul provisoire du lot — un blocage calendaire ne dépend
+d'aucun autre placement. RG-34, le sous-cas « lieu occupé/séquentiel » de
+RG-37, ET LE VOLET PLAFOND (pas le volet prérequis) de RG-39 tiennent compte
+des candidates déjà acceptées du même lot (Prompt 31 § 0.2/point 1 : la
+génération place plusieurs séances de la même matière dans la même semaine,
+et le plafond doit voir leur cumul provisoire, sans quoi il devient
+décoratif — voir `planification.services.regles_volume` et
+docs/suivi/DECISIONS.md, D-135).
+
+CONTEXTE PROVISOIRE POUR `verifier` (Prompt 31 § 0.2) : `verifier` accepte un
+paramètre `provisoires`, une séquence de `Candidate` déjà retenues par
+l'appelant mais pas encore écrites — même mécanisme que `lot_acceptees`,
+exposé pour une stratégie qui essaie plusieurs candidates par case avant de
+retenir la bonne (contrairement à `verifier_lot`, qui reçoit une liste déjà
+tranchée). `verifier(candidate, contexte)` reste valide, `provisoires` vaut
+`()` par défaut.
 """
 
 import dataclasses
@@ -238,8 +249,12 @@ class ServiceContraintes:
         )
 
     @staticmethod
-    def verifier(candidate: Candidate, contexte: Contexte) -> Verdict:
-        return ServiceContraintes._verifier_une(candidate, contexte, ())
+    def verifier(candidate: Candidate, contexte: Contexte, provisoires: tuple = ()) -> Verdict:
+        """`provisoires` : candidates déjà retenues par l'appelant, pas
+        encore écrites (Prompt 31 § 0.2) — une stratégie qui essaie
+        plusieurs candidates pour UNE case les y ajoute au fur et à mesure
+        de ses acceptations, avant de passer à la case suivante."""
+        return ServiceContraintes._verifier_une(candidate, contexte, tuple(provisoires))
 
     @staticmethod
     def _verifier_une(candidate, contexte, lot_acceptees):
@@ -249,7 +264,7 @@ class ServiceContraintes:
         violations += regles_instructeur.verifier_rg36(candidate, contexte)
         violations += regles_lieu.verifier_rg37(candidate, contexte, lot_acceptees)
         violations += regles_calendrier.verifier_rg38(candidate, contexte)
-        violations += regles_volume.verifier_rg39(candidate, contexte)
+        violations += regles_volume.verifier_rg39(candidate, contexte, lot_acceptees)
         return Verdict(accepte=not violations, violations=violations)
 
     @staticmethod

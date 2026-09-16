@@ -13,6 +13,7 @@ from planification.models import LigneProgramme, Seance
 from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
 from planification.tests.conftest import instant, qualifier
+from ressources.models import Instructeur, Statut
 
 
 def _candidate(brigade, cours, debut, duree_min=105, **kw):
@@ -71,3 +72,73 @@ def test_habilitation_programme_ecriture_requise(redacteur, programme, cours, br
 
     with pytest.raises(ErreurHabilitation):
         ServiceEcritureSeance.creer_seance(redacteur, programme, [candidate])
+
+
+# --- creer_seances (lot) — US-PLAN-03, § 0.3/point 4, Prompt 31 -------------
+
+
+def test_creer_seances_ecrit_plusieurs_seances_en_une_seule_transaction(
+    planificateur, programme, cours, brigade, autre_brigade
+):
+    qualifier(cours.instructeur, cours.element.matiere)
+    lundi = programme.lundi_de_semaine
+    groupe_un = [_candidate(brigade, cours, instant(lundi, 0, 8))]
+    groupe_deux = [_candidate(autre_brigade, cours, instant(lundi, 0, 14))]
+
+    seances = ServiceEcritureSeance.creer_seances(
+        planificateur, programme, [groupe_un, groupe_deux]
+    )
+
+    assert len(seances) == 2
+    assert Seance.objects.filter(programme=programme).count() == 2
+
+
+def test_creer_seances_tout_ou_rien_si_une_candidate_du_lot_est_refusee(
+    planificateur, programme, cours, brigade, autre_brigade
+):
+    """La seconde candidate n'est pas qualifiée (RG-35) : rien ne s'écrit,
+    y compris la première, qui aurait été acceptée seule."""
+    qualifier(cours.instructeur, cours.element.matiere)
+    instructeur_non_qualifie = Instructeur.objects.create(
+        nom="Amrani",
+        prenom="Yassir",
+        matricule="M24680",
+        grade="Cne",
+        specialite="Transmissions",
+        statut=Statut.MILITAIRE_DU_CENTRE,
+    )
+    lundi = programme.lundi_de_semaine
+    debut_refusee = instant(lundi, 0, 14)
+    groupe_valide = [_candidate(brigade, cours, instant(lundi, 0, 8))]
+    candidate_refusee = Candidate(
+        brigade=autre_brigade,
+        element_referentiel=cours.element,
+        instructeur=instructeur_non_qualifie,
+        debut=debut_refusee,
+        fin=debut_refusee + datetime.timedelta(minutes=105),
+    )
+
+    with pytest.raises(ErreurValidation, match="RG-35"):
+        ServiceEcritureSeance.creer_seances(
+            planificateur, programme, [groupe_valide, [candidate_refusee]]
+        )
+
+    assert Seance.objects.filter(programme=programme).count() == 0
+
+
+def test_creer_seances_ne_journalise_pas_le_detail_par_seance(
+    planificateur, programme, cours, brigade, autre_brigade
+):
+    """§ 7, Prompt 31 : l'acte de génération est journalisé par
+    `ServiceGeneration`, jamais le détail des séances par cette porte."""
+    from administration.models import EntreeJournal
+
+    qualifier(cours.instructeur, cours.element.matiere)
+    lundi = programme.lundi_de_semaine
+    avant = EntreeJournal.objects.count()
+    groupe_un = [_candidate(brigade, cours, instant(lundi, 0, 8))]
+    groupe_deux = [_candidate(autre_brigade, cours, instant(lundi, 0, 14))]
+
+    ServiceEcritureSeance.creer_seances(planificateur, programme, [groupe_un, groupe_deux])
+
+    assert EntreeJournal.objects.count() == avant

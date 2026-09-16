@@ -110,6 +110,22 @@ migrations.md` pour `Seance` (`idx_seance_debut_fin`, `idx_seance_instructeur_
 debut`, `idx_seance_lieu_debut`) — ajoutés dans la foulée
 (`planification/migrations/0002_*`), `idx_seance_element`/`idx_ligne_brigade`
 délibérément omis (doublons de l'index automatique de clé étrangère Django).
+**Mise à jour du 2026-09-16** : US-PLAN-03 (Prompt 31) n'ouvre aucun nouveau
+report (compte inchangé à dix-huit) et en referme SIX, nommément désignés par
+le § 11 du Prompt 31, tous vérifiés par un test qui exerce réellement le
+mécanisme, pas seulement sa présence en base : D-34 (catégorie de lieu au
+moteur), D-39 volet moteur (prérequis exploités par le moteur — le volet
+saisie manuelle reste ouvert), D-35 « source séance » (revendiqué cette fois,
+sous sa lecture prérequis — voir la ligne D-35 et DECISIONS.md, D-156), le
+critère 5 d'US-PLAN-01 (RG-38, déjà refermé par US-PLAN-04 — confirmé sans
+action nouvelle), E6/refus de générer sans grille active (D-133), et le
+critère 6 d'US-PLAN-12 (changer de grille active ne modifie aucune séance
+passée, fermeture par constat d'absence de code, comme anticipé par D-133).
+**Un volet de D-133 reste délibérément ouvert** : RG-64 (relation facultative
+séance↔créneau type) — le champ existe et la grille borne bien ce que la
+génération propose, mais aucune séance générée ne renseigne son créneau
+type d'origine ; dette explicite, non revendiquée ici (voir la ligne D-133
+correspondante et DECISIONS.md).
 
 | Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
 |---|---|---|---|---|
@@ -117,11 +133,11 @@ délibérément omis (doublons de l'index automatique de clé étrangère Django
 | D-30 | 3 (fiche affiche les formations utilisatrices) | US-REF-02 | US-REF-03 | **Fermé le 2026-09-08** — `ServiceMatiere.formations_utilisatrices`, corrigé dans le lot de clôture (D-64) — c'était P-25, ouvert de 2026-09-04 à 2026-09-08 |
 | D-30 | 5 (suppression bloquée) | US-REF-02 | US-REF-03 / US-INS-02 | **Fermé** — `Qualification.matiere`/`ElementReferentiel.matiere` en `PROTECT`, deux tests confirmés (D-50) |
 | D-35 | 6 / RG-07, source prérequis | US-REF-03 | US-REF-06 | **Fermé** — `Prerequis`, contrôle explicite (D-40) |
-| D-35 | 6 / RG-07, source séance | US-REF-03 | US-PLAN-04 (sprint 2) | Ouvert (revendication) — techniquement refermé par construction (`Seance.element_referentiel` en `PROTECT`, seul choix conforme à `.claude/rules/modeles.md`) et vérifié par un test réel (`test_retrait_d_un_element_de_referentiel_porteur_d_une_seance_refuse`), mais le Prompt 30 § 9 exclut NOMMÉMENT ce volet des quatre fermetures de cette story — non revendiqué ici sur cette base, voir DECISIONS.md D-35 et l'écart signalé en relecture |
+| D-35 | 6 / RG-07, source séance | US-REF-03 | US-PLAN-03 (sprint 2) | **Fermé le 2026-09-16** — US-PLAN-04 avait techniquement refermé ce volet par construction (`Seance.element_referentiel` en `PROTECT`) mais ne l'avait délibérément PAS revendiqué, le Prompt 30 § 9 l'excluant nommément. Le Prompt 31 § 11 le revendique explicitement à son tour, sous la lecture « source des PRÉREQUIS pour la séance » : la génération lit réellement `Prerequis` pour écarter une matière à prérequis inachevé (`planification.generation.candidats.matieres_programmables`/`_prerequis_inacheves`), testé (C4, `test_c4_matiere_volume_epuise_et_matiere_prerequis_inacheve_motifs_distincts`) — pas seulement le `PROTECT` en base, la leçon de D-50 |
 | D-35 | 6 / RG-07, source évaluation | US-REF-03 | sprint 4 | Ouvert |
 | D-23 | 4 (session ouverte bloque la suppression) | US-REF-01 | US-SES-01 (sprint 2) | Ouvert — `Session` n'existe pas encore |
-| D-34 | 3, 4 (contrainte de catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | Ouvert |
-| D-39 | 3, 4 (prérequis exploités par le moteur / signalés en saisie) | US-REF-06 | moteur de génération / saisie manuelle (sprint 2/3) | Ouvert |
+| D-34 | 3, 4 (contrainte de catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | **Fermé le 2026-09-16** — les trois cas SALLE_ATTITREE/LIEU_PARTAGE/AUCUN_LIEU exploités par `planification.generation.candidats`, testés dans une même génération (D1-D5, `test_generation_lieux.py`) |
+| D-39 | 3, 4 (prérequis exploités par le moteur / signalés en saisie) | US-REF-06 | moteur de génération / saisie manuelle (sprint 2/3) | **Fermé le 2026-09-16, volet moteur** — voir D-35 « source séance » ci-dessus, même mécanisme ; le volet saisie manuelle reste ouvert (US-PLAN-05) |
 | D-45 | 4 (instructeur affecté à un programme en cours) | US-INS-01 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — `Seance.instructeur` en `PROTECT` (US-PLAN-04), testé (`test_a9_suppression_instructeur_portant_une_seance_refusee`) |
 | D-51 | E1 (instructeur affecté à des séances futures) | US-INS-02 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — résolveur `noyau` câblé par `planification` (US-PLAN-04, D-143), refus exercé réellement par un test (`test_retrait_refuse_si_une_seance_future_existe`), pas seulement le câblage — leçon de D-50 |
 | D-54 | 4, volet brigade (lieu affecté à une brigade) | US-PLAN-02 | US-SES-03 (sprint 2) | **Fermé le 2026-09-11** — `SalleAttitree.lieu` en `PROTECT` (D-92), testé par le cycle HTTP réel (C9) |
@@ -132,9 +148,9 @@ délibérément omis (doublons de l'index automatique de clé étrangère Django
 | D-121 | 5, RG-38 (exclusion des périodes bloquantes à la génération) | US-PLAN-01 | US-PLAN-03 / US-PLAN-04 (sprint 2) | **Fermé le 2026-09-15** — RG-38 implantée en couche services (`planification.services.regles_calendrier.verifier_rg38`), testée (F1-F6, `test_f1_periode_bloquante_centre_entier_refus` et voisins) |
 | D-121 | E2 (période bloquante recouvrant des séances programmées, arbitrage explicite) | US-PLAN-01 | US-PLAN-03 puis US-PLAN-05 (sprint 3) | Ouvert |
 | D-121 | A3 (séances redevenues programmables à la suppression d'une période) | US-PLAN-01 | mêmes destinations que ci-dessus | Ouvert |
-| D-133 | 6 (changer de grille active ne modifie pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2), fermeture par constat d'absence de code | Ouvert |
-| D-133 | RG-64 (relation facultative séance ↔ créneau type) | US-PLAN-12 | US-PLAN-03 | Ouvert |
-| D-133 | refus de générer en l'absence de grille active | US-PLAN-12 | US-PLAN-03 | Ouvert |
+| D-133 | 6 (changer de grille active ne modifie pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2), fermeture par constat d'absence de code | **Fermé le 2026-09-16** — aucune ligne de `planification.services.generation`/`generation/*.py` ne modifie une `GrilleHoraire` ni une `Seance` hors de la régénération explicitement sélectionnée (D-156) ; couvert indirectement par le groupe B (`test_generation_regeneration.py`), qui prouve qu'une brigade non sélectionnée n'est jamais touchée |
+| D-133 | RG-64 (relation facultative séance ↔ créneau type) | US-PLAN-12 | US-PLAN-03 | Ouvert — le champ `Seance.creneau_type` (`SET_NULL`, nullable) existe depuis US-PLAN-04, mais la génération ne le renseigne jamais (`ServiceEcritureSeance._creer_une_seance` ne porte aucun `creneau_type`) ; RG-64 elle-même (la grille contraint ce que la génération PROPOSE) est respectée par construction — les créneaux projetés bornent les candidates — mais la traçabilité séance→créneau d'origine reste à faire, dette explicite non revendiquée |
+| D-133 | refus de générer en l'absence de grille active | US-PLAN-12 | US-PLAN-03 | **Fermé le 2026-09-16** — `AucuneGrilleActive`, testé (E6, `test_e6_aucune_grille_active_generation_refusee`) |
 
 **Écart avec le décompte donné en revue** (« neuf reports, trois refermés,
 six des sept ouverts se referment au sprint 2 ») : la vérification sur le code
