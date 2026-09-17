@@ -15,12 +15,14 @@ from django.utils import timezone
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
 from planification.exceptions import AucuneGrilleActive, SemaineEntierementBloquee
-from planification.forms import FormulaireLancementGeneration
+from planification.forms import FormulaireLancementGeneration, FormulaireSemaine
 from planification.selectors import (
     apercu_regeneration,
+    brigades_groupees_par_session,
     brigades_pour_filtre,
     grille_active_avec_creneaux,
     grille_consultation,
+    jours_disponibles,
     programme_de_la_semaine,
 )
 from planification.services.generation import PERMISSION_ECRITURE, ServiceGeneration
@@ -28,28 +30,45 @@ from planification.services.generation import PERMISSION_ECRITURE, ServiceGenera
 PERMISSION_LECTURE = "noyau.programme_lecture"
 
 
+def _lundi_depuis_parametre(valeur):
+    try:
+        date = datetime.date.fromisoformat(valeur) if valeur else timezone.localdate()
+    except ValueError:
+        date = timezone.localdate()
+    return date - datetime.timedelta(days=date.weekday())
+
+
 @exige_habilitation(PERMISSION_ECRITURE)
 def vue_lancement_generation(request):
     grille, _creneaux = grille_active_avec_creneaux()
     if request.method == "POST":
         return _traiter_lancement(request, grille)
-    formulaire = FormulaireLancementGeneration()
+    lundi = _lundi_depuis_parametre(request.GET.get("semaine"))
+    formulaire = FormulaireLancementGeneration(initial={"semaine": lundi})
+    return _afficher_lancement(request, grille, lundi, formulaire, set())
+
+
+def _afficher_lancement(request, grille, lundi, formulaire, brigades_selectionnees):
     return render(
         request,
         "planification/lancement_generation.html",
-        {"formulaire": formulaire, "grille_active": grille},
+        {
+            "formulaire_semaine": FormulaireSemaine(initial={"semaine": lundi}),
+            "formulaire": formulaire,
+            "lundi": lundi,
+            "grille_active": grille,
+            "groupes_brigades": brigades_groupees_par_session(lundi),
+            "brigades_selectionnees": brigades_selectionnees,
+        },
     )
 
 
 def _traiter_lancement(request, grille):
     formulaire = FormulaireLancementGeneration(request.POST)
+    lundi = _lundi_depuis_parametre(request.POST.get("semaine"))
     if not formulaire.is_valid():
-        return render(
-            request,
-            "planification/lancement_generation.html",
-            {"formulaire": formulaire, "grille_active": grille},
-        )
-    lundi = formulaire.lundi_de_semaine()
+        selection = set(request.POST.getlist("brigades"))
+        return _afficher_lancement(request, grille, lundi, formulaire, selection)
     brigades = list(formulaire.cleaned_data["brigades"])
     if not formulaire.cleaned_data["confirme"]:
         impact = apercu_regeneration(lundi, brigades)
@@ -65,35 +84,70 @@ def _traiter_lancement(request, grille):
 def _generer_et_afficher(request, lundi, brigades):
     try:
         compte_rendu = ServiceGeneration.generer(request.user, lundi, brigades)
-    except (AucuneGrilleActive, SemaineEntierementBloquee, ErreurValidation, ErreurHabilitation) as erreur:
+    except (
+        AucuneGrilleActive,
+        SemaineEntierementBloquee,
+        ErreurValidation,
+        ErreurHabilitation,
+    ) as erreur:
         messages.error(request, str(erreur))
-        return redirect(reverse("planification:lancement_generation"))
+        url = reverse("planification:lancement_generation")
+        return redirect(f"{url}?semaine={lundi.isoformat()}")
     return render(
         request, "planification/compte_rendu_generation.html", {"compte_rendu": compte_rendu}
     )
 
 
+JOURS_OFFSET = {
+    "lundi": 0,
+    "mardi": 1,
+    "mercredi": 2,
+    "jeudi": 3,
+    "vendredi": 4,
+    "samedi": 5,
+    "dimanche": 6,
+}
+
+
+def _onglets_jours(jours, jour_actif, lundi):
+    """Un onglet par jour de la grille active (§ 9 : la semaine tient en
+    largeur un jour à la fois, retour utilisateur du 17/09) — jamais les
+    sept jours dans une seule table."""
+    onglets = []
+    for jour in jours:
+        date_jour = lundi + datetime.timedelta(days=JOURS_OFFSET[jour])
+        onglets.append({"jour": jour, "date": date_jour, "actif": jour == jour_actif})
+    return onglets
+
+
 @exige_habilitation(PERMISSION_LECTURE)
 def vue_consultation_programme(request):
-    grille, creneaux = grille_active_avec_creneaux()
-    semaine_texte = request.GET.get("semaine")
-    semaine = datetime.date.fromisoformat(semaine_texte) if semaine_texte else timezone.localdate()
-    lundi = semaine - datetime.timedelta(days=semaine.weekday())
+    grille, creneaux_semaine = grille_active_avec_creneaux()
+    lundi = _lundi_depuis_parametre(request.GET.get("semaine"))
     programme = programme_de_la_semaine(lundi)
 
-    brigades = brigades_pour_filtre(
-        brigade_pk=request.GET.get("brigade"), session_pk=request.GET.get("session")
+    jours = jours_disponibles()
+    jour_actif = request.GET.get("jour") if request.GET.get("jour") in jours else jours[0]
+    creneaux_du_jour = [c for c in creneaux_semaine if c.jour_semaine == jour_actif]
+
+    brigades = list(
+        brigades_pour_filtre(
+            brigade_pk=request.GET.get("brigade"), session_pk=request.GET.get("session")
+        )
     )
-    lignes = grille_consultation(programme, creneaux, brigades) if programme else []
+    groupes = grille_consultation(programme, creneaux_du_jour, brigades) if programme else []
     return render(
         request,
         "planification/consultation_programme.html",
         {
             "programme": programme,
             "lundi": lundi,
-            "creneaux": creneaux,
+            "creneaux": creneaux_du_jour,
+            "jour_actif": jour_actif,
+            "onglets_jours": _onglets_jours(jours, jour_actif, lundi),
             "grille_active": grille,
-            "lignes": lignes,
+            "groupes": groupes,
+            "nombre_brigades": len(brigades),
             "toutes_brigades": brigades_pour_filtre(),
         },
     )

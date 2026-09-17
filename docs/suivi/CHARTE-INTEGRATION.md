@@ -15,7 +15,7 @@ donc gérées maintenant, pas seulement les six comptées.
 | Variable | Où | Traitement | Fichier |
 |---|---|---|---|
 | `user.cellule` | § 2.2 | N'existe pas sur `Utilisateur` (seul `profil` existe) — remplacée par `user.get_profil_display` | `app/noyau/templates/noyau/ossature/entete.html:25` |
-| `grille_active` | § 2.2 | Entité du sprint 2 — cartouche entouré de `{% if grille_active %}…{% endif %}` | `app/noyau/templates/noyau/ossature/entete.html:11-19` |
+| `grille_active` | § 2.2 | Entité du sprint 2 — cartouche entouré de `{% if grille_active %}…{% endif %}`. **Correction du 2026-09-17** : le cartouche lisait `grille_active.libelle`, un nom deviné avant que `GrilleHoraire` existe — le champ réel est `intitule` (`.claude/rules/modeles.md`). Resté invisible tant qu'aucune vue n'alimentait `grille_active` (US-PLAN-03, `planification.views`, est la première à le faire, le contexte remonte au gabarit partagé par héritage) ; signalé par l'utilisateur en recette, le nom du champ ne s'affichait jamais. | `app/noyau/templates/noyau/ossature/entete.html:11-19` |
 | `application.nom` | § 2.4 | Fourni par le processeur de contexte, lit `settings.APPLICATION_NOM` | `app/noyau/context_processors.py`, `app/config/settings/base.py` |
 | `application.version` | § 2.4 | Idem, `settings.APPLICATION_VERSION` | idem |
 | `maintenant` | § 2.4 | Idem, `timezone.now()` | idem |

@@ -1,4 +1,5 @@
 {% extends "noyau/base.html" %}
+{% load static %}
 
 {% block titre %}Programme hebdomadaire — {{ block.super }}{% endblock %}
 
@@ -6,25 +7,39 @@
 <div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
   <div class="flex items-end justify-between gap-6">
     <div>
-      <h1 class="font-titre text-xl font-semibold leading-tight">
-        Programme hebdomadaire du centre — semaine du {{ lundi|date:"d/m/Y" }}
-      </h1>
+      <h1 class="font-titre text-xl font-semibold leading-tight">Programme hebdomadaire du centre</h1>
+      <p class="text-sm text-gris-lecture">
+        Semaine du {{ lundi|date:"d/m/Y" }}
+        {% if programme %}
+          — {{ nombre_brigades }} groupes, {{ creneaux|length }} créneaux, grille « {{ grille_active.intitule }} »
+          <span class="ml-1 border border-marine-700 px-1.5 py-px text-2xs font-semibold
+                       tracking-wide text-marine-700">{{ programme.get_etat_display|upper }}</span>
+        {% endif %}
+      </p>
+    </div>
+    <div class="flex shrink-0 gap-2">
       {% if programme %}
-        <p class="text-sm text-gris-lecture">
-          État : <span class="font-semibold text-encre">{{ programme.get_etat_display|upper }}</span>
-        </p>
+        <a href="#" onclick="window.print(); return false;"
+           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                  text-sm font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-marine-700">
+          <svg class="h-3.5 w-3.5" aria-hidden="true"><use href="{% static 'icones/planche.svg' %}#impression"></use></svg>
+          Imprimer
+        </a>
+      {% endif %}
+      {% if perms.noyau.programme_ecriture %}
+        <a href="{% url 'planification:lancement_generation' %}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                  px-3.5 text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Générer / compléter
+        </a>
       {% endif %}
     </div>
-    {% if perms.noyau.programme_ecriture %}
-      <a href="{% url 'planification:lancement_generation' %}"
-         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
-                px-3.5 text-sm font-semibold text-blanc no-underline transition-colors duration-survol
-                hover:bg-marine-700">
-        Générer / compléter
-      </a>
-    {% endif %}
   </div>
-  <form method="get" class="mt-3 flex flex-wrap items-end gap-3 text-sm">
+
+  <form method="get" class="mt-3 flex flex-wrap items-end gap-3 text-sm" data-impression="masquer">
+    <input type="hidden" name="jour" value="{{ request.GET.jour }}">
     <div>
       <label for="semaine" class="mb-1 block text-2xs font-medium uppercase tracking-wide
                                    text-gris-lecture">Semaine du</label>
@@ -46,9 +61,23 @@
     <button type="submit"
             class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
                    text-sm font-medium text-encre transition-colors duration-survol hover:border-marine-700">
+      <svg class="h-3.5 w-3.5" aria-hidden="true"><use href="{% static 'icones/planche.svg' %}#filtre"></use></svg>
       Filtrer
     </button>
   </form>
+
+  {% if programme and onglets_jours %}
+    <nav class="mt-3 flex flex-wrap gap-px" aria-label="Jour de la semaine" data-impression="masquer">
+      {% for onglet in onglets_jours %}
+        <a href="?semaine={{ lundi|date:'Y-m-d' }}&jour={{ onglet.jour }}{% if request.GET.brigade %}&brigade={{ request.GET.brigade }}{% endif %}{% if request.GET.session %}&session={{ request.GET.session }}{% endif %}"
+           {% if onglet.actif %}aria-current="page"{% endif %}
+           class="px-3 py-1.5 text-sm font-medium no-underline transition-colors duration-survol
+                  {% if onglet.actif %}bg-marine-900 text-blanc{% else %}bg-fond-bande text-marine-900 hover:bg-marine-700 hover:text-blanc{% endif %}">
+          {{ onglet.jour|capfirst }} {{ onglet.date|date:"d/m" }}
+        </a>
+      {% endfor %}
+    </nav>
+  {% endif %}
 </div>
 {% endblock %}
 
@@ -57,51 +86,86 @@
   <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
     Aucun programme généré pour cette semaine.
   </p>
+{% elif not creneaux %}
+  <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
+    Aucun créneau le {{ jour_actif }} dans la grille « {{ grille_active.intitule }} ».
+  </p>
 {% else %}
 <section class="mt-4 border border-gris-trait bg-fond-bloc">
-  <div class="overflow-auto">
-    <table class="w-full border-collapse text-sm">
-      <thead>
-        <tr>
-          <th scope="col" class="sticky left-0 top-0 z-20 bg-marine-900 px-3 py-2 text-left
-                                 font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
-            Brigade
+  <table class="w-full table-fixed border-collapse text-sm">
+    <colgroup>
+      <col style="width:94px">
+      {% for creneau in creneaux %}<col>{% endfor %}
+    </colgroup>
+    <thead>
+      <tr>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">
+          Groupe
+        </th>
+        {% for creneau in creneaux %}
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">
+            {{ creneau.heure_debut|time:"H:i" }} – {{ creneau.heure_fin|time:"H:i" }}<br>
+            <span class="font-normal normal-case tracking-normal">Créneau {{ forloop.counter }}</span>
           </th>
-          {% for creneau in creneaux %}
-            <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
-                                   font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
-              {{ creneau.get_jour_semaine_display }}<br>
-              <span class="font-normal normal-case tracking-normal">
-                {{ creneau.heure_debut|time:"H:i" }}–{{ creneau.heure_fin|time:"H:i" }}</span>
-            </th>
-          {% endfor %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for groupe in groupes %}
+        <tr>
+          <td colspan="{{ creneaux|length|add:1 }}"
+              class="border-t border-gris-trait bg-fond-bande px-3 py-1.5 font-titre text-2xs
+                     font-semibold uppercase tracking-wide text-marine-900">
+            {{ groupe.type_formation }}
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {% for ligne in lignes %}
-          {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
-          <tr class="{% cycle bande %} border-t border-gris-trait align-top">
-            <th scope="row" class="sticky left-0 z-10 bg-inherit px-3 py-2 text-left font-medium">
-              {{ ligne.brigade }}
+        {% for ligne in groupe.lignes %}
+          <tr class="border-t border-gris-trait align-top">
+            <th scope="row" class="px-3 py-2 text-left font-medium leading-tight">
+              {{ ligne.brigade.designation }}
+              <p class="mt-0.5 text-2xs font-normal text-gris-lecture">{{ ligne.brigade.effectif_reel }} st.</p>
             </th>
             {% for cellule in ligne.cellules %}
-              <td class="px-3 py-2">
-                {% if cellule.seance %}
-                  <p class="font-medium">{{ cellule.seance.element_referentiel.matiere }}</p>
-                  <p class="text-xs text-gris-lecture">
-                    {{ cellule.seance.instructeur }}
-                    {% if cellule.seance.lieu %} — {{ cellule.seance.lieu }}{% endif %}
-                  </p>
-                {% else %}
-                  <span class="text-gris-eteint">{{ cellule.libelle_vide }}</span>
-                {% endif %}
-              </td>
+              {% if cellule.seance %}
+                <td class="border-l border-gris-trait px-3 py-2">
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-sm font-semibold leading-tight text-encre truncate">
+                      {{ cellule.seance.element_referentiel.matiere }}</span>
+                    {% if cellule.seance.verrouillee %}
+                      <svg class="h-3 w-3 shrink-0 stroke-gris-lecture" aria-hidden="true">
+                        <use href="{% static 'icones/planche.svg' %}#verrou"></use></svg>
+                    {% endif %}
+                  </div>
+                  <div class="mt-0.5 flex items-baseline gap-2 whitespace-nowrap text-2xs tabular-nums
+                              text-gris-lecture">
+                    <span class="truncate">{{ cellule.seance.instructeur }}</span>
+                    <span class="ml-auto font-medium text-etat-conforme">
+                      {{ cellule.volume_cumule|floatformat:0 }}/{{ cellule.seance.element_referentiel.volume_horaire_prescrit }}</span>
+                    {% if cellule.seance.lieu %}
+                      <span class="border border-gris-trait bg-blanc px-1 font-mono text-2xs
+                                   text-marine-900 truncate">{{ cellule.seance.lieu }}</span>
+                    {% endif %}
+                  </div>
+                  {% if cellule.autres_brigades %}
+                    <p class="mt-1 text-2xs text-marine-700">{{ cellule.autres_brigades }}</p>
+                  {% endif %}
+                </td>
+              {% else %}
+                <td class="border-l border-gris-trait px-3 py-2">
+                  <div class="border border-dashed border-gris-trait px-2 py-1 font-mono text-2xs
+                              tracking-wider text-gris-lecture">
+                    {{ cellule.libelle_vide }}
+                  </div>
+                </td>
+              {% endif %}
             {% endfor %}
           </tr>
         {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      {% endfor %}
+    </tbody>
+  </table>
 </section>
 {% endif %}
 {% endblock %}

@@ -37,3 +37,20 @@ def test_base_rend_avec_listes_vides(rf, db):
 def test_base_masque_le_cartouche_sans_grille_active(rf, db):
     contenu = render_to_string("noyau/base.html", request=_requete(rf))
     assert "Grille active" not in contenu
+
+
+def test_base_affiche_l_intitule_de_la_grille_active(rf, db):
+    """Correction du 2026-09-17 : le cartouche lisait `grille_active.libelle`,
+    un nom deviné avant que `GrilleHoraire` existe — le champ réel est
+    `intitule` (voir docs/suivi/CHARTE-INTEGRATION.md). Une chaîne factice
+    porteuse du seul attribut nécessaire suffit ici, sans dépendre de
+    `ressources.models.GrilleHoraire`, hors de portée de `noyau`."""
+
+    class _GrilleFactice:
+        intitule = "Ordinaire"
+
+    contenu = render_to_string(
+        "noyau/base.html", context={"grille_active": _GrilleFactice()}, request=_requete(rf)
+    )
+    assert "Grille active" in contenu
+    assert "Ordinaire" in contenu

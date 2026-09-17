@@ -36,7 +36,7 @@
     {% endfor %}
     <input type="hidden" name="confirme" value="on">
     <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
-      <a href="{% url 'planification:lancement_generation' %}"
+      <a href="{% url 'planification:lancement_generation' %}?semaine={{ lundi|date:'Y-m-d' }}"
          class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">Annuler</a>
       <button type="submit"
               class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900
