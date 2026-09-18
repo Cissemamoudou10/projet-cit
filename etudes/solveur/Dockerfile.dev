@@ -1,0 +1,7 @@
+# Image de développement/mesure — PAS livrée, PAS versionnée avec ortools
+# préinstallé dans l'application. Reproduit exactement la plateforme cible
+# (Dockerfile racine) pour l'itération locale sur le prototype du solveur.
+FROM python:3.14.4-slim-bookworm
+WORKDIR /etude
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt pytest

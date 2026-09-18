@@ -9,8 +9,11 @@ Pour ajouter un paquet : le proposer, obtenir l'accord, l'inscrire ici ET dans
 requirements.txt, dans le même commit.
 """
 
+import ast
 import pathlib
 import re
+
+from test_couches import APPLICATIONS
 
 RACINE = pathlib.Path(__file__).resolve().parents[2]
 
@@ -62,6 +65,48 @@ def test_aucun_cdn_dans_les_gabarits():
             if re.search(r'(src|href)\s*=\s*["\']https?://', ligne):
                 fautifs.append("%s ligne %d" % (chemin.relative_to(RACINE), i))
     assert not fautifs, "Ressource externe dans un gabarit :\n" + "\n".join(fautifs)
+
+
+def _modules_importes(chemin):
+    """Même méthode que `test_couches.py` (analyse `ast`, pas une regex sur
+    le texte) : une regex ancrée en début de ligne rate `import os; from
+    etudes.solveur import x` — deux instructions sur une ligne — et tout
+    alias. `.claude/rules/tests.md`, « Vérifier une absence »."""
+    arbre = ast.parse(chemin.read_text(encoding="utf-8"))
+    modules = []
+    for noeud in ast.walk(arbre):
+        if isinstance(noeud, ast.Import):
+            modules += [(alias.name, noeud.lineno) for alias in noeud.names]
+        elif isinstance(noeud, ast.ImportFrom) and noeud.module:
+            modules.append((noeud.module, noeud.lineno))
+    return modules
+
+
+def test_etude_solveur_isolee_de_l_application():
+    """Prompt 32 § 0 : le prototype CP-SAT vit hors de l'application, avec ses
+    propres dépendances (`ortools` notamment), exclu du paquet de déploiement
+    et de `test_requirements_ne_contient_que_des_paquets_valides` ci-dessus.
+    Isolation à double sens : `app/` ne l'importe jamais, et lui n'importe
+    jamais un module d'`app/`."""
+    app = RACINE / "app"
+    etude = RACINE / "etudes" / "solveur"
+
+    fautifs = []
+    if app.exists():
+        for chemin in app.rglob("*.py"):
+            if "migrations" in chemin.parts:
+                continue
+            for module, ligne in _modules_importes(chemin):
+                if module == "etudes" or module.startswith("etudes."):
+                    fautifs.append("%s ligne %d : %s" % (chemin.relative_to(RACINE), ligne, module))
+    if etude.exists():
+        for chemin in etude.rglob("*.py"):
+            for module, ligne in _modules_importes(chemin):
+                racine_module = module.split(".")[0]
+                if racine_module == "app" or racine_module in APPLICATIONS:
+                    fautifs.append("%s ligne %d : %s" % (chemin.relative_to(RACINE), ligne, module))
+
+    assert not fautifs, "Dépendance entre etudes/solveur et l'application :\n" + "\n".join(fautifs)
 
 
 def test_aucune_mise_en_cache_dans_le_referentiel():

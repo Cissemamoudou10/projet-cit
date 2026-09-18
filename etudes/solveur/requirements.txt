@@ -1,0 +1,4 @@
+# Dépendances propres à l'étude du solveur — Prompt 32 § 0. Environnement
+# virtuel distinct (etudes/solveur/.venv), exclu de tests/architecture/
+# test_dependances.py et du paquet de déploiement (DECISIONS.md, D-160).
+ortools==9.15.6755
