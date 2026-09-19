@@ -57,3 +57,24 @@ def test_determinisme_meme_graine():
     a = generer_placements(instance, DUREE_CRENEAU_HEURES)
     b = generer_placements(instance, DUREE_CRENEAU_HEURES)
     assert a.placements == b.placements
+
+
+def test_l_heuristique_respecte_le_programme_cible_et_la_capacite_des_lieux():
+    instance = generer(
+        ParametresInstance(
+            taille="REELLE",
+            demande_lieux_partages=0.25,
+            densite_qualification=4,
+            fraction_modules_rares=0.05,
+            graine=0,
+        )
+    )
+    resultat = generer_placements(instance, DUREE_CRENEAU_HEURES)
+    places = {}
+    for brigade_id, _c, module_id, _i, _l in resultat.placements:
+        places[brigade_id, module_id] = places.get((brigade_id, module_id), 0) + 1
+    cibles = {b.id: b.programme_cible for b in instance.brigades}
+    for (brigade_id, module_id), n in places.items():
+        assert n <= cibles[brigade_id][module_id]
+    capacite = len(instance.lieux_partages) * len(instance.creneaux)
+    assert sum(1 for p in resultat.placements if p[4] is not None) <= capacite

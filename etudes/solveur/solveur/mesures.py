@@ -19,6 +19,7 @@ from ortools.sat.python import cp_model
 
 from solveur import modele as module_modele
 from solveur.heuristique import generer as generer_heuristique
+from solveur.preparation import modules_programmables
 
 
 @dataclasses.dataclass(frozen=True)
@@ -30,7 +31,16 @@ class MesureSolveur:
     taux_remplissage: float
     ecart_optimalite: float | None
     ecart_charge: int | None
+    charge_max: int | None
+    seances_avec_lieu: int | None
+    # Pic de mémoire (RSS) du PROCESSUS ; n'est une mesure PAR RÉSOLUTION que
+    # si la résolution tourne seule dans un processus neuf
+    # (`scripts/executer_mesures.py`) — sinon c'est un maximum depuis le
+    # démarrage, monotone, qui ne dit rien d'une résolution en particulier
+    # (première matrice, revue du 2026-09-18).
     memoire_max_ko: int | None
+    memoire_baseline_ko: int | None = None  # RSS avant génération de l'instance
+    empreinte_instance: str | None = None  # `Instance.empreinte()` de l'instance mesurée
 
 
 @dataclasses.dataclass(frozen=True)
@@ -38,6 +48,8 @@ class MesureHeuristique:
     temps_total: float
     taux_remplissage: float
     ecart_charge: int
+    charge_max: int
+    seances_avec_lieu: int
 
 
 class _RappelPremiereSolution(cp_model.CpSolverSolutionCallback):
@@ -55,7 +67,7 @@ class _RappelPremiereSolution(cp_model.CpSolverSolutionCallback):
             self.temps_premiere_solution = time.perf_counter() - self._depart
 
 
-def _memoire_max_ko():
+def memoire_max_ko():
     if resource is None:
         return None
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
@@ -68,11 +80,19 @@ def _taux_remplissage(solveur, variables, cases_ouvertes):
     return remplies / cases_ouvertes
 
 
-def _ecart_charge_solution(solveur, variables, regime):
+def _charges_solution(solveur, variables, regime):
+    """Écart et maximum de charge — sur les instructeurs MOBILISABLES (les
+    seuls ayant une variable de charge, voir `modele._creer_charge`)."""
     if regime != module_modele.REGIME_EQUILIBRAGE:
-        return None
+        return None, None
     charges = [solveur.Value(v) for v in variables.charge.values()]
-    return (max(charges) - min(charges)) if charges else None
+    if not charges:
+        return None, None
+    return max(charges) - min(charges), max(charges)
+
+
+def _seances_avec_lieu_solution(solveur, variables):
+    return sum(solveur.Value(v) for v in variables.u.values())
 
 
 def _ecart_optimalite(solveur, regime):
@@ -95,15 +115,23 @@ def mesurer_solveur(instance, regime, borne_temps_secondes):
     cases_ouvertes = len(instance.brigades) * len(instance.creneaux)
     admissible = statut in (cp_model.OPTIMAL, cp_model.FEASIBLE)
 
+    ecart_charge, charge_max = (
+        _charges_solution(solveur, variables, regime) if admissible else (None, None)
+    )
     return MesureSolveur(
         regime=regime,
         statut=solveur.StatusName(statut),
         temps_premiere_solution=rappel.temps_premiere_solution,
         temps_final=temps_final,
-        taux_remplissage=_taux_remplissage(solveur, variables, cases_ouvertes) if admissible else 0.0,
+        taux_remplissage=_taux_remplissage(solveur, variables, cases_ouvertes)
+        if admissible
+        else 0.0,
         ecart_optimalite=_ecart_optimalite(solveur, regime) if admissible else None,
-        ecart_charge=_ecart_charge_solution(solveur, variables, regime) if admissible else None,
-        memoire_max_ko=_memoire_max_ko(),
+        ecart_charge=ecart_charge,
+        charge_max=charge_max,
+        seances_avec_lieu=_seances_avec_lieu_solution(solveur, variables) if admissible else None,
+        memoire_max_ko=memoire_max_ko(),
+        empreinte_instance=instance.empreinte(),
     )
 
 
@@ -120,7 +148,16 @@ def mesurer_heuristique(instance, duree_creneau_heures):
     temps_total = time.perf_counter() - depart
 
     taux = len(resultat.placements) / resultat.cases_ouvertes if resultat.cases_ouvertes else 0.0
-    charges = list(_charge_par_instructeur(resultat.placements).values())
-    ecart = (max(charges) - min(charges)) if charges else 0
-
-    return MesureHeuristique(temps_total=temps_total, taux_remplissage=taux, ecart_charge=ecart)
+    # Même population que le solveur : les instructeurs mobilisables, y
+    # compris ceux que l'heuristique n'a pas sollicités (charge nulle).
+    mobilisables = modules_programmables(instance).mobilisables
+    charge = dict.fromkeys(mobilisables, 0)
+    charge.update(_charge_par_instructeur(resultat.placements))
+    charges = list(charge.values())
+    return MesureHeuristique(
+        temps_total=temps_total,
+        taux_remplissage=taux,
+        ecart_charge=(max(charges) - min(charges)) if charges else 0,
+        charge_max=max(charges) if charges else 0,
+        seances_avec_lieu=sum(1 for placement in resultat.placements if placement[4] is not None),
+    )

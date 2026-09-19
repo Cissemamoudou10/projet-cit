@@ -217,3 +217,164 @@ Rapporté : MÉDIANE et PIRE CAS des 5 instances.
 (image de production), hôte Intel Core Ultra 7 165H, 16 cœurs / 22 fils,
 mémoire plafonnée à 16 Go côté conteneur. Non représentative du serveur
 cible (inconnu) — facteur de prudence ×3 appliqué ci-dessus.
+
+---
+
+## Ajouts postérieurs
+
+*Ajouts datés uniquement — aucune section ci-dessus n'est réécrite.*
+
+### 2026-09-19 — revue du Prompt 32 : la première matrice est invalidée et refaite
+
+Trois vérifications demandées à la revue ont mis au jour un défaut de
+générateur, un défaut de métrique et un défaut de mesure. La première matrice
+(60 instances, archivée dans `archives/matrice-v1-2026-09-18/`) n'est plus
+citée comme résultat ; la matrice ci-dessous la remplace, mêmes 12
+combinaisons, mêmes graines 0 à 4, mêmes seuils du § 7 (inchangés).
+
+**1. Demande en lieux partagés (§ 4) — défaut de générateur.** Le paramètre
+était appliqué au catalogue des modules ; le solveur choisissait librement les
+modules à placer et évitait ceux qui exigent un lieu. Mesuré sur l'instance
+de graine 0, densité 4, pour les demandes 10 / 15 / 20 / 25 % : 660 cases
+ouvertes (33 brigades × 20 créneaux), 22 / 49 / 61 / 74 séances à lieu dans la
+solution du solveur — soit 3,3 / 7,4 / 9,2 / 11,2 % des séances, contre 66 /
+99 / 132 / 165 annoncées. L'heuristique, dont la règle de priorité place les
+matières à lieu rare d'abord, en consommait 104 / 134 / 140 / 140 : la
+comparaison opposait donc aussi deux problèmes de contenu différents.
+Dénominateur du taux de remplissage, inchangé : `nb_brigades × nb_créneaux`
+(660) ; numérateur : nombre de variables `x` à 1.
+
+*Correction* — chaque brigade porte un **programme cible** (`Brigade.
+programme_cible`) : 20 séances à pourvoir, dont exactement
+`round(demande × 20)` dans un module à lieu partagé. Le modèle ajoute la
+contrainte « au plus `programme_cible[module]` créneaux de ce module par
+brigade » ; l'heuristique la respecte. La demande est ainsi EXOGÈNE et vaut
+66 / 99 / 132 / 165 séances à la taille RÉELLE. Déclarations :
+- le volume prescrit d'un module est relevé au moins à la somme des séances
+  que les programmes cibles y placent (RG-39 a reste dans le modèle mais ne
+  mord jamais : l'axe étudié est ailleurs) ;
+- un module à lieu n'a jamais de prérequis (toujours éligible), le module de
+  rang 0 de chaque formation n'exige jamais de lieu, celui de rang 1 en exige
+  toujours un — garanties structurelles pour que la part demandée soit
+  réalisable ;
+- le type de lieu d'un module est tiré proportionnellement au nombre
+  d'espaces de chaque type (sinon l'unique terrain saturerait dès 15 %) ;
+- la capacité d'un lieu SIMULTANÉ n'admet qu'une brigade non regroupée
+  (entre l'effectif maximal et le double de l'effectif minimal) : la
+  capacité nominale vaut exactement espaces × créneaux, comme au § 2
+  (140 à la taille RÉELLE).
+*Effet sur la lecture* — le programme cible retire au solveur la liberté de
+choisir le contenu : le prototype est plus contraint, donc plus proche du
+problème réel, et un remplissage inférieur à 100 % devient possible et
+attendu quand la demande dépasse la capacité.
+
+**2. Écart de charge — défaut de métrique.** L'écart était calculé sur les
+100 instructeurs. Or certains n'ont aucune qualification utile aux
+programmes cibles (4 sur 100 à densité 4) : leur charge est nulle quoi
+qu'on fasse, si bien que l'« écart » mesurait la charge MAXIMALE, pas
+l'équilibre (solveur : 7 sur 100 instructeurs, 4 sur les seuls
+mobilisables). Désormais : écart et charge maximale sur les instructeurs
+**mobilisables** (qualifiés sur au moins un module d'un programme cible), même
+population pour le solveur et l'heuristique.
+
+**3. Heuristique — équité de la comparaison.** Vérifié dans
+`solveur/heuristique.py` : le départage par charge d'instructeur
+(`min(disponibles, key=(charge, id))`) inclut les placements provisoires de la
+génération en cours (la charge est incrémentée à chaque placement) et ne porte
+que sur la semaine en cours (charge initialisée à zéro, aucun historique) —
+les deux corrections exigées à la relecture du prompt 31 sont donc présentes.
+L'écart de 17-18 de la première matrice s'expliquait autrement, démontré par
+une résolution à CONTENU FIXE (mesure faite avec le générateur v1, non
+reproductible depuis ; la mesure reproductible, sur le générateur corrigé, est
+`scripts/diagnostic_contenu_fixe.py`, résultats dans `RESULTATS.md`) : en imposant au solveur le contenu (module par
+case) choisi par l'heuristique et en le laissant optimiser seulement le choix
+des instructeurs, l'écart optimal est 18 — celui de l'heuristique. Le
+départage n'était pas en cause : la règle « le plus difficile d'abord »
+concentrait 18 séances d'un module à instructeur unique sur cet instructeur,
+là où le solveur, libre du contenu, l'évitait (défaut n° 1). Un écart
+supplémentaire d'équité a été corrigé : l'ordre de traitement des cases suit
+désormais celui de `StrategieGloutonne._ordonner_cases` (poids de la brigade,
+puis temps, puis identifiant), et non l'ordre de saisie des brigades.
+
+**4. Mémoire — défaut de mesure.** `ru_maxrss` est un maximum depuis le
+démarrage du processus : la première matrice, qui enchaînait 180 résolutions
+dans un seul processus, l'a rapporté monotone (12 valeurs distinctes sur 180,
+143 à 4 890 Mo) — pas une mesure par résolution. Désormais chaque résolution
+tourne dans un processus neuf (`spawn`), la ligne de base (interpréteur et
+bibliothèques, avant génération de l'instance) est relevée, et le supplément
+est rapporté.
+
+**5. Deux durées, deux lectures du facteur de prudence.** Le facteur ×3 du § 7
+s'applique aux deux seuils de temps ; il doit aussi s'appliquer à
+l'INTERPRÉTATION, et distinguer le temps jusqu'à la PREMIÈRE solution admissible
+(ce que BNF-04 exige de rendre) du temps jusqu'à la PREUVE d'optimalité (ce que
+le solveur peut ne pas atteindre dans la borne, sans que la solution rendue
+cesse d'être admissible). `RECOMMANDATION.md` les traite séparément.
+
+**6. Régime SATISFACTION.** Sans objectif, le solveur rend la solution VIDE
+(remplissage 0 à 0,5 %) : toutes les contraintes dures sont des plafonds, ne
+rien placer les satisfait. Ce n'est pas un défaut mais un résultat : le
+problème du CIT est un problème d'optimisation, pas de satisfaction (voir
+`HYPOTHESES.md`, ajout du 2026-09-19). Ce régime est conservé au tableau pour
+mémoire (temps de première solution) et n'entre dans aucun seuil.
+
+### 2026-09-19 (soir) — septième défaut : instance non déterministe d'un processus à l'autre
+
+**Constat.** En vérifiant qu'un formatage du code ne changeait pas les
+résultats, la même instance (mêmes paramètres, même graine) régénérée dans un
+autre processus donnait un contenu différent — trois `PYTHONHASHSEED`, trois
+empreintes. Cause : `_progression_prerequis` itérait un `set` de chaînes en
+tirant un nombre aléatoire par élément ; l'ordre d'itération d'un `set` de
+chaînes dépend de la graine de hachage du processus. Le défaut existait dès le
+générateur d'origine mais restait invisible tant que toutes les résolutions
+tournaient dans un seul processus.
+
+**Portée.** La matrice v2 (archivée dans `archives/matrice-v2-non-appariee-
+2026-09-19/`) faisait tourner chaque résolution dans un processus neuf (pour la
+mémoire, point 4) : les trois régimes de solveur et l'heuristique d'une même
+ligne étaient donc mesurés sur des instances différentes. Les statistiques
+appariées de cette matrice (« jamais pire », « meilleur 56 fois sur 60 ») ne
+sont pas établies et ne sont plus citées ; ses médianes par combinaison
+restaient des estimations valides sur des instances équivalentes, mais la
+comparaison solveur / heuristique n'était pas appariée.
+
+**Correction.** Tout `set` itéré est trié ; `Instance.empreinte()` (SHA-256 du
+contenu) est calculée dans le processus parent et dans chaque processus
+enfant, et le script **s'arrête** si elles diffèrent ; un test de non-régression
+génère la même instance sous quatre graines de hachage et exige une seule
+empreinte (vérifié : il échoue si le défaut est réintroduit). La matrice est
+refaite (v3), et la démonstration à contenu fixé relancée sur les instances
+désormais reproductibles.
+
+### 2026-09-19 (nuit) — deux expériences demandées à la revue, hors mesures figées
+
+Ces deux expériences ne rouvrent ni la matrice v3 ni ses seuils du § 7 — elles
+répondent à deux questions posées après coup, avec leur propre méthode,
+rapportées séparément dans `RECOMMANDATION.md` et `RESULTATS.md`.
+
+**Point 3 — la charge dans le choix du contenu.** `solveur/heuristique.py::
+_poids_module` a été modifié : la charge minimale parmi les instructeurs
+disponibles pour un module pèse désormais dans le CHOIX DE LA MATIÈRE (insérée
+après les deux critères de difficulté déjà présents — nombre de qualifiés
+disponibles, rareté du lieu — et avant l'urgence de volume ; elle ne les
+remplace pas). **Conséquence pour la lecture de `RESULTATS.md`** : les
+colonnes « heuristique » du tableau principal (§ 8, matrice v3) ont été
+mesurées avec la règle D'ORIGINE, avant ce changement — elles restent valides
+telles quelles, mais une relecture future de `heuristique.py` y trouvera la
+règle modifiée. La règle modifiée n'a pas été re-passée sur la matrice
+complète (300 s × 180 résolutions n'ont pas de raison de changer, seule
+l'heuristique tourne différemment) : seul l'écart de charge de l'heuristique a
+été recalculé sur les 60 instances, régénérées à l'identique (empreinte
+vérifiée) — `scripts/experience_charge_contenu.py`, résultat dans
+`RESULTATS.md`.
+
+**Point 4 — sensibilité au nombre de fils.** Toutes les mesures de la matrice
+v3 ont tourné avec `num_search_workers` par défaut (ortools choisit
+automatiquement, proche du nombre de fils disponibles — 22 sur l'hôte de
+développement, Docker Desktop). Le serveur cible en aura quatre ou huit ; le
+facteur de prudence ×3 du § 7 couvre un écart de fréquence par cœur, pas une
+perte de parallélisme, qui est un axe différent et non couvert jusqu'ici.
+`scripts/mesure_parallelisme.py` rejoue la combinaison la plus lourde de la
+matrice (25 % / densité 8, graine 0, 119,4 s à 22 fils — le pire cas du § 8) à
+4 et 8 fils, une résolution par processus neuf. Résultat dans
+`RECOMMANDATION.md`.

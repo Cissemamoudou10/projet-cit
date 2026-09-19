@@ -126,6 +126,36 @@ def test_creer_seances_tout_ou_rien_si_une_candidate_du_lot_est_refusee(
     assert Seance.objects.filter(programme=programme).count() == 0
 
 
+def test_creer_seances_pose_les_horodatages_et_l_auteur_malgre_bulk_create(
+    planificateur, programme, cours, brigade, autre_brigade
+):
+    """P-38 (revue du Prompt 32) : `creer_seances` écrit par lot
+    (`bulk_create`), qui n'appelle jamais `save()` — `cree_le`/`modifie_le`
+    (`auto_now_add`/`auto_now`) et `cree_par`/`modifie_par` (posés par
+    `ServiceBase.creer` d'ordinaire) ne se posent alors JAMAIS tout seuls.
+    Si `_horodater` disparaissait de `creer_seances`, ces quatre champs
+    resteraient `None` en base — ce test l'aurait attrapé."""
+    qualifier(cours.instructeur, cours.element.matiere)
+    lundi = programme.lundi_de_semaine
+    groupe_un = [_candidate(brigade, cours, instant(lundi, 0, 8))]
+    groupe_deux = [_candidate(autre_brigade, cours, instant(lundi, 0, 14))]
+
+    seances = ServiceEcritureSeance.creer_seances(
+        planificateur, programme, [groupe_un, groupe_deux]
+    )
+
+    for seance in Seance.objects.filter(pk__in=[s.pk for s in seances]):
+        assert seance.cree_le is not None
+        assert seance.modifie_le is not None
+        assert seance.cree_par_id == planificateur.pk
+        assert seance.modifie_par_id == planificateur.pk
+    for ligne in LigneProgramme.objects.filter(seance__in=seances):
+        assert ligne.cree_le is not None
+        assert ligne.modifie_le is not None
+        assert ligne.cree_par_id == planificateur.pk
+        assert ligne.modifie_par_id == planificateur.pk
+
+
 def test_creer_seances_ne_journalise_pas_le_detail_par_seance(
     planificateur, programme, cours, brigade, autre_brigade
 ):

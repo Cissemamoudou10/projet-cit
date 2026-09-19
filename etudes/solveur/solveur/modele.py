@@ -11,13 +11,13 @@ capacité PAR CRÉNEAU DISCRET — un instructeur ou un lieu séquentiel une foi
 par créneau, un lieu simultané borné en somme d'effectifs par créneau.
 """
 
+import collections
 import dataclasses
 
 from ortools.sat.python import cp_model
 
+from solveur.instance import DUREE_CRENEAU_HEURES
 from solveur.preparation import modules_programmables
-
-DUREE_CRENEAU_HEURES = 2.0  # constant, déclaré — grille ordinaire ≈ 1h45-2h
 
 REGIME_SATISFACTION = "SATISFACTION"
 REGIME_REMPLISSAGE = "REMPLISSAGE"
@@ -34,7 +34,7 @@ class VariablesModele:
 
 
 def _lieux_du_type(instance, type_lieu):
-    return [l for l in instance.lieux_partages if l.type == type_lieu]
+    return [lieu for lieu in instance.lieux_partages if lieu.type == type_lieu]
 
 
 def _creer_x(modele, instance, preparation):
@@ -59,12 +59,27 @@ def _au_plus_un(modele, variables):
 
 
 def _contraindre_une_seance_par_creneau(modele, instance, x):
+    groupes = collections.defaultdict(list)
+    for (brigade_id, creneau_id, _module_id), var in x.items():
+        groupes[brigade_id, creneau_id].append(var)
+    for variables in groupes.values():
+        _au_plus_un(modele, variables)
+
+
+def _contraindre_programme_cible(modele, instance, x):
+    """PROGRAMME CIBLE — au plus `programme_cible[module]` créneaux de ce
+    module pour cette brigade cette semaine : c'est ce qui rend la demande
+    en lieux partagés EXOGÈNE (revue du 2026-09-18) au lieu de laisser le
+    solveur choisir les modules qui l'arrangent."""
     for brigade in instance.brigades:
-        for creneau in instance.creneaux:
+        for module_id, quota in brigade.programme_cible.items():
             variables = [
-                var for (b, c, _m), var in x.items() if b == brigade.id and c == creneau.id
+                x[brigade.id, creneau.id, module_id]
+                for creneau in instance.creneaux
+                if (brigade.id, creneau.id, module_id) in x
             ]
-            _au_plus_un(modele, variables)
+            if variables:
+                modele.Add(cp_model.LinearExpr.Sum(variables) <= quota)
 
 
 def _creer_z(modele, instance, preparation, x):
@@ -82,12 +97,11 @@ def _creer_z(modele, instance, preparation, x):
 
 def _contraindre_unicite_instructeur(modele, instance, z):
     """RG-34 — un instructeur, au plus une brigade, par créneau."""
-    for instructeur in instance.instructeurs:
-        for creneau in instance.creneaux:
-            variables = [
-                var for (_b, c, _m, i), var in z.items() if c == creneau.id and i == instructeur.id
-            ]
-            _au_plus_un(modele, variables)
+    groupes = collections.defaultdict(list)
+    for (_b, creneau_id, _m, instructeur_id), var in z.items():
+        groupes[instructeur_id, creneau_id].append(var)
+    for variables in groupes.values():
+        _au_plus_un(modele, variables)
 
 
 def _creer_u(modele, instance, x, modules_par_id):
@@ -110,20 +124,18 @@ def _contraindre_capacite_lieu(modele, instance, u):
     """RG-37 — lieu partagé : SÉQUENTIEL (au plus une brigade par créneau,
     comme RG-34) ou SIMULTANÉ (somme des effectifs bornée par la capacité)."""
     effectif = {b.id: b.effectif for b in instance.brigades}
-    for lieu in instance.lieux_partages:
-        for creneau in instance.creneaux:
-            entrees = [
-                (b, var) for (b, c, _m, l), var in u.items() if c == creneau.id and l == lieu.id
-            ]
-            if not entrees:
-                continue
-            if lieu.mode == "SEQUENTIEL":
-                _au_plus_un(modele, [var for _b, var in entrees])
-            else:
-                termes = [var for _b, var in entrees]
-                coefficients = [effectif[b] for b, _var in entrees]
-                charge_lieu = cp_model.LinearExpr.WeightedSum(termes, coefficients)
-                modele.Add(charge_lieu <= lieu.capacite)
+    modes = {lieu.id: lieu for lieu in instance.lieux_partages}
+    groupes = collections.defaultdict(list)
+    for (brigade_id, creneau_id, _m, lieu_id), var in u.items():
+        groupes[lieu_id, creneau_id].append((brigade_id, var))
+    for (lieu_id, _creneau_id), entrees in groupes.items():
+        lieu = modes[lieu_id]
+        if lieu.mode == "SEQUENTIEL":
+            _au_plus_un(modele, [var for _b, var in entrees])
+        else:
+            termes = [var for _b, var in entrees]
+            coefficients = [effectif[b] for b, _var in entrees]
+            modele.Add(cp_model.LinearExpr.WeightedSum(termes, coefficients) <= lieu.capacite)
 
 
 def _contraindre_volume_plafond(modele, instance, x):
@@ -133,16 +145,26 @@ def _contraindre_volume_plafond(modele, instance, x):
         variables = [var for (_b, _c, m), var in x.items() if m == module.id]
         if not variables:
             continue
-        marge_creneaux = int((module.volume_prescrit - module.volume_deja_programme) // DUREE_CRENEAU_HEURES)
+        marge_creneaux = int(
+            (module.volume_prescrit - module.volume_deja_programme) // DUREE_CRENEAU_HEURES
+        )
         modele.Add(cp_model.LinearExpr.Sum(variables) <= max(marge_creneaux, 0))
 
 
 def _creer_charge(modele, instance, z):
+    """Une variable de charge par instructeur MOBILISABLE seulement — ayant
+    au moins une variable `z` : un instructeur qualifié sur rien de ce qu'on
+    a à pourvoir reste à zéro quoi qu'on fasse, et l'inclure faisait de
+    l'« écart de charge » la charge maximale (revue du 2026-09-18)."""
+    par_instructeur = collections.defaultdict(list)
+    for (_b, _c, _m, instructeur_id), var in z.items():
+        par_instructeur[instructeur_id].append(var)
     charge = {}
     for instructeur in instance.instructeurs:
-        variables = [var for (_b, _c, _m, i), var in z.items() if i == instructeur.id]
-        borne_haute = len(instance.creneaux)
-        var_charge = modele.NewIntVar(0, borne_haute, f"charge_{instructeur.id}")
+        variables = par_instructeur.get(instructeur.id)
+        if not variables:
+            continue
+        var_charge = modele.NewIntVar(0, len(instance.creneaux), f"charge_{instructeur.id}")
         modele.Add(var_charge == cp_model.LinearExpr.Sum(variables))
         charge[instructeur.id] = var_charge
     return charge
@@ -157,6 +179,7 @@ def construire(instance):
 
     x = _creer_x(modele, instance, preparation)
     _contraindre_une_seance_par_creneau(modele, instance, x)
+    _contraindre_programme_cible(modele, instance, x)
     z = _creer_z(modele, instance, preparation, x)
     _contraindre_unicite_instructeur(modele, instance, z)
     u = _creer_u(modele, instance, x, modules_par_id)
@@ -164,7 +187,9 @@ def construire(instance):
     _contraindre_volume_plafond(modele, instance, x)
     charge = _creer_charge(modele, instance, z)
 
-    return modele, VariablesModele(x=x, z=z, u=u, charge=charge, borne_charge=len(instance.creneaux))
+    return modele, VariablesModele(
+        x=x, z=z, u=u, charge=charge, borne_charge=len(instance.creneaux)
+    )
 
 
 def nombre_de_variables(variables: VariablesModele) -> int:

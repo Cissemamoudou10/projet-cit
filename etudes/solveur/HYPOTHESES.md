@@ -51,3 +51,27 @@ la mêler aux tableaux de mesure).
 
 *(vide au 2026-09-17 — toute correction ultérieure s'ajoute ici, datée, sans
 toucher aux lignes ci-dessus)*
+
+**2026-09-19 — la « proportion des séances exigeant un lieu spécialisé ou
+extérieur » se compte sur les SÉANCES À POURVOIR.** Le paramètre du § 4 (10,
+15, 20, 25 %) a d'abord été appliqué au CATALOGUE des modules ; le solveur,
+libre de choisir quels modules placer, évitait ceux qui exigent un lieu, et
+la demande effective mesurée n'atteignait que 3,3 / 7,4 / 9,2 / 11,2 % des
+séances (22 / 49 / 61 / 74 séances à lieu, contre 66 / 99 / 132 / 165
+annoncées). La première matrice n'a donc jamais exercé cet axe (archivée :
+`archives/matrice-v1-2026-09-18/`). Hypothèse retenue désormais : chaque
+brigade a un programme cible de 20 séances dont exactement
+`round(demande × 20)` exigent un lieu partagé — soit 66 / 99 / 132 / 165 à la
+taille RÉELLE. Capacité nominale des lieux partagés : espaces × créneaux
+(7 × 20 = 140 à la taille RÉELLE, 8 × 20 = 160 à la taille HAUTE), une
+brigade non regroupée par espace et par créneau — le décompte du § 2. À 25 %,
+165 séances pour 140 places : le remplissage ne peut pas dépasser 635/660.
+
+**2026-09-19 — la prédiction « INFAISABLE à 25 % » (§ 4) était mal posée, pas
+fausse.** Toutes les contraintes dures du modèle sont des plafonds (au plus une
+séance par instructeur et par créneau, au plus le volume prescrit, au plus
+la capacité du lieu) : ne rien placer les satisfait toutes, le problème n'est
+donc JAMAIS infaisable. Ce qu'une demande supérieure à la capacité produit,
+c'est un remplissage plafonné — et RG-31 / AD-GROUPEMENT font d'une case vide
+un état normal. Le problème du CIT est un problème d'optimisation, pas de
+satisfaction.

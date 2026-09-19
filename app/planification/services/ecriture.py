@@ -20,6 +20,7 @@ Prompt 31 — voir docs/suivi/DECISIONS.md) :
 """
 
 from django.db import transaction
+from django.utils import timezone
 
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
@@ -74,6 +75,45 @@ def _creer_une_seance(agissant, programme, candidates):
     return seance
 
 
+def _horodater(instance, agissant, maintenant):
+    """`bulk_create` n'appelle jamais `save()` : ni `auto_now_add`/`auto_now`
+    (`ModeleHorodate`) ni `cree_par`/`modifie_par` (`ServiceBase.creer`) ne
+    sont posés automatiquement — vérifié réellement, `_prepare_for_bulk_
+    create` laisse ces quatre champs à `None`. Posés ici, une fois, la même
+    valeur de `maintenant` pour tout le lot (P-38, revue du Prompt 32)."""
+    instance.cree_le = maintenant
+    instance.modifie_le = maintenant
+    instance.cree_par = agissant
+    instance.modifie_par = agissant
+    return instance
+
+
+def _construire_seances(programme, groupes_de_candidates, agissant, maintenant):
+    return [
+        _horodater(
+            Seance(
+                programme=programme,
+                element_referentiel=groupe[0].element_referentiel,
+                instructeur=groupe[0].instructeur,
+                lieu=groupe[0].lieu,
+                debut=groupe[0].debut,
+                fin=groupe[0].fin,
+            ),
+            agissant,
+            maintenant,
+        )
+        for groupe in groupes_de_candidates
+    ]
+
+
+def _construire_lignes(seances, groupes_de_candidates, agissant, maintenant):
+    return [
+        _horodater(LigneProgramme(seance=seance, brigade=candidate.brigade), agissant, maintenant)
+        for seance, groupe in zip(seances, groupes_de_candidates, strict=True)
+        for candidate in groupe
+    ]
+
+
 class ServiceEcritureSeance:
     DOMAINE = "programme"
     PERMISSION_LECTURE = PERMISSION_LECTURE
@@ -108,17 +148,28 @@ class ServiceEcritureSeance:
         stratégie de génération — cette porte ne fait jamais confiance à
         l'appelant. Lève `ErreurValidation` si une seule candidate est
         refusée ; sinon écrit TOUTES les séances dans une seule transaction.
+
+        Écrit par LOT (`bulk_create`, deux requêtes au total) plutôt qu'une
+        boucle de `ServiceBase.creer` — P-38 (revue du Prompt 32) : la boucle
+        coûtait 6 requêtes par séance, indépendamment du nombre de cases
+        évaluées mais PAS du nombre de séances écrites, ce que I3
+        (US-PLAN-03) exigeait borné. `bulk_create` sur PostgreSQL renvoie les
+        objets avec leur `pk` posé (clause `RETURNING`), nécessaire pour lier
+        les lignes de programme à leur séance.
         """
         if not groupes_de_candidates:
             return []
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
         contexte = ServiceContraintes.contexte(programme)
-        candidates_a_plat = [
-            candidate for groupe in groupes_de_candidates for candidate in groupe
-        ]
+        candidates_a_plat = [candidate for groupe in groupes_de_candidates for candidate in groupe]
         verdicts = ServiceContraintes.verifier_lot(candidates_a_plat, contexte)
         _lever_si_refuse(verdicts)
+        maintenant = timezone.now()
         with transaction.atomic():
-            return [
-                _creer_une_seance(agissant, programme, groupe) for groupe in groupes_de_candidates
-            ]
+            seances = Seance.objects.bulk_create(
+                _construire_seances(programme, groupes_de_candidates, agissant, maintenant)
+            )
+            LigneProgramme.objects.bulk_create(
+                _construire_lignes(seances, groupes_de_candidates, agissant, maintenant)
+            )
+            return seances

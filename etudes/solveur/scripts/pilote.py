@@ -27,8 +27,10 @@ instance = generer(
         graine=0,
     )
 )
-print(f"Instance : {len(instance.brigades)} brigades, {len(instance.modules)} modules, "
-      f"{len(instance.instructeurs)} instructeurs, {len(instance.creneaux)} créneaux")
+print(
+    f"Instance : {len(instance.brigades)} brigades, {len(instance.modules)} modules, "
+    f"{len(instance.instructeurs)} instructeurs, {len(instance.creneaux)} créneaux"
+)
 
 for regime in (REGIME_SATISFACTION, REGIME_REMPLISSAGE, REGIME_EQUILIBRAGE):
     mesure = mesurer_solveur(instance, regime, BORNE_TEMPS_SECONDES)

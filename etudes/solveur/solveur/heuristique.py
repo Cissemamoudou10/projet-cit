@@ -21,9 +21,11 @@ sur les implantations.
 
 import dataclasses
 
+from solveur.instance import JOURS_OUVRES
 from solveur.preparation import modules_programmables
 
 SENTINELLE_AUCUN_LIEU = 10**6
+SENTINELLE_BRIGADE_SANS_MODULE = (10**6, 10**6, 10**6, "")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -39,15 +41,23 @@ class EtatHeuristique:
     instructeur_occupe: set  # (instructeur_id, creneau_id)
     lieu_occupe_sequentiel: set  # (lieu_id, creneau_id)
     lieu_charge_simultane: dict  # (lieu_id, creneau_id) -> effectif déjà admis
+    quota_restant: dict  # (brigade_id, module_id) -> créneaux encore à pourvoir
 
 
 def _etat_initial(instance):
     return EtatHeuristique(
-        volume_restant={m.id: m.volume_prescrit - m.volume_deja_programme for m in instance.modules},
+        volume_restant={
+            m.id: m.volume_prescrit - m.volume_deja_programme for m in instance.modules
+        },
         charge_instructeur={i.id: 0.0 for i in instance.instructeurs},
         instructeur_occupe=set(),
         lieu_occupe_sequentiel=set(),
         lieu_charge_simultane={},
+        quota_restant={
+            (b.id, module_id): quota
+            for b in instance.brigades
+            for module_id, quota in b.programme_cible.items()
+        },
     )
 
 
@@ -66,8 +76,23 @@ def _instructeurs_disponibles(module_id, creneau_id, preparation, etat):
 
 
 def _poids_module(module, creneau_id, preparation, etat, lieux_par_type):
-    nb_disponibles = len(_instructeurs_disponibles(module.id, creneau_id, preparation, etat))
-    return (nb_disponibles, _rarete_lieu(module, lieux_par_type), -etat.volume_restant[module.id], module.id)
+    """EXPÉRIENCE du 2026-09-19 (revue, point 3) : la charge des instructeurs
+    qualifiés pèse désormais dans le CHOIX DE LA MATIÈRE (`charge_min_
+    disponible`, insérée après les deux critères de difficulté et avant
+    l'urgence — elle ne les remplace jamais, elle ne fait que départager entre
+    matières de difficulté comparable), et non plus seulement dans le
+    départage à matière déjà choisie (`_tenter_placement`, inchangé). Version
+    mesurée dans la matrice v3 : sans ce critère — voir `RESULTATS.md`,
+    section « Expérience — charge dans le choix du contenu »."""
+    disponibles = _instructeurs_disponibles(module.id, creneau_id, preparation, etat)
+    charge_min_disponible = min((etat.charge_instructeur[i] for i in disponibles), default=0)
+    return (
+        len(disponibles),
+        _rarete_lieu(module, lieux_par_type),
+        charge_min_disponible,
+        -etat.volume_restant[module.id],
+        module.id,
+    )
 
 
 def _lieu_libre(lieu, creneau_id, brigade, etat):
@@ -80,11 +105,12 @@ def _lieu_libre(lieu, creneau_id, brigade, etat):
 def _choisir_lieu(module, creneau_id, brigade, instance, etat):
     if not module.necessite_lieu_partage:
         return None
-    lieux = [l for l in instance.lieux_partages if l.type == module.type_lieu_partage]
-    return next((l for l in lieux if _lieu_libre(l, creneau_id, brigade, etat)), None)
+    lieux = [lieu for lieu in instance.lieux_partages if lieu.type == module.type_lieu_partage]
+    return next((lieu for lieu in lieux if _lieu_libre(lieu, creneau_id, brigade, etat)), None)
 
 
 def _occuper(etat, module, instructeur_id, creneau_id, lieu, brigade, duree_heures):
+    etat.quota_restant[brigade.id, module.id] -= 1
     etat.instructeur_occupe.add((instructeur_id, creneau_id))
     etat.charge_instructeur[instructeur_id] += duree_heures
     etat.volume_restant[module.id] -= duree_heures
@@ -93,7 +119,9 @@ def _occuper(etat, module, instructeur_id, creneau_id, lieu, brigade, duree_heur
             etat.lieu_occupe_sequentiel.add((lieu.id, creneau_id))
         else:
             cle = (lieu.id, creneau_id)
-            etat.lieu_charge_simultane[cle] = etat.lieu_charge_simultane.get(cle, 0) + brigade.effectif
+            etat.lieu_charge_simultane[cle] = (
+                etat.lieu_charge_simultane.get(cle, 0) + brigade.effectif
+            )
 
 
 def _tenter_placement(brigade, creneau, instance, preparation, etat, lieux_par_type, duree_heures):
@@ -102,7 +130,9 @@ def _tenter_placement(brigade, creneau, instance, preparation, etat, lieux_par_t
         (
             m
             for m in instance.modules
-            if m.id in modules and etat.volume_restant[m.id] >= duree_heures
+            if m.id in modules
+            and etat.quota_restant.get((brigade.id, m.id), 0) > 0
+            and etat.volume_restant[m.id] >= duree_heures
         ),
         key=lambda m: _poids_module(m, creneau.id, preparation, etat, lieux_par_type),
     )
@@ -119,6 +149,34 @@ def _tenter_placement(brigade, creneau, instance, preparation, etat, lieux_par_t
     return None
 
 
+def _cle_chronologique(creneau):
+    return (JOURS_OUVRES.index(creneau.jour), creneau.ordre)
+
+
+def _poids_brigade(brigade, premier_creneau, instance, preparation, etat, lieux_par_type):
+    """Comme `StrategieGloutonne._poids_brigade` : la brigade dont la matière
+    la plus difficile est la plus difficile passe en premier."""
+    modules = [m for m in instance.modules if m.id in preparation.modules_par_brigade[brigade.id]]
+    if not modules:
+        return SENTINELLE_BRIGADE_SANS_MODULE
+    return min(
+        _poids_module(m, premier_creneau.id, preparation, etat, lieux_par_type) for m in modules
+    )
+
+
+def _cases_ordonnees(instance, preparation, etat, lieux_par_type):
+    """Même ordre que `StrategieGloutonne._ordonner_cases` : d'abord le poids
+    de la brigade, puis le temps, puis l'identifiant — et NON l'ordre de
+    saisie des brigades (revue du 2026-09-18, équité de la comparaison)."""
+    creneaux = sorted(instance.creneaux, key=_cle_chronologique)
+    poids = {
+        b.id: _poids_brigade(b, creneaux[0], instance, preparation, etat, lieux_par_type)
+        for b in instance.brigades
+    }
+    cases = [(b, c) for b in instance.brigades for c in creneaux]
+    return sorted(cases, key=lambda bc: (poids[bc[0].id], _cle_chronologique(bc[1]), bc[0].id))
+
+
 def generer(instance, duree_creneau_heures):
     preparation = modules_programmables(instance)
     lieux_par_type = {}
@@ -127,14 +185,13 @@ def generer(instance, duree_creneau_heures):
     etat = _etat_initial(instance)
 
     placements = []
-    for brigade in instance.brigades:
-        for creneau in instance.creneaux:
-            resultat = _tenter_placement(
-                brigade, creneau, instance, preparation, etat, lieux_par_type, duree_creneau_heures
-            )
-            if resultat:
-                module_id, instructeur_id, lieu_id = resultat
-                placements.append((brigade.id, creneau.id, module_id, instructeur_id, lieu_id))
+    for brigade, creneau in _cases_ordonnees(instance, preparation, etat, lieux_par_type):
+        resultat = _tenter_placement(
+            brigade, creneau, instance, preparation, etat, lieux_par_type, duree_creneau_heures
+        )
+        if resultat:
+            module_id, instructeur_id, lieu_id = resultat
+            placements.append((brigade.id, creneau.id, module_id, instructeur_id, lieu_id))
 
     cases_ouvertes = len(instance.brigades) * len(instance.creneaux)
     return ResultatHeuristique(placements=placements, cases_ouvertes=cases_ouvertes)
