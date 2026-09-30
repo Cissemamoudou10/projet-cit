@@ -27,12 +27,22 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 
 ## Tâches transverses
 
-- [ ] **Prototype du solveur CP-SAT**, sur plusieurs sessions simultanées
-- [ ] Diagramme d'états du programme (`ETA-01`), reporté de la phase 4
+- [x] **Prototype du solveur CP-SAT**, sur plusieurs sessions simultanées —
+  étude rendue (Prompt 32), GO CONDITIONNEL puis renoncement arbitré pour
+  US-PLAN-08 (D-162, `docs/suivi/RISQUES-PROPOSITIONS-C2.md`). Détail :
+  `etudes/solveur/RECOMMANDATION.md`
+- [ ] Diagramme d'états du programme (`ETA-01`), reporté de la phase 4 —
+  **non produit ce sprint, reporté explicitement au sprint 3** : US-VAL-03
+  le rend nécessaire (machine à états de `ProgrammeHebdomadaire`)
 
 ## Revue et rétrospective
 
-- [ ] Heures réelles saisies dans le classeur de pilotage
-- [ ] Vélocité mesurée, clé de conversion révisée
-- [ ] Registre des risques mis à jour
-- [ ] `AVANCEMENT.md` mis à jour
+- [x] Heures réelles saisies — reconstitution, pas un relevé contemporain
+  (aucun n'a été tenu) : `docs/suivi/HEURES-SPRINT-2.md`
+- [x] Vélocité mesurée, clé de conversion révisée — **non révisée** :
+  aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md`
+  pour le détail et la recommandation
+- [x] Registre des risques — propositions rédigées, pas le registre lui-même
+  (réservé au chef de projet) : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`
+- [x] `AVANCEMENT.md` mis à jour — 2026-09-30, en retard de quatre jours sur
+  C2 (26 septembre), assumé explicitement, non rétrodaté

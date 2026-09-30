@@ -80,6 +80,9 @@ def test_g1_declaration_modification_suppression_d_une_periode_reussissent(
 
 
 def test_g1_natures_d_evenement_crud_reussit(client, planificateur):
+    """Bloc F, Prompt 33 : le nom du test promettait un CRUD complet, seuls
+    C et D étaient exercés — `modifier_nature_evenement` avait une adresse,
+    une vue, aucun test, ni nominal ni HTTP. Complété plutôt que dupliqué."""
     client.force_login(planificateur)
 
     reponse_creation = client.post(
@@ -91,6 +94,19 @@ def test_g1_natures_d_evenement_crud_reussit(client, planificateur):
     from ressources.models import NatureEvenement
 
     nature = NatureEvenement.objects.get(libelle="Manifestation")
+
+    reponse_modification = client.post(
+        reverse("ressources:modifier_nature_evenement", args=[nature.pk]),
+        {
+            "libelle": "Manifestation modifiée",
+            "effet_par_defaut": "informatif",
+            "modifie_le_attendu": nature.modifie_le.isoformat(),
+        },
+    )
+    assert reponse_modification.status_code == 302
+    nature.refresh_from_db()
+    assert nature.libelle == "Manifestation modifiée"
+
     reponse_suppression = client.post(
         reverse("ressources:supprimer_nature_evenement", args=[nature.pk])
     )

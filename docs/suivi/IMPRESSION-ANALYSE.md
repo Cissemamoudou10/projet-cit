@@ -318,3 +318,33 @@ mesurée qui tienne, en portrait comme en paysage. Cette story
 demandé au § 9/§ 13 du Prompt 31 ; l'écran actuel imprime tel quel (feuille
 `impression.css` commune), donc déborde en l'état. Reporté au lot
 d'impression, à consigner comme dette dans `docs/suivi/DECISIONS.md`.
+
+## 11. Consolidation pour le lot d'impression du sprint 4 (Prompt 33, bloc G)
+
+Neuf écrans mesurés au total (sprint 1 : cinq écrans de liste du référentiel,
+§ 1 ; sprint 2 : dix écrans supplémentaires, §§ 6 à 10). Trois seulement
+restent en dette à l'entrée du sprint 4 :
+
+| Écran | Dépassement portrait | Tient en paysage (1 032 px) ? | Traitement requis |
+|---|---|---|---|
+| Instructeurs (liste, référentiel) | 168 px (871 px de large, § 7 — aggravé par US-INS-03, était 33 px au sprint 1) | **Oui**, largement (871 < 1 032) | Paysage — une ligne CSS (§ 3), à confirmer par un essai manuel de la boîte d'impression |
+| Lieux (liste, référentiel) | 74 px (777 px de large, § 1/§ 4) | **Oui**, largement (777 < 1 032) | Paysage — même correctif que ci-dessus |
+| Programme hebdomadaire (US-PLAN-03) | 1 616 px portrait, **1 287 px même en paysage** (§ 10) | **Non** — aucune orientation ne suffit pour la semaine entière | Mode d'impression PAR JOURNÉE (cinq pages), seule voie mesurée qui tienne — effort de conception distinct, pas une case CSS ; RG-33 bis l'anticipe déjà |
+
+Tous les autres écrans mesurés (Matières, Formations, Vue consolidée du
+référentiel — § 1 ; Fiche session, Stagiaires, Répartition, Liste des
+stagiaires — § 6 ; Indisponibilités des instructeurs — § 7 ; Calendrier vue
+annuelle et vue mensuelle — § 8 ; Fiche de grille horaire — § 9) **tiennent
+déjà en portrait**, aucune action requise.
+
+**Format naturel par écran** : paysage pour Instructeurs et Lieux (simple
+bascule d'orientation, § 3) ; portrait par défaut pour tous les autres ; le
+programme hebdomadaire n'a pas de format naturel unique tant que le mode par
+journée n'est pas implanté — l'écran actuel déborde dans les deux
+orientations.
+
+**Non résolu par cette consolidation, hérité du § 3/§ 6** : le point sur le
+verrou d'orientation CSS (`@page { size: A4 portrait; }`) et le contournement
+`min-w-[1280px]` de `noyau/base.html` restent tous deux à vérifier par un
+essai manuel de boîte d'impression réelle avant le sprint 4 — non fait par
+cette session, les deux fois pour la même raison (consigne de session).

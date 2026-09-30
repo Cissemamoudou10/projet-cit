@@ -163,3 +163,27 @@ def test_a9_suppression_brigade_portant_une_ligne_refusee(
 
     with pytest.raises(ProtectedError):
         brigade.delete()
+
+
+def test_d83_suppression_brigade_au_programme_refusee_par_le_vrai_chemin_de_service(
+    redacteur, programme, cours, brigade, autre_brigade
+):
+    """D-83 : `LigneProgramme.brigade` est en `PROTECT` depuis US-PLAN-04, mais
+    rien ne prouvait que `ServiceBrigade.supprimer` (le chemin réellement
+    emprunté par l'écran) traduit ce refus en `ErreurValidation` nommant
+    l'opposant — leçon de D-50, la seule preuve valable est celle du chemin de
+    service, pas la seule contrainte en base (déjà couverte ci-dessus).
+    `redacteur` (Cellule pédagogique) : seul profil habilité en écriture sur
+    `organisation` (matrice § 11.2). `autre_brigade` (même session que
+    `brigade`) évite de tomber sur le refus "dernière brigade" (critère 2),
+    qui interviendrait avant le PROTECT."""
+    from noyau.exceptions import ErreurValidation
+    from organisation.services.brigade import ServiceBrigade
+
+    seance = _seance(programme, cours.element, cours.instructeur, programme.lundi_de_semaine)
+    LigneProgramme.objects.create(seance=seance, brigade=brigade)
+
+    with pytest.raises(ErreurValidation) as info:
+        ServiceBrigade.supprimer(redacteur, brigade)
+
+    assert brigade.designation in str(info.value)

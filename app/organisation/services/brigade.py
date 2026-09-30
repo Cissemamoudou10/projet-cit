@@ -160,9 +160,11 @@ class ServiceBrigade:
         """Critère 2 (§ 4, Prompt 21) : refuse la suppression de la
         DERNIÈRE brigade d'une session avant même de tenter l'écriture —
         message désignant l'action corrective. `ProtectedError` reste le
-        juge pour un programme en cours (critère 5, reporté à US-PLAN-03/04,
-        § 9) : rien à écrire ici tant qu'aucun modèle ne pointe vers
-        `Brigade` en `PROTECT`.
+        juge pour un programme en cours (critère 5) : `LigneProgramme.brigade`
+        est en `PROTECT` depuis US-PLAN-04 (D-83, refermé), traduit ici en
+        `ErreurValidation` nommant l'opposant — voir `planification.tests.
+        test_modeles::test_d83_suppression_brigade_au_programme_refusee_
+        par_le_vrai_chemin_de_service`.
         """
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
         if brigade.session.brigades.count() <= 1:

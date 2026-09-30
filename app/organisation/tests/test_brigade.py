@@ -59,7 +59,9 @@ def test_a4_meme_designation_autre_session_meme_formation_acceptee(redacteur, fo
     )
     ServiceBrigade.creer(redacteur, session_2026, donnees_brigade(designation="EXP1"))
 
-    brigade_2027 = ServiceBrigade.creer(redacteur, session_2027, donnees_brigade(designation="EXP1"))
+    brigade_2027 = ServiceBrigade.creer(
+        redacteur, session_2027, donnees_brigade(designation="EXP1")
+    )
 
     assert brigade_2027.pk is not None
 
@@ -146,12 +148,14 @@ def test_a9_suppression_de_session_portant_des_brigades_refusee_avec_enumeration
     assert brigade.designation in str(info.value)
 
 
-def test_critere_5_reporte_aucun_opposant_ne_bloque_la_suppression_aujourd_hui(redacteur, session):
-    """Critère 5 (« brigade au programme en cours ») est reporté à
-    US-PLAN-03/04 (§ 9, Prompt 21) : aucun modèle ne pointe encore vers
-    `Brigade` en `PROTECT` aujourd'hui — précédent exact de D-54. Ce test
-    tombera de lui-même, par `ProtectedError`, dès que `ProgrammeHebdomadaire`
-    posera cette clé étrangère."""
+def test_critere_5_suppression_sans_programme_toujours_acceptee(redacteur, session):
+    """Critère 5 (« brigade au programme en cours ») est refermé par
+    US-PLAN-04 (D-83) : `LigneProgramme.brigade` est en `PROTECT` — voir
+    `planification.tests.test_modeles::test_d83_suppression_brigade_au_
+    programme_refusee_par_le_vrai_chemin_de_service` pour le refus lui-même
+    (ce module ne dépend pas de `planification`, sens interdit). Ici, seul le
+    cas SANS programme reste à couvrir : une brigade jamais programmée se
+    supprime toujours normalement."""
     ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP1"))
     brigade = ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP2"))
 
@@ -175,7 +179,9 @@ def test_habilitation_insuffisante_refuse(lecteur, session):
 
 def test_ck_brigade_effectif_en_base(session):
     with pytest.raises(IntegrityError), transaction.atomic():
-        Brigade.objects.create(session=session, designation="Contournement", effectif_previsionnel=0)
+        Brigade.objects.create(
+            session=session, designation="Contournement", effectif_previsionnel=0
+        )
 
 
 def test_uq_brigade_session_designation_en_base(session):

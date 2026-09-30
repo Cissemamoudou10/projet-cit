@@ -42,7 +42,9 @@ def test_e1_creer_stagiaire_par_l_ecran_cree_reellement_le_stagiaire(client, red
     assert Stagiaire.objects.filter(session=session, matricule="M001").exists()
 
 
-def test_e1_modifier_stagiaire_par_l_ecran_modifie_reellement(client, redacteur, session, stagiaire):
+def test_e1_modifier_stagiaire_par_l_ecran_modifie_reellement(
+    client, redacteur, session, stagiaire
+):
     client.force_login(redacteur)
 
     reponse = client.post(
@@ -68,10 +70,32 @@ def test_e1_radier_stagiaire_par_l_ecran_radie_reellement(client, redacteur, ses
     assert stagiaire.radie
 
 
-def test_e1_supprimer_stagiaire_par_l_ecran_supprime_reellement(client, redacteur, session, stagiaire):
+def test_e1_deradier_stagiaire_par_l_ecran_deradie_reellement(
+    client, redacteur, session, stagiaire
+):
+    """Bloc F, Prompt 33 : `deradier_stagiaire` avait une adresse, une vue,
+    aucun test — ni nominal ni HTTP (R2-SES05-26 du cahier de recette :
+    « constater que ce n'est pas offert » aurait été la réponse fausse)."""
+    ServiceStagiaire.radier(redacteur, stagiaire, "Fin anticipée", datetime.date(2026, 9, 12))
     client.force_login(redacteur)
 
-    reponse = client.post(reverse("organisation:supprimer_stagiaire", args=[session.pk, stagiaire.pk]))
+    reponse = client.post(
+        reverse("organisation:deradier_stagiaire", args=[session.pk, stagiaire.pk])
+    )
+
+    assert reponse.status_code == 302
+    stagiaire.refresh_from_db()
+    assert not stagiaire.radie
+
+
+def test_e1_supprimer_stagiaire_par_l_ecran_supprime_reellement(
+    client, redacteur, session, stagiaire
+):
+    client.force_login(redacteur)
+
+    reponse = client.post(
+        reverse("organisation:supprimer_stagiaire", args=[session.pk, stagiaire.pk])
+    )
 
     assert reponse.status_code == 302
     assert not Stagiaire.objects.filter(pk=stagiaire.pk).exists()
@@ -117,7 +141,9 @@ def test_e1_telecharger_le_modele_par_l_ecran(client, redacteur, session):
 # --- E2 — import complet par le vrai cycle HTTP, dépôt de fichier compris -
 
 
-def test_e2_import_complet_depot_analyse_confirmation_stagiaires_en_base(client, redacteur, session):
+def test_e2_import_complet_depot_analyse_confirmation_stagiaires_en_base(
+    client, redacteur, session
+):
     client.force_login(redacteur)
 
     reponse_analyse = client.post(
@@ -177,7 +203,9 @@ def test_e4_planification_ne_peut_pas_creer_de_stagiaire(client, planificateur, 
 @pytest.mark.parametrize(
     "nom_utilisateur", ["redacteur", "lecteur", "planificateur", "direction_formation"]
 )
-def test_e5_lecture_accordee_aux_quatre_profils_habilites(client, request, session, nom_utilisateur):
+def test_e5_lecture_accordee_aux_quatre_profils_habilites(
+    client, request, session, nom_utilisateur
+):
     client.force_login(request.getfixturevalue(nom_utilisateur))
 
     reponse = client.get(reverse("organisation:liste_stagiaires", args=[session.pk]))

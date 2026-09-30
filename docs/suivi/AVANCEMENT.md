@@ -2,7 +2,13 @@
 
 *Récapitulatif court. Le détail vit dans les fichiers de sprint.*
 
-**Dernière mise à jour :** 8 septembre 2026 — contenu technique du jalon C1 acquis le 7 septembre ; le jalon lui-même se prononce le 12
+**Dernière mise à jour :** 30 septembre 2026 (Prompt 33) — **C2 est prononcé
+ce jour, en retard de quatre jours sur l'échéance du 26 septembre.** Ne pas
+lire ce retard comme rétrodaté : le contenu technique du sprint 2 était
+acquis le 26, mais ses éléments de pilotage (heures, clé de conversion,
+reports vérifiés, risques) ne l'étaient pas — exactement le même défaut qui
+avait déjà retardé le prononcé de C1. Voir `docs/suivi/LECONS-SPRINT-2.md`,
+leçon 1.
 
 ## Où nous en sommes
 
@@ -12,7 +18,7 @@
 | 2 — Spécification | 03/08 – 14/08 | Close |
 | 3 — Planification détaillée | 17/08 – 20/08 | Close |
 | 4 — Analyse et conception | 20/08 – 30/08 | **Close** — 7 livrables, 23 figures, jalon J1 franchi |
-| 5 — Développement | 31/08 – 24/10 | **En cours** — sprint 1 |
+| 5 — Développement | 31/08 – 24/10 | **En cours** — sprint 2 clos (C2 prononcé le 30/09, en retard), sprint 3 démarré le 28/09, aucune story engagée à ce jour |
 | 6 — Tests et recette | 26/10 – 02/11 | À venir |
 | 7 — Déploiement | 03/11 – 10/11 | À venir |
 | 8 — Mémoire et soutenance | 11/11 – 25/12 | À venir |
@@ -22,167 +28,179 @@
 | Sprint | Période | Stories | Points | Livrées | Jalon |
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
-| 2 | 14/09 – 26/09 | 12 | 61 | 0 | C2 |
+| 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
 | 3 | 28/09 – 10/10 | 11 | 47 | 0 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
-**Périmètre total :** 60 stories, 255 points. 61 besoins fonctionnels.
+**Périmètre total :** 60 stories, 255 points. 61 besoins fonctionnels. Sprint
+2 : périmètre entier livré (12/12 stories, 61/61 points), plus l'étude de
+faisabilité du solveur (Prompt 32, hors points chiffrés).
 
 ## Indicateurs
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 15 / 53 planifiées | — |
-| Points livrés | 58 / 227 planifiés | — |
-| Vélocité mesurée | *non mesurée* | à établir au sprint 1 |
-| Clé de conversion | 1,3 h par point | **à réviser sur la vélocité réelle** |
-| Marge avant dépôt | 14 jours ouvrés | ne pas entamer |
+| Stories livrées | 27 / 53 planifiées | — |
+| Points livrés | 119 / 227 planifiés | — |
+| Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
+| Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
+| Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
 
 ## Ce qu'il faut surveiller
 
-**R6, criticité 9.** La génération résout sur le périmètre du centre entier : les
-variables couvrent toutes les brigades de toutes les sessions actives. Le
-prototype du sprint 2 doit être dimensionné en conséquence, sinon il valide une
-faisabilité qui n'est pas celle du système réel.
+**R6 — reclassé, ne relève plus de la faisabilité.** L'étude
+(`etudes/solveur/RECOMMANDATION.md`, D-162) a levé la question de faisabilité
+technique (résolution en < 1 s médiane sur la taille réelle). Reste un
+arbitrage coût/bénéfice, tranché : heuristique gloutonne en production,
+US-PLAN-08 déclassée en perspective d'évolution pour le sprint 4, sous deux
+conditions cumulatives (périmètre *Must* entier livré, marge de 14 jours
+ouvrés intacte). Détail : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`.
 
-**R9, test hors ligne — contenu technique acquis le 7 septembre, jalon non
-encore franchi.** Réussi sur VM Debian 12 isolée, avant l'échéance du
-12 septembre : pile conteneurisée (Docker Engine, images, moteur),
-migrations, tri accentué réel, rendu PDF, redémarrage résilient. WeasyPrint
-≥ 53 ne dépend plus de Cairo/GDK-PixBuf (D-60) — le repli ReportLab envisagé
-n'a pas été nécessaire. Détail complet : `docs/suivi/INSTALLATION-HORS-LIGNE.md`.
-**Le jalon C1, lui, ne se prononce que le 12 septembre** : il exige aussi les
-heures réelles et la révision de la clé de conversion (§ Indicateurs
-ci-dessus), qui n'ont pas encore eu lieu — le contenu technique acquis ne
-suffit pas à lui seul à le déclarer franchi.
+**R9 — toujours éteint, une dette précisée.** Contenu technique acquis le
+7 septembre, `openpyxl` ajouté et vérifié dans le paquet hors ligne le
+12 septembre (D-99) sans rejeu complet du protocole VM depuis — dette
+explicite, à rejouer avant le dépôt réel, pas à chaque dépendance pure
+Python. `ortools` (étude du solveur) reste hors du paquet hors ligne (D-160),
+sans objet tant que R6 reste déclassé.
 
-**R19, cohérence documentaire.** Toute décision prise en développement qui
-s'écarte de la conception doit entrer dans `DECISIONS.md` le jour même.
+**R19, cohérence documentaire — toujours actif, cause racine identifiée.**
+Deux reports de critères (D-91, D-83) sont restés absents du tableau de
+suivi pendant tout le sprint 2 malgré une demande explicite dans leur propre
+décision. Ce n'est plus une hypothèse : voir la proposition de risque
+« dispositif de pilotage non tenu » ci-dessous, qui en est la cause.
 
-## État consolidé des reports de critères — premier point de la revue du 26 septembre
+**Risque proposé — dispositif de pilotage non tenu (nouveau, à statuer par
+le chef de projet).** Deux jalons consécutifs franchis sans leurs éléments
+de pilotage. Probabilité élevée (deux occurrences sur deux), impact sur la
+crédibilité du suivi en soutenance. Détail et mesure d'atténuation
+proposée : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`.
 
-Quinze reports de critères d'acceptation sont consignés dans `docs/suivi/DECISIONS.md`
-(un report = un critère qui suppose un modèle hors périmètre de la story qui
-l'a rencontré, réputé refermé automatiquement dès que le modèle manquant
-existe — jamais supposé, toujours revérifié : voir la leçon de P-25).
-Revérifié le 2026-09-08 sur le code réel, pas sur la déclaration des décisions
-elles-mêmes. **Mise à jour du 2026-09-08, en fin de journée** : le premier
-volet de D-30 (critère 3, ci-dessous « Ouvert ») a été corrigé dans le lot de
-clôture du sprint 1 — traité comme une correction rattachée au report, pas
-comme une story (le chef de projet l'a explicitement refusée en ce sens) —
-voir P-25 (`docs/suivi/PROBLEMES.md`) et D-64 (`docs/suivi/DECISIONS.md`).
-**Deux reports sont donc désormais entièrement refermés (D-22, D-30)**, un
-partiellement (D-35). **Mise à jour du 2026-09-12** : trois nouveaux reports
-ouverts par US-INS-03 (D-119, ci-dessous) — compte porté de neuf à douze, en
-repartant du compte vérifié sur le code et non de celui annoncé en revue
-(§ 8, Prompt 27) ; le compte des reports refermés (deux) est inchangé, ces
-trois-là s'ajoutent tous aux « Ouverts ». **Mise à jour du 2026-09-13** :
-trois nouveaux reports ouverts par US-PLAN-01 (D-121, ci-dessous) — compte
-porté de douze à quinze, même méthode (§ 9, Prompt 28). **Mise à jour du
-2026-09-14** : trois nouveaux reports ouverts par US-PLAN-12 (D-133,
-ci-dessous), même méthode — compte porté de quinze à dix-huit. Cette même
-story referme aussi, dans son usage nominal, le volet
-`VOLUME_HORAIRE_HEBDOMADAIRE_REFERENCE` de D-33 — non compté ici, D-33
-n'avait jamais figuré dans ce tableau (c'était une valeur provisoire, pas un
-report de critère au sens de ce tableau) ; le volet
-`SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT` de D-33 reste ouvert.
-**Mise à jour du 2026-09-15** : US-PLAN-04 (Prompt 30) n'ouvre AUCUN nouveau
-report (le compte reste à dix-huit) mais en referme QUATRE, nommément
-désignés par le § 9 du Prompt 30 (pas le § 11, qui traite d'un tout autre
-sujet — erreur de citation corrigée le 2026-09-15, relevée en relecture),
-tous vérifiés par un test qui exerce réellement le refus, pas seulement la
-contrainte en base (leçon de D-50) : D-45 (critère 4), D-51 (E1), D-54 (volet
-séance), et le quatrième regroupant CRITÈRE 5 D'US-PLAN-01 (D-121, RG-38) ET
-CRITÈRE 4 D'US-INS-03 (D-119, RG-36) — le prompt les traite comme un seul
-item. Restent ouverts et NE se referment PAS ici, conformément au § 9 du
-Prompt 30, texte explicite : D-34, D-39, **D-35 volet séance** (nommément
-exclu par le prompt, alors même qu'il est techniquement refermé par
-construction — voir la ligne D-35 ci-dessous et DECISIONS.md), E2 et A3
-d'US-PLAN-01. Voir D-134 pour l'inversion d'ordre qui a permis ces
-fermetures dès ce sprint plutôt qu'au sprint 3.
-**Correction du 2026-09-15, relecture `relecteur-conception`** : la première
-rédaction de cette mise à jour refermait à tort D-35 (volet séance, exclu
-nommément par le prompt) et omettait de refermer D-119/D-121 (le quatrième
-item réel). Corrigé ci-dessus et dans le tableau. La même relecture a aussi
-relevé l'absence des index de performance prescrits par `.claude/rules/
-migrations.md` pour `Seance` (`idx_seance_debut_fin`, `idx_seance_instructeur_
-debut`, `idx_seance_lieu_debut`) — ajoutés dans la foulée
-(`planification/migrations/0002_*`), `idx_seance_element`/`idx_ligne_brigade`
-délibérément omis (doublons de l'index automatique de clé étrangère Django).
-**Mise à jour du 2026-09-16** : US-PLAN-03 (Prompt 31) n'ouvre aucun nouveau
-report (compte inchangé à dix-huit) et en referme SIX, nommément désignés par
-le § 11 du Prompt 31, tous vérifiés par un test qui exerce réellement le
-mécanisme, pas seulement sa présence en base : D-34 (catégorie de lieu au
-moteur), D-39 volet moteur (prérequis exploités par le moteur — le volet
-saisie manuelle reste ouvert), D-35 « source séance » (revendiqué cette fois,
-sous sa lecture prérequis — voir la ligne D-35 et DECISIONS.md, D-156), le
-critère 5 d'US-PLAN-01 (RG-38, déjà refermé par US-PLAN-04 — confirmé sans
-action nouvelle), E6/refus de générer sans grille active (D-133), et le
-critère 6 d'US-PLAN-12 (changer de grille active ne modifie aucune séance
-passée, fermeture par constat d'absence de code, comme anticipé par D-133).
-**Un volet de D-133 reste délibérément ouvert** : RG-64 (relation facultative
-séance↔créneau type) — le champ existe et la grille borne bien ce que la
-génération propose, mais aucune séance générée ne renseigne son créneau
-type d'origine ; dette explicite, non revendiquée ici (voir la ligne D-133
-correspondante et DECISIONS.md).
+**Risque proposé — saturation des salles attitrées (nouveau, constat de
+terrain).** 32 à 38 salles pour 30 à 35 brigades (`etudes/solveur/
+HYPOTHESES.md`) : RG-14 proche de la saturation en permanence dans la
+combinaison la plus défavorable. Pas un défaut logiciel — un constat que le
+système rend visible en appliquant correctement une règle qui restait
+implicite. Détail : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`.
 
-| Report | Critère(s) | Story d'origine | Referme (prévu) | État vérifié le 2026-09-08 |
+## État consolidé des reports de critères — revue de clôture du sprint 2, prononcée le 30 septembre
+
+**Mise à jour du 2026-09-30 (Prompt 33, bloc B).** Réécriture complète de
+cette section : la précédente s'arrêtait au 2026-09-16 et comptait par
+**décision**, pas par **critère/volet** — deux unités différentes, jamais
+comparables terme à terme (voir plus bas). Reprise intégrale sur le code réel
+d'aujourd'hui, jamais sur la déclaration d'une décision. Deux corrections
+majeures par rapport à la dernière version :
+
+- **D-23 était marqué « Ouvert — Session n'existe pas encore »**. C'est faux
+  depuis US-SES-01 (`Session` existe, `Session.formation` en `PROTECT`,
+  `app/organisation/models.py`). **Fermé**, trois tests réels
+  (`app/organisation/tests/test_protection_formation.py`), dont un par le
+  vrai cycle HTTP (leçon D-50) et un qui prouve que le `PROTECT` s'applique
+  même à une session **clôturée**, pas seulement ouverte. Ce dernier point
+  révèle un écart de libellé (D-69) : le critère 4 d'US-REF-01 ne parle que
+  de « sessions ouvertes » — assumé, à corriger dans le backlog, voir
+  `docs/suivi/ECARTS-LIVRABLES-SPRINT-2.md`.
+- **Deux reports créés pendant le sprint 2 n'avaient jamais été ajoutés à ce
+  tableau**, alors que les décisions qui les ouvrent (D-91, D-83, toutes deux
+  du 2026-09-11) le demandaient explicitement elles-mêmes. Retrouvés en
+  parcourant `DECISIONS.md` en entier plutôt qu'en se fiant à ce tableau :
+  **D-91** (salle attitrée reprise par défaut à la génération, R2-GEN-07)
+  était déjà fermé dans les faits, jamais coché ici. **D-83** (brigade au
+  programme en cours non supprimable, R2-NRG-04/05) avait son mécanisme posé
+  (`LigneProgramme.brigade` en `PROTECT`, US-PLAN-04) mais **aucun test ne
+  l'exerçait par le vrai chemin de service** — l'ancien test de
+  `organisation/tests/test_brigade.py` ne prouvait qu'une absence
+  d'opposant, écrit avant que `LigneProgramme` existe. Par la règle même de
+  ce bloc (« un report déclaré refermé sans test nommé est réputé ouvert »),
+  D-83 était donc en réalité **encore ouvert** malgré son mécanisme déjà en
+  place. Comblé ce même jour :
+  `planification.tests.test_modeles::test_d83_suppression_brigade_au_
+  programme_refusee_par_le_vrai_chemin_de_service`, qui appelle
+  `ServiceBrigade.supprimer` (le chemin réel de l'écran), pas seulement
+  `.delete()`. **Fermé.**
+- **Un troisième report jamais ajouté, celui-là réellement ouvert** : D-108
+  (volume horaire dispensé signalé à l'affectation d'un stagiaire, A3,
+  US-SES-06) — aucune trace de « volume dispensé » dans `app/organisation/`,
+  reste entièrement à faire. Pointe désormais vers US-SUI-01 (sprint 4), le
+  volet séances d'US-PLAN-03 existant mais rien ne l'exploitant pour ce
+  signal.
+
+| Report | Critère(s)/volet | Story d'origine | Referme (prévu ou réel) | État vérifié le 2026-09-30 |
 |---|---|---|---|---|
-| D-22 | 2, 4 (type de la formation) | US-REF-00 | US-REF-01 | **Fermé** — `Formation.type_formation` en `PROTECT`, filtre par type (`CHAMPS_FILTRABLES`) confirmés dans le code |
-| D-30 | 3 (fiche affiche les formations utilisatrices) | US-REF-02 | US-REF-03 | **Fermé le 2026-09-08** — `ServiceMatiere.formations_utilisatrices`, corrigé dans le lot de clôture (D-64) — c'était P-25, ouvert de 2026-09-04 à 2026-09-08 |
-| D-30 | 5 (suppression bloquée) | US-REF-02 | US-REF-03 / US-INS-02 | **Fermé** — `Qualification.matiere`/`ElementReferentiel.matiere` en `PROTECT`, deux tests confirmés (D-50) |
-| D-35 | 6 / RG-07, source prérequis | US-REF-03 | US-REF-06 | **Fermé** — `Prerequis`, contrôle explicite (D-40) |
-| D-35 | 6 / RG-07, source séance | US-REF-03 | US-PLAN-03 (sprint 2) | **Fermé le 2026-09-16** — US-PLAN-04 avait techniquement refermé ce volet par construction (`Seance.element_referentiel` en `PROTECT`) mais ne l'avait délibérément PAS revendiqué, le Prompt 30 § 9 l'excluant nommément. Le Prompt 31 § 11 le revendique explicitement à son tour, sous la lecture « source des PRÉREQUIS pour la séance » : la génération lit réellement `Prerequis` pour écarter une matière à prérequis inachevé (`planification.generation.candidats.matieres_programmables`/`_prerequis_inacheves`), testé (C4, `test_c4_matiere_volume_epuise_et_matiere_prerequis_inacheve_motifs_distincts`) — pas seulement le `PROTECT` en base, la leçon de D-50 |
-| D-35 | 6 / RG-07, source évaluation | US-REF-03 | sprint 4 | Ouvert |
-| D-23 | 4 (session ouverte bloque la suppression) | US-REF-01 | US-SES-01 (sprint 2) | Ouvert — `Session` n'existe pas encore |
-| D-34 | 3, 4 (contrainte de catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | **Fermé le 2026-09-16** — les trois cas SALLE_ATTITREE/LIEU_PARTAGE/AUCUN_LIEU exploités par `planification.generation.candidats`, testés dans une même génération (D1-D5, `test_generation_lieux.py`) |
-| D-39 | 3, 4 (prérequis exploités par le moteur / signalés en saisie) | US-REF-06 | moteur de génération / saisie manuelle (sprint 2/3) | **Fermé le 2026-09-16, volet moteur** — voir D-35 « source séance » ci-dessus, même mécanisme ; le volet saisie manuelle reste ouvert (US-PLAN-05) |
-| D-45 | 4 (instructeur affecté à un programme en cours) | US-INS-01 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — `Seance.instructeur` en `PROTECT` (US-PLAN-04), testé (`test_a9_suppression_instructeur_portant_une_seance_refusee`) |
-| D-51 | E1 (instructeur affecté à des séances futures) | US-INS-02 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — résolveur `noyau` câblé par `planification` (US-PLAN-04, D-143), refus exercé réellement par un test (`test_retrait_refuse_si_une_seance_future_existe`), pas seulement le câblage — leçon de D-50 |
-| D-54 | 4, volet brigade (lieu affecté à une brigade) | US-PLAN-02 | US-SES-03 (sprint 2) | **Fermé le 2026-09-11** — `SalleAttitree.lieu` en `PROTECT` (D-92), testé par le cycle HTTP réel (C9) |
-| D-54 | 4, volet séance (lieu affecté à une séance) | US-PLAN-02 | séance programmée (sprint 2) | **Fermé le 2026-09-15** — `Seance.lieu` en `PROTECT` (US-PLAN-04), testé (`test_a9_suppression_lieu_portant_une_seance_refusee`) |
-| D-119 | 4, RG-25 (indisponibilité comme contrainte dure à la génération) | US-INS-03 | US-PLAN-04 (sprint 2) | **Fermé le 2026-09-15** — RG-36 implantée en couche services (`planification.services.regles_instructeur.verifier_rg36`), testée (D1-D3, `test_d1_seance_recouvrant_une_indisponibilite_refus_periode_nommee` et voisins) |
-| D-119 | 5, points 4-5 (recherche des séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-03 puis US-PLAN-09 (sprint 3) | Ouvert |
-| D-119 | A3 (restriction à l'extension), A4 (séances passées en suivi prescrit/réalisé) | US-INS-03 | mêmes destinations que ci-dessus | Ouvert |
-| D-121 | 5, RG-38 (exclusion des périodes bloquantes à la génération) | US-PLAN-01 | US-PLAN-03 / US-PLAN-04 (sprint 2) | **Fermé le 2026-09-15** — RG-38 implantée en couche services (`planification.services.regles_calendrier.verifier_rg38`), testée (F1-F6, `test_f1_periode_bloquante_centre_entier_refus` et voisins) |
-| D-121 | E2 (période bloquante recouvrant des séances programmées, arbitrage explicite) | US-PLAN-01 | US-PLAN-03 puis US-PLAN-05 (sprint 3) | Ouvert |
-| D-121 | A3 (séances redevenues programmables à la suppression d'une période) | US-PLAN-01 | mêmes destinations que ci-dessus | Ouvert |
-| D-133 | 6 (changer de grille active ne modifie pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2), fermeture par constat d'absence de code | **Fermé le 2026-09-16** — aucune ligne de `planification.services.generation`/`generation/*.py` ne modifie une `GrilleHoraire` ni une `Seance` hors de la régénération explicitement sélectionnée (D-156) ; couvert indirectement par le groupe B (`test_generation_regeneration.py`), qui prouve qu'une brigade non sélectionnée n'est jamais touchée |
-| D-133 | RG-64 (relation facultative séance ↔ créneau type) | US-PLAN-12 | US-PLAN-03 | Ouvert — le champ `Seance.creneau_type` (`SET_NULL`, nullable) existe depuis US-PLAN-04, mais la génération ne le renseigne jamais (`ServiceEcritureSeance._creer_une_seance` ne porte aucun `creneau_type`) ; RG-64 elle-même (la grille contraint ce que la génération PROPOSE) est respectée par construction — les créneaux projetés bornent les candidates — mais la traçabilité séance→créneau d'origine reste à faire, dette explicite non revendiquée |
-| D-133 | refus de générer en l'absence de grille active | US-PLAN-12 | US-PLAN-03 | **Fermé le 2026-09-16** — `AucuneGrilleActive`, testé (E6, `test_e6_aucune_grille_active_generation_refusee`) |
+| D-22 | 2, 4 (type de la formation) | US-REF-00 | US-REF-01 | Fermé (sprint 1) |
+| D-30 | 3 (fiche affiche les formations utilisatrices) | US-REF-02 | US-REF-03 | Fermé (sprint 1, D-64) |
+| D-30 | 5 (suppression bloquée) | US-REF-02 | US-REF-03 / US-INS-02 | Fermé (sprint 1) |
+| D-35 | 6/RG-07, source prérequis | US-REF-03 | US-REF-06 | Fermé (sprint 1, D-40) |
+| D-35 | 6/RG-07, source séance | US-REF-03 | US-PLAN-03/04 (sprint 2) | **Fermé le 2026-09-16** — `test_c4_matiere_volume_epuise_et_matiere_prerequis_inacheve_motifs_distincts` |
+| D-35 | 6/RG-07, source évaluation | US-REF-03 | sprint 4 | Ouvert |
+| **D-23** | 4 (session bloque la suppression d'une formation) | US-REF-01 | US-SES-01 (sprint 2) | **Fermé — corrigé le 2026-09-30**, était marqué à tort « Ouvert ». `test_d1_formation_portant_une_session_ouverte_ne_peut_etre_supprimee`, `test_d2_meme_refus_par_le_vrai_cycle_http_...`, `test_d3_formation_portant_une_session_cloturee_est_aussi_protegee` (`app/organisation/tests/test_protection_formation.py`). Écart de libellé signalé : D-69 |
+| D-34 | 3, 4 (catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | Fermé le 2026-09-16 — `test_generation_lieux.py` |
+| D-39 | 3, 4, volet moteur (prérequis exploités par le moteur) | US-REF-06 | moteur de génération (sprint 2) | Fermé le 2026-09-16 |
+| D-39 | 3, 4, volet saisie manuelle | US-REF-06 | US-PLAN-05 (sprint 3) | Ouvert |
+| D-45 | 4 (instructeur affecté à un programme en cours) | US-INS-01 | séance programmée (sprint 2) | Fermé le 2026-09-15 — `test_a9_suppression_instructeur_portant_une_seance_refusee` |
+| D-51 | E1 (retrait de qualification, instructeur à séances futures) | US-INS-02 | séance programmée (sprint 2) | Fermé le 2026-09-15 — reconfirmé 2026-09-30 : `test_retrait_refuse_si_une_seance_future_existe` (`app/planification/tests/test_resolveur_qualification.py`) teste bien le RETRAIT de qualification, pas le `PROTECT` sur `Seance.instructeur` |
+| D-54 | 4, volet brigade (lieu affecté à une brigade) | US-PLAN-02 | US-SES-03 (sprint 2) | Fermé le 2026-09-11 |
+| D-54 | 4, volet séance (lieu affecté à une séance) | US-PLAN-02 | séance programmée (sprint 2) | Fermé le 2026-09-15 |
+| **D-91** | R2-GEN-07 (salle attitrée reprise par défaut à la génération) | US-SES-03 | moteur de génération (sprint 2) | **Fermé — jamais ajouté à ce tableau avant le 2026-09-30**, découvert en relisant `DECISIONS.md` en entier. `test_d1_matiere_salle_attitree_reprend_la_salle_de_la_brigade` (`test_generation_lieux.py`) |
+| **D-83** | R2-NRG-04/05 (brigade au programme en cours non supprimable) | US-SES-02 | séance programmée (sprint 2) | **Fermé le 2026-09-30** — mécanisme posé depuis US-PLAN-04 mais jamais testé par le vrai chemin de service jusqu'à ce jour ; comblé (voir ci-dessus) |
+| **D-108** | A3 (volume horaire dispensé signalé à l'affectation) | US-SES-06 | US-SUI-01 (sprint 4) | **Ouvert — jamais ajouté à ce tableau avant le 2026-09-30** |
+| D-119 | 4, RG-25 (indisponibilité, contrainte dure) | US-INS-03 | US-PLAN-04 (sprint 2) | Fermé le 2026-09-15 |
+| D-119 | 5, pts 4-5 (séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-09 (sprint 3) | Ouvert |
+| D-119 | A3, A4 (restriction extension, séances passées) | US-INS-03 | sprint 3 | Ouvert |
+| D-121 | 5, RG-38 (exclusion des périodes bloquantes) | US-PLAN-01 | US-PLAN-03/04 (sprint 2) | Fermé le 2026-09-15 |
+| D-121 | E2 (période bloquante recouvrant des séances programmées) | US-PLAN-01 | US-PLAN-05 (sprint 3) | Ouvert |
+| D-121 | A3 (séances redevenues programmables) | US-PLAN-01 | sprint 3 | Ouvert |
+| D-133 | 6 (changer de grille active ne touche pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
+| D-133 | RG-64 (relation facultative séance↔créneau type) | US-PLAN-12 | *aucune story assignée* | **Ouvert, orpheline** — dette explicite, à surveiller (personne n'est chargé de la refermer) |
+| D-133 | refus de générer sans grille active (E6) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 
-**Écart avec le décompte donné en revue** (« neuf reports, trois refermés,
-six des sept ouverts se referment au sprint 2 ») : la vérification sur le code
-ne confirme qu'**une** fermeture complète (D-22) et **deux** fermetures
-partielles (un volet de D-30, un volet de D-35) — pas trois fermetures
-entières. Le chiffre « sept ouverts » de la revue est lui-même incohérent
-avec « neuf... trois refermés » (9 − 3 = 6, pas 7). À signaler en revue plutôt
-qu'à corriger silencieusement ici : seul le compte ci-dessus, vérifié sur le
-code, doit servir de référence au 26 septembre.
+### Compte final, vérifié le 2026-09-30
 
-**Écart de numérotation à signaler, non corrigé ici** (hors périmètre —
-`.claude/rules` réserve le backlog au chef de projet) : plusieurs reports
-(D-34, D-39, D-45, D-51, D-54) citent des codes de story (« US-PLAN-01 »,
-« US-PLAN-03 », « US-PLAN-04 », « US-PLAN-05 ») qui ne correspondent plus à
-la numérotation actuelle de `docs/suivi/sprint-2.md` — par exemple, la
-« US-PLAN-01 » citée pour le moteur de génération (D-34) y désigne en
-réalité « Élaborer le calendrier académique annuel » ; le moteur de
-génération porte aujourd'hui le code US-PLAN-03. Les correspondances
-fonctionnelles ci-dessus (colonne « Referme ») sont établies par la
-description du besoin, pas par le code de story cité dans `DECISIONS.md` —
-à faire arbitrer par le chef de projet avant le 26 septembre.
+| | Compte |
+|---|---|
+| **Ouverts aujourd'hui** | **8** : D-35(évaluation), D-39(saisie manuelle), D-119(pts 4-5), D-119(A3/A4), D-121(E2), D-121(A3), D-133(RG-64, orpheline), D-108 |
+| **Refermés pendant le sprint 2** | **14** : D-23, D-34, D-35(séance), D-39(moteur), D-45, D-51, D-54(brigade), D-54(séance), D-91, D-83, D-119(RG-36), D-121(RG-38), D-133(constat d'absence), D-133(E6) |
+| **Créés pendant le sprint 2** | **12** : D-91, D-83, D-108, D-119(×3), D-121(×3), D-133(×3) |
+
+**Écart avec le décompte donné en revue du sprint 1** (« neuf reports, trois
+refermés, six des sept ouverts se referment au sprint 2 ») : ce chiffre
+comptait par **décision** (15 décisions distinctes ouvrent un report), le
+tableau ci-dessus compte par **critère/volet** (26 lignes) — deux unités
+différentes, jamais comparables terme à terme. Le chiffre de revue était de
+toute façon interne-incohérent (9 − 3 = 6, pas 7) ; à signaler en séance,
+pas à corriger silencieusement a posteriori.
+
+### Écart de numérotation, table de correspondance (proposition, backlog non touché)
+
+| Code cité dans `DECISIONS.md` | Désigne réellement (`sprint-2.md`) |
+|---|---|
+| « US-PLAN-01 » (D-34) | US-PLAN-03 — Générer le programme hebdomadaire |
+| « US-PLAN-03 » (D-39, D-45, D-51, D-54) | US-PLAN-04 — Garantir le respect des contraintes dures (selon le contexte — certaines citations « US-PLAN-03/04 » désignaient déjà les deux) |
+| « US-PLAN-04 » (quelques citations) | US-PLAN-03 (cas inverse — l'inversion D-134 a permuté les usages au fil du sprint) |
+| « US-PLAN-05 » (D-39 volet saisie) | Correct — sprint 3, saisie manuelle, non renommée |
+
+Correction du backlog laissée au chef de projet (`.claude/rules` le réserve).
 
 ## Questions de terrain encore ouvertes
 
-Aucune n'est bloquante.
+Aucune n'est bloquante. **Une question est refermée par le code pendant le
+sprint 2** : le volume horaire hebdomadaire de référence (D-33) n'est plus
+une valeur provisoire à confirmer — US-PLAN-12 (D-128) le calcule désormais
+sur la grille horaire active, la question elle-même n'a plus d'objet.
+**Une question ajoutée pendant le sprint 2** : celle sur l'existence d'un
+troisième horaire, ci-dessous.
 
 - Le document de progression réalisée est-il signé, et transmis à qui ?
 - Le remplacement en urgence exige-t-il l'accord du directeur à chaque cas ?
 - Un cours manqué est-il replacé ou seulement noté ? *(les deux sont prévus)*
 - Frontière de périmètre avec l'écran d'affichage devant la direction
 - Format réglementaire du procès-verbal et de la convocation *(risque R18)*
-- Existe-t-il au CIT un horaire autre que l'ordinaire et le Ramadan — horaire
-  d'été, horaire de période d'examens, horaire de fin de stage ? *(US-PLAN-12 :
-  seules ces deux grilles sont relevées, mai et février respectivement — rien
-  n'affirme qu'elles couvrent l'année entière)*
+- **(Ajoutée au sprint 2, US-PLAN-12)** Existe-t-il au CIT un horaire autre
+  que l'ordinaire et le Ramadan — horaire d'été, horaire de période
+  d'examens, horaire de fin de stage ? Seules ces deux grilles sont relevées
+  (mai et février respectivement) — rien n'affirme qu'elles couvrent l'année
+  entière.
+- Le seuil `SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT` (D-33) reste provisoire
+  (10 %), terrain non consulté — seule la moitié de D-33 a été refermée par
+  US-PLAN-12, voir ci-dessus.
