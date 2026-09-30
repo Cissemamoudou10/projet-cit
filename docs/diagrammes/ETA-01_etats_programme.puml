@@ -1,0 +1,45 @@
+@startuml ETA-01
+title ETA-01 — États du programme hebdomadaire (centre entier, une semaine)\nRG-41, RG-42, RG-44 à RG-47 · version soumise aux cellules
+
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam state {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+  ArrowColor #333333
+}
+hide empty description
+
+state "BROUILLON" as BROUILLON : modifiable (RG-41)\ncompte au volume programmé
+state "SOUMIS" as SOUMIS : lecture seule\nen attente de la cellule pédagogique
+state "REJETÉ" as REJETE : motif affiché à la planification\ncompte au volume programmé
+state "VALIDÉ" as VALIDE : lecture seule\nvalidation nominative et datée (RG-47)\nsignature du directeur : à enregistrer
+state "AFFICHÉ" as AFFICHE : diffusé ; entre au volume réalisé\nvalidation et signature acquises
+
+[*] --> BROUILLON : T1 — première génération\nou première séance saisie\n(planification)
+
+BROUILLON --> SOUMIS : T2 — soumettre\n[au moins une séance]\n/ datée ; pédagogique informée\n(planification)
+SOUMIS --> BROUILLON : T3 — retirer la soumission\n[aucune décision rendue]\n(planification)
+SOUMIS --> VALIDE : T4 — valider\n/ validateur et date (RG-47)\n(pédagogique)
+SOUMIS --> REJETE : T5 — rejeter\n[motif non vide] (RG-45)\n(pédagogique)
+REJETE --> BROUILLON : T6 — reprendre en correction\nou première modification d'une séance\n(planification)
+VALIDE --> VALIDE : T7 — enregistrer la signature\n[date ≥ date de validation]\n/ date et nom du signataire\n(planification)
+VALIDE --> AFFICHE : T8 — afficher\n[signature enregistrée] (RG-46)\n/ datée\n(planification)
+VALIDE --> BROUILLON : T9 — annuler la validation\n[confirmation et motif] (RG-42)\n/ validation et signature effacées\n(planification)
+AFFICHE --> AFFICHE : T10 — porter un avenant sur une séance\n[motif et nature] (RG-42)\n/ programme inchangé d'état\n(planification, avec le directeur)
+
+note bottom of AFFICHE
+  Aucune transition ne ramène un programme
+  affiché à l'état brouillon : une modification
+  après affichage prend la forme d'un avenant
+  (RG-42, terrain du 26 août).
+end note
+
+note bottom of SOUMIS
+  Toute transition absente de ce diagramme est refusée (RG-44).
+  En particulier : REJETÉ → SOUMIS, VALIDÉ → REJETÉ, AFFICHÉ → BROUILLON.
+  Un programme n'est jamais validé brigade par brigade :
+  la décision porte sur le centre entier (CU-P5-11, A4).
+end note
+@enduml

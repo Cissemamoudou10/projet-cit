@@ -2,13 +2,15 @@
 
 *Récapitulatif court. Le détail vit dans les fichiers de sprint.*
 
-**Dernière mise à jour :** 30 septembre 2026 (Prompt 33) — **C2 est prononcé
-ce jour, en retard de quatre jours sur l'échéance du 26 septembre.** Ne pas
-lire ce retard comme rétrodaté : le contenu technique du sprint 2 était
-acquis le 26, mais ses éléments de pilotage (heures, clé de conversion,
-reports vérifiés, risques) ne l'étaient pas — exactement le même défaut qui
-avait déjà retardé le prononcé de C1. Voir `docs/suivi/LECONS-SPRINT-2.md`,
-leçon 1.
+**Dernière mise à jour :** 30 septembre 2026 (Prompt 34, ETA-01) — C2 a été
+prononcé le même jour, en retard de quatre jours sur l'échéance du 26
+septembre. Ne pas lire ce retard comme rétrodaté : le contenu technique du
+sprint 2 était acquis le 26, mais ses éléments de pilotage (heures, clé de
+conversion, reports vérifiés, risques) ne l'étaient pas — exactement le même
+défaut qui avait déjà retardé le prononcé de C1. Voir
+`docs/suivi/LECONS-SPRINT-2.md`, leçon 1. Sprint 3 engagé depuis le 28
+septembre ; première tâche produite (ETA-01, diagramme d'états du programme,
+5.3.17), voir « Ce qu'il faut surveiller » — R10.
 
 ## Où nous en sommes
 
@@ -75,6 +77,21 @@ le chef de projet).** Deux jalons consécutifs franchis sans leurs éléments
 de pilotage. Probabilité élevée (deux occurrences sur deux), impact sur la
 crédibilité du suivi en soutenance. Détail et mesure d'atténuation
 proposée : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`.
+
+**R10 — diagramme produit, en attente de validation.** Mesure préventive
+livrée le 30 septembre (`docs/diagrammes/ETA-01_etats_programme.puml`,
+`docs/conception/ETA-01_table_transitions.md`, `ETA-01_audit_code.md`,
+`ETA-01_note_cellules.md`) — retour demandé aux cellules pédagogique et
+planification pour le **5 octobre**. Tant que la validation n'est pas
+revenue, **US-VAL-01 et US-VAL-02 restent bloquées** (prescrit par le
+prompt 34, § 7) : le circuit qu'elles implantent dépend des quatre questions
+posées dans la note aux cellules (`ETA-01_note_cellules.md`, § « Quatre
+questions »). Nuance à surveiller : Q3 porte sur T7/T8 (signature,
+affichage), relevant d'US-VAL-04 plutôt que d'US-VAL-01/02 — un « non » sur
+Q3 rouvrirait D-169 et l'acteur de US-VAL-04, pas seulement le circuit de
+soumission/décision. Les arbitrages sans réponse conditionnelle (A1, A2, A6
+à A10 — D-165, D-166, D-170, D-171, D-172, D-173) ne dépendent pas de ce
+retour et peuvent être implantés sans attendre.
 
 **Risque proposé — saturation des salles attitrées (nouveau, constat de
 terrain).** 32 à 38 salles pour 30 à 35 brigades (`etudes/solveur/
@@ -154,14 +171,24 @@ majeures par rapport à la dernière version :
 | D-133 | 6 (changer de grille active ne touche pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 | D-133 | RG-64 (relation facultative séance↔créneau type) | US-PLAN-12 | *aucune story assignée* | **Ouvert, orpheline** — dette explicite, à surveiller (personne n'est chargé de la refermer) |
 | D-133 | refus de générer sans grille active (E6) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
+| **D-171** | RG-39 a) révisée (volume programmé compte aussi REJETÉ) | US-PLAN-04 (D-140) | US-VAL-03 (sprint 3) | **Ouvert — créé le 2026-09-30, prompt 34** |
+| **D-172** | lecture du programme par la cellule pédagogique (`programme_validation_lecture`) | US-PLAN-03 (D-154) | US-VAL-02 (sprint 3) | **Ouvert — créé le 2026-09-30, prompt 34** |
 
 ### Compte final, vérifié le 2026-09-30
 
+Recompté au prompt 34 : D-171 et D-172 (ci-dessus) s'ajoutent aux huit
+reports déjà ouverts à la clôture du sprint 2 — **dix ouverts aujourd'hui**,
+pas huit. Les deux tiennent à une révision (D-171 révise D-140) et à un
+complément (D-172 complète D-154) rendus par ETA-01, pas à une décision
+prise pendant le sprint 2 lui-même — ils s'ajoutent donc au compte du
+sprint 2 sans le rouvrir.
+
 | | Compte |
 |---|---|
-| **Ouverts aujourd'hui** | **8** : D-35(évaluation), D-39(saisie manuelle), D-119(pts 4-5), D-119(A3/A4), D-121(E2), D-121(A3), D-133(RG-64, orpheline), D-108 |
+| **Ouverts aujourd'hui** | **10** : D-35(évaluation), D-39(saisie manuelle), D-119(pts 4-5), D-119(A3/A4), D-121(E2), D-121(A3), D-133(RG-64, orpheline), D-108, D-171, D-172 |
 | **Refermés pendant le sprint 2** | **14** : D-23, D-34, D-35(séance), D-39(moteur), D-45, D-51, D-54(brigade), D-54(séance), D-91, D-83, D-119(RG-36), D-121(RG-38), D-133(constat d'absence), D-133(E6) |
 | **Créés pendant le sprint 2** | **12** : D-91, D-83, D-108, D-119(×3), D-121(×3), D-133(×3) |
+| **Créés pendant le sprint 3, à ce jour (prompt 34)** | **2** : D-171, D-172 |
 
 **Écart avec le décompte donné en revue du sprint 1** (« neuf reports, trois
 refermés, six des sept ouverts se referment au sprint 2 ») : ce chiffre

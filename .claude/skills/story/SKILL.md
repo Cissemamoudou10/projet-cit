@@ -34,4 +34,10 @@ Corrige les écarts de conformité ; ignore les préférences de style.
 un blocage, note-le dans `PROBLEMES.md`. Si une décision s'écarte de la
 conception, inscris-la dans `DECISIONS.md` avec son impact sur les livrables.
 
-**8. Livrer.** Commit en français, à l'impératif, mentionnant le code de la story.
+**8. Livrer.** Commit en français, à l'impératif, mentionnant le code de la
+story. Définition de fini : implantée, testée, relue par le sous-agent,
+**commitée**, **ligne ajoutée au tableau Sprints d'`AVANCEMENT.md`**,
+**ligne ajoutée à `heures-sprint-N.md`, datée du jour** — les deux derniers
+points sont mécaniques, jamais reconstitués après coup (mesure corrective
+de R23, prompt 34, suite à deux reports oubliés du tableau de suivi
+pendant tout le sprint 2, D-91 et D-83).

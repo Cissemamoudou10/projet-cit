@@ -31,6 +31,82 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-173 — Pas de soumission d'un programme vide (A9) ; aucune fin de vie pour le programme (A10)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Deux points sans source dans les livrables confrontés pour ETA-01 (`docs/diagrammes/ETA-01_etats_programme.puml`) : à la différence des neuf autres arbitrages de ce prompt, aucune fiche ni règle structurante ne les couvre. Arbitrage du chef de projet, à consigner comme tel plutôt que déduit d'une source.
+**Décision** — (A9) T2 (soumettre) est gardée par « au moins une séance présente dans le programme » — refus sinon. (A10) AFFICHÉ est un état terminal stable dans les faits : ETA-01 ne porte aucun état de fin de vie pour `ProgrammeHebdomadaire`, et aucune story du périmètre fourni (sprints 3, 4, réserve) ne propose la suppression d'un programme — D-138 reste une propriété technique de cascade, jamais une fonctionnalité exposée.
+**Alternative écartée** — (A9) Autoriser la soumission d'un programme vide, laissant la cellule pédagogique statuer sur rien : écartée, aucune valeur métier, retarde seulement la détection de l'erreur. (A10) Modéliser un état « clos »/« archivé » : écartée, aucun des 61 besoins fonctionnels ne demande de fin de vie pour le programme hebdomadaire.
+**Impact sur les livrables** — aucun ; arbitrages sans source, à signaler comme tels au mémoire, pas de correction de livrable en face.
+**Reporté au livrable** — non applicable.
+
+## D-172 — Tranche D-154 : la cellule pédagogique lit tous les programmes, tous états, via `programme_validation_lecture` (A8)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Cette décision tranche la question laissée ouverte par D-154 (2026-09-16).**
+**Contexte** — US-VAL-02 c.1 exige que la cellule pédagogique consulte le programme soumis avant décision ; la ligne « P5 — validation » de la matrice § 11.2 lui donne l'écriture (`programme_validation_ecriture`), ce qui emporte la lecture. D-154 avait constaté que la matrice n'accorde `programme_lecture` qu'à deux profils sur quatre (planification, direction) et avait renvoyé l'arbitrage au chef de projet sans trancher. L'audit du code actuel (`docs/conception/ETA-01_audit_code.md`, § 5) confirme que `vue_consultation_programme` (`app/planification/views.py:123-124`), seule vue de détail existante, est gardée par `programme_lecture` — permission que la cellule pédagogique n'a pas.
+**Décision** — La cellule pédagogique lit tout programme soumis à sa décision, quel que soit l'état, via la permission `programme_validation_lecture` — déjà présente dans la matrice (`app/administration/constantes.py`), jamais utilisée à ce jour — et non via `programme_lecture`, que la matrice ne lui accorde toujours pas : **D-154 n'est pas révisée sur ce point**, elle est complétée. Pas de lecture conditionnée à l'état du programme : complexité sans bénéfice. La mise en œuvre technique (élargir le contrôle de `vue_consultation_programme` ou créer une vue de détail dédiée à la validation) est laissée à US-VAL-02, non tranchée ici.
+**Alternative écartée** — Étendre `programme_lecture` à la cellule pédagogique pour réutiliser `vue_consultation_programme` telle quelle : écartée, D-154 avait déjà écarté ce chemin (modifier la matrice d'habilitation transverse hors mandat d'une story de planification) ; le domaine `programme_validation_lecture` existe précisément pour cet usage, sans y toucher.
+**Impact sur les livrables** — aucun sur le modèle d'habilitation, déjà complet ; US-VAL-02 doit choisir entre les deux mises en œuvre possibles ci-dessus.
+**Reporté au livrable** — oui, US-VAL-02 ; nouveau report ajouté au tableau d'`AVANCEMENT.md` (D-172).
+
+## D-171 — Révise D-140 : le volume programmé compte aussi les programmes rejetés (A7)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Cette décision révise D-140 (2026-09-15).**
+**Contexte** — D-140 excluait les programmes REJETÉS du volume programmé (`ETATS_COMPTABILISES`, `app/planification/services/contraintes.py:65`, confirmé par l'audit du code actuel), en les traitant comme un abandon, sur l'idée implicite de « rejeter le brouillon » pour libérer le volume — or ETA-01 ne porte aucune transition de ce type : un programme rejeté REVIENT à BROUILLON avec ses séances intactes, il ne disparaît jamais.
+**Décision** — Tous les états comptent désormais au volume programmé ; seul le programme en cours d'évaluation reste exclu (inchangé par rapport à D-140). Exclure REJETÉ laisserait une autre semaine consommer ce volume sans le voir, puis la reprise du programme rejeté produirait un dépassement que personne n'aurait anticipé.
+**Alternative écartée** — Conserver l'exclusion de D-140 et documenter « rejeter le brouillon » comme geste de libération du volume : écartée, cette transition n'existe pas et n'existera pas — aucun état d'abandon n'est modélisé dans ETA-01.
+**Impact sur les livrables** — `app/planification/services/contraintes.py` (`ETATS_COMPTABILISES`), `regles_volume.py` (docstring), `app/planification/tests/test_contraintes_volume.py::test_g4_une_seance_d_un_programme_rejete_ne_compte_pas_dans_le_volume` (assertion et nom à inverser) — tous à la charge d'US-VAL-03 ; aucun fichier sous `app/` n'a été modifié par ce prompt (§ 1, interdit à cette étape).
+**Reporté au livrable** — oui, US-VAL-03 ; nouveau report ajouté au tableau d'`AVANCEMENT.md` (D-171).
+
+## D-170 — RG-41 gardée à la porte unique `ServiceEcritureSeance` ; nom `ServiceValidation` déjà fixé (A6)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-41 (modifiable aux états brouillon et rejeté seulement) doit s'appliquer uniformément à tous les chemins d'écriture d'une séance — génération, saisie manuelle, indisponibilité, avenant confondus — sur le patron D-142 (porte d'écriture unique). L'audit (`docs/conception/ETA-01_audit_code.md`, § 4) confirme qu'aujourd'hui ni `ServiceEcritureSeance` ni `ServiceGeneration` ne consultent l'état du programme nulle part.
+**Décision** — La garde RG-41 sera posée dans `ServiceEcritureSeance` (`creer_seance`/`creer_seances`), seul point de contrôle, jamais dupliquée dans `ServiceGeneration` ni ailleurs — cohérent avec le mécanisme transactionnel déjà en place : `ServiceGeneration.generer` englobe tout dans un `transaction.atomic()`, donc un refus levé par la porte d'écriture annule aussi la suppression préalable des séances régénérées. Le service qui portera les transitions d'état (T2 à T10) se nomme `ServiceValidation` — nom **déjà fixé** par `.claude/rules/services.md` (tableau des huit services : « machine à états du programme, validation et signature ») ; rien à arbitrer de nouveau sur ce point, seulement à créer. Un test d'architecture (sur le patron de `test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme`) interdira toute affectation de l'état du programme hors de `ServiceValidation`.
+**Alternative écartée** — Contrôler l'état dans chaque appelant (vue de génération, vue de saisie manuelle, etc.) : écartée, c'est exactement le défaut qui a coûté trente-six refus d'habilitation manquants au sprint 1, refermé par la garde mécanique de `.claude/rules/services.md`.
+**Impact sur les livrables** — aucun sur la conception ; confirme le patron D-142.
+**Reporté au livrable** — non applicable.
+
+## D-169 — Signature et affichage : deux actes distincts de la cellule planification (A5)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-47 (validation nominative et datée), CU-P5-11 étape 6, SEQ-02, MAQ-03 et US-VAL-04 c.1 convergent tous sur la cellule planification comme porteuse de la signature et de l'affichage. La matrice § 11.2 (« planification en lecture sur P5 — validation ») ne régit que valider/rejeter, pas la signature — sujet qu'elle ne couvre pas (principe 1 : la fiche plus précise l'emporte sur un critère qui reste muet).
+**Décision** — T7 enregistre la date de signature et le nom du signataire sur un programme VALIDÉ, réenregistrable tant qu'il n'est pas affiché (correction de saisie), date de signature ≥ date de validation, jamais future. T8 affiche, refusé sans signature (RG-46). Les deux actes relèvent de la cellule planification, au nom du directeur de la formation. Soumis à confirmation des cellules (Q3 de la note aux cellules, réponse retenue par défaut : oui).
+**Alternative écartée** — Faire porter la signature par la cellule pédagogique, lecture littérale de la matrice § 11.2 qui ne parle que de « validation » : écartée, la matrice ne régit pas la signature ; RG-47, CU-P5-11, SEQ-02, MAQ-03 et US-VAL-04 convergent tous sur la planification.
+**Impact sur les livrables** — matrice § 11.2, à annoter : la ligne « P5 — validation » ne couvre pas la signature.
+**Reporté au livrable** — oui, sous réserve de la réponse des cellules (Q3, retour souhaité le 5 octobre).
+
+## D-168 — Annulation de validation (T9) : acte explicite de la cellule planification, jamais implicite (A4)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — VALIDÉ→BROUILLON doit pouvoir être déclenché par le traitement d'une indisponibilité (US-PLAN-09, CU-P5-07 A4) ou par une modification manuelle (US-PLAN-05), jamais implicitement par une génération ou une saisie. CU-P5-03 E2 propose à tort « faire rejeter le programme » comme issue pour un programme déjà validé, alors que la transition VALIDÉ→REJETÉ n'existe dans aucune des sources qui font foi (voir D-166).
+**Décision** — T9 est exercée par la cellule planification uniquement, confirmation et motif obligatoires ; elle efface validateur, date de validation, signature et signataire (conservés au journal). Le programme repart en circuit complet depuis BROUILLON, nouvelle signature comprise — cohérent avec SEQ-04 (« rien n'est sorti »). Soumis à confirmation des cellules (Q4, réponse retenue par défaut : oui).
+**Alternative écartée** — Interpréter CU-P5-03 E2 littéralement (« faire rejeter le programme validé ») : écartée, VALIDÉ→REJETÉ n'existe pas dans ETA-01 ; l'issue correcte est l'annulation de validation.
+**Impact sur les livrables** — CU-P5-03 E2, à corriger (écart consigné dans `ECARTS-LIVRABLES-SPRINT-3.md`).
+**Reporté au livrable** — oui, sous réserve de la réponse des cellules (Q4, retour souhaité le 5 octobre).
+
+## D-167 — Retrait de soumission retenu (T3), SOUMIS→BROUILLON tant qu'aucune décision n'est rendue (A3)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CU-P5-11 A2, et CU-P5-03 E2 qui y renvoie, prévoient un retrait de soumission ; RG-44 et US-VAL-03 restent muets sur ce point, sans le contredire (principe 1 : la fiche plus précise l'emporte sur un critère vague ou absent).
+**Décision** — La transition T3 est retenue, réservée à la cellule planification, tant qu'aucune décision (validation ou rejet) n'a été rendue par la pédagogique. Soumis à confirmation des cellules (Q1 de la note aux cellules, réponse retenue par défaut : oui, le retrait est prévu).
+**Alternative écartée** — Ne pas retenir cette transition faute de mention dans RG-44/US-VAL-03 : écartée, deux sources indépendantes (CU-P5-11, CU-P5-03) la prévoient explicitement et rien ne la contredit.
+**Impact sur les livrables** — US-VAL-03 c.2/RG-44, à compléter (T3 n'y figure pas).
+**Reporté au livrable** — oui, sous réserve de la réponse des cellules (Q1, retour souhaité le 5 octobre).
+
+## D-166 — REJETÉ est un état stable, distinct de BROUILLON, à double déclencheur de retour (A2)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Les livrables divergent sur la sémantique du rejet : SEQ-02 v3 (« vérifier état = brouillon ou rejeté » avant soumission) laisse entendre que REJETÉ se soumet directement comme BROUILLON ; US-VAL-02 c.3 dit « le rejet fait revenir à brouillon ». Mais US-VAL-03 exige cinq états distincts avec visibilité du motif, et RG-44/US-VAL-01 c.1/US-VAL-03 c.2 n'admettent la soumission que depuis BROUILLON — trois sources contre une (principe 1).
+**Décision** — REJETÉ est un cinquième état stable, motif affiché à la planification, distinct de BROUILLON. REJETÉ→BROUILLON (T6) a deux déclencheurs : l'action explicite « reprendre en correction », OU la première modification d'une séance — ce qui rend RG-41 (« modifiable aux états brouillon et rejeté ») exacte du point de vue de l'utilisateur. Le motif de rejet reste affiché en BROUILLON après reprise, effacé à la soumission suivante (le journal en garde la trace). US-VAL-02 c.3 se lit désormais : le rejet fait passer à REJETÉ, la reprise ramène à BROUILLON.
+**Alternative écartée** — Traiter REJETÉ comme un simple alias de BROUILLON, directement re-soumissible (lecture littérale de SEQ-02) : écartée, contredit US-VAL-03 (cinq états distincts) et RG-44/US-VAL-01 c.1 — trois sources contre une.
+**Impact sur les livrables** — SEQ-02 v3, US-VAL-02 c.3, US-VAL-03 c.2/RG-44 (transitions T3, T6, T7, T9, T10 absentes), CU-P5-03 E2 — quatre écarts consignés dans `ECARTS-LIVRABLES-SPRINT-3.md`.
+**Reporté au livrable** — oui, mémoire.
+
+## D-165 — Un programme affiché ne retombe jamais à brouillon ; toute modification après affichage est un avenant (A1)
+**Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Les livrables se contredisent sur ce point précis : le récapitulatif RG-42 (§ 11.3 des cas d'utilisation v4, structurante, fait foi), BF-PLAN-05 du cahier des charges v8, SEQ-04 v3, la classe `Avenant` de CLS-05/CLS-04, et une décision de terrain du 26 août convergent tous vers « affiché reste affiché ». La fiche CU-P5-11 porte un texte antérieur et obsolète (« validé ou affiché → brouillon »), repris à tort par RG-42 côté fiche CU-P5-07 et par un commentaire de SEQ-04 v3 (principe 2 : la règle structurante l'emporte sur un critère qui la contredit).
+**Décision** — AFFICHÉ est un état sans retour possible vers BROUILLON. Toute modification après affichage prend la forme d'un avenant daté et motivé, porté sur la séance concernée — validation et signature du programme restent acquises, le programme reste AFFICHÉ. Le modèle `Avenant` figure déjà dans `docs/diagrammes/CLS-04.puml` (motif, date de déclaration, nature de la modification, déclaré par un utilisateur) mais n'est implanté dans aucun code à ce jour, et aucune story du périmètre fourni (sprints 3, 4, réserve) n'en porte l'implantation — voir `docs/conception/ETA-01_audit_code.md`, point remarqué.
+**Alternative écartée** — Suivre la fiche CU-P5-11 littéralement (« validé ou affiché → brouillon ») : écartée, texte antérieur, contredit par le récapitulatif qui fait foi, par BF-PLAN-05, par SEQ-04 et par la pratique de terrain constatée le 26 août.
+**Impact sur les livrables** — CU-P5-07 et le commentaire de SEQ-04 v3 (texte obsolète à corriger, écarts consignés dans `ECARTS-LIVRABLES-SPRINT-3.md`) ; ETA-01 fait désormais foi pour la machine à états. La classe `Avenant` de CLS-04 reste à implanter — aucune story ne la porte, à signaler au chef de projet plutôt qu'à assigner au hasard.
+**Reporté au livrable** — oui, mémoire — corriger CU-P5-07/SEQ-04 et signaler l'absence de story pour `Avenant`.
+
+---
+
 ## D-164 — US-PLAN-08 déclassée en perspective d'évolution, heuristique gloutonne retenue en production
 **Date** 2026-09-30 · **Story** Prompt 33 (clôture du sprint 2, hors story) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — D-162 (2026-09-19) a établi le GO CONDITIONNEL du solveur CP-SAT sur les trois critères chiffrés du protocole, laissant délibérément « non tranché » le seul critère non chiffré (« écart de charge significativement meilleur », −24 % en médiane). `etudes/solveur/RECOMMANDATION.md` posait l'appréciation mais l'arbitrage final revenait au chef de projet, pas à l'étude elle-même.
