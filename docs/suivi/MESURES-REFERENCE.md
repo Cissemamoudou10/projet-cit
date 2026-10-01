@@ -41,6 +41,20 @@ en échec de test.
 | Écart | +692 |
 | Progression | **+93,8 %** |
 
+**Erratum (2026-10-01, prompt 35).** Le total réel du commit de clôture
+`e05a1c3` est **1 432**, pas 1 430 — vérifié par `pytest --collect-only`
+comparé au commit précédent (`fd13947`), via un worktree temporaire.
+Les deux tests en cause,
+`app/organisation/tests/test_stagiaire_ecran.py::
+test_e1_deradier_stagiaire_par_l_ecran_deradie_reellement` et
+`app/planification/tests/test_modeles.py::
+test_d83_suppression_brigade_au_programme_refusee_par_le_vrai_chemin_de_
+service`, ont été écrits tard dans la session de clôture — après que la
+ligne ci-dessus a été calculée — mais sont entrés dans le même commit.
+Écart donc de +694 (pas +692) et progression de +94,0 % (pas +93,8 %) par
+rapport aux 738 du sprint 1. La ligne d'origine n'est pas corrigée : elle
+reste la trace de ce qui a été écrit à ce moment-là.
+
 ## Impression — voir `docs/suivi/IMPRESSION-ANALYSE.md`, § 11
 
 Consolidé séparément (déjà à jour, mesuré au fil du sprint pour chaque
