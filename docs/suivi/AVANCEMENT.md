@@ -2,15 +2,16 @@
 
 *Récapitulatif court. Le détail vit dans les fichiers de sprint.*
 
-**Dernière mise à jour :** 30 septembre 2026 (Prompt 34, ETA-01) — C2 a été
-prononcé le même jour, en retard de quatre jours sur l'échéance du 26
+**Dernière mise à jour :** 1er octobre 2026 (Prompt 35, US-EVAL-01) — C2 a
+été prononcé le 30 septembre, en retard de quatre jours sur l'échéance du 26
 septembre. Ne pas lire ce retard comme rétrodaté : le contenu technique du
 sprint 2 était acquis le 26, mais ses éléments de pilotage (heures, clé de
 conversion, reports vérifiés, risques) ne l'étaient pas — exactement le même
 défaut qui avait déjà retardé le prononcé de C1. Voir
 `docs/suivi/LECONS-SPRINT-2.md`, leçon 1. Sprint 3 engagé depuis le 28
-septembre ; première tâche produite (ETA-01, diagramme d'états du programme,
-5.3.17), voir « Ce qu'il faut surveiller » — R10.
+septembre ; ETA-01 (diagramme d'états, 5.3.17) produit le 30/09, voir « Ce
+qu'il faut surveiller » — R10. Première story du sprint livrée le 1er
+octobre : US-EVAL-01 (créer une évaluation selon son type, 5 pts).
 
 ## Où nous en sommes
 
@@ -20,7 +21,7 @@ septembre ; première tâche produite (ETA-01, diagramme d'états du programme,
 | 2 — Spécification | 03/08 – 14/08 | Close |
 | 3 — Planification détaillée | 17/08 – 20/08 | Close |
 | 4 — Analyse et conception | 20/08 – 30/08 | **Close** — 7 livrables, 23 figures, jalon J1 franchi |
-| 5 — Développement | 31/08 – 24/10 | **En cours** — sprint 2 clos (C2 prononcé le 30/09, en retard), sprint 3 démarré le 28/09, aucune story engagée à ce jour |
+| 5 — Développement | 31/08 – 24/10 | **En cours** — sprint 2 clos (C2 prononcé le 30/09, en retard), sprint 3 démarré le 28/09, US-EVAL-01 livrée le 01/10 |
 | 6 — Tests et recette | 26/10 – 02/11 | À venir |
 | 7 — Déploiement | 03/11 – 10/11 | À venir |
 | 8 — Mémoire et soutenance | 11/11 – 25/12 | À venir |
@@ -31,7 +32,7 @@ septembre ; première tâche produite (ETA-01, diagramme d'états du programme,
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 47 | 0 | J2 |
+| 3 | 28/09 – 10/10 | 11 | 47 | 1 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
@@ -43,8 +44,8 @@ faisabilité du solveur (Prompt 32, hors points chiffrés).
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 27 / 53 planifiées | — |
-| Points livrés | 119 / 227 planifiés | — |
+| Stories livrées | 28 / 53 planifiées | — |
+| Points livrés | 124 / 227 planifiés | — |
 | Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
 | Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
@@ -150,7 +151,7 @@ majeures par rapport à la dernière version :
 | D-30 | 5 (suppression bloquée) | US-REF-02 | US-REF-03 / US-INS-02 | Fermé (sprint 1) |
 | D-35 | 6/RG-07, source prérequis | US-REF-03 | US-REF-06 | Fermé (sprint 1, D-40) |
 | D-35 | 6/RG-07, source séance | US-REF-03 | US-PLAN-03/04 (sprint 2) | **Fermé le 2026-09-16** — `test_c4_matiere_volume_epuise_et_matiere_prerequis_inacheve_motifs_distincts` |
-| D-35 | 6/RG-07, source évaluation | US-REF-03 | sprint 4 | Ouvert |
+| **D-35** | 6/RG-07, source évaluation | US-REF-03 | US-EVAL-01 (sprint 3) | **Fermé le 2026-10-01** — `test_g1_retirer_un_element_porteur_d_une_evaluation_refuse_evaluation_enumeree` (`evaluations.tests.test_reports`), `Evaluation.element_referentiel` en `PROTECT`, refus générique déjà porté par `ServiceReferentiel.retirer` (`decrire_opposants`), aucun code à ajouter |
 | **D-23** | 4 (session bloque la suppression d'une formation) | US-REF-01 | US-SES-01 (sprint 2) | **Fermé — corrigé le 2026-09-30**, était marqué à tort « Ouvert ». `test_d1_formation_portant_une_session_ouverte_ne_peut_etre_supprimee`, `test_d2_meme_refus_par_le_vrai_cycle_http_...`, `test_d3_formation_portant_une_session_cloturee_est_aussi_protegee` (`app/organisation/tests/test_protection_formation.py`). Écart de libellé signalé : D-69 |
 | D-34 | 3, 4 (catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | Fermé le 2026-09-16 — `test_generation_lieux.py` |
 | D-39 | 3, 4, volet moteur (prérequis exploités par le moteur) | US-REF-06 | moteur de génération (sprint 2) | Fermé le 2026-09-16 |
@@ -173,22 +174,26 @@ majeures par rapport à la dernière version :
 | D-133 | refus de générer sans grille active (E6) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 | **D-171** | RG-39 a) révisée (volume programmé compte aussi REJETÉ) | US-PLAN-04 (D-140) | US-VAL-03 (sprint 3) | **Ouvert — créé le 2026-09-30, prompt 34** |
 | **D-172** | lecture du programme par la cellule pédagogique (`programme_validation_lecture`) | US-PLAN-03 (D-154) | US-VAL-02 (sprint 3) | **Ouvert — créé le 2026-09-30, prompt 34** |
+| **D-181** | suppression d'une évaluation, et de sa séance verrouillée — jamais hors du service d'évaluation | US-EVAL-01 | US-PLAN-05 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35** (A7 ; vérification § 0.4 négative : aucune suppression de séance n'existait encore) |
+| **D-182** | mesure de l'écart de progression entre brigades (A8, E2, forme simplifiée retenue) | US-EVAL-01 | *aucune story assignée* | **Ouvert, orphelin — créé le 2026-10-01, prompt 35**, à arbitrer au backlog v10 |
+| **D-170** | insertion d'un contrôle refusée si le programme de la semaine est SOUMIS, VALIDÉ ou AFFICHÉ | US-EVAL-01 | US-VAL-03 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35**, cas à ajouter à l'oracle `ETA-01_table_transitions.md` quand la garde RG-41 (D-170) existera |
 
-### Compte final, vérifié le 2026-09-30
+### Compte final, vérifié le 2026-10-01
 
-Recompté au prompt 34 : D-171 et D-172 (ci-dessus) s'ajoutent aux huit
-reports déjà ouverts à la clôture du sprint 2 — **dix ouverts aujourd'hui**,
-pas huit. Les deux tiennent à une révision (D-171 révise D-140) et à un
-complément (D-172 complète D-154) rendus par ETA-01, pas à une décision
-prise pendant le sprint 2 lui-même — ils s'ajoutent donc au compte du
-sprint 2 sans le rouvrir.
+Recompté au prompt 35 : D-35 (volet évaluation) se referme — `evaluations`
+protège `ElementReferentiel` par construction (`PROTECT`), sans code
+spécifique à écrire, voir le tableau ci-dessus. Trois reports nouveaux
+s'ouvrent (D-170 — nouveau report sous une décision déjà existante, D-181,
+D-182). Net : dix reports de la clôture du prompt 34, moins un fermé, plus
+trois créés — **douze ouverts aujourd'hui**.
 
 | | Compte |
 |---|---|
-| **Ouverts aujourd'hui** | **10** : D-35(évaluation), D-39(saisie manuelle), D-119(pts 4-5), D-119(A3/A4), D-121(E2), D-121(A3), D-133(RG-64, orpheline), D-108, D-171, D-172 |
+| **Ouverts aujourd'hui** | **12** : D-39(saisie manuelle), D-119(pts 4-5), D-119(A3/A4), D-121(E2), D-121(A3), D-133(RG-64, orpheline), D-108, D-171, D-172, D-170(insertion contrôle), D-181, D-182 |
 | **Refermés pendant le sprint 2** | **14** : D-23, D-34, D-35(séance), D-39(moteur), D-45, D-51, D-54(brigade), D-54(séance), D-91, D-83, D-119(RG-36), D-121(RG-38), D-133(constat d'absence), D-133(E6) |
 | **Créés pendant le sprint 2** | **12** : D-91, D-83, D-108, D-119(×3), D-121(×3), D-133(×3) |
-| **Créés pendant le sprint 3, à ce jour (prompt 34)** | **2** : D-171, D-172 |
+| **Créés pendant le sprint 3, à ce jour (prompts 34 et 35)** | **4** : D-171, D-172, D-181, D-182 — D-170 (insertion d'un contrôle) rattache un NOUVEAU report à une décision déjà existante (ETA-01, prompt 34), pas une décision de plus |
+| **Refermés pendant le sprint 3, à ce jour (prompt 35)** | **1** : D-35 (volet évaluation) |
 
 **Écart avec le décompte donné en revue du sprint 1** (« neuf reports, trois
 refermés, six des sept ouverts se referment au sprint 2 ») : ce chiffre
@@ -228,6 +233,13 @@ troisième horaire, ci-dessous.
   d'examens, horaire de fin de stage ? Seules ces deux grilles sont relevées
   (mai et février respectivement) — rien n'affirme qu'elles couvrent l'année
   entière.
+- **(Ajoutée et refermée le 2026-10-01, US-EVAL-01, prompt 35)** Un contrôle
+  se tient-il sur un créneau libre, ou à la place d'une séance déjà
+  programmée du module ? *Retenu : créneau libre (fiche CU-P6-01).*
+- **(Ajoutée et refermée le 2026-10-01, US-EVAL-01, prompt 35)** La séance
+  d'un contrôle compte-t-elle au volume horaire du module ? *Retenu : oui
+  (A4, D-178) — conforme au terrain (« pendant ses créneaux ») et au
+  précédent du projet de fin d'études.*
 - Le seuil `SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT` (D-33) reste provisoire
   (10 %), terrain non consulté — seule la moitié de D-33 a été refermée par
   US-PLAN-12, voir ci-dessus.

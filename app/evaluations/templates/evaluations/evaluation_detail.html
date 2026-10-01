@@ -1,0 +1,90 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}{{ evaluation }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_liste }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux évaluations
+  </a>
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ evaluation.element_referentiel }}</h1>
+      <p class="text-sm text-gris-lecture">{{ evaluation.get_type_display }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 grid grid-cols-2 gap-6">
+  <section class="border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Identification
+    </p>
+    <dl class="grid gap-3 px-4 py-3.5 text-sm">
+      <div>
+        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Module</dt>
+        <dd>{{ evaluation.element_referentiel }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Type</dt>
+        <dd>{{ evaluation.get_type_display }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Périmètre</dt>
+        <dd>{% if evaluation.session_id %}Session — {{ evaluation.session }}{% else %}Brigade — {{ evaluation.brigade }}{% endif %}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      {% if evaluation.seance_id %}Séance{% else %}Date{% endif %}
+    </p>
+    <dl class="grid gap-3 px-4 py-3.5 text-sm">
+      {% if evaluation.seance_id %}
+        <div>
+          <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Date et heure</dt>
+          <dd>{{ evaluation.seance.debut|date:"d/m/Y H:i" }} — {{ evaluation.seance.fin|date:"H:i" }}</dd>
+        </div>
+        <div>
+          <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Instructeur</dt>
+          <dd>{{ evaluation.seance.instructeur }}</dd>
+        </div>
+        {% if evaluation.seance.lieu %}
+          <div>
+            <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Lieu</dt>
+            <dd>{{ evaluation.seance.lieu }}</dd>
+          </div>
+        {% endif %}
+      {% elif evaluation.date %}
+        <div>
+          <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Date</dt>
+          <dd>{{ evaluation.date|date:"d/m/Y" }}</dd>
+        </div>
+        {% if evaluation.motif_date_passee %}
+          <div>
+            <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Motif (date déjà passée)</dt>
+            <dd>{{ evaluation.motif_date_passee }}</dd>
+          </div>
+        {% endif %}
+      {% endif %}
+    </dl>
+  </section>
+</div>
+
+{% if not actions %}
+  <p class="mt-4 text-sm text-gris-lecture">
+    Aucune action disponible pour l'instant — sujets et organisation de l'épreuve arrivent aux
+    stories suivantes.
+  </p>
+{% endif %}
+{% endblock %}

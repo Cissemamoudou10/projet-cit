@@ -20,6 +20,24 @@ que le chef de projet puisse les reporter en un seul passage.
 | 9 | Prompt 31 § G5 / D-154 | Question laissée ouverte : la cellule pédagogique ne peut pas lire `programme_lecture` | Elle lit via `programme_validation_lecture`, déjà présent dans la matrice, jamais utilisé | D-172 | Aucune sur la matrice (déjà complète) ; mise en œuvre laissée à US-VAL-02 |
 | 10 | D-140 (volume programmé, RG-39 a) | Exclut les programmes REJETÉS du volume programmé | Tous les états comptent, y compris REJETÉ ; seul le programme évalué reste exclu | D-171 | Aucune sur un livrable de conception ; correction de code à la charge d'US-VAL-03 |
 
+## US-EVAL-01 (Prompt 35) — à la suite, numérotés à partir de 11
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui fait foi | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 11 | Backlog v9, US-EVAL-01 c.1, 6, 7, 8 | Trois types d'évaluation (contrôle simple, partiel, final) | C.2 et CU-P6-01/BF-EVAL-01 n'en retiennent que deux (formative, certificative) — correction de terrain du 25 août ajoutée en v7 sans retrait des anciens critères | D-184 | Retirer les critères 1, 6, 7, 8 qui portent la troisième valeur ; aligner sur le critère 2 |
+| 12 | CLS-05 (diagramme de classes) | `Evaluation.perimetre : PerimetreEvaluation`, attribut stocké en plus de `session`/`brigade` | Propriété calculée, jamais stockée (A1) — un attribut dérivé stocké en plus des deux rattachements | D-175 | Corriger CLS-05 : `perimetre` n'est pas un attribut, c'est une propriété calculée |
+| 13 | CLS-05 | `Evaluation.date`, sans mention d'exclusivité avec `seance` | Exactement un des deux (A2) — `date` ne se lit que sans séance | D-176 | Annoter CLS-05 : `date` et `seance` sont mutuellement exclusifs |
+| 14 | Objectifs SMART, OS3 | « Trois circuits » d'évaluation | Deux circuits (formative, certificative) — même correction que la ligne 11 | D-184 | Corriger OS3 pour reprendre deux circuits, pas trois |
+
+**Écart de conception supplémentaire (D-174)** : ETA-01 (`docs/diagrammes/
+ETA-01_etats_programme.puml`, note aux cellules) décrit T1 (création du
+programme en brouillon) comme déclenchée par la planification (génération
+ou saisie manuelle) seulement. Depuis US-EVAL-01, la cellule examens peut
+aussi la déclencher, par l'insertion de la séance d'un contrôle dans une
+semaine sans programme. Le diagramme et la note ne sont **pas** modifiés
+ici : leur validation par les cellules est en cours (retour attendu le 5
+octobre) — l'écart sera reporté au diagramme à leur retour, pas avant.
+
 ## Ce que cette liste ne couvre pas
 
 Les huit arbitrages A1 à A8 (D-165 à D-172) portent sur des contradictions

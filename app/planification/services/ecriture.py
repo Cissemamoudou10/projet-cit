@@ -33,6 +33,7 @@ from planification.services.contraintes import ServiceContraintes
 OBJET_TYPE = "seance"
 PERMISSION_LECTURE = "noyau.programme_lecture"
 PERMISSION_ECRITURE = "noyau.programme_ecriture"
+PERMISSION_EVALUATIONS_ECRITURE = "noyau.evaluations_ecriture"
 
 
 def _message_violations(violations):
@@ -58,7 +59,7 @@ def _lever_si_refuse(verdicts):
         raise ErreurValidation(_message_violations(violations))
 
 
-def _creer_une_seance(agissant, programme, candidates):
+def _creer_une_seance(agissant, programme, candidates, verrouillee=False):
     premiere = candidates[0]
     seance = Seance(
         programme=programme,
@@ -67,11 +68,22 @@ def _creer_une_seance(agissant, programme, candidates):
         lieu=premiere.lieu,
         debut=premiere.debut,
         fin=premiere.fin,
+        verrouillee=verrouillee,
     )
     ServiceBase.creer(seance, agissant)
     for candidate in candidates:
         ligne = LigneProgramme(seance=seance, brigade=candidate.brigade)
         ServiceBase.creer(ligne, agissant)
+    return seance
+
+
+def _verifier_et_creer(programme, candidates, agissant, verrouillee=False):
+    contexte = ServiceContraintes.contexte(programme)
+    verdicts = ServiceContraintes.verifier_lot(candidates, contexte)
+    _lever_si_refuse(verdicts)
+    with transaction.atomic():
+        seance = _creer_une_seance(agissant, programme, candidates, verrouillee)
+        _journaliser(agissant, seance)
     return seance
 
 
@@ -118,6 +130,7 @@ class ServiceEcritureSeance:
     DOMAINE = "programme"
     PERMISSION_LECTURE = PERMISSION_LECTURE
     PERMISSION_ECRITURE = PERMISSION_ECRITURE
+    PERMISSION_EVALUATIONS_ECRITURE = PERMISSION_EVALUATIONS_ECRITURE
 
     @staticmethod
     def creer_seance(agissant, programme, candidates):
@@ -130,13 +143,27 @@ class ServiceEcritureSeance:
         séance regroupée ne s'écrit jamais à moitié.
         """
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
-        contexte = ServiceContraintes.contexte(programme)
-        verdicts = ServiceContraintes.verifier_lot(candidates, contexte)
-        _lever_si_refuse(verdicts)
-        with transaction.atomic():
-            seance = _creer_une_seance(agissant, programme, candidates)
-            _journaliser(agissant, seance)
-        return seance
+        return _verifier_et_creer(programme, candidates, agissant)
+
+    @staticmethod
+    def inserer_seance_de_controle(agissant, programme, candidates):
+        """A3/D-177, Prompt 35 : second point d'entrée de la porte unique,
+        réservé à `evaluations` (US-EVAL-01) — un utilisateur de la cellule
+        examens n'a jamais `noyau.programme_ecriture` (`creer_seance` lui
+        est fermé, D-174), seulement `noyau.evaluations_ecriture`, vérifiée
+        ici. Toujours verrouillée D'OFFICE : aucun paramètre ne permet de
+        l'écrire non verrouillée, un contrôle ne se déverrouille pas par
+        inadvertance. Mêmes contrôles, même transaction, même journalisation
+        que `creer_seance` — voir `_verifier_et_creer`, aucune logique
+        d'écriture dupliquée.
+
+        Test d'architecture associé (F3, Prompt 35) : cette méthode n'est
+        appelée que depuis `app/evaluations/` —
+        `tests/architecture/test_couches.py::
+        test_inserer_seance_de_controle_n_est_appelee_que_depuis_evaluations`.
+        """
+        verifier_habilitation(agissant, PERMISSION_EVALUATIONS_ECRITURE)
+        return _verifier_et_creer(programme, candidates, agissant, verrouillee=True)
 
     @staticmethod
     def creer_seances(agissant, programme, groupes_de_candidates):

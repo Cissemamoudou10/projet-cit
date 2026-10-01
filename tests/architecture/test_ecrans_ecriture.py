@@ -450,11 +450,13 @@ ECRANS_ECRITURE = [
     ),
     # --- planification : génération du programme hebdomadaire (US-PLAN-03) ---
     EcranEcriture("planification:lancement_generation", "noyau.programme_ecriture"),
+    # --- evaluations : création d'une évaluation (US-EVAL-01) ---
+    EcranEcriture("evaluations:creer_evaluation", "noyau.evaluations_ecriture"),
 ]
 
-# 90 adresses : les 89 précédentes (Prompt 29) plus l'adresse d'écriture de
-# planification:lancement_generation (US-PLAN-03, Prompt 31).
-assert len(ECRANS_ECRITURE) == 90
+# 91 adresses : les 90 précédentes (Prompt 31) plus l'adresse d'écriture de
+# evaluations:creer_evaluation (US-EVAL-01, Prompt 35).
+assert len(ECRANS_ECRITURE) == 91
 
 
 def _groupes_sans(permission):

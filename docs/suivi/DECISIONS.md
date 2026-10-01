@@ -31,6 +31,94 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-184 — Critères contradictoires du backlog v9 (US-EVAL-01) : deux types d'évaluation retenus, pas trois
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 1, Prompt 35 : le backlog v9 porte des critères contradictoires entre eux — le critère 1 propose TROIS types (contrôle simple, partiel, final), le critère 2 en pose DEUX (formative, certificative). La correction de terrain du 25 août (partiel = contrôle = formative ; final = certificative) a été ajoutée en v7 sans que les anciens critères (1, 6, 7, 8) soient retirés.
+**Décision** — Deux types, et deux seulement : FORMATIVE (contrôle, examen partiel) et CERTIFICATIVE (examen final) — `TypeEvaluation`, `ck_evaluation_type_connu`. Implantation conforme à CU-P6-01, BF-EVAL-01 (cahier des charges v8) et au critère 2 lui-même (principe 1 des leçons du sprint 2 : la fiche plus précise l'emporte sur un critère obsolète non retiré). Vérifié par E6 (`test_e6_formulaire_aucun_troisieme_type_propose`) : le formulaire n'expose jamais qu'« formative »/« certificative ».
+**Alternative écartée** — Suivre le critère 1 littéralement (trois types) : écartée, contredit le critère 2 du même backlog, la fiche CU-P6-01 et la correction de terrain du 25 août — trois sources contre une.
+**Impact sur les livrables** — Backlog v9, critères 1, 6, 7, 8 d'US-EVAL-01 (à retirer, portent la troisième valeur) ; Objectifs SMART, OS3 (« trois circuits » à corriger en deux) — voir `ECARTS-LIVRABLES-SPRINT-3.md`, lignes 11 et 14.
+**Reporté au livrable** — oui, mémoire.
+
+## D-183 — A9 : la signalisation du contrôle passe par `noyau`, jamais par un import de `evaluations` depuis `planification`
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le programme hebdomadaire doit marquer la séance d'un contrôle (« Contrôle », C11) sans que `planification` importe `evaluations` : le sens de dépendance l'interdit (`evaluations` dépend déjà de `planification`, l'inverse créerait un cycle réel — même motif que D-128/D-143).
+**Décision** — `noyau.services.parametres.ResolveurSeancesDeControle` (patron D-128/D-143 : `installer_fournisseur`/`resoudre`, repli sur ensemble vide si aucun fournisseur) ; `evaluations.apps.EvaluationsConfig.ready()` installe `evaluations.selectors.seances_de_controle_parmi` comme fournisseur. `planification.selectors.grille_consultation` appelle `resoudre()` UNE FOIS pour tout l'ensemble des séances affichées (E2 : nombre de requêtes identique à 1 ou 10 contrôles, vérifié par un test HTTP réel qui compare les deux comptes).
+**Alternative écartée** — Une relation directe `Seance.est_controle` ou un champ dénormalisé : écartée, attribut dérivé stocké, contraire à `.claude/rules/modeles.md` ; la relation réelle (`Evaluation.seance`) existe déjà et suffit.
+**Impact sur les livrables** — aucun sur la conception ; patron de résolution confirmé pour une troisième paire de couches.
+**Reporté au livrable** — non applicable.
+
+## D-182 — A8 : E2 sous forme simplifiée, avertissement systématique non bloquant sur tout périmètre session
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La fiche CU-P6-01 (E2) avertit quand « les progressions des brigades sont trop décalées », sans définir la mesure ni le seuil.
+**Décision** — Avertissement systématique, non bloquant, retourné par `ServiceEvaluation.creer` sur tout périmètre session (rappelant que le sujet sera commun) — même mécanique que `brigade.avertissements`/`session.avertissements` (`ServiceBrigade.creer`, `ServiceSession.creer`). La mesure précise de l'écart de progression reste un report SANS story, à arbitrer au backlog v10.
+**Alternative écartée** — Calculer un écart de progression réel (ex. écart de volume programmé entre brigades) : écartée, aucune mesure ni seuil n'est défini par aucun livrable ; inventer un seuil serait une règle métier non demandée.
+**Impact sur les livrables** — aucun sur la conception ; report consigné dans `docs/suivi/AVANCEMENT.md`.
+**Reporté au livrable** — oui, backlog v10 (mesure de l'écart de progression, orphelin, voir AVANCEMENT.md).
+
+## D-181 — A7 : type et périmètre immuables après création ; suppression reportée à US-PLAN-05
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Changer le type change le circuit (sujets, organisation, séance) ; changer le périmètre change le sujet (RG-52). Vérification 0.4 du prompt 35 : `ServiceEcritureSeance` n'exposait, avant cette story, aucune méthode de suppression de séance.
+**Décision** — `ServiceEvaluation` n'expose aucune méthode `modifier` (vérifié par un test qui constate l'absence de l'attribut) : une erreur se corrige par suppression et recréation. La suppression elle-même n'est PAS implantée ici, faute de suppression de séance exposée par la porte d'écriture au moment de cette story — reportée à US-PLAN-05, qui apporte la suppression manuelle d'une séance.
+**Alternative écartée** — Autoriser la modification du type ou du périmètre après création : écartée, changerait silencieusement le circuit ou le sujet d'une évaluation déjà engagée.
+**Impact sur les livrables** — aucun sur la conception.
+**Reporté au livrable** — oui, suppression d'une évaluation → US-PLAN-05 (nouveau report, voir AVANCEMENT.md).
+
+## D-180 — A6 : instructeur et lieu choisis via un sélecteur de `planification`, jamais une requête directe sur `ressources`
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La cellule examens n'a aucun accès, ni lecture ni écriture, au domaine `instructeurs_qualifications` (D-38, `test_cellule_examens_n_a_aucun_acces_ni_lecture_ni_ecriture`, toujours vert, relancé nommément). Le formulaire de création d'un contrôle doit pourtant proposer un instructeur et un lieu.
+**Décision** — `planification.selectors.instructeurs_qualifies_pour`/`lieux_pour_choix` exposent une liste réduite (nom et grade pour l'instructeur, intitulé pour le lieu, sans fiche ni qualification affichée) — `evaluations.forms.FormulaireEvaluation` les consomme, jamais une requête directe sur `ressources.Instructeur`/`Lieu`. `instructeurs_qualifies_pour(matiere=None)` retourne tout le catalogue qualifié (pas de JavaScript pour filtrer selon le module choisi) : RG-35 (`ServiceContraintes`) reste seule juge d'une qualification réellement adaptée au module au moment de l'insertion.
+**Alternative écartée** — Ouvrir `instructeurs_qualifications_lecture` à la cellule examens pour simplifier le sélecteur : écartée, contredirait directement D-38, qui tient depuis US-INS-01.
+**Impact sur les livrables** — aucun sur la conception.
+**Reporté au livrable** — non applicable.
+
+## D-179 — A5 : formative à une date déjà passée, aucune séance
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Un contrôle déclaré après coup s'est tenu dans un créneau déjà existant de l'instructeur ; la semaine passée est, en régime normal, déjà affichée — ETA-01 y refuse tout ajout hors avenant (principe 3 : une règle doit être exprimable sur le modèle implanté).
+**Décision** — Insérer une séance dans le passé serait inexprimable sur le modèle. L'évaluation porte directement sa date et son motif (`motif_date_passee`, obligatoire), sans séance ni instructeur ni lieu.
+**Alternative écartée** — Insérer quand même une séance non verrouillée dans le passé : écartée, contredit ETA-01 et créerait une séance sans aucun garde-fou de régénération.
+**Impact sur les livrables** — aucun sur la conception.
+**Reporté au livrable** — non applicable.
+
+## D-178 — A4 : le contrôle compte au volume programmé du module (RG-39 a)
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Question ajoutée au terrain (docs/suivi/AVANCEMENT.md) : la séance d'un contrôle compte-t-elle au volume horaire du module ?
+**Décision** — Oui : c'est une séance du module comme une autre, RG-39 a) la compte. Conforme au terrain (« pendant ses créneaux ») et au précédent du projet de fin d'études, compté à chaque apparition. Vérifié par C6 (volume déjà atteint → refus RG-39 a, par le vrai chemin `ServiceContraintes`, aucune règle dupliquée).
+**Alternative écartée** — Exclure les contrôles du volume programmé : écartée, contredirait le terrain et masquerait un dépassement réel du prescrit.
+**Impact sur les livrables** — aucun sur la conception ; question de terrain refermée, voir `docs/suivi/AVANCEMENT.md`.
+**Reporté au livrable** — non applicable.
+
+## D-177 — A3 (et A10) : insertion de la séance d'un contrôle par la porte unique, nouvelle méthode `inserer_seance_de_controle`
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Suite de D-174 : le mécanisme de la porte unique étant arbitré, il fallait poser le contenu réel de l'insertion — contrôles dures, transaction, regroupement pour un périmètre session.
+**Décision** — `ServiceEvaluation._creer_formative_a_venir` construit une `Candidate` par brigade visée (même `cle_regroupement` si plusieurs, séance regroupée), crée le programme de la semaine à l'état BROUILLON s'il n'existe pas (T1 d'ETA-01, même `get_or_create` que D-146), puis appelle `ServiceEcritureSeance.inserer_seance_de_controle` — les six contraintes dures s'appliquent sans exception (vérifié par les blocs C1 à C6 : RG-34, RG-37, RG-38, RG-39 a). Séance et évaluation s'écrivent dans la MÊME transaction : l'échec de l'une annule l'autre (C8, vérifié par un test qui force l'échec après l'écriture de la séance — aucune séance orpheline). A10 (frontière de story) : les notifications/« informer la pédagogique » ne sont PAS traitées ici, elles relèvent de A9/D-183 (marquage dans le programme) et de D-172 (lecture du programme par la pédagogique, US-VAL-02).
+**Alternative écartée** — Dupliquer un sous-ensemble des six contraintes directement dans `ServiceEvaluation` : écartée, `ServiceContraintes` en est l'implantation UNIQUE (`.claude/rules/services.md`) — un programme généré, saisi ou portant un contrôle doivent obéir aux mêmes règles.
+**Impact sur les livrables** — aucun sur la conception ; confirme CU-P6-01 A1.
+**Reporté au livrable** — non applicable.
+
+## D-176 — A2 : la date OU la séance, jamais les deux
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Pour une formative avec séance, recopier la date de la séance dans l'évaluation créerait deux vérités qui divergeraient au premier déplacement de la séance (US-PLAN-05, sprint 3).
+**Décision** — `date` n'est renseignée que SANS séance (certificative, ou formative déclarée après coup) ; avec séance, la date se lit sur `evaluation.seance.debut`. Contrainte en base `ck_evaluation_date_ou_seance` : exactement un des deux (A3 du bloc test, `IntegrityError` vérifiée par écriture directe).
+**Alternative écartée** — Recopier la date à la création, en acceptant une divergence future : écartée, viole le principe tenu depuis le sprint 1 (aucun attribut dérivé stocké, `.claude/rules/modeles.md`) — une date de séance EST une donnée dérivable, pas une donnée propre à l'évaluation.
+**Impact sur les livrables** — CLS-05 : écart consigné (attribut `date` sans exclusivité explicite avec la séance), voir `ECARTS-LIVRABLES-SPRINT-3.md`.
+**Reporté au livrable** — oui, mémoire.
+
+## D-175 — A1 : le périmètre n'est pas stocké
+**Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CLS-05 porte un attribut `perimetre : PerimetreEvaluation` EN PLUS des deux rattachements (`session`, `brigade`). Le stocker en plus des deux ferait de `perimetre` un attribut dérivé — contraire à la règle tenue depuis le sprint 1 (`.claude/rules/modeles.md`).
+**Décision** — Aucun champ `perimetre` sur `Evaluation` : une propriété Python (`Evaluation.perimetre`) le déduit de celui des deux rattachements qui est renseigné (exactement un, `ck_evaluation_perimetre_exclusif`). Un test constate l'absence de la colonne (A8 du bloc test).
+**Alternative écartée** — Stocker `perimetre` en plus, pour correspondre littéralement à CLS-05 : écartée, créerait une occasion de divergence si `session`/`brigade` changeaient sans que `perimetre` suive — exactement le défaut que la règle des neuf grandeurs dérivées interdit.
+**Impact sur les livrables** — CLS-05 : écart consigné (attribut `perimetre` stocké à tort), voir `ECARTS-LIVRABLES-SPRINT-3.md`.
+**Reporté au livrable** — oui, mémoire.
+
+## D-174 — Arbitrage du point 3 (§ 0) : `ServiceEcritureSeance` reçoit `inserer_seance_de_controle`, vérifie `noyau.evaluations_ecriture`
+**Date** 2026-10-01 · **Story** US-EVAL-01 (vérification préalable § 0, condition d'arrêt levée) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 0, point 3 : `ServiceEcritureSeance.creer_seance`/`creer_seances` vérifient `noyau.programme_ecriture`, accordée seulement à la cellule planification (jamais à la cellule examens, par construction de la matrice). A3 demande que `ServiceEvaluation` insère une séance de contrôle par cette même porte — tel quel, l'appel aurait levé `ErreurHabilitation` pour tout utilisateur de la cellule examens. Condition d'arrêt déclenchée, signalée avant d'écrire la moindre ligne de code (§ 0 rendu, code cité).
+**Décision** — Un second point d'entrée, `ServiceEcritureSeance.inserer_seance_de_controle(agissant, programme, candidates)` : vérifie `noyau.evaluations_ecriture` (et jamais `programme_ecriture`) ; crée la séance verrouillée D'OFFICE, aucun paramètre ne permet de l'écrire non verrouillée ; passe par les mêmes contrôles que `creer_seance` (`ServiceContraintes`, tout ou rien, même transaction, même journalisation) via un helper privé commun `_verifier_et_creer`, sans dupliquer la logique d'écriture ; accepte plusieurs candidates (périmètre session, séance regroupée). `creer_seance`/`creer_seances` ne changent pas : aucun paramètre `verrouillee` n'y est ajouté, US-PLAN-05 s'en chargera pour la saisie manuelle. Un test d'architecture (F3) vérifie que cette méthode n'est appelée que depuis `app/evaluations/`. Conséquence sur ETA-01 : T1 (création du programme en brouillon) peut désormais être déclenchée par la cellule examens — écart porté dans `ECARTS-LIVRABLES-SPRINT-3.md`, reporté au diagramme au retour des cellules (le `.puml` et la note ne sont pas modifiés tant que leur validation est en cours).
+**Alternative écartée** — Élargir `programme_ecriture` à la cellule examens : écartée, confondrait deux domaines d'habilitation distincts (§ 11.2) et donnerait à examens un accès bien plus large que « créer une séance de contrôle verrouillée ». **Alternative écartée** — Dupliquer la logique d'écriture dans un chemin propre à `evaluations` : écartée, violerait le patron de la porte unique (D-142) que ce prompt a justement pour but de respecter.
+**Impact sur les livrables** — `ETA-01_etats_programme.puml`/`ETA-01_note_cellules.md` : écart signalé (T1 déclenchable par la cellule examens), non corrigé tant que la validation des cellules est en cours — voir `ECARTS-LIVRABLES-SPRINT-3.md`.
+**Reporté au livrable** — oui, retour au diagramme ETA-01 après validation des cellules (5 octobre).
+
 ## D-173 — Pas de soumission d'un programme vide (A9) ; aucune fin de vie pour le programme (A10)
 **Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Deux points sans source dans les livrables confrontés pour ETA-01 (`docs/diagrammes/ETA-01_etats_programme.puml`) : à la différence des neuf autres arbitrages de ce prompt, aucune fiche ni règle structurante ne les couvre. Arbitrage du chef de projet, à consigner comme tel plutôt que déduit d'une source.

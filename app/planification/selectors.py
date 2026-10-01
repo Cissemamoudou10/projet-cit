@@ -16,10 +16,11 @@ import dataclasses
 from django.db.models import Count, Q
 from django.utils import timezone
 
+from noyau.services.parametres import ResolveurSeancesDeControle
 from organisation.models import Brigade
 from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
 from planification.services.temps import duree_heures
-from ressources.models import CreneauType, GrilleHoraire
+from ressources.models import CreneauType, GrilleHoraire, Instructeur, Lieu
 
 JOUR_SEMAINE_PAR_ISO = {
     "lundi": 1,
@@ -152,6 +153,7 @@ class CelluleProgramme:
     ligne: object = None
     volume_cumule: float = 0.0
     autres_brigades: str = ""
+    est_controle: bool = False
 
     @property
     def seance(self):
@@ -215,6 +217,7 @@ def grille_consultation(programme, creneaux, brigades):
     sept jours à la fois)."""
     lignes_qs = list(_lignes_du_programme(programme, brigades))
     volumes = _volumes_cumules(lignes_qs)
+    controles = ResolveurSeancesDeControle.resoudre({ligne.seance_id for ligne in lignes_qs})
     par_brigade_horaire = {}
     for ligne in lignes_qs:
         debut_local = timezone.localtime(ligne.seance.debut)
@@ -238,6 +241,7 @@ def grille_consultation(programme, creneaux, brigades):
                         ligne=ligne,
                         volume_cumule=volumes.get(ligne.pk, 0) if ligne else 0,
                         autres_brigades=_autres_brigades(ligne) if ligne else "",
+                        est_controle=ligne.seance_id in controles if ligne else False,
                     )
                 )
             lignes_affichees.append({"brigade": brigade, "cellules": cellules})
@@ -261,3 +265,33 @@ def seances_futures_qualification(instructeur, matiere) -> list[str]:
         .order_by("debut")
     )
     return [str(seance) for seance in seances]
+
+
+def instructeurs_qualifies_pour(matiere=None) -> list[tuple[int, str]]:
+    """A6, Prompt 35 : expose `evaluations` (P6 dépend de P5) le strict
+    nécessaire pour choisir un instructeur sur un contrôle — nom et grade,
+    RIEN d'autre — sans que la cellule examens consulte le domaine
+    `instructeurs_qualifications` (D-38, elle n'y a aucun accès). Choisir
+    dans cette liste n'est pas consulter ce domaine : c'est `planification`,
+    déjà autorisée à dépendre de `ressources`, qui lit et réduit.
+
+    `matiere=None` : tout le catalogue des instructeurs qualifiés, toutes
+    matières confondues — le formulaire de création d'un contrôle ne connaît
+    pas encore le module choisi sans JavaScript ; RG-35 (`ServiceContraintes`)
+    reste seule juge d'une qualification réellement adaptée au module."""
+    qs = Instructeur.objects.filter(archive=False)
+    qs = (
+        qs.filter(qualifications__matiere=matiere)
+        if matiere
+        else qs.filter(qualifications__isnull=False)
+    )
+    lignes = qs.distinct().order_by("nom", "prenom").values_list("pk", "grade", "nom", "prenom")
+    return [(pk, f"{grade} {nom} {prenom}") for pk, grade, nom, prenom in lignes]
+
+
+def lieux_pour_choix() -> list[tuple[int, str]]:
+    """A6 : même principe que `instructeurs_qualifies_pour`, réduit à
+    l'intitulé — pas de fiche, pas de qualification affichée."""
+    return list(
+        Lieu.objects.filter(archive=False).order_by("intitule").values_list("pk", "intitule")
+    )

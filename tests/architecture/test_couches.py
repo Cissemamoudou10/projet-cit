@@ -320,6 +320,30 @@ def test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme():
     )
 
 
+def test_inserer_seance_de_controle_n_est_appelee_que_depuis_evaluations():
+    """F3, Prompt 35 (D-177/A3) : `ServiceEcritureSeance.inserer_seance_de_
+    controle` vérifie `noyau.evaluations_ecriture`, pas `programme_ecriture`
+    — un second point d'entrée à la porte unique, réservé à `evaluations`.
+    Sans cette garde, un appel depuis un autre module contournerait la
+    vérification d'habilitation attendue par son appelant (leçon des 36
+    refus manquants du sprint 1, même motif que le test voisin ci-dessus).
+    """
+    definition = SRC / "planification" / "services" / "ecriture.py"
+    fautifs = []
+    for chemin in fichiers("*.py"):
+        if chemin == definition or "evaluations" in chemin.parts or "tests" in chemin.parts:
+            continue
+        texte = chemin.read_text(encoding="utf-8")
+        for i, ligne in enumerate(texte.splitlines(), 1):
+            if ligne.lstrip().startswith("#"):
+                continue
+            if "inserer_seance_de_controle(" in ligne:
+                fautifs.append("%s ligne %d : %s" % (chemin.relative_to(RACINE), i, ligne.strip()))
+    assert not fautifs, (
+        "Appel à inserer_seance_de_controle hors de app/evaluations/ :\n" + "\n".join(fautifs)
+    )
+
+
 def test_ordre_des_dependances_entre_applications():
     """P1 → P2 → P3/P4 → P5 → P6. Aucune dépendance inverse."""
     fautifs = []

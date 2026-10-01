@@ -137,6 +137,10 @@
                       <svg class="h-3 w-3 shrink-0 stroke-gris-lecture" aria-hidden="true">
                         <use href="{% static 'icones/planche.svg' %}#verrou"></use></svg>
                     {% endif %}
+                    {% if cellule.est_controle %}
+                      <span class="border border-marine-700 px-1 text-2xs font-semibold
+                                   uppercase tracking-wide text-marine-900">Contrôle</span>
+                    {% endif %}
                   </div>
                   <div class="mt-0.5 flex items-baseline gap-2 whitespace-nowrap text-2xs tabular-nums
                               text-gris-lecture">

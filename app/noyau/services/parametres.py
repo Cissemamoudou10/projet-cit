@@ -69,3 +69,31 @@ class ResolveurSeancesFuturesQualification:
         if cls._fournisseur is not None:
             return cls._fournisseur(instructeur, matiere)
         return []
+
+
+class ResolveurSeancesDeControle:
+    """A9, Prompt 35 (D-183) : le programme signale qu'une séance est un
+    contrôle sans que `planification` importe `evaluations` (sens de
+    dépendance interdit — `evaluations` importe déjà `planification`,
+    l'inverse créerait un cycle réel, même motif qu'à D-128/D-143).
+
+    Une seule requête pour tout l'ensemble de séances affichées, jamais une
+    par séance (E2, Prompt 35) : `resoudre` reçoit la collection complète des
+    identifiants à qualifier, pas un identifiant à la fois.
+
+    Repli : aucun fournisseur installé ⇒ aucune séance connue comme
+    contrôle (ensemble vide) — comportement antérieur à cette story, où
+    `Evaluation` n'existait pas.
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, ids_seances) -> frozenset:
+        if cls._fournisseur is not None:
+            return cls._fournisseur(ids_seances)
+        return frozenset()
