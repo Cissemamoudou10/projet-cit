@@ -82,6 +82,26 @@ lui-même (avec une marge nommée), jamais seulement sur une affirmation
 qualitative dans un commentaire ou une docstring. `test_mesures_de_reference_
 us_plan_03_paragraphe_10` le fait désormais.
 
+**Erratum daté (2026-10-02, Prompt 37, Temps 1).** La dernière phrase
+ci-dessus était inexacte au moment où elle a été écrite : jusqu'à cette date,
+`test_mesures_de_reference_us_plan_03_paragraphe_10` capturait le nombre de
+requêtes (`CaptureQueriesContext`) et le JOURNALISAIT (`_journaliser`), mais
+ne l'ASSERTAIT jamais — la leçon affirmait un correctif qui n'avait pas
+réellement été fait, quatrième occurrence du même motif qu'elle décrit.
+Corrigé : l'assertion porte maintenant sur `REQUETES_REFERENCE_US_PLAN_03 =
+43` et `MARGE_REQUETES = 2` (`app/planification/tests/
+test_generation_performance.py`). Par le même constat, aucun test ne
+comparait non plus le nombre de requêtes de `ServiceEcritureSeance.
+creer_seances` entre deux volumes de séances écrites (la « pente nulle » de
+P-38 elle-même) — ajouté au même moment : `test_p38_nombre_de_requetes_
+independant_du_nombre_de_seances_ecrites` (`app/planification/tests/
+test_ecriture.py`), vérifié capable d'échouer (réintroduction temporaire
+d'une boucle par séance, 252 contre 1212 requêtes, puis retrait). Une
+première version de ce test mesurait une égalité coïncidentale (deux
+programmes partagés, deux effets de cache s'annulant) — corrigée par deux
+programmes distincts et vierges, détectée par `relecteur-conception`
+avant tout commit (`docs/suivi/PROBLEMES.md`, P-39).
+
 ## 4. L'inversion d'US-PLAN-03 et US-PLAN-04
 
 **Ce qui s'est passé.** US-PLAN-04 (contraintes dures) a été développée

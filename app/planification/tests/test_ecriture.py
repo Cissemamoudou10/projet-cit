@@ -7,12 +7,15 @@ entièrement fictives.
 import datetime
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
-from planification.models import LigneProgramme, Seance
+from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
 from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
-from planification.tests.conftest import instant, qualifier
+from planification.tests.conftest import Cours, creer_element, instant, qualifier
+from referentiel.models import Matiere
 from ressources.models import Instructeur, Statut
 
 
@@ -172,3 +175,63 @@ def test_creer_seances_ne_journalise_pas_le_detail_par_seance(
     ServiceEcritureSeance.creer_seances(planificateur, programme, [groupe_un, groupe_deux])
 
     assert EntreeJournal.objects.count() == avant
+
+
+# --- P-38 — garde réelle de la pente nulle (Prompt 37, Temps 1) ------------
+
+
+def _candidates_independantes(brigade, cours, lundi, nombre, decalage_jours):
+    """`nombre` groupes d'une candidate chacun, un jour distinct par
+    candidate (aucun recouvrement RG-34 entre elles, ni entre les deux
+    volumes comparés par le test de pente — `decalage_jours` les sépare)."""
+    return [
+        [_candidate(brigade, cours, instant(lundi, decalage_jours + i, 8), duree_min=60)]
+        for i in range(nombre)
+    ]
+
+
+def _programmes_de_mesure(lundi):
+    """Trois programmes DISTINCTS et VIERGES — chauffe, 40, 200 — jamais
+    deux mesures sur le même programme : `_charger_seances_existantes`
+    (`contraintes.py`) filtre par `programme`, un programme déjà écrit par
+    la mesure précédente fausserait la comparaison (prefetch non vide),
+    voir `docs/suivi/PROBLEMES.md`, P-39."""
+    return (
+        ProgrammeHebdomadaire.objects.create(lundi_de_semaine=lundi - datetime.timedelta(weeks=3)),
+        ProgrammeHebdomadaire.objects.create(lundi_de_semaine=lundi - datetime.timedelta(weeks=2)),
+        ProgrammeHebdomadaire.objects.create(lundi_de_semaine=lundi - datetime.timedelta(weeks=1)),
+    )
+
+
+def test_p38_nombre_de_requetes_independant_du_nombre_de_seances_ecrites(
+    planificateur, programme, formation, brigade, instructeur
+):
+    """P-38 (revue du Prompt 32) a remplacé une boucle coûtant 6 requêtes par
+    séance par un `bulk_create` en deux requêtes pour tout le lot — mais
+    aucun test existant ne le prouvait : `test_i3_...`
+    (`test_generation_architecture.py`) compare un nombre de CASES ÉVALUÉES,
+    pas de séances ÉCRITES ; `test_h6_...` (`test_contrat_service.py`)
+    compare `verifier_lot` seul, jamais l'écriture. Volume prescrit à 300 h :
+    les deux lots comparés (40 + 200 séances d'1 h) s'écrivent sans heurter
+    RG-39. Chauffe préalable (même motif que `test_i3_...`) : absorbe le
+    cache de permission de `planificateur` avant toute capture, pour que
+    les deux mesures restent symétriques — détail et historique en P-39."""
+    matiere = Matiere.objects.create(intitule="Matière P-38", code="P38M01")
+    element = creer_element(formation, matiere, volume=300)
+    qualifier(instructeur, matiere)
+    cours = Cours(element, instructeur)
+    lundi = programme.lundi_de_semaine
+    programme_chauffe, programme_40, programme_200 = _programmes_de_mesure(lundi)
+
+    groupe_chauffe = _candidates_independantes(brigade, cours, lundi, 1, decalage_jours=-70)
+    ServiceEcritureSeance.creer_seances(planificateur, programme_chauffe, groupe_chauffe)
+
+    groupes_40 = _candidates_independantes(brigade, cours, lundi, 40, decalage_jours=0)
+    groupes_200 = _candidates_independantes(brigade, cours, lundi, 200, decalage_jours=1000)
+
+    with CaptureQueriesContext(connection) as requetes_40:
+        ServiceEcritureSeance.creer_seances(planificateur, programme_40, groupes_40)
+    with CaptureQueriesContext(connection) as requetes_200:
+        ServiceEcritureSeance.creer_seances(planificateur, programme_200, groupes_200)
+
+    assert len(requetes_40) == len(requetes_200)
