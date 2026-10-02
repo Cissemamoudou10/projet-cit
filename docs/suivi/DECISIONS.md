@@ -31,6 +31,78 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-193 — Nouveau report : une organisation d'épreuve devra être revérifiée quand la date d'une certificative change
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 6, Prompt 36 : `ServiceEvaluation.modifier_date_certificative` déplace la date d'un examen final, mais ne touche à rien d'une éventuelle organisation d'épreuve (salle, surveillants, convocation) — US-EVAL-04, qui n'existe pas encore à ce jour du sprint. Ce n'est pas un des huit arbitrages A1 à A8 (D-185 à D-192) : un report nouveau, distinct.
+**Décision** — Report consigné : quand US-EVAL-04 sera livrée, vérifier explicitement que son organisation d'épreuve se revérifie (ou s'invalide) à tout changement ultérieur de la date d'une certificative — rien d'implanté ici, faute de l'objet à revérifier.
+**Alternative écartée** — Ne pas consigner de report, au motif qu'US-EVAL-04 n'existe pas encore : écartée, c'est précisément pour que la dépendance ne soit pas redécouverte à l'improviste à US-EVAL-04 que ce report existe — même logique que tout report de ce fichier.
+**Impact sur les livrables** — aucun sur la conception ; report porté dans `docs/suivi/AVANCEMENT.md`, vers US-EVAL-04.
+**Reporté au livrable** — oui, US-EVAL-04.
+
+## D-192 — A8 : mesures de référence, aucune dérive silencieuse — 41 → 43 requêtes, note datée
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La nouvelle source de RG-38 (A3) ajoute un appel au résolveur `ResolveurJoursExamen` dans `ServiceContraintes.contexte()`, donc une requête de plus même quand aucun examen n'existe (requête vide). Aucune assertion ne fige ces nombres en dur (vérifié au § 0, point 2 : H6 compare une égalité entre deux tailles de lot et une borne `< 15`, jamais un compte exact ; `test_mesures_de_reference_us_plan_03_paragraphe_10` journalise sans asserter).
+**Décision** — Mesuré avant/après par exécution réelle : `test_mesures_de_reference_us_plan_03_paragraphe_10` passe de 41 à **43** requêtes (jeu représentatif, 10 brigades, 200 cases) ; `test_h6_...` (grand lot, 15 candidates) passe de 11 à **12**, toujours sous la borne de 15. Les deux écarts sont bornés et indépendants du nombre d'examens (vérifié par F1 : nombre de requêtes de `verifier_lot` identique avec 0 et 10 examens dans la semaine). `docs/suivi/MESURES-REFERENCE.md` mis à jour avec une note datée, la ligne d'origine n'étant pas réécrite (même méthode que l'erratum 1430/1432, prompt 35).
+**Alternative écartée** — Relâcher l'assertion de H6 en une borne plus large par anticipation : écartée, aucune assertion n'était compromise par cet ajout ; relâcher sans raison aurait affaibli la garde pour rien.
+**Impact sur les livrables** — `docs/suivi/MESURES-REFERENCE.md`.
+**Reporté au livrable** — non applicable.
+
+## D-191 — A7 : le signalement des séances recouvertes est un sélecteur réutilisable, D-121 E2 reste ouvert
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C5 exige que les séances déjà programmées un jour d'examen soient énumérées, jamais supprimées (C3 : la date s'enregistre quoi qu'il arrive). D-121 E2 (période bloquante recouvrant des séances programmées) attend un arbitrage explicite sur le sort de ces séances, que ce prompt ne rend pas.
+**Décision** — `planification.selectors.seances_recouvertes(brigades, debut, fin)` : séances des brigades données recouvrant l'intervalle, programme et état déjà chargés (`select_related`), jamais une suppression ni une modification. `evaluations.services.evaluation._avertissements_seances` l'appelle à la création ET à chaque modification de la date (C1, C3), retourne un avertissement non bloquant. D-121 E2 reste ouvert : ce sélecteur pose l'outil, pas l'arbitrage, qui reste à US-PLAN-05.
+**Alternative écartée** — Refermer D-121 E2 ici, puisque le sélecteur existe déjà : écartée, le report porte sur l'arbitrage (que faire de ces séances), pas sur la capacité technique à les retrouver — les deux sont distincts.
+**Impact sur les livrables** — aucun sur la conception.
+**Reporté au livrable** — non applicable ; D-121 E2 reste reporté à US-PLAN-05 (voir AVANCEMENT.md).
+
+## D-190 — A6 : modification de la date — bornes, gel de la date passée, seules les certificatives
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CU-P6-02 : la cellule examens peut corriger une date notifiée par le 3ᵉ bureau, mais un examen déjà tenu ne doit plus bouger, et la date d'un contrôle (formative) suit une autre règle (sa séance, ou son gel après coup).
+**Décision** — `ServiceEvaluation.modifier_date_certificative` : motif obligatoire, journalisé avec l'ancienne et la nouvelle date (patron D-132) ; refuse si la date ACTUELLE est déjà passée (examen échu, figé) ; refuse si la NOUVELLE date est passée (RG-49) ou hors des bornes de la session visée ; refuse toute formative, en nommant la cause exacte — avec séance vers US-PLAN-05 (qui la déplace avec elle), sans séance comme figée (contrôle déclaré après coup).
+**Alternative écartée** — Une seule méthode `modifier` générique pour les deux types : écartée, les règles de gel sont entièrement différentes (RG-49 contre « suit sa séance ») — une méthode commune aurait caché la distinction derrière des branches, pas clarifié.
+**Impact sur les livrables** — aucun sur la conception ; confirme RG-49 et CU-P6-02.
+**Reporté au livrable** — non applicable.
+
+## D-189 — A5 : « imposée par une autorité externe » n'est pas un champ, un libellé calculé
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — US-EVAL-02 c.1/RG-49 : toute date certificative doit être identifiée comme imposée par le 3ᵉ bureau, partout où elle s'affiche.
+**Décision** — Aucun booléen stocké : `Evaluation.est_certificative` (déjà une propriété, US-EVAL-01) suffit à décider l'affichage du libellé « Date imposée — 3ᵉ bureau », dans le gabarit de détail, la liste des évaluations et les vues du calendrier. Un booléen dédié aurait été un second attribut dérivé du type, contraire à `.claude/rules/modeles.md`.
+**Alternative écartée** — Un champ `impose_par_autorite_externe` sur `Evaluation` : écartée, strictement redondant avec `type == CERTIFICATIVE` — RG-49 en fait une propriété du TYPE, pas une donnée indépendante.
+**Impact sur les livrables** — aucun sur la conception.
+**Reporté au livrable** — non applicable.
+
+## D-188 — A4 : le périmètre d'un jour d'examen se résout au moment de la lecture, jamais une liste recopiée
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Une session peut voir une brigade constituée après la saisie de la date d'un examen de périmètre session ; cette brigade doit être fermée elle aussi, sans qu'aucune donnée n'ait été recopiée au moment de la saisie.
+**Décision** — `evaluations.selectors.jours_d_examen` résout les brigades d'un périmètre session par une requête groupée (`Brigade.objects.filter(session_id__in=...)`) exécutée à CHAQUE appel du résolveur — jamais une collection figée à la création de l'évaluation. Vérifié par A4 (bloc test) : une brigade créée après la saisie est bien fermée au contrôle suivant.
+**Alternative écartée** — Stocker la liste des brigades visées sur `Evaluation` à la création (M2M ou JSON) : écartée, exactement la même erreur que la projection de date qu'évite A1 — une collection recopiée diverge de la réalité au premier changement de composition de la session.
+**Impact sur les livrables** — aucun sur la conception.
+**Reporté au livrable** — non applicable.
+
+## D-187 — A3 : RG-38 gagne une seconde source ; les six contraintes dures restent six
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 0, point 6 (condition d'arrêt vérifiée, non déclenchée) : RG-38 n'a qu'une implantation, `regles_calendrier.verifier_rg38`, appelée depuis `ServiceContraintes` ; `planification.generation.candidats.creneau_bloque` réutilise les mêmes fonctions (`_portee_couvre`/`_se_recouvrent`), ce n'est pas une seconde implantation. US-EVAL-02 doit fermer un jour entier de programmation pour le périmètre d'un examen certificatif sans ajouter une septième contrainte dure — RG-34 à RG-39 restent fixées par conception (D-89, D-127, écart 14 du sprint 2).
+**Décision** — `Contexte.jours_examen` (nouveau champ), chargé une fois par `ServiceContraintes.contexte()` via `ResolveurJoursExamen.resoudre`. `regles_calendrier.verifier_rg38` ajoute une seconde vérification (`_verifier_jours_examen`) à la suite de celle des périodes bloquantes — même règle RG-38, deuxième source, même motif que les trois sources de RG-07 (D-35). Le compte « six contraintes dures » de l'écart 14 du sprint 2 ne change pas. Le jour ENTIER est fermé : l'heure précise de l'épreuve n'existe qu'avec l'organisation (US-EVAL-04).
+**Alternative écartée** — Une septième contrainte dédiée à RG-49 : écartée, RG-49 (date imposée) ne fait qu'alimenter RG-38 (créneau ouvert) d'une donnée de plus — ce n'est pas une règle de placement distincte des six existantes.
+**Impact sur les livrables** — `ECARTS-LIVRABLES-SPRINT-3.md` : RG-38 (fiche CU-P5-02, récapitulatif) ne cite qu'une source, en porte désormais deux ; tableau des contraintes de la phase 4, même ajout, compte inchangé.
+**Reporté au livrable** — oui, mémoire.
+
+## D-186 — A2 : un point de résolution dans `noyau`, deux consommateurs (`planification`, `ressources`)
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `planification` (RG-38) et `ressources` (vues du calendrier) ont chacun besoin de savoir où tombent les jours d'examen certificatif, sans pouvoir importer `evaluations` (sens de dépendance interdit, même motif que D-183).
+**Décision** — `noyau.services.parametres.ResolveurJoursExamen`, même patron que `ResolveurSeancesDeControle` (D-183) et les résolveurs de D-128/D-143 : `installer_fournisseur`/`resoudre(debut, fin)`, repli sur liste vide sans fournisseur. `evaluations.apps.EvaluationsConfig.ready()` installe `evaluations.selectors.jours_d_examen`. Deux requêtes bornées par appel (le filtre des évaluations, puis la résolution groupée des brigades de session si nécessaire) — jamais une par évaluation ni une par brigade (vérifié par E4 : nombre de requêtes identique avec 1 et 10 examens sur les vues annuelle et mensuelle).
+**Alternative écartée** — Un résolveur par consommateur (un pour `planification`, un pour `ressources`) : écartée, dupliquerait la même règle de repli et la même requête à deux endroits — exactement ce que le patron à un point de résolution évite.
+**Impact sur les livrables** — aucun sur la conception ; confirme le patron pour une quatrième donnée (après volume horaire, séances futures de qualification, séances de contrôle).
+**Reporté au livrable** — non applicable.
+
+## D-185 — A1 : projection, jamais copie — la date certificative reste une seule vérité
+**Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — « Bloquer le créneau au calendrier » pourrait suggérer de créer une `PeriodeCalendrier` à partir de la date de l'évaluation — mais une période créée à la saisie diverge de la date au premier report du 3ᵉ bureau, exactement le défaut que D-124 a déjà résolu pour les dates de session (RG-30 bis).
+**Décision** — Aucune `PeriodeCalendrier` n'est jamais créée par `evaluations`. La date certificative est projetée, à la lecture, sur RG-38 (via `Contexte.jours_examen`) et sur les vues du calendrier (via la même donnée) — `Evaluation.date` reste la SEULE source. Vérifié par A7 (bloc test) : le compte de `PeriodeCalendrier` ne bouge ni à la création ni à la modification de la date.
+**Alternative écartée** — Créer une `PeriodeCalendrier` bloquante à la saisie, la mettre à jour à chaque modification : écartée, même défaut que D-124 a déjà nommé — deux vérités qui divergent dès qu'une se modifie sans l'autre, et un report du 3ᵉ bureau serait exactement le cas qui romprait la synchronisation.
+**Impact sur les livrables** — aucun sur la conception ; confirme D-124 (même patron, nouvelle donnée).
+**Reporté au livrable** — non applicable.
+
 ## D-184 — Critères contradictoires du backlog v9 (US-EVAL-01) : deux types d'évaluation retenus, pas trois
 **Date** 2026-10-01 · **Story** US-EVAL-01 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — § 1, Prompt 35 : le backlog v9 porte des critères contradictoires entre eux — le critère 1 propose TROIS types (contrôle simple, partiel, final), le critère 2 en pose DEUX (formative, certificative). La correction de terrain du 25 août (partiel = contrôle = formative ; final = certificative) a été ajoutée en v7 sans que les anciens critères (1, 6, 7, 8) soient retirés.

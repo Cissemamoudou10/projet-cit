@@ -4,6 +4,7 @@ Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
 
 from django.db import models
+from django.utils import timezone
 
 from noyau.models import ModeleHorodate
 from organisation.models import Brigade, Session
@@ -116,3 +117,12 @@ class Evaluation(ModeleHorodate):
     @property
     def est_formative(self):
         return self.type == TypeEvaluation.FORMATIVE
+
+    @property
+    def est_certificative(self):
+        return self.type == TypeEvaluation.CERTIFICATIVE
+
+    @property
+    def date_echue(self):
+        """A6, Prompt 36 : un examen déjà tenu ne change plus de date."""
+        return bool(self.date) and self.date < timezone.localdate()

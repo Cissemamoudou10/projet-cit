@@ -115,3 +115,21 @@ def test_d8_seance_creee_verrouillee_sans_qu_aucun_parametre_ne_l_ait_demande(co
         controle.examens, programme, candidates
     )
     assert seance.verrouillee is True
+
+
+# --- US-EVAL-02, bloc D1 — modification de la date d'un examen final ---
+
+
+@pytest.mark.parametrize("nom_fixture", ["planificateur", "redacteur", "direction_formation"])
+def test_d1_autres_profils_refuses_en_modification_de_date(request, nom_fixture, controle):
+    donnees = _donnees(
+        element_referentiel=controle.element_referentiel,
+        brigade=controle.brigade,
+        date=timezone.localdate() + datetime.timedelta(days=30),
+    )
+    evaluation = ServiceEvaluation.creer(controle.examens, donnees)
+    utilisateur = request.getfixturevalue(nom_fixture)
+    with pytest.raises(ErreurHabilitation):
+        ServiceEvaluation.modifier_date_certificative(
+            utilisateur, evaluation, evaluation.date + datetime.timedelta(days=1), "motif"
+        )

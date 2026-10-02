@@ -11,11 +11,22 @@ test_mesures_de_reference_us_plan_03_paragraphe_10` — relancé le
 | Mesure | Valeur |
 |---|---|
 | Temps total de génération | 0,389 s |
-| Requêtes SQL | **41, constantes** (pente nulle de 40 à 200 séances — corrigé de 1 239, 6/séance, par P-38) |
+| Requêtes SQL | **43, constantes** (pente nulle de 40 à 200 séances — corrigé de 1 239, 6/séance, par P-38 ; **41 → 43 le 2026-10-02, note ci-dessous**) |
 | Appels à `ServiceContraintes.verifier` | 360 |
 | Taux de remplissage | 100 % (200/200) |
 
 Bien en deçà des cinq minutes de BNF-04.
+
+**Mise à jour datée (2026-10-02, prompt 36, A8).** US-EVAL-02 ajoute une
+seconde source à RG-38 (`Contexte.jours_examen`, résolue via
+`ResolveurJoursExamen`) : un appel de plus dans `ServiceContraintes.
+contexte()`, même sans aucun examen en base — d'où le passage mesuré de 41
+à 43 (relancé le 2026-10-02, toujours vert, aucune assertion ne fixait ce
+nombre, voir § suivant). `test_h6_...` (grand lot, 15 candidates) passe de
+même de 11 à 12 requêtes, toujours sous la borne de 15 — aucune dérive
+silencieuse (A8) : l'ajout est borné, vérifié indépendant du nombre
+d'examens par `evaluations.tests.test_rg38_examen::test_f1_requetes_
+verifier_lot_identiques_0_et_10_examens`.
 
 ## US-PLAN-04 — `verifier_lot`, nombre de requêtes (test H6)
 

@@ -8,6 +8,7 @@ class EvaluationsConfig(AppConfig):
 
     def ready(self):
         from evaluations import selectors
-        from noyau.services.parametres import ResolveurSeancesDeControle
+        from noyau.services.parametres import ResolveurJoursExamen, ResolveurSeancesDeControle
 
         ResolveurSeancesDeControle.installer_fournisseur(selectors.seances_de_controle_parmi)
+        ResolveurJoursExamen.installer_fournisseur(selectors.jours_d_examen)

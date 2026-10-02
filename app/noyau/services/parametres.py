@@ -97,3 +97,31 @@ class ResolveurSeancesDeControle:
         if cls._fournisseur is not None:
             return cls._fournisseur(ids_seances)
         return frozenset()
+
+
+class ResolveurJoursExamen:
+    """A2, Prompt 36 : `planification` (RG-38) et `ressources` (vues du
+    calendrier) ne peuvent pas importer `evaluations` — même motif que
+    `ResolveurSeancesDeControle`. Un fournisseur, deux consommateurs.
+
+    `resoudre(debut, fin)` rend, pour l'intervalle `[debut, fin)` (dates,
+    bornes semi-ouvertes), une liste de `{"jour", "brigades", "libelle"}` —
+    un élément par évaluation certificative dont la date tombe dans
+    l'intervalle, le périmètre déjà résolu en identifiants de brigade (A4 :
+    au moment de l'appel, jamais une liste recopiée).
+
+    Repli : aucun fournisseur installé ⇒ aucun jour d'examen connu (liste
+    vide) — `planification` et `ressources` restent testables seules.
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, debut, fin) -> list:
+        if cls._fournisseur is not None:
+            return cls._fournisseur(debut, fin)
+        return []

@@ -2,7 +2,7 @@
 
 *Récapitulatif court. Le détail vit dans les fichiers de sprint.*
 
-**Dernière mise à jour :** 1er octobre 2026 (Prompt 35, US-EVAL-01) — C2 a
+**Dernière mise à jour :** 2 octobre 2026 (Prompt 36, US-EVAL-02) — C2 a
 été prononcé le 30 septembre, en retard de quatre jours sur l'échéance du 26
 septembre. Ne pas lire ce retard comme rétrodaté : le contenu technique du
 sprint 2 était acquis le 26, mais ses éléments de pilotage (heures, clé de
@@ -10,8 +10,9 @@ conversion, reports vérifiés, risques) ne l'étaient pas — exactement le mê
 défaut qui avait déjà retardé le prononcé de C1. Voir
 `docs/suivi/LECONS-SPRINT-2.md`, leçon 1. Sprint 3 engagé depuis le 28
 septembre ; ETA-01 (diagramme d'états, 5.3.17) produit le 30/09, voir « Ce
-qu'il faut surveiller » — R10. Première story du sprint livrée le 1er
-octobre : US-EVAL-01 (créer une évaluation selon son type, 5 pts).
+qu'il faut surveiller » — R10. Deux stories livrées : US-EVAL-01 (1er
+octobre, 5 pts) et US-EVAL-02 (2 octobre, 2 pts — date d'un examen final
+imposée et projetée, jamais copiée).
 
 ## Où nous en sommes
 
@@ -21,7 +22,7 @@ octobre : US-EVAL-01 (créer une évaluation selon son type, 5 pts).
 | 2 — Spécification | 03/08 – 14/08 | Close |
 | 3 — Planification détaillée | 17/08 – 20/08 | Close |
 | 4 — Analyse et conception | 20/08 – 30/08 | **Close** — 7 livrables, 23 figures, jalon J1 franchi |
-| 5 — Développement | 31/08 – 24/10 | **En cours** — sprint 2 clos (C2 prononcé le 30/09, en retard), sprint 3 démarré le 28/09, US-EVAL-01 livrée le 01/10 |
+| 5 — Développement | 31/08 – 24/10 | **En cours** — sprint 2 clos (C2 prononcé le 30/09, en retard), sprint 3 démarré le 28/09, US-EVAL-01 (01/10) et US-EVAL-02 (02/10) livrées |
 | 6 — Tests et recette | 26/10 – 02/11 | À venir |
 | 7 — Déploiement | 03/11 – 10/11 | À venir |
 | 8 — Mémoire et soutenance | 11/11 – 25/12 | À venir |
@@ -32,7 +33,7 @@ octobre : US-EVAL-01 (créer une évaluation selon son type, 5 pts).
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 47 | 1 | J2 |
+| 3 | 28/09 – 10/10 | 11 | 47 | 2 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
@@ -44,8 +45,8 @@ faisabilité du solveur (Prompt 32, hors points chiffrés).
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 28 / 53 planifiées | — |
-| Points livrés | 124 / 227 planifiés | — |
+| Stories livrées | 29 / 53 planifiées | — |
+| Points livrés | 126 / 227 planifiés | — |
 | Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
 | Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
@@ -167,7 +168,7 @@ majeures par rapport à la dernière version :
 | D-119 | 5, pts 4-5 (séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-09 (sprint 3) | Ouvert |
 | D-119 | A3, A4 (restriction extension, séances passées) | US-INS-03 | sprint 3 | Ouvert |
 | D-121 | 5, RG-38 (exclusion des périodes bloquantes) | US-PLAN-01 | US-PLAN-03/04 (sprint 2) | Fermé le 2026-09-15 |
-| D-121 | E2 (période bloquante recouvrant des séances programmées) | US-PLAN-01 | US-PLAN-05 (sprint 3) | Ouvert |
+| D-121 | E2 (période bloquante recouvrant des séances programmées) | US-PLAN-01 | US-PLAN-05 (sprint 3) | Ouvert — **sélecteur `seances_recouvertes` posé à US-EVAL-02 (D-191, prompt 36)**, l'arbitrage explicite qu'exige ce report reste entier, à US-PLAN-05 |
 | D-121 | A3 (séances redevenues programmables) | US-PLAN-01 | sprint 3 | Ouvert |
 | D-133 | 6 (changer de grille active ne touche pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 | D-133 | RG-64 (relation facultative séance↔créneau type) | US-PLAN-12 | *aucune story assignée* | **Ouvert, orpheline** — dette explicite, à surveiller (personne n'est chargé de la refermer) |
@@ -177,23 +178,23 @@ majeures par rapport à la dernière version :
 | **D-181** | suppression d'une évaluation, et de sa séance verrouillée — jamais hors du service d'évaluation | US-EVAL-01 | US-PLAN-05 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35** (A7 ; vérification § 0.4 négative : aucune suppression de séance n'existait encore) |
 | **D-182** | mesure de l'écart de progression entre brigades (A8, E2, forme simplifiée retenue) | US-EVAL-01 | *aucune story assignée* | **Ouvert, orphelin — créé le 2026-10-01, prompt 35**, à arbitrer au backlog v10 |
 | **D-170** | insertion d'un contrôle refusée si le programme de la semaine est SOUMIS, VALIDÉ ou AFFICHÉ | US-EVAL-01 | US-VAL-03 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35**, cas à ajouter à l'oracle `ETA-01_table_transitions.md` quand la garde RG-41 (D-170) existera |
+| **D-193** | une organisation d'épreuve devra être revérifiée quand la date d'une certificative change | US-EVAL-02 | US-EVAL-04 | **Ouvert — créé le 2026-10-02, prompt 36** : `modifier_date_certificative` ne touche à rien d'une organisation d'épreuve, qui n'existe pas encore (US-EVAL-04, sprint 3) — à vérifier dès que cette story existe |
 
-### Compte final, vérifié le 2026-10-01
+### Compte final, vérifié le 2026-10-02
 
-Recompté au prompt 35 : D-35 (volet évaluation) se referme — `evaluations`
-protège `ElementReferentiel` par construction (`PROTECT`), sans code
-spécifique à écrire, voir le tableau ci-dessus. Trois reports nouveaux
-s'ouvrent (D-170 — nouveau report sous une décision déjà existante, D-181,
-D-182). Net : dix reports de la clôture du prompt 34, moins un fermé, plus
-trois créés — **douze ouverts aujourd'hui**.
+Recompté au prompt 36 : aucun report fermé. Un report nouveau s'ouvre
+(D-193, vers US-EVAL-04). D-121 E2 reste ouvert, complété d'un renvoi vers
+le sélecteur posé ici (D-191) — l'arbitrage lui-même reste entier à
+US-PLAN-05, ce renvoi n'en change pas le compte. Net : douze reports de la
+clôture du prompt 35, plus un créé — **treize ouverts aujourd'hui**.
 
 | | Compte |
 |---|---|
-| **Ouverts aujourd'hui** | **12** : D-39(saisie manuelle), D-119(pts 4-5), D-119(A3/A4), D-121(E2), D-121(A3), D-133(RG-64, orpheline), D-108, D-171, D-172, D-170(insertion contrôle), D-181, D-182 |
+| **Ouverts aujourd'hui** | **13** : D-39(saisie manuelle), D-119(pts 4-5), D-119(A3/A4), D-121(E2), D-121(A3), D-133(RG-64, orpheline), D-108, D-171, D-172, D-170(insertion contrôle), D-181, D-182, D-193 |
 | **Refermés pendant le sprint 2** | **14** : D-23, D-34, D-35(séance), D-39(moteur), D-45, D-51, D-54(brigade), D-54(séance), D-91, D-83, D-119(RG-36), D-121(RG-38), D-133(constat d'absence), D-133(E6) |
 | **Créés pendant le sprint 2** | **12** : D-91, D-83, D-108, D-119(×3), D-121(×3), D-133(×3) |
-| **Créés pendant le sprint 3, à ce jour (prompts 34 et 35)** | **4** : D-171, D-172, D-181, D-182 — D-170 (insertion d'un contrôle) rattache un NOUVEAU report à une décision déjà existante (ETA-01, prompt 34), pas une décision de plus |
-| **Refermés pendant le sprint 3, à ce jour (prompt 35)** | **1** : D-35 (volet évaluation) |
+| **Créés pendant le sprint 3, à ce jour (prompts 34 à 36)** | **5** : D-171, D-172, D-181, D-182, D-193 — D-170 (insertion d'un contrôle) rattache un report à une décision déjà existante (ETA-01, prompt 34), pas une décision de plus |
+| **Refermés pendant le sprint 3, à ce jour** | **1** : D-35 (volet évaluation, prompt 35) |
 
 **Écart avec le décompte donné en revue du sprint 1** (« neuf reports, trois
 refermés, six des sept ouverts se referment au sprint 2 ») : ce chiffre

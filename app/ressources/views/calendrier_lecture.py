@@ -15,6 +15,7 @@ from django.utils.safestring import mark_safe
 
 from administration.habilitations import exige_habilitation
 from noyau.habilitations import a_permission
+from noyau.services.parametres import ResolveurJoursExamen
 from ressources.navigation import onglets_ressources
 from ressources.services.nature_evenement import ServiceNatureEvenement
 from ressources.services.periode_calendrier import ServicePeriodeCalendrier
@@ -86,16 +87,29 @@ def _pastille_session(session):
     }
 
 
-def _pastilles_du_mois(debut_mois, fin_mois, periodes, bandes):
+def _pastille_examen(entree):
+    """C6, Prompt 36 : troisième couche, projetée depuis `Evaluation` via
+    `ResolveurJoursExamen` — jamais une `PeriodeCalendrier` créée (A1)."""
+    return {
+        "url": "",
+        "texte": mark_safe(
+            f'<span class="border border-marine-700 text-marine-900 px-1.5 py-px '
+            f'text-2xs font-semibold">{entree["libelle"]} — EXAMEN</span>'
+        ),
+    }
+
+
+def _pastilles_du_mois(debut_mois, fin_mois, periodes, bandes, examens):
     debut_dt, fin_dt = _debut_journee(debut_mois), _debut_journee(fin_mois)
     pastilles = [_pastille_periode(p) for p in periodes if p.debut < fin_dt and p.fin > debut_dt]
     pastilles += [
         _pastille_session(s) for s in bandes if s.date_debut < fin_mois and s.date_fin >= debut_mois
     ]
+    pastilles += [_pastille_examen(e) for e in examens if debut_mois <= e["jour"] < fin_mois]
     return pastilles
 
 
-def _construire_mois(fenetre_debut, fenetre_fin, periodes, bandes):
+def _construire_mois(fenetre_debut, fenetre_fin, periodes, bandes, examens):
     mois, curseur = [], fenetre_debut
     while curseur < fenetre_fin:
         curseur_fin = _mois_suivant(curseur)
@@ -106,7 +120,7 @@ def _construire_mois(fenetre_debut, fenetre_fin, periodes, bandes):
                     f"{reverse('ressources:calendrier_mensuel')}?annee={curseur.year}"
                     f"&mois={curseur.month}"
                 ),
-                "pastilles": _pastilles_du_mois(curseur, curseur_fin, periodes, bandes),
+                "pastilles": _pastilles_du_mois(curseur, curseur_fin, periodes, bandes, examens),
             }
         )
         curseur = curseur_fin
@@ -128,7 +142,8 @@ def vue_calendrier_annuel(request):
             request.user, fenetre_debut, fenetre_fin - datetime.timedelta(days=1)
         )
     )
-    mois = _construire_mois(fenetre_debut, fenetre_fin, periodes, bandes)
+    examens = ResolveurJoursExamen.resoudre(fenetre_debut, fenetre_fin)
+    mois = _construire_mois(fenetre_debut, fenetre_fin, periodes, bandes, examens)
     onglets, onglet_actif = onglets_ressources(request.user, "calendrier")
     return render(
         request,
@@ -200,9 +215,10 @@ def vue_calendrier_mensuel(request):
             request.user, debut_mois, fin_mois - datetime.timedelta(days=1)
         )
     )
+    examens = ResolveurJoursExamen.resoudre(debut_mois, fin_mois)
     jours, curseur = [], debut_mois
     while curseur < fin_mois:
-        jours.append(_ligne_jour(curseur, periodes, bandes))
+        jours.append(_ligne_jour(curseur, periodes, bandes, examens))
         curseur += datetime.timedelta(days=1)
     onglets, onglet_actif = onglets_ressources(request.user, "calendrier")
     return render(
@@ -234,7 +250,7 @@ def _plage_du_jour(periode, debut_jour, fin_jour):
     return f"{debut_effectif:%H:%M}–{fin_effective:%H:%M}"
 
 
-def _ligne_jour(jour, periodes, bandes):
+def _ligne_jour(jour, periodes, bandes, examens):
     debut_dt, fin_dt = _debut_journee(jour), _debut_journee(jour + datetime.timedelta(days=1))
     entrees = [
         f"{_plage_du_jour(p, debut_dt, fin_dt)} {p.intitule} ({p.nature.libelle}, {p.get_effet_display()})"
@@ -242,4 +258,5 @@ def _ligne_jour(jour, periodes, bandes):
         if p.debut < fin_dt and p.fin > debut_dt
     ]
     entrees += [f"Session : {s}" for s in bandes if s.date_debut <= jour <= s.date_fin]
+    entrees += [f"{e['libelle']} (date imposée)" for e in examens if e["jour"] == jour]
     return {"date": jour, "entrees": entrees}

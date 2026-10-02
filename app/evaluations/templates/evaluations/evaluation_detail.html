@@ -17,6 +17,14 @@
       <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ evaluation.element_referentiel }}</h1>
       <p class="text-sm text-gris-lecture">{{ evaluation.get_type_display }}</p>
     </div>
+    {% if peut_modifier_date and evaluation.est_certificative and not evaluation.date_echue %}
+      <a href="{% url 'evaluations:modifier_date_certificative' evaluation.pk %}"
+         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                hover:bg-marine-700">
+        Modifier la date
+      </a>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
@@ -68,7 +76,13 @@
       {% elif evaluation.date %}
         <div>
           <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Date</dt>
-          <dd>{{ evaluation.date|date:"d/m/Y" }}</dd>
+          <dd>
+            {{ evaluation.date|date:"d/m/Y" }}
+            {% if evaluation.est_certificative %}
+              <span class="ml-2 border border-marine-700 px-1.5 py-px text-2xs font-semibold
+                           uppercase tracking-wide text-marine-900">Date imposée — 3ᵉ bureau</span>
+            {% endif %}
+          </dd>
         </div>
         {% if evaluation.motif_date_passee %}
           <div>

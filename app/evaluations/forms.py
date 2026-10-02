@@ -111,3 +111,20 @@ class FormulaireEvaluation(forms.Form):
     def clean_lieu(self):
         pk = self.cleaned_data.get("lieu")
         return Lieu.objects.filter(pk=pk).first() if pk else None
+
+
+class FormulaireModificationDateCertificative(forms.Form):
+    """CU-P6-02, Prompt 36. Le motif est obligatoire côté formulaire pour un
+    retour immédiat — `ServiceEvaluation.modifier_date_certificative` reste
+    seul juge (.claude/rules/vues.md, double jamais remplace)."""
+
+    nouvelle_date = forms.DateField(
+        label="Nouvelle date (notifiée par le 3ᵉ bureau)",
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE
+        ),
+    )
+    motif = forms.CharField(
+        label="Motif (notification du 3ᵉ bureau)",
+        widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 3}),
+    )

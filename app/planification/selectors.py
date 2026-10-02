@@ -295,3 +295,17 @@ def lieux_pour_choix() -> list[tuple[int, str]]:
     return list(
         Lieu.objects.filter(archive=False).order_by("intitule").values_list("pk", "intitule")
     )
+
+
+def seances_recouvertes(brigades, debut, fin):
+    """A7, Prompt 36 : signalement de C5, jamais une suppression — rend les
+    séances des brigades données qui recouvrent `[debut, fin)`, programme et
+    état déjà chargés. Appelée par `evaluations` à la saisie et à chaque
+    modification de la date d'une certificative ; fermera D-121 E2 à
+    US-PLAN-05, qui reste seul à trancher l'arbitrage explicite que ce
+    report exige — ce sélecteur ne le referme pas lui-même."""
+    return list(
+        Seance.objects.filter(lignes__brigade__in=brigades, debut__lt=fin, fin__gt=debut)
+        .select_related("programme", "element_referentiel__matiere")
+        .distinct()
+    )

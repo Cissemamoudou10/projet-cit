@@ -452,11 +452,17 @@ ECRANS_ECRITURE = [
     EcranEcriture("planification:lancement_generation", "noyau.programme_ecriture"),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
     EcranEcriture("evaluations:creer_evaluation", "noyau.evaluations_ecriture"),
+    # --- evaluations : modification de la date d'un examen final (US-EVAL-02) ---
+    EcranEcriture(
+        "evaluations:modifier_date_certificative",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["evaluation"].pk],
+    ),
 ]
 
-# 91 adresses : les 90 précédentes (Prompt 31) plus l'adresse d'écriture de
-# evaluations:creer_evaluation (US-EVAL-01, Prompt 35).
-assert len(ECRANS_ECRITURE) == 91
+# 92 adresses : les 91 précédentes (Prompt 35) plus l'adresse d'écriture de
+# evaluations:modifier_date_certificative (US-EVAL-02, Prompt 36).
+assert len(ECRANS_ECRITURE) == 92
 
 
 def _groupes_sans(permission):

@@ -15,6 +15,7 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 
 from administration.constantes import GROUPES
+from evaluations.models import Evaluation, TypeEvaluation
 from organisation.models import Brigade, Session, Stagiaire
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
@@ -167,6 +168,12 @@ def objets(db, utilisateurs):
         heure_debut="08:00",
         heure_fin="09:45",
     )
+    evaluation = Evaluation.objects.create(
+        element_referentiel=element,
+        session=session,
+        type=TypeEvaluation.CERTIFICATIVE,
+        date="2026-02-01",
+    )
     return {
         "type_formation": type_formation,
         "formation": formation,
@@ -183,6 +190,7 @@ def objets(db, utilisateurs):
         "compte_cible": compte_cible,
         "session": session,
         "brigade": brigade,
+        "evaluation": evaluation,
         "stagiaire": stagiaire,
         "nature_evenement": nature_evenement,
         "periode_calendrier": periode_calendrier,

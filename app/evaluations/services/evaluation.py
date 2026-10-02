@@ -25,7 +25,7 @@ from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement, valider_instance
 from planification.models import ProgrammeHebdomadaire
-from planification.selectors import JOUR_SEMAINE_PAR_ISO
+from planification.selectors import JOUR_SEMAINE_PAR_ISO, seances_recouvertes
 from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
 
@@ -123,6 +123,33 @@ def _journaliser(agissant, evaluation):
     )
 
 
+def _journaliser_modification_date(agissant, evaluation, ancienne_date, nouvelle_date, motif):
+    ServiceJournal.enregistrer_detaillee(
+        DonneesEntreeJournal(
+            type_action=TypeAction.MODIFICATION_ELEMENT_GESTION,
+            identifiant_saisi=str(evaluation),
+            auteur=agissant,
+            objet_type="evaluation",
+            objet_identifiant=str(evaluation.pk),
+            valeur_avant={"date": str(ancienne_date)},
+            valeur_apres={"date": str(nouvelle_date), "motif": motif},
+        )
+    )
+
+
+def _verifier_modifiable(evaluation):
+    """A6 : seules les certificatives se modifient ici — la date d'une
+    formative avec séance se déplace avec sa séance (US-PLAN-05) ; celle
+    d'une formative déclarée après coup est figée."""
+    if evaluation.type == TypeEvaluation.CERTIFICATIVE:
+        return
+    if evaluation.seance_id:
+        raise ErreurValidation(
+            "La date d'un contrôle avec séance se déplace avec sa séance (US-PLAN-05), pas ici."
+        )
+    raise ErreurValidation("La date d'un contrôle déclaré après coup est figée.")
+
+
 def _enregistrer(agissant, evaluation):
     valider_instance(evaluation)
     with transaction.atomic():
@@ -142,6 +169,25 @@ def _avertissements(session):
             "Périmètre session : le sujet sera commun à toutes les brigades, dont les "
             "progressions peuvent être décalées.",
         )
+    ]
+
+
+def _avertissements_seances(perimetre, jour):
+    """A7, C1/C5 : signalement, jamais une suppression — la date s'enregistre
+    quoi qu'il arrive (C3). `jour` est une date, converti en journée pleine
+    pour `seances_recouvertes`."""
+    debut_jour = timezone.make_aware(datetime.datetime.combine(jour, datetime.time.min))
+    fin_jour = debut_jour + datetime.timedelta(days=1)
+    seances = seances_recouvertes(perimetre.brigades_visees, debut_jour, fin_jour)
+    if not seances:
+        return []
+    noms = "; ".join(
+        f"{seance.element_referentiel.matiere} {seance.debut:%H:%M}–{seance.fin:%H:%M} "
+        f"(programme {seance.programme.get_etat_display()})"
+        for seance in seances
+    )
+    return [
+        avertissement("A7", f"Séance(s) déjà programmée(s) ce jour, non supprimée(s) : {noms}.")
     ]
 
 
@@ -254,9 +300,51 @@ class ServiceEvaluation:
         date = donnees.get("date")
         if type_ == TypeEvaluation.CERTIFICATIVE:
             evaluation = _creer_certificative(agissant, perimetre, date)
+            evaluation.avertissements = _avertissements(session) + _avertissements_seances(
+                perimetre, date
+            )
         else:
             evaluation = _creer_formative(agissant, perimetre, date, donnees)
-        evaluation.avertissements = _avertissements(session)
+            evaluation.avertissements = _avertissements(session)
+        return evaluation
+
+    @staticmethod
+    def modifier_date_certificative(agissant, evaluation, nouvelle_date, motif):
+        """A6/C2 : bornes, gel de la date déjà passée (actuelle ET nouvelle),
+        motif obligatoire, journalisé avec l'ancienne et la nouvelle date
+        (patron D-132). Seules les certificatives se modifient ici — A6."""
+        verifier_habilitation(agissant, PERMISSION_ECRITURE)
+        _verifier_modifiable(evaluation)
+        motif = (motif or "").strip()
+        if not motif:
+            raise ErreurValidation(
+                "Un motif est obligatoire pour modifier une date imposée par le 3e bureau "
+                "(CU-P6-02)."
+            )
+        if evaluation.date < timezone.localdate():
+            raise ErreurValidation(
+                f"{evaluation.date:%d/%m/%Y} est déjà passée : cet examen est échu, sa date "
+                "ne change plus."
+            )
+        perimetre = Perimetre(
+            element=evaluation.element_referentiel,
+            session=evaluation.session,
+            brigade=evaluation.brigade,
+        )
+        _verifier_bornes(nouvelle_date, perimetre)
+        if nouvelle_date < timezone.localdate():
+            raise ErreurValidation(
+                f"{nouvelle_date:%d/%m/%Y} est déjà passée : un examen final ne peut être "
+                "daté dans le passé (RG-49)."
+            )
+        ancienne_date = evaluation.date
+        with transaction.atomic():
+            evaluation.date = nouvelle_date
+            ServiceBase.modifier(evaluation, agissant)
+            _journaliser_modification_date(
+                agissant, evaluation, ancienne_date, nouvelle_date, motif
+            )
+        evaluation.avertissements = _avertissements_seances(perimetre, nouvelle_date)
         return evaluation
 
     @staticmethod

@@ -38,6 +38,13 @@ semaine sans programme. Le diagramme et la note ne sont **pas** modifiés
 ici : leur validation par les cellules est en cours (retour attendu le 5
 octobre) — l'écart sera reporté au diagramme à leur retour, pas avant.
 
+## US-EVAL-02 (Prompt 36) — à la suite, numérotés à partir de 15
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui fait foi | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 15 | Fiche CU-P5-02 et récapitulatif, RG-38 | Ne cite que les périodes du calendrier comme source de blocage | Un jour d'examen certificatif dont le périmètre couvre la brigade est une seconde source (A3) ; les six contraintes dures restent six | D-187 | Compléter RG-38 : deux sources, période bloquante et jour d'examen certificatif |
+| 16 | Tableau des treize contraintes, phase 4 | Même recensement qu'au sprint 2 (lignes 1 et 14 ci-dessus), RG-38 à une seule source | Même ajout qu'à la ligne 15 ; le compte des contraintes elles-mêmes ne bouge pas | D-187 | Ajouter la seconde source de RG-38 au tableau, sans changer le compte |
+
 ## Ce que cette liste ne couvre pas
 
 Les huit arbitrages A1 à A8 (D-165 à D-172) portent sur des contradictions

@@ -10,13 +10,14 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from administration.habilitations import exige_habilitation
-from evaluations.forms import FormulaireEvaluation
+from evaluations.forms import FormulaireEvaluation, FormulaireModificationDateCertificative
 from evaluations.services.evaluation import (
     PERMISSION_ECRITURE,
     PERMISSION_LECTURE,
     ServiceEvaluation,
 )
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.habilitations import a_permission
 from noyau.pagination import paginer
 
 GROUPES_FORMULAIRE = [
@@ -41,9 +42,15 @@ def _perimetre(evaluation):
 
 
 def _date_affichee(evaluation):
+    """C1 : la date imposée se signale partout où elle s'affiche."""
     if evaluation.seance_id:
         return evaluation.seance.debut.strftime("%d/%m/%Y %H:%M")
-    return evaluation.date.strftime("%d/%m/%Y") if evaluation.date else "—"
+    if not evaluation.date:
+        return "—"
+    date_formatee = evaluation.date.strftime("%d/%m/%Y")
+    if evaluation.est_certificative:
+        return f"{date_formatee} — imposée (3ᵉ bureau)"
+    return date_formatee
 
 
 def _ligne(evaluation):
@@ -126,5 +133,42 @@ def vue_detail_evaluation(request, pk):
             "evaluation": evaluation,
             "actions": ServiceEvaluation.actions_disponibles(evaluation),
             "url_liste": reverse("evaluations:liste_evaluations"),
+            "peut_modifier_date": a_permission(request.user, PERMISSION_ECRITURE),
+        },
+    )
+
+
+@exige_habilitation(PERMISSION_ECRITURE)
+def vue_modifier_date_certificative(request, pk):
+    evaluation = _evaluation_ou_404(pk)
+    if request.method == "POST":
+        formulaire = FormulaireModificationDateCertificative(request.POST)
+        if formulaire.is_valid():
+            try:
+                evaluation = ServiceEvaluation.modifier_date_certificative(
+                    request.user,
+                    evaluation,
+                    formulaire.cleaned_data["nouvelle_date"],
+                    formulaire.cleaned_data["motif"],
+                )
+            except ErreurValidation as erreur:
+                messages.error(request, str(erreur))
+            else:
+                messages.success(request, "Date de l'examen final modifiée.")
+                for item in evaluation.avertissements:
+                    messages.warning(request, item["message"])
+                return redirect("evaluations:detail_evaluation", evaluation.pk)
+    else:
+        formulaire = FormulaireModificationDateCertificative(
+            initial={"nouvelle_date": evaluation.date}
+        )
+    return render(
+        request,
+        "noyau/gestion/formulaire.html",
+        {
+            "titre": f"Modifier la date — {evaluation.element_referentiel}",
+            "form": formulaire,
+            "url_annuler": reverse("evaluations:detail_evaluation", args=[evaluation.pk]),
+            "libelle_bouton": "Enregistrer la nouvelle date",
         },
     )
