@@ -36,8 +36,8 @@ reprendre. **Cette ligne n'est jamais vide.**
 **Contexte** — La convocation circule entre les services, lisible par la Direction de Formation. Un sujet sur la convocation rouvrirait la divulgation que RG-51 ferme.
 **Décision** — `vue_convocation` et son gabarit n'appellent aucun service de sujet, pas même `sujet_retenu` (test F1, constat sur le HTML). Lecture par `evaluations_lecture` (G4). Page imprimable, sans bouton d'action.
 **Alternative écartée** — Afficher « sujet retenu : oui/non » sur la convocation : aurait relié la convocation au sujet, et donc à son écran.
-**Impact sur les livrables** — `IMPRESSION-ANALYSE.md` : mesure de hauteur de la convocation à ajouter (non faite à cette étape).
-**Reporté au livrable** — oui : mesure d'impression.
+**Impact sur les livrables** — `IMPRESSION-ANALYSE.md` : mesure de hauteur de la convocation, à rattacher au lot impression du sprint 4 (D-155), avec les trois écrans déjà en dette.
+**Reporté au livrable** — oui : mesure d'impression, lot du sprint 4 (D-155).
 
 ## D-217 — A8 (prompt 38) : le choix des surveillants n'ouvre pas le domaine des instructeurs
 **Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)

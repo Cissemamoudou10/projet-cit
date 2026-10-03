@@ -187,8 +187,8 @@ majeures par rapport à la dernière version :
 | **C9** (D-205) | aucune certificative organisée sans sujet retenu — garde `ServiceSujet.sujet_retenu`, à brancher au refus de l'organisation | US-EVAL-03 (c.7) | US-EVAL-04 | **Fermé le 2026-10-04 par A1 (D-208) : organiser sans sujet, prête seulement avec un sujet retenu (`est_prete`). Ouvert le 2026-10-02, prompt 37, absent de ce tableau jusqu'au 2026-10-03. Réinterprété par A1 du prompt 38 (D-208) : on organise sans sujet, l'épreuve n'est prête qu'avec un sujet retenu. ** |
 | **D-212** (badge « à vérifier ») | après changement de date, une épreuve porte « à vérifier » dans la liste (A9, lecture du journal) | US-EVAL-04 (A9) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : non livré (aucun code, aucun test E3) |
 | **D-215** (badge de liste sur la complétude) | le badge « non prête » de la liste doit porter la complétude (A4), en requête bornée pour toute la liste | US-EVAL-04 (A4) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : le badge porte encore sur le sujet seul (`evaluations_non_pretes`) |
-| **Présélection** (ECARTS 25) | la présélection de génération (`construire_cases`) ignore les épreuves : une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 | US-EVAL-04 (A6) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : l'issue est juste (aucune séance dans le lieu), mais la case est engendrée puis refusée |
-| **Lecture sans garde** (ECARTS 26) | les lectures de l'organisation (`LectureOrganisationEpreuve`) n'ont pas de garde de service ; seule la vue les garde | US-EVAL-04 (F4) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** |
+| **Présélection** (ECARTS 25) | la présélection de génération (`construire_cases`) ignore les épreuves : une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 | US-EVAL-04 (A6) | *aucune story assignée* | **Dette technique, sprint 4** : l'issue est juste (aucune séance dans le lieu), mais la case est engendrée puis refusée ; mesurer le coût avant de modifier la présélection |
+| **Lecture sans garde** (ECARTS 26) | les lectures de l'organisation (`LectureOrganisationEpreuve`) n'ont pas de garde de service ; seule la vue les garde | US-EVAL-04 (F4) | *aucune story assignée* | **Dette technique** : inventaire mixte, convention à trancher |
 
 ### Compte final, vérifié le 2026-10-02 (mis à jour, prompt 37)
 
@@ -218,7 +218,7 @@ pas à corriger silencieusement a posteriori.
 
 ### Recompte à la clôture d'US-EVAL-04, le 2026-10-04
 
-Ferment : **D-193** (tests E1 à E3, changement de date signalé) et **C9** (A1, D-208 : organiser sans sujet). **D-202** avait déjà été fermé par D-209. Ouvrent, sans story : **D-212** (badge « à vérifier »), **D-215** (badge de liste sur la complétude), la **présélection** qui ignore les épreuves (ECARTS 25) et la **lecture sans garde** (ECARTS 26). À arbitrer au backlog v10 ; aucun n'est rattaché à une story du sprint 4.
+Ferment : **D-193** (tests E1 à E3, changement de date signalé) et **C9** (A1, D-208 : organiser sans sujet). **D-202** avait déjà été fermé par D-209. Ouvrent, sans story : **D-212** (badge « à vérifier »), **D-215** (badge de liste sur la complétude), la **présélection** qui ignore les épreuves (ECARTS 25, dette à traiter au sprint 4) et la **lecture sans garde** (ECARTS 26, dette, convention à trancher).
 
 Net : quatorze ouverts avant cette clôture, moins deux fermés, plus quatre ouverts — **seize ouverts aujourd'hui**.
 
