@@ -12,6 +12,7 @@ from noyau.models import ModeleHorodate
 from organisation.models import Brigade, Session
 from planification.models import Seance
 from referentiel.models import ElementReferentiel
+from ressources.models import Instructeur, Lieu
 
 
 class TypeEvaluation(models.TextChoices):
@@ -68,6 +69,8 @@ class Evaluation(ModeleHorodate):
     motif_date_passee = models.TextField(
         blank=True, default="", verbose_name="motif de la date passée"
     )
+    heure_debut = models.TimeField(null=True, blank=True, verbose_name="heure de début")
+    heure_fin = models.TimeField(null=True, blank=True, verbose_name="heure de fin")
 
     class Meta:
         db_table = "evaluations_evaluation"
@@ -104,6 +107,26 @@ class Evaluation(ModeleHorodate):
                     | (models.Q(type=TypeEvaluation.FORMATIVE) & models.Q(seance__isnull=True))
                 ),
                 name="ck_evaluation_motif_formative",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (models.Q(heure_debut__isnull=True) & models.Q(heure_fin__isnull=True))
+                    | (models.Q(heure_debut__isnull=False) & models.Q(heure_fin__isnull=False))
+                ),
+                name="ck_evaluation_creneau_complet",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(heure_debut__isnull=True)
+                    | models.Q(heure_fin__gt=models.F("heure_debut"))
+                ),
+                name="ck_evaluation_creneau_ordonne",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(heure_debut__isnull=True) | models.Q(type=TypeEvaluation.CERTIFICATIVE)
+                ),
+                name="ck_evaluation_creneau_certificative",
             ),
         ]
 
@@ -177,3 +200,99 @@ class Sujet(ModeleHorodate):
         doit pas divulguer ce que le système ne stocke que pour la cellule
         examens."""
         return f"{self.evaluation} — sujet n° {self.rang}"
+
+
+class OrganisationEpreuve(ModeleHorodate):
+    """US-EVAL-04, A3 : la part d'une brigade affectée à un lieu pour une
+    épreuve. `effectif_attendu` est stocké : c'est une décision de répartition,
+    pas un dérivé. L'effectif réel de la brigade, et la complétude, se calculent
+    (A4) : jamais de champ."""
+
+    evaluation = models.ForeignKey(
+        Evaluation,
+        on_delete=models.CASCADE,
+        related_name="organisations",
+        verbose_name="évaluation",
+    )
+    brigade = models.ForeignKey(
+        Brigade,
+        on_delete=models.PROTECT,
+        related_name="organisations_epreuve",
+        verbose_name="brigade",
+    )
+    lieu = models.ForeignKey(
+        Lieu,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="organisations_epreuve",
+        verbose_name="lieu",
+    )
+    effectif_attendu = models.PositiveIntegerField(verbose_name="effectif attendu")
+
+    class Meta:
+        db_table = "evaluations_organisation_epreuve"
+        verbose_name = "organisation d'épreuve"
+        verbose_name_plural = "organisations d'épreuve"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(effectif_attendu__gt=0),
+                name="ck_organisation_effectif_positif",
+            ),
+            models.UniqueConstraint(
+                fields=["evaluation", "lieu"],
+                condition=models.Q(lieu__isnull=False),
+                name="uq_organisation_lieu_par_epreuve",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.evaluation} — {self.brigade}"
+
+
+class Surveillance(ModeleHorodate):
+    """US-EVAL-04, A7 : un surveillant est exactement un instructeur référencé,
+    ou une personne extérieure désignée par son seul nom (jamais les deux)."""
+
+    organisation = models.ForeignKey(
+        OrganisationEpreuve,
+        on_delete=models.CASCADE,
+        related_name="surveillances",
+        verbose_name="organisation",
+    )
+    instructeur = models.ForeignKey(
+        Instructeur,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="surveillances",
+        verbose_name="instructeur",
+    )
+    nom_libre = models.CharField(
+        max_length=150, blank=True, default="", verbose_name="surveillant extérieur"
+    )
+
+    class Meta:
+        db_table = "evaluations_surveillance"
+        verbose_name = "surveillance"
+        verbose_name_plural = "surveillances"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    (models.Q(instructeur__isnull=False) & models.Q(nom_libre=""))
+                    | (models.Q(instructeur__isnull=True) & models.Q(nom_libre__regex=r"\S"))
+                ),
+                name="ck_surveillance_une_nature",
+            ),
+            models.UniqueConstraint(
+                fields=["organisation", "instructeur"],
+                condition=models.Q(instructeur__isnull=False),
+                name="uq_surveillance_instructeur",
+            ),
+            models.UniqueConstraint(
+                F("organisation"),
+                Upper("nom_libre"),
+                condition=~models.Q(nom_libre=""),
+                name="uq_surveillance_nom_libre",
+            ),
+        ]
