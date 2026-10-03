@@ -30,7 +30,7 @@ ligne ajoutée au tableau Sprints d'`AVANCEMENT.md`, ligne ajoutée à
 - [x] **US-EVAL-01** — Créer une évaluation selon son type · 5 pts · Must
 - [x] **US-EVAL-02** — Saisir la date d'un examen final · 2 pts · Must
 - [x] **US-EVAL-03** — Enregistrer les sujets transmis et sélectionner celui retenu · 5 pts · Must
-- [ ] **US-EVAL-04** — Organiser une épreuve · 5 pts · Must
+- [x] **US-EVAL-04** — Organiser une épreuve · 5 pts · Must
 
 ## Tâches transverses
 

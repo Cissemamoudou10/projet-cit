@@ -10,7 +10,7 @@ conversion, reports vérifiés, risques) ne l'étaient pas — exactement le mê
 défaut qui avait déjà retardé le prononcé de C1. Voir
 `docs/suivi/LECONS-SPRINT-2.md`, leçon 1. Sprint 3 engagé depuis le 28
 septembre ; ETA-01 (diagramme d'états, 5.3.17) produit le 30/09, voir « Ce
-qu'il faut surveiller » — R10. Trois stories livrées : US-EVAL-01 (1er
+qu'il faut surveiller » — R10. Quatre stories livrées (US-EVAL-04 le 4 octobre, 5 pts, organisation d'épreuve) : US-EVAL-01 (1er
 octobre, 5 pts), US-EVAL-02 (2 octobre, 2 pts — date d'un examen final
 imposée et projetée, jamais copiée) et US-EVAL-03 (2 octobre, 5 pts —
 sujets d'examen, confidentialité par construction). Entre ces deux
@@ -37,7 +37,7 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 47 | 3 | J2 |
+| 3 | 28/09 – 10/10 | 11 | 47 | 4 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
@@ -49,8 +49,8 @@ faisabilité du solveur (Prompt 32, hors points chiffrés).
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 30 / 53 planifiées | — |
-| Points livrés | 131 / 227 planifiés | — |
+| Stories livrées | 31 / 53 planifiées | — |
+| Points livrés | 136 / 227 planifiés | — |
 | Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
 | Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
@@ -182,9 +182,13 @@ majeures par rapport à la dernière version :
 | **D-181** | suppression d'une évaluation, et de sa séance verrouillée — jamais hors du service d'évaluation | US-EVAL-01 | US-PLAN-05 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35** (A7 ; vérification § 0.4 négative : aucune suppression de séance n'existait encore) |
 | **D-182** | mesure de l'écart de progression entre brigades (A8, E2, forme simplifiée retenue) | US-EVAL-01 | *aucune story assignée* | **Ouvert, orphelin — créé le 2026-10-01, prompt 35**, à arbitrer au backlog v10 |
 | **D-170** | insertion d'un contrôle refusée si le programme de la semaine est SOUMIS, VALIDÉ ou AFFICHÉ | US-EVAL-01 | US-VAL-03 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35**, cas à ajouter à l'oracle `ETA-01_table_transitions.md` quand la garde RG-41 (D-170) existera |
-| **D-193** | une organisation d'épreuve devra être revérifiée quand la date d'une certificative change | US-EVAL-02 | US-EVAL-04 | **Ouvert — créé le 2026-10-02, prompt 36** : `modifier_date_certificative` ne touche à rien d'une organisation d'épreuve, qui n'existe pas encore (US-EVAL-04, sprint 3) — à vérifier dès que cette story existe |
+| **D-193** | une organisation d'épreuve devra être revérifiée quand la date d'une certificative change | US-EVAL-02 | US-EVAL-04 | **Fermé le 2026-10-04, prompt 38, par les tests E1 à E3 (`test_organisation_services.py`) : changement de date signalé, jamais refusé** : `modifier_date_certificative` ne touche à rien d'une organisation d'épreuve, qui n'existe pas encore (US-EVAL-04, sprint 3) — à vérifier dès que cette story existe |
 | **D-202** | la borne RG-51 (jour de l'épreuve) devra se resserrer à l'heure de l'épreuve | US-EVAL-03 | US-EVAL-04 | **Fermé le 2026-10-03, prompt 38, par décision (A10, D-209)** : la borne reste le jour entier, à dessein, plus stricte que celle de l'organisation |
-| **C9** (D-205) | aucune certificative organisée sans sujet retenu — garde `ServiceSujet.sujet_retenu`, à brancher au refus de l'organisation | US-EVAL-03 (c.7) | US-EVAL-04 | **Ouvert — créé le 2026-10-02, prompt 37, absent de ce tableau jusqu'au 2026-10-03. Réinterprété par A1 du prompt 38 (D-208) : on organise sans sujet, l'épreuve n'est prête qu'avec un sujet retenu. Refermé à la livraison d'US-EVAL-04** |
+| **C9** (D-205) | aucune certificative organisée sans sujet retenu — garde `ServiceSujet.sujet_retenu`, à brancher au refus de l'organisation | US-EVAL-03 (c.7) | US-EVAL-04 | **Fermé le 2026-10-04 par A1 (D-208) : organiser sans sujet, prête seulement avec un sujet retenu (`est_prete`). Ouvert le 2026-10-02, prompt 37, absent de ce tableau jusqu'au 2026-10-03. Réinterprété par A1 du prompt 38 (D-208) : on organise sans sujet, l'épreuve n'est prête qu'avec un sujet retenu. ** |
+| **D-212** (badge « à vérifier ») | après changement de date, une épreuve porte « à vérifier » dans la liste (A9, lecture du journal) | US-EVAL-04 (A9) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : non livré (aucun code, aucun test E3) |
+| **D-215** (badge de liste sur la complétude) | le badge « non prête » de la liste doit porter la complétude (A4), en requête bornée pour toute la liste | US-EVAL-04 (A4) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : le badge porte encore sur le sujet seul (`evaluations_non_pretes`) |
+| **Présélection** (ECARTS 25) | la présélection de génération (`construire_cases`) ignore les épreuves : une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 | US-EVAL-04 (A6) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : l'issue est juste (aucune séance dans le lieu), mais la case est engendrée puis refusée |
+| **Lecture sans garde** (ECARTS 26) | les lectures de l'organisation (`LectureOrganisationEpreuve`) n'ont pas de garde de service ; seule la vue les garde | US-EVAL-04 (F4) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** |
 
 ### Compte final, vérifié le 2026-10-02 (mis à jour, prompt 37)
 
@@ -211,6 +215,12 @@ tableau ci-dessus compte par **critère/volet** (26 lignes) — deux unités
 différentes, jamais comparables terme à terme. Le chiffre de revue était de
 toute façon interne-incohérent (9 − 3 = 6, pas 7) ; à signaler en séance,
 pas à corriger silencieusement a posteriori.
+
+### Recompte à la clôture d'US-EVAL-04, le 2026-10-04
+
+Ferment : **D-193** (tests E1 à E3, changement de date signalé) et **C9** (A1, D-208 : organiser sans sujet). **D-202** avait déjà été fermé par D-209. Ouvrent, sans story : **D-212** (badge « à vérifier »), **D-215** (badge de liste sur la complétude), la **présélection** qui ignore les épreuves (ECARTS 25) et la **lecture sans garde** (ECARTS 26). À arbitrer au backlog v10 ; aucun n'est rattaché à une story du sprint 4.
+
+Net : quatorze ouverts avant cette clôture, moins deux fermés, plus quatre ouverts — **seize ouverts aujourd'hui**.
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 
