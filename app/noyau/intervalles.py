@@ -1,9 +1,16 @@
-"""Recouvrement d'intervalles à bornes semi-ouvertes `[début, fin)` — D-116.
+"""Recouvrement d'intervalles — une seule définition, deux granularités.
 
-Une seule définition du prédicat, sous deux formes : en mémoire
-(`se_recouvrent`) et en requête (`filtre_recouvrement`). Deux intervalles
-contigus, dont la fin de l'un égale le début de l'autre, ne se recouvrent
-pas. Chaque application l'importe d'ici : aucune copie locale.
+Instants (DateTimeField) : `[début, fin)`, bornes semi-ouvertes, la fin est
+exclue (D-116). Deux séances contiguës, dont la fin de l'une égale le début de
+l'autre, ne se recouvrent pas.
+
+Dates (DateField) : jours inclus `[d1, d2]`, équivalents à `[d1, d2 + 1 jour)`.
+`bandes_sessions` (`ressources/services/periode_calendrier.py`) raisonne ainsi :
+ce n'est pas une divergence à harmoniser. Un sélecteur qui doit comparer les
+deux granularités passe par une fonction nommée de ce module, qui convertit les
+jours en instants, jamais par un `+ 1 jour` écrit à la main.
+
+Chaque application importe ce module : aucune copie locale du prédicat.
 """
 
 from django.db.models import Q

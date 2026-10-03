@@ -18,6 +18,7 @@ from django.utils import timezone
 from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
+from organisation.selectors import effectifs_reels
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement, decrire_opposants, valider_instance
@@ -65,7 +66,7 @@ class ServiceBrigade:
         l'affectation (DECISIONS.md). Requête isolée, à la différence de
         l'annotation de `lister` : usage individuel (contrôle RG-19 à
         l'affectation), pas d'affichage en liste."""
-        return brigade.affectations.filter(date_fin__isnull=True, stagiaire__radie=False).count()
+        return effectifs_reels([brigade.pk])[brigade.pk]
 
     @staticmethod
     def indicateur_effectif(session):
