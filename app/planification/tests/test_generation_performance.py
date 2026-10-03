@@ -38,14 +38,16 @@ INSTRUCTEURS_PAR_MATIERE = 2  # assez pour ne pas buter systématiquement sur un
 # indisponibilité, sans viser un remplissage à 100 % — § 10 MESURE ce taux, il
 # ne le force pas.
 
-# Requêtes constantes du jeu représentatif — D-161 (41, pente nulle de 40 à
+# Requêtes constantes du jeu représentatif — 2026-10-03, D-211 (A6, prompt 38) : 43 → 45,
+# une requête par chargement de `ServiceContraintes.contexte` (fournisseur des épreuves
+# occupées), deux chargements par génération. D-161 (41, pente nulle de 40 à
 # 200 séances, correction P-38) puis D-192/A8 (41 → 43 : seconde source de
 # RG-38, `ResolveurJoursExamen`, un appel de plus dans `ServiceContraintes.
 # contexte()`, même sans examen en base). Marge pour amortir un futur ajout
 # borné analogue sans faire échouer ce test à chaque requête supplémentaire
 # légitime — toute dérive AU-DELÀ de la marge doit rester visible ici, pas
 # seulement dans MESURES-REFERENCE.md (Prompt 37, Temps 1).
-REQUETES_REFERENCE_US_PLAN_03 = 43
+REQUETES_REFERENCE_US_PLAN_03 = 45
 MARGE_REQUETES = 2
 
 journal = logging.getLogger(__name__)

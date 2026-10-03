@@ -21,6 +21,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from evaluations.models import Evaluation, TypeEvaluation
+from evaluations.services.conflits import conflits_de_l_epreuve
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement, valider_instance
@@ -344,7 +345,9 @@ class ServiceEvaluation:
             _journaliser_modification_date(
                 agissant, evaluation, ancienne_date, nouvelle_date, motif
             )
-        evaluation.avertissements = _avertissements_seances(perimetre, nouvelle_date)
+        evaluation.avertissements = _avertissements_seances(perimetre, nouvelle_date) + (
+            conflits_de_l_epreuve(evaluation)
+        )
         return evaluation
 
     @staticmethod

@@ -31,6 +31,23 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-212 — A9 et A10 (prompt 38) : un changement de date ou de créneau se signale, il ne se refuse pas ; le gel est à `date + heure_debut`
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — D-193 demandait que l'organisation soit revérifiée quand la date d'une certificative change. La date est subie (RG-49) : elle ne peut pas être refusée parce que l'organisation gêne. Le créneau, nouveau avec US-EVAL-04, obéit au même raisonnement.
+**Décision** — `ServiceEvaluation.modifier_date_certificative` garde les heures et les organisations, et rend les conflits sur la nouvelle date comme avertissements (`conflits_de_l_epreuve`). `ServiceOrganisationEpreuve.fixer_creneau` fait de même pour un changement de créneau. L'épreuve n'est plus prête tant qu'un conflit subsiste (complétude, A4). Le gel de toute écriture d'organisation ou de surveillant est fixé à `date + heure_debut` (A10), instant calculé, jamais stocké. La borne des sujets (D-202, D-209) reste le jour entier.
+**Alternative écartée** — Refuser le changement de date quand une organisation gêne : aurait fait dépendre une date imposée par le 3e bureau de l'organisation locale. Geler à minuit du jour de l'épreuve : aurait interdit de corriger une organisation le matin même, avant l'heure réelle de début.
+**Impact sur les livrables** — aucun changement de règle métier : RG-49 et RG-53 sont inchangés. Le badge « à vérifier » de la liste (A9, lecture du journal) est traité avec les écrans.
+**Reporté au livrable** — non.
+
+## D-211 — A5 et A6 (prompt 38) : RG-53 dans les deux sens, par des sources lues et une seule implantation
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Une organisation d'épreuve occupe un lieu et ses surveillants. Il faut le vérifier quand on organise (P6 → P5) et empêcher une séance de tomber dans la salle d'examen (P5 → P6). Les primitives existantes étaient privées, et deux implantations de RG-53 seraient une duplication interdite (prompt 38, condition d'arrêt 6).
+**Décision** — Sens P6 → P5 (A5) : `evaluations/services/conflits.py` lit les indisponibilités (`ressources.selectors`), les séances occupant lieux et instructeurs (`planification.selectors`), et les autres épreuves le même jour. Trois sources, nombre de requêtes constant. Sens P5 → P6 (A6) : `ResolveurOccupationsEpreuves` (noyau) est fourni par `evaluations.selectors.occupations_epreuves` au démarrage. `ServiceContraintes` en charge l'occupation dans `contexte()`, et deux règles lisent cette source : RG-37 pour un lieu occupé (`_verifier_epreuves_lieu`), RG-34 pour un instructeur qui surveille (`_rg34_epreuves`). Les six contraintes dures restent six. Le sélecteur des épreuves compte trois requêtes au plus, et le recouvrement d'instants se teste en mémoire.
+**Conversion dates et instants** — `noyau/intervalles.py` porte `instant_de(jour, heure)`, seule passerelle entre la granularité des dates et celle des instants (D-210).
+**Alternative écartée** — Une troisième implantation de RG-53 dans `evaluations` : aurait recopié la logique de `ServiceContraintes` pour le sens P5 → P6, exactement ce que la condition d'arrêt interdit.
+**Impact sur les livrables** — `REQUETES_REFERENCE_US_PLAN_03` passe de 43 à 45 (voir MESURES-REFERENCE.md, note du 2026-10-03). Le nombre de contraintes dures reste six (`ECARTS-LIVRABLES-SPRINT-3.md`, RG-53 à ajouter aux sources).
+**Reporté au livrable** — oui : RG-53 à compléter dans le tableau des contraintes de la phase 4, sources « épreuve » ajoutées aux deux contraintes d'occupation.
+
 ## D-210 — Recouvrement en un seul lieu, sélecteurs publics par application propriétaire (arbitrage du prompt 38, § 2 A5/A6 révisé)
 **Date** 2026-10-03 · **Story** US-EVAL-04 (prérequis du prompt 38) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Le prompt 38 (A5) demandait de réutiliser des primitives de disponibilité existantes. L'inventaire a montré qu'elles n'étaient pas publiques : les tests d'indisponibilité de `ressources` sont des fonctions privées (`_verifier_absence_de_chevauchement`, `_chevauchements`), `_se_recouvrent` est privé dans `planification`, et le sélecteur `seances_recouvertes` filtre par brigade, pas par lieu ni par instructeur. Deux options écartées : importer des noms privés entre applications, ou recopier le prédicat dans chaque application.

@@ -13,7 +13,7 @@ def indisponibilites_des_lieux(ids_lieux, debut, fin) -> dict:
         return resultat
     requete = IndisponibiliteLieu.objects.filter(
         filtre_recouvrement("debut", "fin", debut, fin), lieu_id__in=list(ids_lieux)
-    ).order_by("debut")
+    ).select_related("lieu").order_by("debut")
     for indisponibilite in requete:
         resultat.setdefault(indisponibilite.lieu_id, []).append(indisponibilite)
     return resultat
@@ -27,7 +27,7 @@ def indisponibilites_des_instructeurs(ids_instructeurs, debut, fin) -> dict:
     requete = IndisponibiliteInstructeur.objects.filter(
         filtre_recouvrement("debut", "fin", debut, fin),
         instructeur_id__in=list(ids_instructeurs),
-    ).order_by("debut")
+    ).select_related("instructeur").order_by("debut")
     for indisponibilite in requete:
         resultat.setdefault(indisponibilite.instructeur_id, []).append(indisponibilite)
     return resultat

@@ -17,6 +17,12 @@ test_mesures_de_reference_us_plan_03_paragraphe_10` — relancé le
 
 Bien en deçà des cinq minutes de BNF-04.
 
+**Mise à jour datée (2026-10-03, prompt 38, A6, D-211).** Le contexte de contraintes
+charge désormais les occupations d'épreuves (`ResolveurOccupationsEpreuves`) :
+une requête de plus à chaque chargement, deux chargements par génération
+(`generation.py`, `ecriture.py`). Mesuré : **45 requêtes** (contre 43). Constante
+`REQUETES_REFERENCE_US_PLAN_03` mise à jour, marge inchangée.
+
 **Mise à jour datée (2026-10-02, prompt 36, A8).** US-EVAL-02 ajoute une
 seconde source à RG-38 (`Contexte.jours_examen`, résolue via
 `ResolveurJoursExamen`) : un appel de plus dans `ServiceContraintes.

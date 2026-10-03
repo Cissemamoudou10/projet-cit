@@ -58,9 +58,29 @@ def verifier_rg34(candidate, contexte, lot_acceptees):
     (`Seance.programme` couvre déjà tout le centre, RG-33 bis). EXCEPTION :
     la séance regroupée (même `cle_regroupement` non nul) n'est pas un
     conflit."""
-    return _rg34_conflits_existants(candidate, contexte.seances_existantes) + _rg34_conflits_lot(
-        candidate, lot_acceptees
+    return (
+        _rg34_conflits_existants(candidate, contexte.seances_existantes)
+        + _rg34_conflits_lot(candidate, lot_acceptees)
+        + _rg34_epreuves(candidate, contexte)
     )
+
+
+def _rg34_epreuves(candidate, contexte):
+    """A6 (P5 → P6), Prompt 38 : un instructeur qui surveille une épreuve est
+    occupé comme par une séance."""
+    for occupation in contexte.occupations_epreuves:
+        if candidate.instructeur.pk in occupation["instructeurs"] and se_recouvrent(
+            candidate.debut, candidate.fin, occupation["debut"], occupation["fin"]
+        ):
+            return [
+                violation(
+                    "RG-34",
+                    f"{candidate.instructeur} surveille « {occupation['libelle']} » "
+                    f"le {occupation['debut']:%d/%m %H:%M}–{occupation['fin']:%H:%M}.",
+                    origine="base",
+                )
+            ]
+    return []
 
 
 def verifier_rg35(candidate, contexte):

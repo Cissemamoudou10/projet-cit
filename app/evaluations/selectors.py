@@ -9,7 +9,8 @@ Prompt 36.
 
 from django.db.models import Exists, OuterRef
 
-from evaluations.models import Evaluation, Sujet, TypeEvaluation
+from evaluations.models import Evaluation, OrganisationEpreuve, Sujet, Surveillance, TypeEvaluation
+from noyau.intervalles import instant_de, se_recouvrent
 from organisation.models import Brigade
 
 
@@ -78,3 +79,47 @@ def evaluations_non_pretes(ids_evaluations) -> frozenset:
         if (type_ == TypeEvaluation.CERTIFICATIVE and not a_retenu)
         or (type_ == TypeEvaluation.FORMATIVE and not a_sujet)
     )
+
+
+def _lieux_et_instructeurs_par_epreuve(pks):
+    lieux, instructeurs = {}, {}
+    for evaluation_id, lieu_id in OrganisationEpreuve.objects.filter(
+        evaluation_id__in=pks, lieu_id__isnull=False
+    ).values_list("evaluation_id", "lieu_id"):
+        lieux.setdefault(evaluation_id, set()).add(lieu_id)
+    for evaluation_id, instructeur_id in Surveillance.objects.filter(
+        organisation__evaluation_id__in=pks, instructeur_id__isnull=False
+    ).values_list("organisation__evaluation_id", "instructeur_id"):
+        instructeurs.setdefault(evaluation_id, set()).add(instructeur_id)
+    return lieux, instructeurs
+
+
+def _occupation(evaluation, lieux, instructeurs):
+    debut = instant_de(evaluation["date"], evaluation["heure_debut"])
+    fin = instant_de(evaluation["date"], evaluation["heure_fin"])
+    return {
+        "debut": debut,
+        "fin": fin,
+        "lieux": frozenset(lieux.get(evaluation["pk"], ())),
+        "instructeurs": frozenset(instructeurs.get(evaluation["pk"], ())),
+        "libelle": f"Examen final — {evaluation['element_referentiel__matiere__intitule']}",
+    }
+
+
+def occupations_epreuves(debut, fin) -> list:
+    """A6 (P5 → P6), Prompt 38 : épreuves certificatives dont le créneau recouvre
+    `[debut, fin)`. Trois requêtes au plus, quel que soit le nombre d'épreuves :
+    les dates sont bornées au jour, le recouvrement d'instants se teste en mémoire."""
+    evaluations = list(
+        Evaluation.objects.filter(
+            type=TypeEvaluation.CERTIFICATIVE,
+            date__gte=debut.date(),
+            date__lte=fin.date(),
+            heure_debut__isnull=False,
+        ).values("pk", "date", "heure_debut", "heure_fin", "element_referentiel__matiere__intitule")
+    )
+    if not evaluations:
+        return []
+    lieux, instructeurs = _lieux_et_instructeurs_par_epreuve([e["pk"] for e in evaluations])
+    occupations = [_occupation(e, lieux, instructeurs) for e in evaluations]
+    return [o for o in occupations if se_recouvrent(debut, fin, o["debut"], o["fin"])]

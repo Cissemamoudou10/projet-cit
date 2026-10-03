@@ -125,3 +125,29 @@ class ResolveurJoursExamen:
         if cls._fournisseur is not None:
             return cls._fournisseur(debut, fin)
         return []
+
+
+class ResolveurOccupationsEpreuves:
+    """A6, Prompt 38 : `planification` (RG-34, RG-37) ne peut pas importer
+    `evaluations` — même motif que `ResolveurJoursExamen`. Un fournisseur, un
+    consommateur qui lit la même date.
+
+    `resoudre(debut, fin)` rend, pour `[debut, fin)` (instants), une liste de
+    `{"debut", "fin", "lieux", "instructeurs", "libelle"}` : une entrée par
+    épreuve certificative dont le créneau recouvre l'intervalle, avec les lieux
+    occupés et les instructeurs surveillants. Repli : aucun fournisseur ⇒ aucune
+    occupation.
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, debut, fin) -> list:
+        if cls._fournisseur is not None:
+            return cls._fournisseur(debut, fin)
+        return []
+

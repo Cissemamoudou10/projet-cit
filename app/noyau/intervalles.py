@@ -13,7 +13,10 @@ jours en instants, jamais par un `+ 1 jour` écrit à la main.
 Chaque application importe ce module : aucune copie locale du prédicat.
 """
 
+import datetime
+
 from django.db.models import Q
+from django.utils import timezone
 
 
 def se_recouvrent(debut_a, fin_a, debut_b, fin_b):
@@ -23,3 +26,8 @@ def se_recouvrent(debut_a, fin_a, debut_b, fin_b):
 def filtre_recouvrement(champ_debut, champ_fin, debut, fin):
     """Q des enregistrements dont `[champ_debut, champ_fin)` recouvre `[debut, fin)`."""
     return Q(**{f"{champ_debut}__lt": fin, f"{champ_fin}__gt": debut})
+
+
+def instant_de(jour, heure):
+    """Instant local d'une heure posée sur un jour (créneau d'une évaluation)."""
+    return timezone.make_aware(datetime.datetime.combine(jour, heure))

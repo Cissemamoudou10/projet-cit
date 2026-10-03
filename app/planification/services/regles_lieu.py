@@ -19,12 +19,39 @@ from ressources.models import ModePartage
 
 
 def verifier_rg37(candidate, contexte, lot_acceptees):
-    categorie = candidate.element_referentiel.categorie_lieu
-    if categorie == CategorieLieu.AUCUN_LIEU:
-        return []
-    if categorie == CategorieLieu.SALLE_ATTITREE:
+    violations = _verifier_epreuves_lieu(candidate, contexte)
+    if candidate.element_referentiel.categorie_lieu == CategorieLieu.AUCUN_LIEU:
+        return violations
+    return violations + _verifier_categorie(candidate, contexte, lot_acceptees)
+
+
+def _verifier_categorie(candidate, contexte, lot_acceptees):
+    if candidate.element_referentiel.categorie_lieu == CategorieLieu.SALLE_ATTITREE:
         return _verifier_salle_attitree(candidate, contexte)
     return _verifier_lieu_partage(candidate, contexte, lot_acceptees)
+
+
+def _verifier_epreuves_lieu(candidate, contexte):
+    """A6 (P5 → P6), Prompt 38 : un lieu occupé par une épreuve est occupé,
+    comme par une séance. Le lieu visé est celui de la candidate, ou la salle
+    attitrée de sa brigade à défaut."""
+    lieu = candidate.lieu
+    if lieu is None and candidate.element_referentiel.categorie_lieu != CategorieLieu.AUCUN_LIEU:
+        lieu = contexte.salles_attitrees.get(candidate.brigade.pk)
+    if lieu is None:
+        return []
+    for occupation in contexte.occupations_epreuves:
+        if lieu.pk in occupation["lieux"] and se_recouvrent(
+            candidate.debut, candidate.fin, occupation["debut"], occupation["fin"]
+        ):
+            return [
+                violation(
+                    "RG-37",
+                    f"{lieu} est occupé par « {occupation['libelle']} » "
+                    f"le {occupation['debut']:%d/%m %H:%M}–{occupation['fin']:%H:%M}.",
+                )
+            ]
+    return []
 
 
 def _verifier_indisponibilite(candidate, contexte, lieu):

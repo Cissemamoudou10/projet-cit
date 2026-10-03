@@ -48,7 +48,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from noyau.intervalles import filtre_recouvrement
-from noyau.services.parametres import ResolveurJoursExamen
+from noyau.services.parametres import ResolveurJoursExamen, ResolveurOccupationsEpreuves
 from organisation.models import Brigade
 from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
 from planification.services import regles_calendrier, regles_instructeur, regles_lieu, regles_volume
@@ -102,6 +102,7 @@ class Contexte:
     indisponibilites_lieu: dict
     periodes_bloquantes: list
     jours_examen: list
+    occupations_epreuves: list
     salles_attitrees: dict
     effectifs_reels: dict
     volume_programme_par_element: dict
@@ -247,6 +248,7 @@ class ServiceContraintes:
             ),
             periodes_bloquantes=_charger_periodes_bloquantes(debut, fin),
             jours_examen=ResolveurJoursExamen.resoudre(debut.date(), fin.date()),
+            occupations_epreuves=ResolveurOccupationsEpreuves.resoudre(debut, fin),
             salles_attitrees=salles_attitrees,
             effectifs_reels=effectifs_reels,
             volume_programme_par_element=volume_par_element,
