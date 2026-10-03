@@ -16,6 +16,7 @@ import dataclasses
 from django.db.models import Count, Q
 from django.utils import timezone
 
+from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurSeancesDeControle
 from organisation.models import Brigade
 from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
@@ -305,7 +306,9 @@ def seances_recouvertes(brigades, debut, fin):
     US-PLAN-05, qui reste seul à trancher l'arbitrage explicite que ce
     report exige — ce sélecteur ne le referme pas lui-même."""
     return list(
-        Seance.objects.filter(lignes__brigade__in=brigades, debut__lt=fin, fin__gt=debut)
+        Seance.objects.filter(
+            filtre_recouvrement("debut", "fin", debut, fin), lignes__brigade__in=brigades
+        )
         .select_related("programme", "element_referentiel__matiere")
         .distinct()
     )

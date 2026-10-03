@@ -15,6 +15,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.intervalles import filtre_recouvrement
 from noyau.services.base import ServiceBase
 from ressources.models import IndisponibiliteLieu
 
@@ -31,7 +32,7 @@ def _valider_periode(debut, fin, motif):
 
 
 def _verifier_absence_de_chevauchement(lieu, debut, fin, *, exclude_pk=None):
-    conflits = lieu.indisponibilites.filter(debut__lt=fin, fin__gt=debut)
+    conflits = lieu.indisponibilites.filter(filtre_recouvrement("debut", "fin", debut, fin))
     if exclude_pk is not None:
         conflits = conflits.exclude(pk=exclude_pk)
     conflit = conflits.order_by("debut").first()

@@ -17,6 +17,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.intervalles import filtre_recouvrement
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement
 from ressources.models import CategorieLieu, Lieu, SalleAttitree
@@ -211,7 +212,9 @@ def _avertissement_indisponibilites(lieu, session):
     fin_dt = timezone.make_aware(
         datetime.datetime.combine(session.date_fin + datetime.timedelta(days=1), datetime.time.min)
     )
-    indisponibilites = lieu.indisponibilites.filter(debut__lt=fin_dt, fin__gt=debut_dt).order_by("debut")
+    indisponibilites = lieu.indisponibilites.filter(
+        filtre_recouvrement("debut", "fin", debut_dt, fin_dt)
+    ).order_by("debut")
     if not indisponibilites:
         return []
     periodes = ", ".join(

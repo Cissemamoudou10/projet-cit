@@ -47,6 +47,7 @@ import datetime
 from django.db.models import Count, Q
 from django.utils import timezone
 
+from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurJoursExamen
 from organisation.models import Brigade
 from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
@@ -120,7 +121,7 @@ def _semaine(lundi_de_semaine):
 
 
 def _charger_indisponibilites(modele, champ_cible, debut, fin):
-    lignes = modele.objects.filter(debut__lt=fin, fin__gt=debut).values_list(
+    lignes = modele.objects.filter(filtre_recouvrement("debut", "fin", debut, fin)).values_list(
         champ_cible, "debut", "fin"
     )
     resultat = {}
@@ -131,7 +132,9 @@ def _charger_indisponibilites(modele, champ_cible, debut, fin):
 
 def _charger_periodes_bloquantes(debut, fin):
     periodes = (
-        PeriodeCalendrier.objects.filter(effet="bloquant", debut__lt=fin, fin__gt=debut)
+        PeriodeCalendrier.objects.filter(
+            filtre_recouvrement("debut", "fin", debut, fin), effet="bloquant"
+        )
         .prefetch_related("sessions", "brigades")
         .distinct()
     )

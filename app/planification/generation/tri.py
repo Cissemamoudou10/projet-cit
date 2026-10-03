@@ -36,7 +36,7 @@ essai — c'est le point qui fait ou défait l'équilibrage).
 
 from django.utils import timezone
 
-from planification.services.regles_instructeur import _se_recouvrent
+from noyau.intervalles import se_recouvrent
 from planification.services.temps import duree_heures
 
 SENTINELLE_AUCUN_LIEU = 10**6
@@ -47,7 +47,7 @@ def _nb_instructeurs_qualifies_disponibles(element, case, contexte, preparation)
     disponibles = 0
     for instructeur in candidats:
         indisponibilites = contexte.indisponibilites_instructeur.get(instructeur.pk, [])
-        if any(_se_recouvrent(case.debut, case.fin, d, f) for d, f in indisponibilites):
+        if any(se_recouvrent(case.debut, case.fin, d, f) for d, f in indisponibilites):
             continue
         disponibles += 1
     return disponibles

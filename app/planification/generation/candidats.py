@@ -9,7 +9,7 @@ motive le compte rendu (critère 3, § 5). La seule autorité qui accepte ou
 refuse une candidate reste `ServiceContraintes.verifier` (C6) — voir
 `planification.generation.gloutonne`.
 
-Blocage calendaire (étape 2) : réutilise `_portee_couvre`/`_se_recouvrent`
+Blocage calendaire (étape 2) : réutilise `_portee_couvre`/`se_recouvrent`
 de `regles_calendrier`/`regles_instructeur` TELS QUELS — même fonctions que
 RG-38, jamais une copie.
 """
@@ -18,9 +18,9 @@ import datetime
 
 from django.utils import timezone
 
+from noyau.intervalles import se_recouvrent
 from planification.services.contraintes import Candidate
 from planification.services.regles_calendrier import _portee_couvre
-from planification.services.regles_instructeur import _se_recouvrent
 from referentiel.models import CategorieLieu
 
 JOURS_OFFSET = {
@@ -53,7 +53,7 @@ def creneau_bloque(brigade, debut, fin, periodes_bloquantes):
     `ProgrammeHebdomadaire` existe (E1, § 6), ou après via le contexte."""
     for entree in periodes_bloquantes:
         periode = entree["periode"]
-        if _se_recouvrent(debut, fin, periode.debut, periode.fin) and _portee_couvre(
+        if se_recouvrent(debut, fin, periode.debut, periode.fin) and _portee_couvre(
             entree, brigade
         ):
             return True

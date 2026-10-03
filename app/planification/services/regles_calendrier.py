@@ -10,7 +10,7 @@ RG-38, jamais une septième contrainte dure — même raisonnement que les
 trois sources de RG-07 (D-35).
 """
 
-from planification.services.regles_instructeur import _se_recouvrent
+from noyau.intervalles import se_recouvrent
 from planification.services.violations import violation
 
 
@@ -42,7 +42,7 @@ def verifier_rg38(candidate, contexte):
     violations = []
     for entree in contexte.periodes_bloquantes:
         periode = entree["periode"]
-        if not _se_recouvrent(candidate.debut, candidate.fin, periode.debut, periode.fin):
+        if not se_recouvrent(candidate.debut, candidate.fin, periode.debut, periode.fin):
             continue
         if not _portee_couvre(entree, candidate.brigade):
             continue

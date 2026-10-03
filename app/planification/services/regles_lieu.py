@@ -12,7 +12,7 @@ traité de la même façon : au moins aussi restrictif qu'un lieu séquentiel,
 jamais une autorisation implicite de simultanéité.
 """
 
-from planification.services.regles_instructeur import _se_recouvrent
+from noyau.intervalles import se_recouvrent
 from planification.services.violations import violation
 from referentiel.models import CategorieLieu
 from ressources.models import ModePartage
@@ -32,7 +32,7 @@ def _verifier_indisponibilite(candidate, contexte, lieu):
     fait partie des modèles dont les six contraintes dépendent) : bloque
     quel que soit le sous-cas, avant même la capacité."""
     for debut, fin in contexte.indisponibilites_lieu.get(lieu.pk, []):
-        if _se_recouvrent(candidate.debut, candidate.fin, debut, fin):
+        if se_recouvrent(candidate.debut, candidate.fin, debut, fin):
             return [
                 violation(
                     "RG-37",
@@ -93,7 +93,7 @@ def _cle_regroupement(occupant):
 def _occupants_du_lieu(candidate, contexte, lot_acceptees):
     occupants = []
     for seance in contexte.seances_existantes:
-        if seance.lieu_id == candidate.lieu.pk and _se_recouvrent(
+        if seance.lieu_id == candidate.lieu.pk and se_recouvrent(
             candidate.debut, candidate.fin, seance.debut, seance.fin
         ):
             occupants.append((seance, "base"))
@@ -101,7 +101,7 @@ def _occupants_du_lieu(candidate, contexte, lot_acceptees):
         if (
             autre.lieu is not None
             and autre.lieu.pk == candidate.lieu.pk
-            and _se_recouvrent(candidate.debut, candidate.fin, autre.debut, autre.fin)
+            and se_recouvrent(candidate.debut, candidate.fin, autre.debut, autre.fin)
         ):
             occupants.append((autre, "lot"))
     return occupants

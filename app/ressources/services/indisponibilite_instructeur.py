@@ -25,6 +25,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.intervalles import filtre_recouvrement
 from noyau.pagination import paginer
 from noyau.services.base import ServiceBase
 from ressources.models import IndisponibiliteInstructeur, Instructeur
@@ -51,7 +52,7 @@ def _valider_periode(debut, fin, motif):
 
 
 def _chevauchements(instructeur, debut, fin, *, exclut_pk=None):
-    conflits = instructeur.indisponibilites.filter(debut__lt=fin, fin__gt=debut)
+    conflits = instructeur.indisponibilites.filter(filtre_recouvrement("debut", "fin", debut, fin))
     if exclut_pk is not None:
         conflits = conflits.exclude(pk=exclut_pk)
     return list(conflits.order_by("debut"))

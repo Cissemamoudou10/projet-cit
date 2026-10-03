@@ -15,6 +15,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
+from noyau.intervalles import filtre_recouvrement
 from noyau.pagination import paginer
 from noyau.services.gestion import ServiceGestion
 from ressources.models import CategorieLieu, IndisponibiliteLieu, Lieu, TypeLieuPartage
@@ -136,5 +137,7 @@ class ServiceLieu(ServiceGestion):
             datetime.datetime.combine(disponible_au + datetime.timedelta(days=1), datetime.time.min)
         )
         return queryset.exclude(
-            indisponibilites__debut__lt=fin_fenetre, indisponibilites__fin__gt=debut_fenetre
+            filtre_recouvrement(
+                "indisponibilites__debut", "indisponibilites__fin", debut_fenetre, fin_fenetre
+            )
         )

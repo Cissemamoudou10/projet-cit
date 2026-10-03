@@ -26,6 +26,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
+from noyau.intervalles import filtre_recouvrement
 from noyau.pagination import paginer
 from noyau.services.base import ServiceBase
 from ressources.models import CreneauType, GrilleHoraire, JourSemaine
@@ -300,7 +301,8 @@ def _verifier_non_recouvrement(grille, jour_semaine, heure_debut, heure_fin, *, 
     if heure_fin <= heure_debut:
         raise ErreurValidation("L'heure de fin doit être postérieure à l'heure de début.")
     conflits = grille.creneaux.filter(
-        jour_semaine=jour_semaine, heure_debut__lt=heure_fin, heure_fin__gt=heure_debut
+        filtre_recouvrement("heure_debut", "heure_fin", heure_debut, heure_fin),
+        jour_semaine=jour_semaine,
     )
     if exclut_pk is not None:
         conflits = conflits.exclude(pk=exclut_pk)

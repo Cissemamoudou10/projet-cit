@@ -10,6 +10,7 @@ placement et l'ordonnancement des cases.
 
 import time
 
+from noyau.intervalles import se_recouvrent
 from planification.generation.candidats import candidates_pour_case
 from planification.generation.strategie import (
     NonPlacement,
@@ -20,7 +21,6 @@ from planification.generation.strategie import (
 )
 from planification.generation.tri import cle_tri_candidate, poids_matiere
 from planification.services.contraintes import ServiceContraintes
-from planification.services.regles_instructeur import _se_recouvrent
 
 SENTINELLE_BRIGADE_SANS_MATIERE = (10**6, 10**6, 10**6, 10**6)
 
@@ -36,11 +36,11 @@ def _motif_sans_candidate(case, matieres):
 
 def _lieu_libre(lieu, debut, fin, contexte, provisoires):
     for seance in contexte.seances_existantes:
-        if seance.lieu_id == lieu.pk and _se_recouvrent(debut, fin, seance.debut, seance.fin):
+        if seance.lieu_id == lieu.pk and se_recouvrent(debut, fin, seance.debut, seance.fin):
             return False
     for candidate in provisoires:
         if candidate.lieu is not None and candidate.lieu.pk == lieu.pk:
-            if _se_recouvrent(debut, fin, candidate.debut, candidate.fin):
+            if se_recouvrent(debut, fin, candidate.debut, candidate.fin):
                 return False
     return True
 

@@ -4,14 +4,8 @@ entrée, liste de violations en sortie — jamais d'écriture, voir
 `planification.services.contraintes`.
 """
 
+from noyau.intervalles import se_recouvrent
 from planification.services.violations import violation
-
-
-def _se_recouvrent(debut_a, fin_a, debut_b, fin_b):
-    """Bornes semi-ouvertes `[début, fin)` — deux séances contiguës (la fin
-    de l'une égale au début de l'autre) ne se recouvrent pas. Aligné sur
-    US-INS-03/US-PLAN-01/US-PLAN-12 (§ 0.4, Prompt 30)."""
-    return debut_a < fin_b and debut_b < fin_a
 
 
 def _rg34_conflits_existants(candidate, seances_existantes):
@@ -19,7 +13,7 @@ def _rg34_conflits_existants(candidate, seances_existantes):
     for seance in seances_existantes:
         if seance.instructeur_id != candidate.instructeur.pk:
             continue
-        if not _se_recouvrent(candidate.debut, candidate.fin, seance.debut, seance.fin):
+        if not se_recouvrent(candidate.debut, candidate.fin, seance.debut, seance.fin):
             continue
         brigades = ", ".join(str(ligne.brigade) for ligne in seance.lignes.all())
         violations.append(
@@ -44,7 +38,7 @@ def _rg34_conflits_lot(candidate, lot_acceptees):
             and candidate.cle_regroupement == autre.cle_regroupement
         ):
             continue
-        if not _se_recouvrent(candidate.debut, candidate.fin, autre.debut, autre.fin):
+        if not se_recouvrent(candidate.debut, candidate.fin, autre.debut, autre.fin):
             continue
         violations.append(
             violation(
@@ -91,7 +85,7 @@ def verifier_rg36(candidate, contexte):
     indisponibilites = contexte.indisponibilites_instructeur.get(candidate.instructeur.pk, [])
     violations = []
     for debut, fin in indisponibilites:
-        if _se_recouvrent(candidate.debut, candidate.fin, debut, fin):
+        if se_recouvrent(candidate.debut, candidate.fin, debut, fin):
             violations.append(
                 violation(
                     "RG-36",

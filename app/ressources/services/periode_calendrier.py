@@ -26,6 +26,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
+from noyau.intervalles import filtre_recouvrement
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement
 from organisation.models import Brigade, Session
@@ -61,7 +62,7 @@ def _ids(objets):
 
 def _periodes_secantes(debut, fin, *, exclut_pk=None):
     conflits = (
-        PeriodeCalendrier.objects.filter(debut__lt=fin, fin__gt=debut)
+        PeriodeCalendrier.objects.filter(filtre_recouvrement("debut", "fin", debut, fin))
         .select_related("nature")
         .prefetch_related("sessions", "brigades")
     )
@@ -204,7 +205,9 @@ class ServicePeriodeCalendrier:
         )
         if filtres.get("fenetre_debut") and filtres.get("fenetre_fin"):
             queryset = queryset.filter(
-                debut__lt=filtres["fenetre_fin"], fin__gt=filtres["fenetre_debut"]
+                filtre_recouvrement(
+                    "debut", "fin", filtres["fenetre_debut"], filtres["fenetre_fin"]
+                )
             )
         if filtres.get("nature"):
             queryset = queryset.filter(nature_id=filtres["nature"])
