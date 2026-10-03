@@ -1,0 +1,45 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Convocation — {{ evaluation }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_retour }}" class="text-xs text-marine-700 no-underline hover:underline">Retour à l'organisation</a>
+  <button type="button" onclick="window.print()" class="ml-4 h-controle border border-marine-900 px-3.5 text-sm font-semibold text-marine-900">Imprimer</button>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<article class="mx-auto mt-6 max-w-3xl border border-gris-trait bg-fond-bloc p-8 text-sm">
+  <h1 class="font-titre text-xl font-semibold">Convocation à l'épreuve</h1>
+  <p class="mt-2">{{ evaluation.element_referentiel.matiere }} — {{ evaluation.get_type_display }}</p>
+  <p class="mt-1">Date : {{ evaluation.date|date:"d/m/Y" }}</p>
+  {% if evaluation.heure_debut %}
+    <p>Créneau : de {{ evaluation.heure_debut|time:"H:i" }} à {{ evaluation.heure_fin|time:"H:i" }}</p>
+  {% endif %}
+
+  <table class="mt-6 w-full border-collapse">
+    <thead>
+      <tr class="border-b border-gris-trait text-left text-2xs uppercase tracking-wide text-gris-lecture">
+        <th class="py-2">Brigade</th><th class="py-2">Lieu</th><th class="py-2">Effectif attendu</th><th class="py-2">Surveillants</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for organisation in organisations %}
+        <tr class="border-b border-gris-trait align-top">
+          <td class="py-2">{{ organisation.brigade }}</td>
+          <td class="py-2">{{ organisation.lieu|default:"Sans lieu (pratique)" }}</td>
+          <td class="py-2 tabular-nums">{{ organisation.effectif_attendu }}</td>
+          <td class="py-2">
+            {% for surveillance in organisation.surveillances.all %}
+              <div>{% if surveillance.instructeur %}{{ surveillance.instructeur }}{% else %}{{ surveillance.nom_libre }}{% endif %}</div>
+            {% endfor %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="py-2 text-gris-lecture">Aucune organisation.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</article>
+{% endblock %}

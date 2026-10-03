@@ -71,7 +71,7 @@
                   {% endif %}
                   <form method="post" action="{% url 'evaluations:supprimer_sujet' sujet.pk %}">
                     {% csrf_token %}
-                    <button type="submit" class="text-xs font-semibold text-rouge-alerte hover:underline">
+                    <button type="submit" class="text-xs font-semibold text-etat-ecart hover:underline">
                       Supprimer
                     </button>
                   </form>

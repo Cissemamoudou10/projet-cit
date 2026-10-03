@@ -366,7 +366,10 @@ class ServiceEvaluation:
     @staticmethod
     def lister():
         return Evaluation.objects.select_related(
-            "element_referentiel__matiere", "session", "brigade"
+            "element_referentiel__matiere",
+            "element_referentiel__formation",
+            "session__formation",
+            "brigade__session__formation",
         ).order_by("-cree_le")
 
     @staticmethod

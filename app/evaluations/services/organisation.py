@@ -16,12 +16,10 @@ from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from evaluations.models import OrganisationEpreuve, Surveillance, TypeEvaluation
 from evaluations.services.conflits import conflits, conflits_de_l_epreuve
 from evaluations.services.evaluation import PERMISSION_ECRITURE, Perimetre
-from evaluations.services.sujet import ServiceSujet
-from noyau.exceptions import ErreurValidation
+from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.intervalles import instant_de
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import valider_instance
-from organisation.selectors import effectifs_reels
 
 
 def _verifier_certificative(evaluation):
@@ -56,6 +54,11 @@ def _verifier_perimetre(evaluation, brigade):
     """B3 : la brigade appartient au périmètre de l'épreuve."""
     if brigade.pk not in {visee.pk for visee in _perimetre(evaluation).brigades_visees}:
         raise ErreurValidation(f"« {brigade} » n'appartient pas au périmètre de cette épreuve.")
+
+
+def _verifier_lieu_actif(lieu):
+    if lieu.archive:
+        raise ErreurValidation(f"« {lieu} » est archivé : choisissez un autre lieu.")
 
 
 def _verifier_capacite(lieu, effectif):
@@ -94,6 +97,20 @@ class ServiceOrganisationEpreuve:
     PERMISSION_ECRITURE = PERMISSION_ECRITURE
 
     @staticmethod
+    def obtenir_organisation(pk):
+        try:
+            return OrganisationEpreuve.objects.select_related("evaluation", "brigade", "lieu").get(pk=pk)
+        except OrganisationEpreuve.DoesNotExist as erreur:
+            raise ErreurIntrouvable(f"Organisation introuvable (identifiant {pk}).") from erreur
+
+    @staticmethod
+    def obtenir_surveillance(pk):
+        try:
+            return Surveillance.objects.select_related("organisation__evaluation").get(pk=pk)
+        except Surveillance.DoesNotExist as erreur:
+            raise ErreurIntrouvable(f"Surveillant introuvable (identifiant {pk}).") from erreur
+
+    @staticmethod
     def fixer_creneau(agissant, evaluation, heure_debut, heure_fin):
         """C1 : un créneau pour toutes les brigades (C2 : épreuve simultanée).
         Un changement de créneau ne se refuse pas quand il crée un conflit : il se
@@ -106,6 +123,8 @@ class ServiceOrganisationEpreuve:
             raise ErreurValidation("L'heure de fin doit être postérieure à l'heure de début.")
         if evaluation.heure_debut is not None:
             _verifier_non_gele(evaluation)
+        if instant_de(evaluation.date, heure_debut) <= timezone.now():
+            raise ErreurValidation("Le créneau proposé commence déjà : choisissez une heure à venir.")
         avant = (evaluation.heure_debut, evaluation.heure_fin)
         evaluation.heure_debut, evaluation.heure_fin = heure_debut, heure_fin
         with transaction.atomic():
@@ -129,6 +148,7 @@ class ServiceOrganisationEpreuve:
         _verifier_non_gele(evaluation)
         _verifier_perimetre(evaluation, brigade)
         if lieu is not None:
+            _verifier_lieu_actif(lieu)
             if OrganisationEpreuve.objects.filter(evaluation=evaluation, lieu=lieu).exists():
                 raise ErreurValidation(
                     f"« {lieu} » est déjà attribué à une brigade de cette épreuve."
@@ -153,6 +173,7 @@ class ServiceOrganisationEpreuve:
         _verifier_certificative(evaluation)
         _verifier_non_gele(evaluation)
         if lieu is not None:
+            _verifier_lieu_actif(lieu)
             deja = OrganisationEpreuve.objects.filter(evaluation=evaluation, lieu=lieu)
             if deja.exclude(pk=organisation.pk).exists():
                 raise ErreurValidation(
@@ -203,6 +224,8 @@ class ServiceOrganisationEpreuve:
                 "désignée par son nom : jamais les deux, jamais aucun."
             )
         if instructeur is not None:
+            if instructeur.archive:
+                raise ErreurValidation(f"{instructeur} est archivé : il ne peut plus être affecté.")
             deja = Surveillance.objects.filter(
                 organisation__evaluation=evaluation, instructeur=instructeur
             )
@@ -229,48 +252,3 @@ class ServiceOrganisationEpreuve:
                 agissant, TypeAction.SUPPRESSION_ELEMENT_GESTION, "surveillance", surveillance
             )
             surveillance.delete()
-
-    @staticmethod
-    def incompletudes(evaluation) -> list:
-        """A4 : ce qui manque à l'organisation. Calculé, jamais stocké."""
-        if evaluation.heure_debut is None:
-            return ["le créneau n'est pas fixé"]
-        perimetre = _perimetre(evaluation)
-        brigades = perimetre.brigades_visees
-        organisations = list(
-            OrganisationEpreuve.objects.filter(evaluation=evaluation).values(
-                "pk", "brigade_id", "effectif_attendu"
-            )
-        )
-        sans_surveillant = set(
-            OrganisationEpreuve.objects.filter(
-                evaluation=evaluation, surveillances__isnull=True
-            ).values_list("pk", flat=True)
-        )
-        reels = effectifs_reels([brigade.pk for brigade in brigades])
-        manques = []
-        for brigade in brigades:
-            attendus = [o for o in organisations if o["brigade_id"] == brigade.pk]
-            if not attendus:
-                manques.append(f"« {brigade} » n'a pas d'organisation")
-            elif sum(o["effectif_attendu"] for o in attendus) != reels[brigade.pk]:
-                manques.append(
-                    f"« {brigade} » : effectifs répartis ≠ effectif réel ({reels[brigade.pk]})"
-                )
-        if any(o["pk"] in sans_surveillant for o in organisations):
-            manques.append("une organisation n'a aucun surveillant")
-        if conflits_de_l_epreuve(evaluation):
-            manques.append("des conflits restent à lever")
-        return manques
-
-    @staticmethod
-    def est_complete(evaluation) -> bool:
-        return not ServiceOrganisationEpreuve.incompletudes(evaluation)
-
-    @staticmethod
-    def est_prete(evaluation) -> bool:
-        """C10 / A1 : complète ET sujet retenu (`sujet_retenu`, garde booléenne)."""
-        return (
-            ServiceOrganisationEpreuve.est_complete(evaluation)
-            and ServiceSujet.sujet_retenu(evaluation) is not None
-        )

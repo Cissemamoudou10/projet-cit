@@ -31,12 +31,60 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-218 — A11 (prompt 38) : la convocation ne consulte aucun sujet
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La convocation circule entre les services, lisible par la Direction de Formation. Un sujet sur la convocation rouvrirait la divulgation que RG-51 ferme.
+**Décision** — `vue_convocation` et son gabarit n'appellent aucun service de sujet, pas même `sujet_retenu` (test F1, constat sur le HTML). Lecture par `evaluations_lecture` (G4). Page imprimable, sans bouton d'action.
+**Alternative écartée** — Afficher « sujet retenu : oui/non » sur la convocation : aurait relié la convocation au sujet, et donc à son écran.
+**Impact sur les livrables** — `IMPRESSION-ANALYSE.md` : mesure de hauteur de la convocation à ajouter (non faite à cette étape).
+**Reporté au livrable** — oui : mesure d'impression.
+
+## D-217 — A8 (prompt 38) : le choix des surveillants n'ouvre pas le domaine des instructeurs
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Un surveillant n'a pas à être qualifié pour la matière de l'épreuve, mais il doit être disponible sur le créneau.
+**Décision** — `FormulaireSurveillant` propose TOUS les instructeurs non archivés, réduits au nom ; la disponibilité est contrôlée par `ServiceOrganisationEpreuve.ajouter_surveillant` (C5), pas par le formulaire.
+**Alternative écartée** — Restreindre aux instructeurs qualifiés : aurait exclu des surveillants légitimes, et rouvert l'arbitrage de D-38.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-216 — A7 (prompt 38) : un surveillant est exactement une nature, garanti en base ; un instructeur ne surveille qu'une salle par épreuve
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CLS-05 § 7.5 : une personne extérieure n'est pas dans le système, donc sans contrôle possible.
+**Décision** — `ck_surveillance_une_nature` (instructeur XOR nom libre non vide après blancs), `uq_surveillance_instructeur`, `uq_surveillance_nom_libre` (insensible à la casse). Refus en service d'un même instructeur sur deux salles de la même épreuve (C6). Un nom libre n'est soumis à aucun contrôle de disponibilité (C5).
+**Alternative écartée** — Saisir les personnes extérieures dans le référentiel des instructeurs : aurait fait entrer des personnes hors du système dans une donnée de gestion.
+**Impact sur les livrables** — aucun sur le diagramme ; précision CLS-05 § 7.5.
+**Reporté au livrable** — non.
+
+## D-215 — A4 (prompt 38) : complète et prête sont calculées, jamais stockées ; l'organisation se saisit par étapes
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Une radiation de stagiaire doit rendre une organisation incomplète sans qu'aucun champ ne bouge.
+**Décision** — `LectureOrganisationEpreuve.incompletudes` : chaque brigade du périmètre a une organisation, la somme des effectifs attendus égale l'effectif réel (`organisation.selectors.effectifs_reels`, une seule définition), chaque organisation a un surveillant, aucun conflit ne subsiste. `est_prete` = complète ET `ServiceSujet.sujet_retenu` non nul (A1). Lecture groupée pour l'effectif réel ; le reste se lit par épreuve.
+**Alternative écartée** — Un champ `complete` mis à jour à chaque écriture : aurait divergé dès la première radiation.
+**Impact sur les livrables** — le badge « non prête » de la liste (US-EVAL-03, A11 du prompt 37) porte encore sur le sujet seul : le faire porter sur ce calcul en une requête bornée reste à faire (voir le rendu de l'étape).
+**Reporté au livrable** — oui : badge de liste sur la complétude, requête bornée à établir.
+
+## D-214 — A3 (prompt 38) : le triplet brigade – lieu – surveillants, et l'effectif attendu est une part de répartition
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-53 bis : une brigade peut occuper plusieurs lieux pour une même épreuve. CLS-05 lisait `effectifAttendu` comme l'effectif de la brigade.
+**Décision** — `OrganisationEpreuve(evaluation, brigade, lieu, effectif_attendu)`, `effectif_attendu` stocké (c'est une décision de répartition). Non stockés : l'effectif réel de la brigade et la complétude. `uq_organisation_lieu_par_epreuve` : une salle par épreuve, jamais partagée.
+**Alternative écartée** — Effectif attendu dérivé de l'effectif réel : aurait interdit de répartir une brigade sur deux salles.
+**Impact sur les livrables** — CLS-05 : `effectifAttendu` est la part de la brigade affectée au lieu.
+**Reporté au livrable** — oui : correction de CLS-05.
+
+## D-213 — A2 (prompt 38) : le créneau vit sur l'évaluation, heures libres, certificatives seulement
+**Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Un examen ne suit pas les créneaux de cours. C2 (épreuve simultanée) doit être vrai par construction.
+**Décision** — `Evaluation.heure_debut` et `heure_fin`, nulles toutes deux ou renseignées toutes deux (`ck_evaluation_creneau_complet`), fin après début (`ck_evaluation_creneau_ordonne`), renseignées seulement pour une certificative (`ck_evaluation_creneau_certificative`).
+**Alternative écartée** — Créneau par organisation : aurait permis deux horaires pour une même épreuve simultanée, contraire à RG-53 bis.
+**Impact sur les livrables** — CLS-05 : l'heure de début et de fin de l'épreuve.
+**Reporté au livrable** — oui : correction de CLS-05.
+
 ## D-212 — A9 et A10 (prompt 38) : un changement de date ou de créneau se signale, il ne se refuse pas ; le gel est à `date + heure_debut`
 **Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — D-193 demandait que l'organisation soit revérifiée quand la date d'une certificative change. La date est subie (RG-49) : elle ne peut pas être refusée parce que l'organisation gêne. Le créneau, nouveau avec US-EVAL-04, obéit au même raisonnement.
 **Décision** — `ServiceEvaluation.modifier_date_certificative` garde les heures et les organisations, et rend les conflits sur la nouvelle date comme avertissements (`conflits_de_l_epreuve`). `ServiceOrganisationEpreuve.fixer_creneau` fait de même pour un changement de créneau. L'épreuve n'est plus prête tant qu'un conflit subsiste (complétude, A4). Le gel de toute écriture d'organisation ou de surveillant est fixé à `date + heure_debut` (A10), instant calculé, jamais stocké. La borne des sujets (D-202, D-209) reste le jour entier.
 **Alternative écartée** — Refuser le changement de date quand une organisation gêne : aurait fait dépendre une date imposée par le 3e bureau de l'organisation locale. Geler à minuit du jour de l'épreuve : aurait interdit de corriger une organisation le matin même, avant l'heure réelle de début.
-**Impact sur les livrables** — aucun changement de règle métier : RG-49 et RG-53 sont inchangés. Le badge « à vérifier » de la liste (A9, lecture du journal) est traité avec les écrans.
+**Impact sur les livrables** — aucun changement de règle métier : RG-49 et RG-53 sont inchangés. Le badge « à vérifier » de la liste (A9, lecture du journal) n'est PAS livré à cette étape : reporté (voir D-215).
 **Reporté au livrable** — non.
 
 ## D-211 — A5 et A6 (prompt 38) : RG-53 dans les deux sens, par des sources lues et une seule implantation

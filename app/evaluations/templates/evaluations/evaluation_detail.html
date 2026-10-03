@@ -18,6 +18,12 @@
       <p class="text-sm text-gris-lecture">{{ evaluation.get_type_display }}</p>
     </div>
     <div class="flex items-center gap-2">
+      {% if evaluation.est_certificative %}
+        <a href="{% url 'evaluations:organisation' evaluation.pk %}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5 text-sm font-semibold text-marine-900 no-underline hover:bg-fond-bande">
+          Organisation
+        </a>
+      {% endif %}
       {% if peut_gerer_sujets %}
         <a href="{% url 'evaluations:sujets' evaluation.pk %}"
            class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5

@@ -52,6 +52,17 @@ octobre) — l'écart sera reporté au diagramme à leur retour, pas avant.
 | 17 | CLS-05 (diagramme de classes) | `Sujet` sans multiplicité précisée sur son association à `Evaluation` | Multiplicité « au plus deux », garantie EN BASE par le rang (A2, `ck_sujet_rang`/`uq_sujet_evaluation_rang`), pas seulement par un commentaire du diagramme | D-195 | Annoter CLS-05 : l'association `Sujet`→`Evaluation` porte la multiplicité 0..2, garantie par contrainte |
 | 18 | Cahier des charges / `HABILITATIONS.md`, décompte des extensions à RG-26 | Quatre extensions recensées avant cette story (texte du prompt 37 lui-même en annonçait cinq, vérifié faux) | Cinq extensions existaient déjà (`ACCES_REFUSE`, `MODIFICATION_HABILITATIONS`, `CONSULTATION_JOURNAL`, `EXPORT_DONNEES`, `GENERATION_PROGRAMME`) ; `CONSULTATION_SUJETS` (A6) en est la SIXIÈME, pas la cinquième (D-199, vérifié dans `administration/tests/test_contenu_journal.py::EXTENSIONS_HORS_RG26`) | D-199 | Porter le décompte des extensions à RG-26 à six, pas cinq, dans le cahier des charges et `HABILITATIONS.md` |
 
+## US-EVAL-04 (Prompt 38) — à la suite, numérotés à partir de 19
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui fait foi | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 19 | Backlog v9, US-EVAL-03 c.7 | « Aucune évaluation ne peut être organisée sans sujet sélectionné » | L'épreuve s'organise sans sujet ; elle n'est PRÊTE qu'avec un sujet retenu (A1, report C9) | D-208 | Corriger le critère c.7 en v10 |
+| 20 | CLS-05 | `OrganisationEpreuve.effectifAttendu` lu comme l'effectif de la brigade | C'est la part de la brigade affectée au lieu (RG-53 bis, A3) | D-214 | Annoter CLS-05 |
+| 21 | CLS-05 | Créneau non précisé sur l'épreuve | `heure_debut` et `heure_fin` sur `Evaluation`, certificatives seulement (A2) | D-213 | Ajouter le créneau à CLS-05 |
+| 22 | Dossier d'architecture, § disponibilité | `ServiceRessources` (P4) porte la disponibilité commune | Répartie entre primitives de `ressources`, sélecteurs publics par application et un point de résolution de `noyau` (D-210, D-211) | D-210, D-211 | Décrire la répartition telle qu'implantée |
+| 23 | Tableau des contraintes de la phase 4, RG-53 | Sources « épreuve » non recensées | Ajoutées aux deux contraintes d'occupation (RG-37 lieu, RG-34 instructeur) ; compte inchangé | D-211 | Compléter le tableau sans changer le compte |
+| 24 | Fiche CLS-05 § 7.5 | Personne extérieure non décrite | Surveillant en nom libre, sans contrôle de disponibilité (A7) | D-216 | Préciser § 7.5 |
+
 ## Ce que cette liste ne couvre pas
 
 Les huit arbitrages A1 à A8 (D-165 à D-172) portent sur des contradictions

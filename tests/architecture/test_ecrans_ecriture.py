@@ -486,11 +486,37 @@ ECRANS_ECRITURE = [
         "noyau.evaluations_ecriture",
         lambda objets: [objets["sujet"].pk],
     ),
+    # --- evaluations : organisation d'épreuve (US-EVAL-04, Prompt 38) ---
+    EcranEcriture(
+        "evaluations:fixer_creneau",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["evaluation"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:ajouter_organisation",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["evaluation"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:retirer_organisation",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["organisation"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:ajouter_surveillant",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["organisation"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:retirer_surveillant",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["surveillance"].pk],
+    ),
 ]
 
-# 97 adresses : les 92 précédentes (Prompt 36) plus les cinq adresses de
-# l'écran des sujets (US-EVAL-03, Prompt 37).
-assert len(ECRANS_ECRITURE) == 97
+# 102 adresses : les 97 précédentes (Prompt 37) plus les cinq adresses
+# d'écriture de l'organisation d'épreuve (US-EVAL-04, Prompt 38).
+assert len(ECRANS_ECRITURE) == 102
 
 
 def _groupes_sans(permission):

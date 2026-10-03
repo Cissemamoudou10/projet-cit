@@ -13,6 +13,7 @@ from evaluations.models import Evaluation, OrganisationEpreuve, Surveillance
 from evaluations.services.conflits import conflits
 from evaluations.services.evaluation import ServiceEvaluation
 from evaluations.services.organisation import ServiceOrganisationEpreuve as Service
+from evaluations.services.organisation_lecture import LectureOrganisationEpreuve
 from evaluations.services.sujet import ServiceSujet
 from evaluations.tests.conftest import _enregistrer, affecter_stagiaires, creer_brigade
 from noyau.exceptions import ErreurValidation
@@ -108,9 +109,9 @@ def test_b6_complete_quand_chaque_brigade_est_organisee_et_surveillee(
     redacteur, epreuve, examens, brigade, salle
 ):
     affecter_stagiaires(redacteur, brigade, 2)
-    assert "n'a pas d'organisation" in " ".join(Service.incompletudes(epreuve))
+    assert "n'a pas d'organisation" in " ".join(LectureOrganisationEpreuve.incompletudes(epreuve))
     _organiser(examens, epreuve, brigade, salle, effectif=2)
-    assert Service.est_complete(epreuve)
+    assert LectureOrganisationEpreuve.est_complete(epreuve)
 
 
 def test_b7_repartition_qui_ne_couvre_pas_l_effectif_reel_est_incomplete(
@@ -118,23 +119,23 @@ def test_b7_repartition_qui_ne_couvre_pas_l_effectif_reel_est_incomplete(
 ):
     affecter_stagiaires(redacteur, brigade, 2)
     _organiser(examens, epreuve, brigade, salle, effectif=1)
-    assert any("≠ effectif réel" in manque for manque in Service.incompletudes(epreuve))
+    assert any("≠ effectif réel" in manque for manque in LectureOrganisationEpreuve.incompletudes(epreuve))
 
 
 def test_b8_organisation_sans_surveillant_incomplete(redacteur, epreuve, examens, brigade, salle):
     affecter_stagiaires(redacteur, brigade, 1)
     Service.ajouter_organisation(examens, epreuve, brigade, salle, 1)
-    assert any("aucun surveillant" in manque for manque in Service.incompletudes(epreuve))
+    assert any("aucun surveillant" in manque for manque in LectureOrganisationEpreuve.incompletudes(epreuve))
 
 
 def test_b9_prete_seulement_avec_un_sujet_retenu(redacteur, epreuve, examens, brigade, salle):
     affecter_stagiaires(redacteur, brigade, 1)
     _organiser(examens, epreuve, brigade, salle, effectif=1)
-    assert Service.est_complete(epreuve) and not Service.est_prete(epreuve)
+    assert LectureOrganisationEpreuve.est_complete(epreuve) and not LectureOrganisationEpreuve.est_prete(epreuve)
 
     sujet = _enregistrer(examens, epreuve, "Pli prete")
     ServiceSujet.retenir(examens, sujet, confirmation=True)
-    assert Service.est_prete(epreuve)
+    assert LectureOrganisationEpreuve.est_prete(epreuve)
 
 
 def test_b10_modification_refusee_apres_le_debut(redacteur, epreuve, examens, brigade, salle):
@@ -313,8 +314,8 @@ def test_e1_date_changee_vers_un_jour_ou_le_lieu_est_occupe_signale_le_conflit(
     ).avertissements
 
     assert any("déjà pris" in item for item in avertissements)
-    assert not Service.est_complete(epreuve) or any(
-        "conflits" in m for m in Service.incompletudes(epreuve)
+    assert not LectureOrganisationEpreuve.est_complete(epreuve) or any(
+        "conflits" in m for m in LectureOrganisationEpreuve.incompletudes(epreuve)
     )
 
 
@@ -327,3 +328,10 @@ def test_e2_date_changee_vers_un_jour_libre_sans_conflit(epreuve, examens, briga
     assert not any("déjà pris" in item or "indisponible" in item for item in avertissements)
     assert OrganisationEpreuve.objects.filter(pk=organisation.pk, lieu=salle).exists()
     assert Surveillance.objects.filter(organisation=organisation).exists()
+
+
+def test_lieu_archive_refuse_pour_une_organisation(epreuve, examens, brigade, salle):
+    salle.archive = True
+    salle.save()
+    with pytest.raises(ErreurValidation, match="archivé"):
+        Service.ajouter_organisation(examens, epreuve, brigade, salle, 1)
