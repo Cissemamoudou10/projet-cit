@@ -1,0 +1,119 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Sujets — {{ evaluation }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_liste }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour à l'évaluation
+  </a>
+  <h1 class="font-titre text-xl font-semibold leading-tight">Sujets — {{ evaluation }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Visible uniquement de la cellule examens — chaque affichage de cet écran est journalisé (RG-51).
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Sujets enregistrés
+  </p>
+  {% if not sujets %}
+    <p class="px-4 py-3.5 text-sm text-gris-lecture">Aucun sujet enregistré.</p>
+  {% else %}
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gris-trait text-left text-2xs font-medium uppercase
+                   tracking-wide text-gris-lecture">
+          <th class="px-4 py-2">Rang</th>
+          <th class="px-4 py-2">Référence</th>
+          <th class="px-4 py-2">Date de dépôt</th>
+          <th class="px-4 py-2">Retenu</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sujet in sujets %}
+          <tr class="border-b border-gris-trait">
+            <td class="px-4 py-2">Sujet n° {{ sujet.rang }}</td>
+            <td class="px-4 py-2">{{ sujet.reference }}</td>
+            <td class="px-4 py-2 tabular-nums">{{ sujet.date_depot|date:"d/m/Y" }}</td>
+            <td class="px-4 py-2">
+              {% if sujet.retenu %}
+                <span class="border border-etat-conforme px-1.5 py-px text-2xs font-semibold
+                             uppercase tracking-wide text-etat-conforme">Retenu</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-2">
+              <div class="flex flex-wrap items-center gap-2">
+                {% if not sujet.retenu %}
+                  {% if evaluation.est_certificative %}
+                    <form method="post" action="{% url 'evaluations:retenir_sujet' sujet.pk %}">
+                      {% csrf_token %}
+                      {% if sujets|length == 1 %}
+                        <label class="flex items-center gap-1.5 text-xs">
+                          {{ formulaire_retenir.confirmation }}
+                          {{ formulaire_retenir.confirmation.label }}
+                        </label>
+                      {% endif %}
+                      <button type="submit"
+                              class="text-xs font-semibold text-marine-900 hover:underline">
+                        Retenir
+                      </button>
+                    </form>
+                  {% endif %}
+                  <form method="post" action="{% url 'evaluations:supprimer_sujet' sujet.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs font-semibold text-rouge-alerte hover:underline">
+                      Supprimer
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'evaluations:changer_retenu_sujet' sujet.pk %}"
+                        class="flex items-center gap-1.5">
+                    {% csrf_token %}
+                    {{ formulaire_changer.motif }}
+                    <button type="submit" class="text-xs font-semibold text-marine-900 hover:underline">
+                      Retenir celui-ci plutôt
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</section>
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Enregistrer un sujet
+  </p>
+  <form method="post" class="grid gap-3 px-4 py-3.5 text-sm">
+    {% csrf_token %}
+    <div>
+      <label class="mb-1 block text-xs font-medium text-gris-lecture">{{ form.reference.label }}</label>
+      {{ form.reference }}
+    </div>
+    <div>
+      <label class="mb-1 block text-xs font-medium text-gris-lecture">{{ form.date_depot.label }}</label>
+      {{ form.date_depot }}
+    </div>
+    <button type="submit"
+            class="inline-flex h-controle w-fit items-center gap-2 border border-marine-900
+                   bg-marine-900 px-3.5 text-sm font-semibold text-blanc">
+      Enregistrer le sujet
+    </button>
+  </form>
+</section>
+{% endblock %}

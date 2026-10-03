@@ -11,6 +11,7 @@ from django.utils.html import format_html
 
 from administration.habilitations import exige_habilitation
 from evaluations.forms import FormulaireEvaluation, FormulaireModificationDateCertificative
+from evaluations.selectors import evaluations_non_pretes, resume_sujets
 from evaluations.services.evaluation import (
     PERMISSION_ECRITURE,
     PERMISSION_LECTURE,
@@ -53,12 +54,21 @@ def _date_affichee(evaluation):
     return date_formatee
 
 
-def _ligne(evaluation):
+def _badge_non_prete():
+    return format_html(
+        '<span class="ml-2 border border-etat-ecart px-1.5 py-px text-2xs font-semibold '
+        'uppercase tracking-wide text-etat-ecart">Non prête</span>'
+    )
+
+
+def _ligne(evaluation, non_pretes):
     lien_module = format_html(
         '<a href="{}" class="text-marine-900 no-underline hover:underline">{}</a>',
         reverse("evaluations:detail_evaluation", args=[evaluation.pk]),
         evaluation.element_referentiel,
     )
+    if evaluation.pk in non_pretes:
+        lien_module = format_html("{}{}", lien_module, _badge_non_prete())
     return {
         "cellules": [
             lien_module,
@@ -73,6 +83,7 @@ def _ligne(evaluation):
 @exige_habilitation(PERMISSION_LECTURE)
 def vue_liste_evaluations(request):
     page = paginer(ServiceEvaluation.lister(), request.GET.get("page"))
+    non_pretes = evaluations_non_pretes([evaluation.pk for evaluation in page]) if page else ()
     contexte = {
         "titre": "Évaluations",
         "sous_titre": "Contrôles (formative) et examens finaux (certificative) du centre.",
@@ -85,7 +96,7 @@ def vue_liste_evaluations(request):
             {"libelle": "Périmètre", "cle_tri": None},
             {"libelle": "Date / séance", "cle_tri": None},
         ],
-        "lignes": [_ligne(evaluation) for evaluation in page] if page else [],
+        "lignes": [_ligne(evaluation, non_pretes) for evaluation in page] if page else [],
         "libelle_vide": "Aucune évaluation créée",
         "texte_vide": "Créez la première évaluation depuis le bouton ci-dessus.",
         "page": page,
@@ -133,6 +144,8 @@ def vue_detail_evaluation(request, pk):
             "evaluation": evaluation,
             "actions": ServiceEvaluation.actions_disponibles(evaluation),
             "url_liste": reverse("evaluations:liste_evaluations"),
+            "resume_sujets": resume_sujets(evaluation),
+            "peut_gerer_sujets": a_permission(request.user, PERMISSION_ECRITURE),
             "peut_modifier_date": a_permission(request.user, PERMISSION_ECRITURE),
         },
     )

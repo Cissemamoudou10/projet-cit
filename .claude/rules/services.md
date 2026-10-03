@@ -66,7 +66,13 @@ cas d'utilisation (génération, saisie manuelle, regroupement, duplication...)
 doivent produire le même contrôle suit ce patron : une porte d'écriture
 nommée, un test d'architecture qui vérifie qu'elle est la seule.
 
-## Les huit services
+## Les neuf services
+
+`ServiceSujet` s'est détaché de `ServiceEvaluation` à US-EVAL-03 (D-206,
+docs/suivi/DECISIONS.md) : la confidentialité des sujets (A5, visibilité
+réservée à `evaluations_ecriture` seule, écran dédié) et leur journalisation
+dédiée (A6) justifient une classe séparée plutôt qu'une méthode de plus sur
+`ServiceEvaluation` — neuf services désormais, pas huit.
 
 | Service | Responsabilité |
 |---|---|
@@ -75,7 +81,8 @@ nommée, un test d'architecture qui vérifie qu'elle est la seule.
 | `ServiceGeneration` | construction du programme hebdomadaire |
 | `ServiceContraintes` | les six contraintes dures |
 | `ServiceValidation` | machine à états du programme, validation et signature |
-| `ServiceEvaluation` | évaluations, sujets, notes, moyennes |
+| `ServiceEvaluation` | évaluations, notes, moyennes |
+| `ServiceSujet` | sujets d'examen, sujet retenu (US-EVAL-03) |
 | `ServiceSuivi` | prescrit et réalisé, progression réalisée hebdomadaire |
 | `ServiceDocument` | production des documents depuis les gabarits |
 

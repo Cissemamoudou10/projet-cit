@@ -31,6 +31,110 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-206 — `ServiceSujet` séparé de `ServiceEvaluation` : neuf services, pas huit
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `.claude/rules/services.md` attribuait par avance « évaluations, sujets, notes, moyennes » à `ServiceEvaluation` (table des huit services, écrite avant que les sujets n'existent). Le prompt 37, § 4 (« Fichiers »), arbitre explicitement `app/evaluations/services/sujet.py` — `ServiceSujet` : une classe séparée, pas une extension de `ServiceEvaluation`. Trouvé en relecture (`relecteur-conception`) : la table des services n'avait pas été mise à jour en conséquence, et aucune décision ne documentait ce choix d'architecture.
+**Décision** — `ServiceSujet` (`enregistrer`, `corriger`, `supprimer`, `retenir`, `changer_retenu`, `consulter`, `sujet_retenu`, `obtenir`) est une classe à part entière, important `evaluations.models.Sujet` mais jamais appelée depuis `ServiceEvaluation`. Justifié par deux traits propres aux sujets qu'aucun autre domaine d'`evaluations` ne partage : une permission de visibilité qui diverge de la lecture normale des évaluations (A5) et une nature de journal dédiée, posée à chaque consultation (A6) — deux responsabilités assez différentes de la création/modification d'une évaluation pour justifier une classe, sur le modèle de `ServiceContraintes` séparé de `ServiceGeneration`. `.claude/rules/services.md` mis à jour : neuf services, pas huit.
+**Alternative écartée** — Une méthode `ServiceEvaluation.sujets_de(evaluation)` plus `ServiceEvaluation.retenir_sujet(...)` etc. : aurait respecté la table des huit services telle qu'écrite, mais aurait mélangé dans une seule classe deux politiques d'habilitation différentes (`evaluations_lecture`/`evaluations_ecriture` pour l'évaluation elle-même, `evaluations_ecriture` seule pour ses sujets) — source probable d'un oubli futur de cette distinction.
+**Impact sur les livrables** — `.claude/rules/services.md` corrigé dans ce commit ; aucun impact sur le diagramme de classes (`ServiceSujet` est un service, pas une classe du domaine).
+**Reporté au livrable** — non, corrigé dans ce même commit.
+
+## D-205 — A12 : la garde de C9 est un prédicat, jamais une vérification à l'écriture dans cette story
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C9 (US-EVAL-03 c.7) exige qu'aucune certificative ne s'organise sans sujet retenu, mais l'organisation d'épreuve (US-EVAL-04) n'existe pas encore : rien n'appelle encore cette garde.
+**Décision** — `ServiceSujet.sujet_retenu(evaluation)` rend le sujet retenu ou `None`, sans aucune vérification d'habilitation (fonction pure, comme `ServiceEvaluation.actions_disponibles`) : US-EVAL-04 l'appellera pour refuser l'organisation. Testé seul ici (`test_b9_sujet_retenu_predicat`), jamais branché à un refus — le refus lui-même est le travail d'US-EVAL-04.
+**Alternative écartée** — Écrire déjà le refus dans un service d'organisation qui n'existe pas : aurait anticipé une story non commencée, contrairement à « une story à la fois ».
+**Impact sur les livrables** — `ServiceSujet` porte désormais la méthode que la fiche d'US-EVAL-04 pourra citer comme dépendance directe.
+**Reporté au livrable** — non, le report lui-même (US-EVAL-04 dépend de ce prédicat) est déjà consigné dans le suivi de la story.
+
+## D-204 — A11 : badge « non prête » calculé par deux sous-requêtes corrélées, une seule requête SQL
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C8/E4 : la liste des évaluations à venir doit signaler une certificative sans sujet retenu ou une formative sans sujet, sans requête par ligne affichée (patron déjà posé par `seances_de_controle_parmi`/`jours_d_examen`, A2/A9 des prompts 35/36).
+**Décision** — `evaluations.selectors.evaluations_non_pretes(ids_evaluations)` : `Evaluation.objects.filter(pk__in=...).annotate(a_sujet=Exists(...), a_retenu=Exists(...))`, deux sous-requêtes corrélées dans UNE seule requête SQL (vérifié : `test_e4_badge_non_prete_nombre_de_requetes_stable` compare 1 et 10 évaluations, nombre de requêtes identique). Le badge n'est jamais stocké (`.claude/rules/modeles.md`).
+**Alternative écartée** — Deux requêtes séparées (`Sujet.objects.filter(..., retenu=True).values_list(...)` puis une autre sans le filtre) : aurait aussi été bornée et indépendante du nombre d'évaluations, mais le prompt demande explicitement une requête unique — `Exists` l'obtient sans sacrifier la lisibilité.
+**Impact sur les livrables** — aucun sur le modèle ; la vue `vue_liste_evaluations` affiche désormais un badge calculé, jamais stocké.
+**Reporté au livrable** — non applicable.
+
+## D-203 — A10 : correction et suppression d'un sujet, bornées par le jour de l'épreuve sauf pour une formative
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le prompt énonce A10 en prose (« un sujet non retenu se corrige ou se supprime avant l'épreuve… pour une formative, le sujet unique se corrige à tout moment, y compris après coup ») sans l'inscrire au bloc de tests B — absent de la liste B1 à B9 du prompt, constaté en écrivant les tests (§ 0 en lecture seule n'avait pas porté sur ce point, découvert à l'écriture).
+**Décision** — Ajout d'un test B10 (`test_b10_correction_non_retenu_avant_epreuve_admise_apres_refusee`), au-delà du bloc B énuméré, pour couvrir réellement A10 : `ServiceSujet.corriger` applique `_verifier_avant_epreuve` pour une certificative, l'exempte pour une formative. `ServiceSujet.supprimer` refuse tout sujet retenu (inconditionnel) et borne la suppression d'un sujet non retenu au jour de l'épreuve (B7).
+**Alternative écartée** — Ne pas tester A10 faute d'entrée au bloc B : aurait laissé un arbitrage rendu sans preuve, le même motif que P-38/P-39 (Prompt 37, Temps 1) dans la même session.
+**Impact sur les livrables** — aucun sur le modèle ; `docs/suivi/PATRON-GESTION.md`/cahier de tests à jour avec B10 si consulté en détail.
+**Reporté au livrable** — non applicable.
+
+## D-202 — A9 : le jour de l'épreuve, seule borne sûre, calculée sans heure
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-51 exige de fermer la sélection avant l'épreuve, mais l'heure de l'épreuve n'existe qu'avec l'organisation (US-EVAL-04, pas encore écrite).
+**Décision** — `_jour_epreuve(evaluation)` (`evaluations/services/sujet.py`) : `evaluation.seance.debut.date()` si une séance existe (formative à venir), sinon `evaluation.date` (certificative, ou formative déclarée après coup). `_verifier_avant_epreuve` refuse dès que ce jour est atteint ou dépassé (`<=` la date du jour), appliquée à `retenir`, `changer_retenu`, `supprimer`, et `corriger` pour une certificative (D-203).
+**Alternative écartée** — Attendre US-EVAL-04 pour fermer RG-51 à l'heure précise : aurait laissé la cellule examens sélectionner un sujet le jour même, contrairement à la décision de sécurité explicite du prompt (« le choix penche vers la sécurité plutôt que vers la souplesse »).
+**Impact sur les livrables** — US-EVAL-04 devra resserrer cette borne à l'heure de l'épreuve quand elle existera ; signalé en report ci-dessous.
+**Reporté au livrable** — oui : resserrement de la borne RG-51 à l'heure de l'épreuve, à la charge d'US-EVAL-04.
+
+## D-201 — A8 : aucun modèle de ce projet n'est enregistré dans l'admin Django, `Sujet` n'y fait pas exception
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 0, point 3 : vérifié que tous les `admin.py` du dépôt sont vides — l'admin Django n'est utilisé nulle part. A8 (« `Sujet` n'est pas enregistré dans l'admin ») ne contourne donc rien d'existant.
+**Décision** — `evaluations/admin.py` reste vide. `Sujet.__str__` rend `"{evaluation} — sujet n° {rang}"`, jamais la référence (vérifié, `test_c4_sujet_absent_de_l_admin_et_str_sans_reference`).
+**Alternative écartée** — Enregistrer `Sujet` en lecture seule dans l'admin pour un diagnostic technique : aurait rouvert exactement la voie de divulgation que A5/A6/A8 ferment ensemble (un canal de lecture sans journalisation ni restriction à `evaluations_ecriture`).
+**Impact sur les livrables** — aucun ; confirme une pratique déjà uniforme du projet, pas une exception nouvelle.
+**Reporté au livrable** — non applicable.
+
+## D-200 — A7 : le journal désigne un sujet par son rang, jamais par sa référence
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-51/BNF-02 : le journal est lu par l'Administrateur (`noyau.administration_lecture`), un profil distinct de la cellule examens — une référence de sujet dans une entrée de journal deviendrait une seconde voie de divulgation, hors de la restriction A5.
+**Décision** — Toutes les entrées posées par `ServiceSujet` (`_journaliser`, `_journaliser_consultation`) utilisent `str(sujet)` (jamais la référence, D-201) comme `identifiant_saisi`, et composent leur `detail` à partir du seul rang (« Sujet n° 1 retenu. », « n° 1 → n° 2 »). Vérifié sur un scénario complet : `test_c3_journal_ne_contient_jamais_une_reference` relit TOUTES les entrées, toutes natures confondues.
+**Alternative écartée** — Journaliser la référence dans un champ chiffré ou tronqué : aurait ajouté un mécanisme de chiffrement au projet pour une seule story, disproportionné face à la solution déjà retenue par A1 (ne jamais stocker ce qui peut fuir).
+**Impact sur les livrables** — aucun sur le modèle ; précédent réutilisable pour toute future donnée sensible journalisée.
+**Reporté au livrable** — non applicable.
+
+## D-199 — A6 : nouvelle nature de journal `CONSULTATION_SUJETS`, sixième extension à RG-26 (pas la cinquième)
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 0, point 1 : le journal sait déjà journaliser une LECTURE (`EXPORT_DONNEES`, US-SES-07 ; `CONSULTATION_JOURNAL`, US-ADM-04) — aucune extension du contrat de `ServiceJournal` n'était nécessaire, seulement une valeur d'énumération de plus, sur le patron de D-153 (`GENERATION_PROGRAMME`).
+**Décision** — `TypeAction.CONSULTATION_SUJETS` ajoutée (`administration/models.py`, migration `0014`), posée par `ServiceSujet.consulter` à chaque appel qui franchit `verifier_habilitation` (donc jamais sur un 403, vérifié par `test_c2`/`test_e5`). Le prompt (§ 6, « Suivi ») annonçait cette nature comme « cinquième nature hors RG-26 » : vérifié dans `administration/tests/test_contenu_journal.py::EXTENSIONS_HORS_RG26`, elle en comptait déjà CINQ avant cet ajout (`ACCES_REFUSE`, `MODIFICATION_HABILITATIONS`, `CONSULTATION_JOURNAL`, `EXPORT_DONNEES`, `GENERATION_PROGRAMME`) — `CONSULTATION_SUJETS` est la **sixième**, pas la cinquième. Corrigé ici plutôt que recopié du prompt sans vérification.
+**Alternative écartée** — Réutiliser `CONSULTATION_JOURNAL` pour cette consultation : aurait confondu deux lectures de nature différente (le journal lui-même, contre l'écran des sujets) et rendu les deux inséparables dans tout filtre ou export futur.
+**Impact sur les livrables** — `docs/suivi/HABILITATIONS.md`/mémoire : compte des extensions à RG-26 à porter à six, pas cinq — voir aussi l'écart correspondant dans `ECARTS-LIVRABLES-SPRINT-3.md`.
+**Reporté au livrable** — oui, décompte des extensions à RG-26 à corriger au mémoire (comme D-153/D-18 l'annonçaient déjà pour les précédentes).
+
+## D-198 — A5 : la visibilité des sujets suit `evaluations_ecriture`, un écran dédié plutôt qu'un dix-neuvième domaine
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — § 11.2 donne `evaluations_lecture` à la Direction de Formation ; les sujets doivent lui rester invisibles alors qu'elle lit déjà les évaluations.
+**Décision** — Aucune permission nouvelle. L'écran des sujets (`evaluations:sujets` et les quatre actions qui l'accompagnent, `evaluations/views_sujets.py`) est gardé par `noyau.evaluations_ecriture`, pas `evaluations_lecture` — seule la cellule examens le détient (§ 11.2). Le détail de l'évaluation (lu par tous les profils `evaluations_lecture`) n'affiche que le résumé non sensible (`evaluations.selectors.resume_sujets` : nombre de sujets, présence d'un retenu — ni référence ni rang), jamais via `ServiceSujet.consulter`.
+**Alternative écartée** — Un dix-neuvième couple lecture/écriture dédié aux sujets : aurait permis d'accorder une lecture des sujets sans l'écriture, cas qu'aucun profil de § 11.2 ne demande — complexité sans besoin.
+**Impact sur les livrables** — `docs/suivi/HABILITATIONS.md` : préciser que les sujets ne sont PAS couverts par `evaluations_lecture`, contrairement à l'intuition first qu'en donnerait la matrice.
+**Reporté au livrable** — oui, précision à porter au tableau des permissions du mémoire.
+
+## D-197 — A4 : qui a retenu, quand — le journal, jamais une colonne `retenu_le`/`retenu_par`
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C3 exige de savoir qui a retenu un sujet et quand ; une colonne directe deviendrait un second historique, incomplet dès le premier changement de sujet retenu (C5).
+**Décision** — Aucune colonne de ce nom sur `Sujet` (vérifié, `test_a6_aucune_colonne_retenu_le_ou_retenu_par`, introspection de `Sujet._meta.get_fields()`). L'auteur et l'horodatage vivent dans l'entrée de journal (`TypeAction.SELECTION_SUJET`, réutilisation de la valeur déjà déclarée à US-ADM-04, jamais atteinte avant cette story), sur le précédent de D-132.
+**Alternative écartée** — `retenu_le`/`retenu_par` sur `Sujet`, mis à jour à chaque `retenir`/`changer_retenu` : aurait dupliqué ce que le journal porte déjà, et aurait fourni une réponse FAUSSE après un changement (D-132 : le même défaut que la date d'une évaluation avant A2/US-EVAL-01).
+**Impact sur les livrables** — aucun sur le modèle de données ; confirme le patron D-132 pour une seconde entité.
+**Reporté au livrable** — non applicable.
+
+## D-196 — A3 : un seul sujet retenu, garanti par un index unique partiel
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-50 : au plus un sujet retenu par évaluation. Le modèle de la grille active (`uq_grille_horaire_une_seule_active`, US-PLAN-12) offre un précédent direct pour une contrainte « au plus une ligne vraie » par un sous-ensemble.
+**Décision** — `uq_sujet_un_seul_retenu` : `models.UniqueConstraint(fields=["evaluation"], condition=models.Q(retenu=True), name=...)` — vérifié par insertion directe (`test_a3_deux_sujets_retenus_refuse`, deux `UPDATE` successifs dans la même transaction). Pour une formative, `retenu` reste `False` par construction : `ServiceSujet.retenir` refuse toute tentative sur une évaluation formative (RG-50, « le sujet unique n'est pas sélectionné, il est le sujet »).
+**Alternative écartée** — `.claude/rules/migrations.md` catalogue cette contrainte sous le nom `uq_sujet_retenu` (table de référence antérieure à ce prompt) ; le prompt 37 arbitre explicitement `uq_sujet_un_seul_retenu`. Conservé le nom du prompt (arbitrage rendu pour CETTE story) plutôt que celui du catalogue général — écart signalé, pas corrigé silencieusement.
+**Impact sur les livrables** — `.claude/rules/migrations.md` corrigé avec le nom réel de la contrainte posée (`uq_sujet_un_seul_retenu`), pas `uq_sujet_retenu`.
+**Reporté au livrable** — non, corrigé dans ce même commit (`.claude/rules/migrations.md`, ligne `uq_sujet_un_seul_retenu`).
+
+## D-195 — A2 : deux sujets au plus, garantis par le rang ; la limite à un seul (formative) reste en service
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-50 : deux sujets pour une certificative, un seul pour une formative — la seconde limite dépend du TYPE de l'évaluation rattachée, une information portée par une autre table (`Evaluation.type`), hors de portée d'une contrainte `CHECK` sur `Sujet` seul.
+**Décision** — `ck_sujet_rang` (rang ∈ {1, 2}) et `uq_sujet_evaluation_rang` (évaluation, rang) en base, garantissant le plafond ABSOLU à deux pour TOUTE évaluation. La limite à un seul sujet pour une formative vit dans `ServiceSujet._verifier_nombre_sujets` (couche services, testée par `test_b2_formative_second_sujet_et_retenue_refuses`), comme le prévoyait le prompt.
+**Alternative écartée** — Une contrainte `CHECK` qui joindrait `Evaluation.type` via une sous-requête : PostgreSQL n'autorise pas de sous-requête dans une contrainte `CHECK` — techniquement impossible, pas seulement non retenu.
+**Impact sur les livrables** — aucun sur le modèle ; confirme que la règle 2 de `.claude/rules/services.md` (« nombre de sujets conditionnel au type ») reste en service, comme ce fichier l'annonçait déjà avant cette story.
+**Reporté au livrable** — non applicable.
+
+## D-194 — A1 : seule une référence est stockée, jamais le sujet — `Sujet.reference` et `date_depot`, rien d'autre
+**Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CLS-05 et BNF-02 : le sujet d'examen est une donnée sensible qui ne doit jamais transiter par le système informatique — seule sa référence papier (numéro de pli, code) a besoin d'être enregistrée pour le suivi.
+**Décision** — `Sujet` (`evaluations/models.py`) porte `evaluation` (FK, `CASCADE` — composition stricte, `.claude/rules/modeles.md`), `rang`, `reference` (texte court), `date_depot`, `retenu` (booléen) — aucun champ de contenu, aucun téléversement. `reference` est non vide après suppression des blancs (`ck_sujet_reference_non_vide`, regex `\S`) et unique par évaluation, insensible à la casse (`uq_sujet_reference`, `Upper("reference")`, précédent D-21).
+**Alternative écartée** — Un champ `fichier` optionnel pour joindre un scan, proposé nulle part dans le backlog mais une tentation naturelle : refusé d'emblée, contraire à la lettre de CLS-05 et au principe « ce qui n'est pas stocké ne fuit pas » que A1 porte explicitement.
+**Impact sur les livrables** — nouvelle classe au diagramme (`docs/conception/13-diagramme-classes.md`), association de composition `Sujet` → `Evaluation` à y faire figurer.
+**Reporté au livrable** — oui, mise à jour du diagramme de classes au prochain relevé du mémoire.
+
 ## D-193 — Nouveau report : une organisation d'épreuve devra être revérifiée quand la date d'une certificative change
 **Date** 2026-10-02 · **Story** US-EVAL-02 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — § 6, Prompt 36 : `ServiceEvaluation.modifier_date_certificative` déplace la date d'un examen final, mais ne touche à rien d'une éventuelle organisation d'épreuve (salle, surveillants, convocation) — US-EVAL-04, qui n'existe pas encore à ce jour du sprint. Ce n'est pas un des huit arbitrages A1 à A8 (D-185 à D-192) : un report nouveau, distinct.

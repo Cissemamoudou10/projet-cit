@@ -24,6 +24,7 @@ EXTENSIONS_HORS_RG26 = {
     TypeAction.CONSULTATION_JOURNAL,
     TypeAction.EXPORT_DONNEES,
     TypeAction.GENERATION_PROGRAMME,
+    TypeAction.CONSULTATION_SUJETS,
 }
 # US-REF-00 (D-18) : quatrième extension à RG-26, quatre valeurs génériques
 # réutilisées par les cinq stories du patron de gestion — SUPPRESSION_ELEMENT_GESTION

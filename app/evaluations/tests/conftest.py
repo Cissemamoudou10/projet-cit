@@ -7,6 +7,8 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.utils import timezone
 
+from evaluations.services.evaluation import ServiceEvaluation
+from evaluations.services.sujet import ServiceSujet
 from organisation.models import Stagiaire
 from organisation.services.affectation import ServiceAffectation
 from organisation.services.brigade import ServiceBrigade
@@ -287,4 +289,77 @@ def controle(examens, brigade, element_referentiel, instructeur, jour_creneau):
         element_referentiel=element_referentiel,
         instructeur=instructeur,
         jour_creneau=jour_creneau,
+    )
+
+
+# --- US-EVAL-03 : sujets — fixtures partagées entre test_sujets.py et
+# test_sujets_ecran.py (`.claude/rules/python.md`, fichier sous 400 lignes).
+
+
+@pytest.fixture
+def certificative(examens, session, element_referentiel):
+    return ServiceEvaluation.creer(
+        examens,
+        {
+            "element_referentiel": element_referentiel,
+            "type": "certificative",
+            "session": session,
+            "brigade": None,
+            "date": timezone.localdate() + datetime.timedelta(days=30),
+            "creneau_type": None,
+            "instructeur": None,
+            "lieu": None,
+            "motif_date_passee": "",
+        },
+    )
+
+
+@pytest.fixture
+def certificative_echue(examens, session, element_referentiel):
+    """A9/B5 : jour de l'épreuve ATTEINT — contrôle à venir puis écoulé,
+    jamais créée directement avec une date passée (RG-49 le refuserait à
+    la création elle-même, ce n'est pas ce qu'on veut tester ici)."""
+    return ServiceEvaluation.creer(
+        examens,
+        {
+            "element_referentiel": element_referentiel,
+            "type": "certificative",
+            "session": session,
+            "brigade": None,
+            "date": timezone.localdate(),
+            "creneau_type": None,
+            "instructeur": None,
+            "lieu": None,
+            "motif_date_passee": "",
+        },
+    )
+
+
+def _formative(controle, jour=None):
+    return ServiceEvaluation.creer(
+        controle.examens,
+        {
+            "element_referentiel": controle.element_referentiel,
+            "type": "formative",
+            "session": None,
+            "brigade": controle.brigade,
+            "date": jour or controle.jour_creneau.jour,
+            "creneau_type": controle.jour_creneau.creneau,
+            "instructeur": controle.instructeur,
+            "lieu": None,
+            "motif_date_passee": "",
+        },
+    )
+
+
+@pytest.fixture
+def formative(controle):
+    return _formative(controle)
+
+
+def _enregistrer(agissant, evaluation, reference, date_depot=None):
+    return ServiceSujet.enregistrer(
+        agissant,
+        evaluation,
+        {"reference": reference, "date_depot": date_depot or timezone.localdate()},
     )

@@ -113,6 +113,46 @@ class FormulaireEvaluation(forms.Form):
         return Lieu.objects.filter(pk=pk).first() if pk else None
 
 
+CLASSES_CASE = "h-4 w-4 rounded border-gris-trait text-marine-900 focus:ring-2 focus:ring-focus"
+
+
+class FormulaireSujet(forms.Form):
+    """Création ou correction d'un sujet — US-EVAL-03. `rang` n'est jamais
+    saisi (A2) : attribué par `ServiceSujet.enregistrer`."""
+
+    reference = forms.CharField(
+        label="Référence du sujet (pli, code…)",
+        widget=forms.TextInput(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    date_depot = forms.DateField(
+        label="Date de dépôt",
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": CLASSES_CHAMP_DATE}, format=FORMAT_DATE
+        ),
+    )
+
+
+class FormulaireRetenirSujet(forms.Form):
+    """C4 : case visible, jamais cochée d'office — RG-50 bis exige une
+    confirmation explicite, jamais un blocage, quand une certificative ne
+    compte qu'un seul sujet."""
+
+    confirmation = forms.BooleanField(
+        required=False,
+        label="Je confirme retenir ce sujet malgré RG-50 (un seul sujet enregistré)",
+        widget=forms.CheckboxInput(attrs={"class": CLASSES_CASE}),
+    )
+
+
+class FormulaireChangerRetenu(forms.Form):
+    """C5 : motif obligatoire, mentionnant la décision de la commission."""
+
+    motif = forms.CharField(
+        label="Motif (décision de la commission)",
+        widget=forms.Textarea(attrs={"class": CLASSES_ZONE_TEXTE, "rows": 3}),
+    )
+
+
 class FormulaireModificationDateCertificative(forms.Form):
     """CU-P6-02, Prompt 36. Le motif est obligatoire côté formulaire pour un
     retour immédiat — `ServiceEvaluation.modifier_date_certificative` reste

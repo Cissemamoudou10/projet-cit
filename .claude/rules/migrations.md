@@ -54,7 +54,7 @@ Construction propre à PostgreSQL, plus économe qu'un déclencheur.
 | Nom | Table | Condition | Règle |
 |---|---|---|---|
 | `uq_grille_active` | grille_horaire | `WHERE active` | `RG-62` — une seule grille active |
-| `uq_sujet_retenu` | sujet | `WHERE retenu`, unique sur evaluation | `RG-50` |
+| `uq_sujet_un_seul_retenu` | sujet | `WHERE retenu`, unique sur evaluation | `RG-50` — nom corrigé à l'implantation (US-EVAL-03, D-196) |
 | `uq_affectation_ouverte` | affectation_brigade | `WHERE date_fin IS NULL`, unique sur stagiaire | `RG-20` — historisation sans perte d'invariant |
 
 ## Contrainte d'exclusion

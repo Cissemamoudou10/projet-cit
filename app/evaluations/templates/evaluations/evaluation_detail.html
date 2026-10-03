@@ -17,14 +17,24 @@
       <h1 class="mb-0.5 font-titre text-xl font-semibold leading-tight">{{ evaluation.element_referentiel }}</h1>
       <p class="text-sm text-gris-lecture">{{ evaluation.get_type_display }}</p>
     </div>
-    {% if peut_modifier_date and evaluation.est_certificative and not evaluation.date_echue %}
-      <a href="{% url 'evaluations:modifier_date_certificative' evaluation.pk %}"
-         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
-                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
-                hover:bg-marine-700">
-        Modifier la date
-      </a>
-    {% endif %}
+    <div class="flex items-center gap-2">
+      {% if peut_gerer_sujets %}
+        <a href="{% url 'evaluations:sujets' evaluation.pk %}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
+                  text-sm font-semibold text-marine-900 no-underline transition-colors duration-survol
+                  hover:bg-fond-bande">
+          Gérer les sujets
+        </a>
+      {% endif %}
+      {% if peut_modifier_date and evaluation.est_certificative and not evaluation.date_echue %}
+        <a href="{% url 'evaluations:modifier_date_certificative' evaluation.pk %}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Modifier la date
+        </a>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -91,6 +101,22 @@
           </div>
         {% endif %}
       {% endif %}
+    </dl>
+  </section>
+  <section class="border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Sujets
+    </p>
+    <dl class="grid gap-3 px-4 py-3.5 text-sm">
+      <div>
+        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Enregistrés</dt>
+        <dd>{{ resume_sujets.nombre }} sujet{{ resume_sujets.nombre|pluralize }} enregistré{{ resume_sujets.nombre|pluralize }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Sujet retenu</dt>
+        <dd>{% if resume_sujets.a_un_retenu %}Oui{% else %}Non{% endif %}</dd>
+      </div>
     </dl>
   </section>
 </div>

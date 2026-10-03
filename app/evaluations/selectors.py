@@ -7,9 +7,10 @@ l'application (`evaluations.apps.EvaluationsConfig.ready`) — A9, Prompt 35.
 Prompt 36.
 """
 
-from organisation.models import Brigade
+from django.db.models import Exists, OuterRef
 
-from evaluations.models import Evaluation, TypeEvaluation
+from evaluations.models import Evaluation, Sujet, TypeEvaluation
+from organisation.models import Brigade
 
 
 def seances_de_controle_parmi(ids_seances) -> frozenset:
@@ -47,3 +48,33 @@ def jours_d_examen(debut, fin) -> list[dict]:
             {"jour": jour, "brigades": brigades, "libelle": f"Examen final — {matiere}"}
         )
     return resultat
+
+
+def resume_sujets(evaluation) -> dict:
+    """A5 : résumé NON sensible pour le détail de l'évaluation — ni
+    référence, ni rang du retenu. Une requête, aucun passage par
+    `ServiceSujet.consulter` (réservé à l'écran dédié, qui journalise RG-51 :
+    ce résumé n'est pas cet écran, A6)."""
+    sujets = list(evaluation.sujets.values_list("retenu", flat=True))
+    return {"nombre": len(sujets), "a_un_retenu": any(sujets)}
+
+
+def evaluations_non_pretes(ids_evaluations) -> frozenset:
+    """A11, Prompt 37 : badge « non prête » — requête UNIQUE pour tout
+    l'ensemble reçu (deux sous-requêtes corrélées, `Exists`, jamais un aller-
+    retour par évaluation affichée). Certificative sans sujet retenu, ou
+    formative sans aucun sujet."""
+    if not ids_evaluations:
+        return frozenset()
+    sujets = Sujet.objects.filter(evaluation=OuterRef("pk"))
+    lignes = (
+        Evaluation.objects.filter(pk__in=ids_evaluations)
+        .annotate(a_sujet=Exists(sujets), a_retenu=Exists(sujets.filter(retenu=True)))
+        .values_list("pk", "type", "a_sujet", "a_retenu")
+    )
+    return frozenset(
+        pk
+        for pk, type_, a_sujet, a_retenu in lignes
+        if (type_ == TypeEvaluation.CERTIFICATIVE and not a_retenu)
+        or (type_ == TypeEvaluation.FORMATIVE and not a_sujet)
+    )

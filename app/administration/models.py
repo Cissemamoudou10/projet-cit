@@ -95,6 +95,14 @@ class TypeAction(models.TextChoices):
     génération. `ServiceGeneration` journalise l'ACTE (semaine, brigades
     sélectionnées, comptes créés/supprimés, auteur), jamais le détail des
     séances — voir docs/suivi/DECISIONS.md.
+
+    `CONSULTATION_SUJETS` (US-EVAL-03, A6) — une extension de plus, sur le
+    même patron que `GENERATION_PROGRAMME` : RG-51/BNF-02 exigent de
+    journaliser chaque AFFICHAGE de l'écran des sujets (une consultation,
+    pas une modification), même précédent qu'`EXPORT_DONNEES` pour
+    journaliser une LECTURE. `SELECTION_SUJET`, déjà déclarée ci-dessus
+    (US-ADM-04, jamais atteinte avant cette story), porte la sélection et le
+    changement du sujet retenu (A3/A4) — voir docs/suivi/DECISIONS.md.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -123,6 +131,7 @@ class TypeAction(models.TextChoices):
     )
     EXPORT_DONNEES = "export_donnees", "Export de données"
     GENERATION_PROGRAMME = "generation_programme", "Génération d'un programme"
+    CONSULTATION_SUJETS = "consultation_sujets", "Consultation des sujets d'examen"
 
 
 class EntreeJournal(ModeleHorodate):

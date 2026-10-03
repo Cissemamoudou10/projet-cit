@@ -45,6 +45,13 @@ octobre) — l'écart sera reporté au diagramme à leur retour, pas avant.
 | 15 | Fiche CU-P5-02 et récapitulatif, RG-38 | Ne cite que les périodes du calendrier comme source de blocage | Un jour d'examen certificatif dont le périmètre couvre la brigade est une seconde source (A3) ; les six contraintes dures restent six | D-187 | Compléter RG-38 : deux sources, période bloquante et jour d'examen certificatif |
 | 16 | Tableau des treize contraintes, phase 4 | Même recensement qu'au sprint 2 (lignes 1 et 14 ci-dessus), RG-38 à une seule source | Même ajout qu'à la ligne 15 ; le compte des contraintes elles-mêmes ne bouge pas | D-187 | Ajouter la seconde source de RG-38 au tableau, sans changer le compte |
 
+## US-EVAL-03 (Prompt 37, Temps 2) — à la suite, numérotés à partir de 17
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui fait foi | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 17 | CLS-05 (diagramme de classes) | `Sujet` sans multiplicité précisée sur son association à `Evaluation` | Multiplicité « au plus deux », garantie EN BASE par le rang (A2, `ck_sujet_rang`/`uq_sujet_evaluation_rang`), pas seulement par un commentaire du diagramme | D-195 | Annoter CLS-05 : l'association `Sujet`→`Evaluation` porte la multiplicité 0..2, garantie par contrainte |
+| 18 | Cahier des charges / `HABILITATIONS.md`, décompte des extensions à RG-26 | Quatre extensions recensées avant cette story (texte du prompt 37 lui-même en annonçait cinq, vérifié faux) | Cinq extensions existaient déjà (`ACCES_REFUSE`, `MODIFICATION_HABILITATIONS`, `CONSULTATION_JOURNAL`, `EXPORT_DONNEES`, `GENERATION_PROGRAMME`) ; `CONSULTATION_SUJETS` (A6) en est la SIXIÈME, pas la cinquième (D-199, vérifié dans `administration/tests/test_contenu_journal.py::EXTENSIONS_HORS_RG26`) | D-199 | Porter le décompte des extensions à RG-26 à six, pas cinq, dans le cahier des charges et `HABILITATIONS.md` |
+
 ## Ce que cette liste ne couvre pas
 
 Les huit arbitrages A1 à A8 (D-165 à D-172) portent sur des contradictions

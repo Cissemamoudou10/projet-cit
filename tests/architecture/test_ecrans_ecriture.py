@@ -458,11 +458,39 @@ ECRANS_ECRITURE = [
         "noyau.evaluations_ecriture",
         lambda objets: [objets["evaluation"].pk],
     ),
+    # --- evaluations : sujets d'examen (US-EVAL-03) --- A5 : la visibilité
+    # des sujets suit evaluations_ecriture, y compris l'écran de
+    # consultation (GET) — `sujets` est donc une adresse d'écriture au sens
+    # de ce test bien qu'elle serve aussi la lecture (même figure que
+    # liste_comptes ci-dessus).
+    EcranEcriture(
+        "evaluations:sujets", "noyau.evaluations_ecriture", lambda objets: [objets["evaluation"].pk]
+    ),
+    EcranEcriture(
+        "evaluations:corriger_sujet",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["sujet"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:supprimer_sujet",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["sujet"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:retenir_sujet",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["sujet"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:changer_retenu_sujet",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["sujet"].pk],
+    ),
 ]
 
-# 92 adresses : les 91 précédentes (Prompt 35) plus l'adresse d'écriture de
-# evaluations:modifier_date_certificative (US-EVAL-02, Prompt 36).
-assert len(ECRANS_ECRITURE) == 92
+# 97 adresses : les 92 précédentes (Prompt 36) plus les cinq adresses de
+# l'écran des sujets (US-EVAL-03, Prompt 37).
+assert len(ECRANS_ECRITURE) == 97
 
 
 def _groupes_sans(permission):

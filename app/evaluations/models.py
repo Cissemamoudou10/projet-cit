@@ -4,6 +4,8 @@ Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
 
 from django.db import models
+from django.db.models import F
+from django.db.models.functions import Upper
 from django.utils import timezone
 
 from noyau.models import ModeleHorodate
@@ -126,3 +128,52 @@ class Evaluation(ModeleHorodate):
     def date_echue(self):
         """A6, Prompt 36 : un examen déjà tenu ne change plus de date."""
         return bool(self.date) and self.date < timezone.localdate()
+
+
+class Sujet(ModeleHorodate):
+    """US-EVAL-03. A1, CLS-05 : seule une RÉFÉRENCE est stockée — jamais le
+    sujet lui-même, qui reste sur papier hors système. `CASCADE` : composition
+    stricte vers `Evaluation` (`.claude/rules/modeles.md`), un sujet n'a pas
+    de sens sans son évaluation — attention toutefois à ne jamais offrir la
+    suppression d'une évaluation tant que US-PLAN-05 (D-181) ne l'a pas
+    arbitrée.
+
+    Qui a retenu, quand (C3) : jamais de colonne ici (A4) — le journal
+    (patron D-132) porte l'auteur et l'horodatage de la sélection, seul
+    historique, complet dès le premier changement (C5)."""
+
+    evaluation = models.ForeignKey(
+        Evaluation,
+        on_delete=models.CASCADE,
+        related_name="sujets",
+        verbose_name="évaluation",
+    )
+    rang = models.PositiveSmallIntegerField(verbose_name="rang")
+    reference = models.CharField(max_length=200, verbose_name="référence")
+    date_depot = models.DateField(verbose_name="date de dépôt")
+    retenu = models.BooleanField(default=False, verbose_name="retenu")
+
+    class Meta:
+        db_table = "evaluations_sujet"
+        verbose_name = "sujet"
+        verbose_name_plural = "sujets"
+        constraints = [
+            models.CheckConstraint(condition=models.Q(rang__in=[1, 2]), name="ck_sujet_rang"),
+            models.UniqueConstraint(fields=["evaluation", "rang"], name="uq_sujet_evaluation_rang"),
+            models.UniqueConstraint(
+                fields=["evaluation"],
+                condition=models.Q(retenu=True),
+                name="uq_sujet_un_seul_retenu",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(reference__regex=r"\S"),
+                name="ck_sujet_reference_non_vide",
+            ),
+            models.UniqueConstraint(F("evaluation"), Upper("reference"), name="uq_sujet_reference"),
+        ]
+
+    def __str__(self):
+        """A8 : jamais la référence — une trace ou un message d'erreur ne
+        doit pas divulguer ce que le système ne stocke que pour la cellule
+        examens."""
+        return f"{self.evaluation} — sujet n° {self.rang}"
