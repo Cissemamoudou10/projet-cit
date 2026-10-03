@@ -16,7 +16,7 @@ from evaluations.models import Sujet
 from evaluations.services.evaluation import ServiceEvaluation
 from evaluations.services.sujet import ServiceSujet
 from evaluations.tests.conftest import _enregistrer
-from noyau.exceptions import ErreurValidation
+from noyau.exceptions import ErreurHabilitation, ErreurValidation
 
 # --- A — Base, contraintes en base -----------------------------------------
 
@@ -194,3 +194,45 @@ def test_b10_correction_non_retenu_avant_epreuve_admise_apres_refusee(
         ServiceSujet.corriger(
             examens, sujet_echu, {"reference": "Trop tard", "date_depot": timezone.localdate()}
         )
+
+
+# --- D — Habilitations, appels directs aux services ------------------------
+#
+# `sujet_retenu` est exclu à dessein : prédicat sans `agissant` (A12, D-205),
+# il ne vérifie aucune habilitation et ne peut donc pas lever ErreurHabilitation.
+
+
+@pytest.mark.parametrize(
+    "appel",
+    [
+        pytest.param(
+            lambda u, e, s: ServiceSujet.enregistrer(
+                u, e, {"reference": "Pli D", "date_depot": timezone.localdate()}
+            ),
+            id="enregistrer",
+        ),
+        pytest.param(
+            lambda u, e, s: ServiceSujet.corriger(
+                u, s, {"reference": "Pli D2", "date_depot": timezone.localdate()}
+            ),
+            id="corriger",
+        ),
+        pytest.param(lambda u, e, s: ServiceSujet.supprimer(u, s), id="supprimer"),
+        pytest.param(
+            lambda u, e, s: ServiceSujet.retenir(u, s, confirmation=True), id="retenir"
+        ),
+        pytest.param(
+            lambda u, e, s: ServiceSujet.changer_retenu(u, s, "Motif."), id="changer_retenu"
+        ),
+        pytest.param(lambda u, e, s: ServiceSujet.consulter(u, e), id="consulter"),
+    ],
+)
+def test_d1_direction_formation_refusee_en_appel_direct_au_service(
+    appel, direction_formation, examens, certificative
+):
+    sujet = _enregistrer(examens, certificative, "Pli D")
+
+    with pytest.raises(ErreurHabilitation):
+        appel(direction_formation, certificative, sujet)
+
+    assert certificative.sujets.count() == 1
