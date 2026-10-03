@@ -4,6 +4,7 @@ fictives.
 
 import io
 
+import openpyxl
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
@@ -121,15 +122,23 @@ def test_verifier_detecte_un_objet_manquant_et_un_objet_mal_etat():
 
 
 # --- Fichiers d'import : § 3 ------------------------------------------
+#
+# Chaque test génère dans `tmp_path`, jamais dans le dépôt : les fichiers suivis
+# de docs/recette/fichiers-import/ sont la recette figée (voir P-40).
 
 
-def test_generer_produit_les_treize_fichiers_et_le_lisez_moi():
-    constructeur.generer(io.StringIO())
+@pytest.fixture
+def dossier_fichiers(tmp_path):
+    dossier = tmp_path / "fichiers-import"
+    constructeur.generer(dossier, io.StringIO())
+    return dossier
 
+
+def test_generer_produit_les_treize_fichiers_et_le_lisez_moi(dossier_fichiers):
     for nom in constructeur.NOMS_FICHIERS:
-        assert (constructeur.DOSSIER / nom).exists()
+        assert (dossier_fichiers / nom).exists()
     assert len(constructeur.NOMS_FICHIERS) == 13
-    assert (constructeur.DOSSIER / "00-LISEZ-MOI.md").exists()
+    assert (dossier_fichiers / "00-LISEZ-MOI.md").exists()
 
 
 @pytest.mark.parametrize(
@@ -144,9 +153,10 @@ def test_generer_produit_les_treize_fichiers_et_le_lisez_moi():
         ("07-valide-entetes-majuscules.csv", 5),
     ],
 )
-def test_fichiers_valides_acceptes_sans_anomalie_par_le_vrai_parseur(nom, nb_lignes, formation_f1):
-    constructeur.generer(io.StringIO())
-    contenu = (constructeur.DOSSIER / nom).read_bytes()
+def test_fichiers_valides_acceptes_sans_anomalie_par_le_vrai_parseur(
+    nom, nb_lignes, formation_f1, dossier_fichiers
+):
+    contenu = (dossier_fichiers / nom).read_bytes()
     session = _session(formation_f1)
 
     rapport = analyser(session, contenu, nom)
@@ -155,11 +165,10 @@ def test_fichiers_valides_acceptes_sans_anomalie_par_le_vrai_parseur(nom, nb_lig
     assert not rapport.anomalies
 
 
-def test_fichiers_04_et_05_decodent_les_memes_identites(formation_f1):
-    constructeur.generer(io.StringIO())
+def test_fichiers_04_et_05_decodent_les_memes_identites(formation_f1, dossier_fichiers):
     session = _session(formation_f1)
-    contenu_04 = (constructeur.DOSSIER / "04-encodage-utf8-bom.csv").read_bytes()
-    contenu_05 = (constructeur.DOSSIER / "05-encodage-cp1252.csv").read_bytes()
+    contenu_04 = (dossier_fichiers / "04-encodage-utf8-bom.csv").read_bytes()
+    contenu_05 = (dossier_fichiers / "05-encodage-cp1252.csv").read_bytes()
 
     noms_04 = [
         ligne.donnees["nom"] for ligne in analyser(session, contenu_04, "04.csv").lignes_valides
@@ -172,20 +181,18 @@ def test_fichiers_04_et_05_decodent_les_memes_identites(formation_f1):
     assert all(nom.startswith("Éçàôù") for nom in noms_04)
 
 
-def test_fichier_08_colonne_matricule_absente_refusee(formation_f1):
-    constructeur.generer(io.StringIO())
+def test_fichier_08_colonne_matricule_absente_refusee(formation_f1, dossier_fichiers):
     session = _session(formation_f1)
-    contenu = (constructeur.DOSSIER / "08-colonne-matricule-absente.csv").read_bytes()
+    contenu = (dossier_fichiers / "08-colonne-matricule-absente.csv").read_bytes()
 
     with pytest.raises(ErreurValidation):
         analyser(session, contenu, "08.csv")
 
 
-def test_fichier_09_matricule_manquant_signale_a_la_ligne_12(formation_f1):
+def test_fichier_09_matricule_manquant_signale_a_la_ligne_12(formation_f1, dossier_fichiers):
     """R2-SES05-16 (cahier de recette sprint 2, § 5.5) : « la ligne 12 »."""
-    constructeur.generer(io.StringIO())
     session = _session(formation_f1)
-    contenu = (constructeur.DOSSIER / "09-matricule-manquant-ligne-12.csv").read_bytes()
+    contenu = (dossier_fichiers / "09-matricule-manquant-ligne-12.csv").read_bytes()
 
     rapport = analyser(session, contenu, "09.csv")
 
@@ -194,10 +201,9 @@ def test_fichier_09_matricule_manquant_signale_a_la_ligne_12(formation_f1):
     assert len(rapport.lignes_valides) == 13
 
 
-def test_fichier_10_doublon_dans_le_fichier_exclu_et_signale(formation_f1):
-    constructeur.generer(io.StringIO())
+def test_fichier_10_doublon_dans_le_fichier_exclu_et_signale(formation_f1, dossier_fichiers):
     session = _session(formation_f1)
-    contenu = (constructeur.DOSSIER / "10-doublon-dans-le-fichier.csv").read_bytes()
+    contenu = (dossier_fichiers / "10-doublon-dans-le-fichier.csv").read_bytes()
 
     rapport = analyser(session, contenu, "10.csv")
 
@@ -206,13 +212,12 @@ def test_fichier_10_doublon_dans_le_fichier_exclu_et_signale(formation_f1):
 
 
 def test_fichier_11_doublon_en_base_seulement_apres_import_du_fichier_01(
-    formation_f1, redacteur_recette
+    formation_f1, redacteur_recette, dossier_fichiers
 ):
-    constructeur.generer(io.StringIO())
     session = _session(formation_f1)
-    contenu_01 = (constructeur.DOSSIER / "01-valide-10.csv").read_bytes()
+    contenu_01 = (dossier_fichiers / "01-valide-10.csv").read_bytes()
     confirmer(redacteur_recette, session, contenu_01, "01.csv")
-    contenu_11 = (constructeur.DOSSIER / "11-doublon-en-base.csv").read_bytes()
+    contenu_11 = (dossier_fichiers / "11-doublon-en-base.csv").read_bytes()
 
     rapport = analyser(session, contenu_11, "11.csv")
 
@@ -221,10 +226,9 @@ def test_fichier_11_doublon_en_base_seulement_apres_import_du_fichier_01(
     assert len(rapport.lignes_valides) == 3
 
 
-def test_fichier_12_une_anomalie_par_ligne(formation_f1):
-    constructeur.generer(io.StringIO())
+def test_fichier_12_une_anomalie_par_ligne(formation_f1, dossier_fichiers):
     session = _session(formation_f1)
-    contenu = (constructeur.DOSSIER / "12-un-champ-vide-par-ligne.csv").read_bytes()
+    contenu = (dossier_fichiers / "12-un-champ-vide-par-ligne.csv").read_bytes()
 
     rapport = analyser(session, contenu, "12.csv")
 
@@ -232,13 +236,59 @@ def test_fichier_12_une_anomalie_par_ligne(formation_f1):
     assert len(rapport.anomalies) == 5
 
 
-def test_fichier_13_faux_fichier_refuse(formation_f1):
-    constructeur.generer(io.StringIO())
+def test_fichier_13_faux_fichier_refuse(formation_f1, dossier_fichiers):
     session = _session(formation_f1)
-    contenu = (constructeur.DOSSIER / "13-faux-fichier.csv").read_bytes()
+    contenu = (dossier_fichiers / "13-faux-fichier.csv").read_bytes()
 
     with pytest.raises(ErreurValidation):
         analyser(session, contenu, "13-faux-fichier.csv")
+
+
+def _cellules(chemin):
+    classeur = openpyxl.load_workbook(chemin)
+    return {
+        feuille.title: [[cellule.value for cellule in ligne] for ligne in feuille.iter_rows()]
+        for feuille in classeur.worksheets
+    }
+
+
+def _octets_sans_fin_de_ligne(chemin):
+    """Fins de ligne normalisées : le dépôt stocke du LF, la copie de travail
+    Windows du CRLF (core.autocrlf), et le module csv écrit du CRLF."""
+    return chemin.read_bytes().replace(b"\r\n", b"\n")
+
+
+def test_fichiers_suivis_correspondent_au_generateur(dossier_fichiers):
+    """Si le générateur change, ce test échoue : on régénère alors explicitement
+    (`charger_jeu_recette --regenerer-fichiers-import`), on ne le subit pas."""
+    suivis = constructeur.DOSSIER
+    for nom in (*constructeur.NOMS_FICHIERS, "00-LISEZ-MOI.md"):
+        if nom.endswith(".xlsx"):
+            assert _cellules(dossier_fichiers / nom) == _cellules(suivis / nom), nom
+        else:
+            assert _octets_sans_fin_de_ligne(dossier_fichiers / nom) == (
+                _octets_sans_fin_de_ligne(suivis / nom)
+            ), nom
+
+
+# --- Commande : génération explicite uniquement -----------------------------
+
+
+def test_commande_ne_regenere_les_fichiers_que_sur_option_explicite(monkeypatch, tmp_path):
+    cible = tmp_path / "fichiers-import"
+    monkeypatch.setattr("planification.management.commands.charger_jeu_recette.DOSSIER", cible)
+    call_command("charger_jeu_recette", stdout=io.StringIO())
+    assert not cible.exists()
+
+    tampon_err = io.StringIO()
+    call_command(
+        "charger_jeu_recette",
+        regenerer_fichiers_import=True,
+        stdout=io.StringIO(),
+        stderr=tampon_err,
+    )
+    assert (cible / "02-valide-5.xlsx").exists()
+    assert "AVERTISSEMENT" in tampon_err.getvalue()
 
 
 # --- Fixtures propres à ce module --------------------------------------

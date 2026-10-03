@@ -1,10 +1,12 @@
 # Jeu de données de recette — Sprint 2
 
 Prompt 34. Chargé par `python manage.py charger_jeu_recette`. Les treize
-fichiers d'import s'écrivent toujours dans `docs/recette/fichiers-import/` à
-la racine du dépôt, quel que soit le répertoire depuis lequel la commande est
-lancée (`DOSSIER` s'ancre sur `settings.BASE_DIR`, jamais sur le répertoire
-courant). Code : `app/planification/jeu_recette/` et
+fichiers d'import de `docs/recette/fichiers-import/` sont **figés** : ni le
+chargement, ni les tests ne les réécrivent (P-40). Seule l'option explicite
+`python manage.py charger_jeu_recette --regenerer-fichiers-import` les régénère
+— avec un avertissement, et un diff à relire avant tout commit. Un test de
+cohérence compare le générateur à ces fichiers suivis : s'il change, il échoue,
+et l'on décide alors de régénérer. Code : `app/planification/jeu_recette/` et
 `app/planification/management/commands/charger_jeu_recette.py`.
 
 ## Base de données dédiée à la recette
@@ -161,10 +163,10 @@ initialisées : **73/73 contrôles conformes**.
 
 ## Fichiers d'import de test (§ 3, US-SES-05)
 
-Générés dans `docs/recette/fichiers-import/` à chaque exécution de la
-commande (indépendamment de la base) ; table complète et scénario de chaque
-fichier dans `docs/recette/fichiers-import/00-LISEZ-MOI.md`, régénéré avec
-eux. Résumé :
+Figés dans `docs/recette/fichiers-import/` ; régénérés seulement par
+`charger_jeu_recette --regenerer-fichiers-import` (P-40). Table complète et
+scénario de chaque fichier dans `docs/recette/fichiers-import/00-LISEZ-MOI.md`.
+Résumé :
 
 | Fichier | Sert |
 |---|---|

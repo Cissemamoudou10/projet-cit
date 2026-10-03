@@ -31,6 +31,14 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-207 — Écran des sujets : Post/Redirect/Get, une consultation par affichage, jamais une consultation déclenchée par un POST
+**Date** 2026-10-03 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — A6 (prompt 37) dit « une entrée `CONSULTATION_SUJETS` par GET réussi ». RG-51, lui, se lit « une entrée de journal par affichage des sujets ». La formulation du prompt était imprécise : la relecture a trouvé qu'un POST refusé (troisième sujet) réaffichait l'écran dans la même réponse et journalisait donc une consultation déclenchée par une écriture, ce que ni A6 ni RG-51 ne prévoient.
+**Décision** — Tout POST sur l'écran des sujets, réussi ou refusé, répond par une redirection vers le GET de ce même écran (`vue_sujets`, `messages.success`/`messages.error`, puis redirection). Seul le GET appelle `ServiceSujet.consulter` : il journalise exactement une entrée par affichage, et un POST ne journalise jamais de consultation. Les quatre actions en ligne (`corriger`, `supprimer`, `retenir`, `changer_retenu`) suivaient déjà ce patron. Précédent : D-77 (redirection après POST pour montrer l'avertissement E2, plutôt qu'un rendu direct).
+**Alternative écartée** — Réafficher l'écran directement après un POST refusé, en sautant la journalisation pour ce seul rendu : aurait fait cohabiter deux chemins de lecture pour un même écran, et donc deux occasions de divergence ; une future modification pourrait rejournaliser par mégarde. Journaliser aussi le rendu d'erreur : aurait mêlé consultation et écriture dans la même nature, ce que la relecture a signalé.
+**Impact sur les livrables** — A6 se lit désormais « par affichage », comme RG-51 : aucune nature nouvelle, aucun changement de contrat de service. Les tests E2 et E3 (`test_sujets_ecran.py`) vérifient le POST refusé suivi de son affichage : E3 contrôle qu'une seule consultation est ajoutée pour le GET qui suit le refus.
+**Reporté au livrable** — non. Le code est déjà dans le commit `705ac44` (`vue_sujets`) ; cette entrée le documente a posteriori.
+
 ## D-206 — `ServiceSujet` séparé de `ServiceEvaluation` : neuf services, pas huit
 **Date** 2026-10-02 · **Story** US-EVAL-03 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — `.claude/rules/services.md` attribuait par avance « évaluations, sujets, notes, moyennes » à `ServiceEvaluation` (table des huit services, écrite avant que les sujets n'existent). Le prompt 37, § 4 (« Fichiers »), arbitre explicitement `app/evaluations/services/sujet.py` — `ServiceSujet` : une classe séparée, pas une extension de `ServiceEvaluation`. Trouvé en relecture (`relecteur-conception`) : la table des services n'avait pas été mise à jour en conséquence, et aucune décision ne documentait ce choix d'architecture.

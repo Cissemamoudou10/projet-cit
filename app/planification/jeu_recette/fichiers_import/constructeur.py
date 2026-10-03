@@ -214,20 +214,24 @@ FICHIERS = (
 NOMS_FICHIERS = tuple(nom for nom, _fonction, _description in FICHIERS)
 
 
-def generer(stdout):
-    DOSSIER.mkdir(parents=True, exist_ok=True)
+def generer(dossier, stdout):
+    """Écrit les treize fichiers et le lisez-moi dans `dossier`, jamais ailleurs.
+    Aucun appel ne doit pointer par défaut vers `DOSSIER` (dépôt suivi) : seule
+    la commande `charger_jeu_recette --regenerer-fichiers-import` l'écrit."""
+    dossier.mkdir(parents=True, exist_ok=True)
     for nom, fonction, _description in FICHIERS:
-        (DOSSIER / nom).write_bytes(fonction())
-    (DOSSIER / "00-LISEZ-MOI.md").write_text(_contenu_lisez_moi(), encoding="utf-8")
-    stdout.write(f"  {len(FICHIERS)} fichiers d'import générés dans {DOSSIER}/.")
+        (dossier / nom).write_bytes(fonction())
+    (dossier / "00-LISEZ-MOI.md").write_bytes(_contenu_lisez_moi().encode("utf-8"))
+    stdout.write(f"  {len(FICHIERS)} fichiers d'import générés dans {dossier}/.")
 
 
 def _contenu_lisez_moi():
     lignes = [
         "# Fichiers d'import de recette — US-SES-05",
         "",
-        "Générés par `charger_jeu_recette` (Prompt 34, § 3). Ne pas modifier à la "
-        "main : relancer la commande régénère ce dossier à l'identique.",
+        "Générés par `charger_jeu_recette --regenerer-fichiers-import` (Prompt 34, § 3). "
+        "Ne pas modifier à la main. Le chargement et les tests ne les réécrivent jamais : "
+        "seule cette option les régénère, et leur diff se relit avant commit.",
         "",
         "| Fichier | Contenu | Résultat attendu à l'import |",
         "|---|---|---|",

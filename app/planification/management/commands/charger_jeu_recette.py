@@ -23,6 +23,7 @@ from django.db import transaction
 from administration.models import Utilisateur
 from planification.jeu_recette.comptes import charger_comptes, recuperer_comptes
 from planification.jeu_recette.donnees import IDENTIFIANT_ADMINISTRATEUR, MATIERES, TYPES_FORMATION
+from planification.jeu_recette.fichiers_import.constructeur import DOSSIER
 from planification.jeu_recette.fichiers_import.constructeur import generer as generer_fichiers
 from planification.jeu_recette.garde import verifier_environnement_sur
 from planification.jeu_recette.instructeurs import charger_instructeurs, charger_qualifications
@@ -60,6 +61,14 @@ class Command(BaseCommand):
             action="store_true",
             help="Ajoute 25 sessions sur une formation dédiée F5, pour R2-SES01-17 (§ 6).",
         )
+        parser.add_argument(
+            "--regenerer-fichiers-import",
+            action="store_true",
+            help=(
+                "Réécrit docs/recette/fichiers-import/ (fichiers suivis). Ces fichiers vont "
+                "changer : relire le diff avant de les committer."
+            ),
+        )
 
     def handle(self, *args, **options):
         if options["verifier"]:
@@ -84,7 +93,12 @@ class Command(BaseCommand):
             if options["pagination"]:
                 charger_pagination(comptes["u_ped"], types, matieres, self.stdout)
 
-        generer_fichiers(self.stdout)
+        if options["regenerer_fichiers_import"]:
+            self.stderr.write(
+                f"AVERTISSEMENT : les fichiers de recette de {DOSSIER}/ vont être réécrits. "
+                "Relisez leur diff avant de les committer."
+            )
+            generer_fichiers(DOSSIER, self.stdout)
         imprimer_compte_rendu(self.stdout, compteurs, chronometre)
 
     def _charger(self, comptes_existent):

@@ -1,6 +1,6 @@
 # Fichiers d'import de recette — US-SES-05
 
-Générés par `charger_jeu_recette` (Prompt 34, § 3). Ne pas modifier à la main : relancer la commande régénère ce dossier à l'identique.
+Générés par `charger_jeu_recette --regenerer-fichiers-import` (Prompt 34, § 3). Ne pas modifier à la main. Le chargement et les tests ne les réécrivent jamais : seule cette option les régénère, et leur diff se relit avant commit.
 
 | Fichier | Contenu | Résultat attendu à l'import |
 |---|---|---|
