@@ -11,4 +11,10 @@
                 focus-visible:outline-blanc">{{ rubrique.libelle }}</a>
     {% endif %}
   {% endfor %}
+  {% if validation_en_attente %}
+    <a href="{{ validation_en_attente.url }}"
+       class="px-3 py-1.5 text-gris-trait transition-colors duration-survol hover:bg-marine-700 hover:text-blanc">
+      Validation <span class="ml-1 font-semibold text-blanc">{{ validation_en_attente.compte }}</span>
+    </a>
+  {% endif %}
 </nav>

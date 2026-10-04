@@ -91,8 +91,9 @@ Le diagramme de classes fait foi : `docs/conception/13-diagramme-classes.md`.
 
 ## Dépôt
 
-Branche par story, nommée `us-xxx-nn`. Message de commit en français, à
-l'impératif, mentionnant le code de la story. Pas de fusion sans relecture.
+Travail sur `master`, sans branche par story : toutes les stories du projet y
+sont commitées (décision du sprint 3, prompt 40). Un commit par story, message en
+français, à l'impératif, mentionnant le code de la story. Pas de fusion sans relecture.
 
 ## Compactage
 

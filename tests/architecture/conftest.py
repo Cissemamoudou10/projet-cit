@@ -9,6 +9,8 @@ librement administration, referentiel et ressources, ce qu'aucun fichier
 sous app/ n'aurait le droit de faire dans le même sens.
 """
 
+import datetime
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -17,6 +19,7 @@ from django.core.management import call_command
 from administration.constantes import GROUPES
 from evaluations.models import Evaluation, OrganisationEpreuve, Sujet, Surveillance, TypeEvaluation
 from organisation.models import Brigade, Session, Stagiaire
+from planification.models import ProgrammeHebdomadaire
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 from referentiel.services.prerequis import ServicePrerequis
@@ -198,6 +201,9 @@ def objets(db, utilisateurs):
         "session": session,
         "brigade": brigade,
         "evaluation": evaluation,
+        "programme": ProgrammeHebdomadaire.objects.create(
+            lundi_de_semaine=datetime.date(2030, 1, 7)
+        ),
         "sujet": sujet,
         "organisation": organisation,
         "surveillance": surveillance,

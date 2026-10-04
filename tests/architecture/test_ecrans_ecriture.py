@@ -450,6 +450,14 @@ ECRANS_ECRITURE = [
     ),
     # --- planification : génération du programme hebdomadaire (US-PLAN-03) ---
     EcranEcriture("planification:lancement_generation", "noyau.programme_ecriture"),
+    # --- planification : circuit du programme (prompt 40, US-VAL-01, 02, 04) ---
+    EcranEcriture("planification:soumettre", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:retirer_soumission", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:valider", "noyau.programme_validation_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:rejeter", "noyau.programme_validation_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:reprendre", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:signer", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:afficher", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
     EcranEcriture("evaluations:creer_evaluation", "noyau.evaluations_ecriture"),
     # --- evaluations : modification de la date d'un examen final (US-EVAL-02) ---
@@ -515,8 +523,9 @@ ECRANS_ECRITURE = [
 ]
 
 # 102 adresses : les 97 précédentes (Prompt 37) plus les cinq adresses
-# d'écriture de l'organisation d'épreuve (US-EVAL-04, Prompt 38).
-assert len(ECRANS_ECRITURE) == 102
+# d'écriture de l'organisation d'épreuve (US-EVAL-04, Prompt 38) ; 109 après le
+# circuit du programme (prompt 40, sept routes POST : soumission à signature).
+assert len(ECRANS_ECRITURE) == 109
 
 
 def _groupes_sans(permission):

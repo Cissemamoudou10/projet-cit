@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
+from planification.circuit_affichage import contexte_circuit
 from planification.exceptions import (
     AucuneGrilleActive,
     SemaineEntierementBloquee,
@@ -151,10 +152,12 @@ def vue_consultation_programme(request):
         )
     )
     groupes = grille_consultation(programme, creneaux_du_jour, brigades) if programme else []
+    contexte_du_circuit = contexte_circuit(programme, request.user) if programme else {}
     return render(
         request,
         "planification/consultation_programme.html",
         {
+            **contexte_du_circuit,
             "programme": programme,
             "lundi": lundi,
             "creneaux": creneaux_du_jour,

@@ -82,6 +82,56 @@
 {% endblock %}
 
 {% block contenu %}
+{% if programme %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc" aria-label="Circuit du programme">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+    Circuit du programme
+  </p>
+  <div class="flex flex-col gap-3 px-4 py-3 text-sm">
+    {% if motif_rejet_visible %}
+      <p class="border border-etat-ecart bg-etat-ecart-fond px-3 py-2 text-etat-ecart">
+        Motif du rejet : {{ motif_rejet_visible }}
+      </p>
+    {% endif %}
+    {% if programme.date_validation %}
+      <p class="text-gris-lecture">Validé par <span class="text-encre">{{ programme.valide_par }}</span>
+        le {{ programme.date_validation|date:"d/m/Y H:i" }}.</p>
+    {% endif %}
+    {% if programme.date_signature %}
+      <p class="text-gris-lecture">Signé par <span class="text-encre">{{ programme.signataire }}</span>
+        le {{ programme.date_signature|date:"d/m/Y" }}.</p>
+    {% endif %}
+    {% if programme.date_affichage %}
+      <p class="text-gris-lecture">Affiché le {{ programme.date_affichage|date:"d/m/Y H:i" }}.</p>
+    {% endif %}
+    <div class="flex flex-wrap items-end gap-2">
+      {% for action in actions_circuit %}
+        {% if action.evenement == "signer" %}
+          <form method="post" action="{% url action.url_nom programme.pk %}" class="flex flex-wrap items-end gap-2">
+            {% csrf_token %}
+            <input type="date" name="date_signature" required class="border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm">
+            <input type="text" name="signataire" required maxlength="150" placeholder="Nom du signataire"
+                   class="border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm">
+            <button type="submit" class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5 text-sm font-medium text-encre transition-colors duration-survol hover:border-marine-700">{{ action.libelle }}</button>
+          </form>
+        {% elif action.evenement == "rejeter" %}
+          <form method="post" action="{% url action.url_nom programme.pk %}" class="flex w-full flex-col gap-2">
+            {% csrf_token %}
+            <textarea name="motif" rows="2" required placeholder="Motif du rejet (obligatoire)"
+                      class="border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm"></textarea>
+            <div><button type="submit" class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5 text-sm font-medium text-encre transition-colors duration-survol hover:border-marine-700">{{ action.libelle }}</button></div>
+          </form>
+        {% else %}
+          <form method="post" action="{% url action.url_nom programme.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5 text-sm font-medium text-encre transition-colors duration-survol hover:border-marine-700">{{ action.libelle }}</button>
+          </form>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 {% if not programme %}
   <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
     Aucun programme généré pour cette semaine.

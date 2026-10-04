@@ -1,0 +1,42 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Programmes en attente de validation — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Programmes en attente de validation</h1>
+  <p class="text-sm text-gris-lecture">Programmes soumis par la planification, à valider ou rejeter.</p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if lignes %}
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-gris-trait bg-fond-bande text-left text-xs font-semibold uppercase tracking-wide text-marine-900">
+        <th class="px-4 py-2">Semaine</th>
+        <th class="px-4 py-2">Soumis le</th>
+        <th class="px-4 py-2">Soumis par</th>
+        <th class="px-4 py-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in lignes %}
+        <tr class="border-b border-gris-trait">
+          <td class="px-4 py-2">Semaine du {{ ligne.programme.lundi_de_semaine|date:"d/m/Y" }}</td>
+          <td class="px-4 py-2">{{ ligne.programme.date_soumission|date:"d/m/Y H:i" }}</td>
+          <td class="px-4 py-2">{{ ligne.auteur|default:"—" }}</td>
+          <td class="px-4 py-2 text-right">
+            <a href="{% url 'planification:consultation_programme' %}?semaine={{ ligne.programme.lundi_de_semaine|date:'Y-m-d' }}"
+               class="text-marine-700 no-underline hover:underline">Ouvrir</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="px-4 py-3 text-sm text-gris-lecture">Aucun programme en attente de validation.</p>
+  {% endif %}
+</section>
+{% endblock %}

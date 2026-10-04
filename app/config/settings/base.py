@@ -57,6 +57,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "noyau.context_processors.contexte_application",
+                "planification.context_processors.validation_en_attente",
             ],
         },
     },

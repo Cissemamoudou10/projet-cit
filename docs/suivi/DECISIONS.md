@@ -31,6 +31,29 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-230 — Dépôt : travail sur `master`, sans branche par story (prompt 40 § 0.1)
+**Date** 2026-10-04 · **Story** Hors story (préalable du prompt 40, § 0.1) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le CLAUDE.md du projet demandait une branche par story (`us-xxx-nn`). Toutes les stories ont été commitées sur `master` depuis le début, sans que la règle le dise.
+**Décision** — La règle du CLAUDE.md décrit la pratique réelle : travail sur `master`, un commit par story, message en français à l'impératif, sans fusion sans relecture. Changement demandé par le § 0.1 du prompt 40 et tracé ici ; il est dans le commit d'US-VAL-01, comme le prompt le prescrit.
+**Alternative écartée** — Créer les branches rétroactivement : aurait réécrit l'historique ou ajouté des branches sans valeur de traçabilité.
+**Impact sur les livrables** — aucun ; la règle de dépôt change de texte, pas de sens pratique.
+**Reporté au livrable** — non.
+
+## D-229 — US-VAL-01 (prompt 40) : les actions de la consultation viennent de la table du moteur et des permissions ; les deux préconditions du moteur sont reflétées, le moteur seul décide
+**Date** 2026-10-04 · **Story** US-VAL-01 (Prompt 40, § 0.3 et § 1) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le prompt 40 (§ 0.3) demande que les actions d'un programme s'affichent selon son état et le profil, à partir de la table des transitions, sans condition recodée dans le gabarit.
+**Décision** — `planification/circuit_affichage.py` construit la liste des actions : une action est proposée si la permission de son événement (`PERMISSION_PAR_EVENEMENT`) est détenue et si `motif_refus_action` la déclare admise. Deux préconditions restent en dehors de la table : une séance pour soumettre (A9) et une signature complète pour afficher (RG-46, date ET signataire, comme `_verifier_affichable` du moteur). L'écran masque le bouton quand l'une manque, pour que la liste reste lisible et que le prompt (§ 1 : « le bouton n'apparaît pas sur un programme vide », § 3 : « Afficher proposée seulement une fois la signature enregistrée ») soit tenu. Ce masquage est une présentation : le moteur reste seul décideur et refuse un POST forcé, qui s'affiche par message. Le gabarit ne fait que rendre la liste ; il choisit le formulaire à montrer selon le type d'action (signature, rejet, action simple).
+**Alternative écartée** — Une condition par état dans le gabarit : contraire au § 0.3 et à la règle « une règle qui ne vit que dans un gabarit est contournée ». Une seconde table d'actions : deux sources pour la même admission.
+**Impact sur les livrables** — aucun. Le moteur reste la seule source de l'admission ; un refus forcé reste affiché par message.
+**Reporté au livrable** — non.
+
+## D-228 — US-VAL-01 (prompt 40, C3) : page d'attente et compteur dans l'application ; auteur de la soumission lu dans le journal
+**Date** 2026-10-04 · **Story** US-VAL-01 (Prompt 40, § 1, arbitrage A11 du prompt 34) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C3 demande que la cellule pédagogique soit informée des programmes en attente. Le programme ne stocke pas qui l'a soumis : seul le journal (entrée T2) le porte.
+**Décision** — Page « Programmes en attente de validation » (`planification:attente_validation`), gardée par `programme_validation_lecture`, une requête pour la liste et une pour les auteurs (`selectors_circuit.auteurs_des_soumissions`), quel que soit le nombre de programmes (test : requêtes identiques avec un et dix programmes). Compteur dans la navigation, fourni par `planification.context_processors.validation_en_attente` et réservé à la permission d'écriture du domaine (la cellule pédagogique seule ; la planification lit ce domaine sans valider). Le moteur n'est pas modifié : l'auteur n'est pas ajouté au programme, il se lit dans le journal.
+**Alternative écartée** — Ajouter un champ `soumis_par` au programme : impliquerait de modifier l'écriture de la soumission dans le moteur, au-delà de ce que le prompt autorise, et dupliquerait le journal. Compteur pour tous les lecteurs du domaine : la planification n'attend rien de la pédagogique.
+**Impact sur les livrables** — aucun. Le compteur ajoute une requête par page aux seuls profils pédagogiques.
+**Reporté au livrable** — non.
 ## D-227 — US-VAL-03 : sept contraintes d'état en base ; retour à BROUILLON efface le circuit ; T10 journalisée seule
 **Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — ETA-01 § 4.3 liste huit contraintes ; sept manquaient. ETA-01 ne dit pas ce que devient un programme revenu à BROUILLON. T10 (porter un avenant) est admise par la table, mais le mode avenant relève de US-PLAN-05.
