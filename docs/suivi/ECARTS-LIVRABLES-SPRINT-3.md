@@ -63,7 +63,7 @@ octobre) — l'écart sera reporté au diagramme à leur retour, pas avant.
 | 23 | Tableau des contraintes de la phase 4, RG-53 | Sources « épreuve » non recensées | Ajoutées aux deux contraintes d'occupation (RG-37 lieu, RG-34 instructeur) ; compte inchangé | D-211 | Compléter le tableau sans changer le compte |
 | 24 | Fiche CLS-05 § 7.5 | Personne extérieure non décrite | Surveillant en nom libre, sans contrôle de disponibilité (A7) | D-216 | Préciser § 7.5 |
 | 25 | Prompt 38, A6 et présélection de génération (`planification/generation/candidats.py`, `construire_cases`) | La présélection ne consulte que les périodes bloquantes | Une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 : l'issue (aucune séance dans le lieu) est juste, mais le constat est un écart de conception, non tranché | — | Dette technique, sprint 4 : la présélection doit connaître les épreuves ; mesurer son coût (candidats engendrés puis refusés sur le jeu représentatif) avant de la modifier |
-| 26 | Prompt 38, F4 | Lectures de l'organisation sous garde | `LectureOrganisationEpreuve` (synthèse, convocation) n'a aucune garde de service : seule la vue garde la lecture, un appel direct la contourne | — | Dette technique. Inventaire des services de lecture : mixte, 11 gardées dans le service, 30 non gardées (liste dans le rendu) ; ce sont les vues qui les gardent aujourd'hui. Convention à trancher |
+| 26 | Prompt 38, F4 | Lectures de l'organisation sous garde | Convention non écrite : lectures gardées par les vues, 11 services gardent aussi leurs lectures, 30 non | D-219 | Fermé par D-219 (convention écrite, deux exceptions corrigées, test d'architecture) |
 
 ## Ce que cette liste ne couvre pas
 

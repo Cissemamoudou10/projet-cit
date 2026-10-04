@@ -31,6 +31,14 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-219 — Convention des gardes de lecture : gardées par la vue, sauf donnée sensible ou export ; rendue mécanique par test d'architecture
+**Date** 2026-10-04 · **Story** Hors story (arbitrage de l'écart 26 d'US-EVAL-04) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — L'inventaire des services de lecture a trouvé une convention non écrite : 11 lectures portent leur garde dans le service, 30 non. Les vues gardent les 30 aujourd'hui, mais rien ne le garantissait.
+**Décision** — (1) Les écritures sont gardées dans les services (inchangé, tout service d'écriture appelle `verifier_habilitation`). (2) Les lectures sont gardées par la vue qui les expose. Une lecture porte sa garde dans le service dans deux cas seulement : (a) elle renvoie une donnée sensible au sens de BNF-02 (sujets aujourd'hui, notes au sprint 4), et elle journalise alors la consultation ; (b) elle produit un export, c'est-à-dire des données qui sortent du système. Les 11 lectures déjà gardées le restent : une redondance ne se retire pas. (3) Exceptions corrigées : `ServiceSujet.obtenir` prend désormais l'agissant et exige `evaluations_ecriture` ; `ServiceStagiaire.lister_pour_export` exige `organisation_lecture` explicitement, au lieu de l'avoir seulement par `_queryset_filtree`. (4) `tests/architecture/test_garde_des_vues.py` : chaque vue nommée de l'application porte une garde, ou figure dans une liste d'adresses publiques avec sa raison (authentification, accueil, administration Django). Une vue ajoutée sans garde fait échouer la suite.
+**Alternative écartée** — Garder toutes les lectures dans les services : aurait doublé 30 contrôles sans gain (les vues les gardent déjà), et aurait fait porter aux services une règle d'affichage. Ne rien écrire : la convention serait restée une habitude.
+**Impact sur les livrables** — Mise en forme de la règle « lecture gardée par la vue » dans le cahier de tests et `.claude/rules/tests.md` à reprendre. Le test d'architecture est la forme vérifiable de la convention.
+**Reporté au livrable** — non.
+
 ## D-218 — A11 (prompt 38) : la convocation ne consulte aucun sujet
 **Date** 2026-10-03 · **Story** US-EVAL-04 · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — La convocation circule entre les services, lisible par la Direction de Formation. Un sujet sur la convocation rouvrirait la divulgation que RG-51 ferme.

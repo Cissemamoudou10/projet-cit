@@ -188,7 +188,7 @@ majeures par rapport à la dernière version :
 | **D-212** (badge « à vérifier ») | après changement de date, une épreuve porte « à vérifier » dans la liste (A9, lecture du journal) | US-EVAL-04 (A9) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : non livré (aucun code, aucun test E3) |
 | **D-215** (badge de liste sur la complétude) | le badge « non prête » de la liste doit porter la complétude (A4), en requête bornée pour toute la liste | US-EVAL-04 (A4) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : le badge porte encore sur le sujet seul (`evaluations_non_pretes`) |
 | **Présélection** (ECARTS 25) | la présélection de génération (`construire_cases`) ignore les épreuves : une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 | US-EVAL-04 (A6) | *aucune story assignée* | **Dette technique, sprint 4** : l'issue est juste (aucune séance dans le lieu), mais la case est engendrée puis refusée ; mesurer le coût avant de modifier la présélection |
-| **Lecture sans garde** (ECARTS 26) | les lectures de l'organisation (`LectureOrganisationEpreuve`) n'ont pas de garde de service ; seule la vue les garde | US-EVAL-04 (F4) | *aucune story assignée* | **Dette technique** : inventaire mixte, convention à trancher |
+| **Lecture sans garde** (ECARTS 26) | convention des lectures | US-EVAL-04 (F4) | — | **Fermé le 2026-10-04 par D-219** : convention écrite, exceptions corrigées, test d'architecture |
 
 ### Compte final, vérifié le 2026-10-02 (mis à jour, prompt 37)
 
@@ -218,9 +218,9 @@ pas à corriger silencieusement a posteriori.
 
 ### Recompte à la clôture d'US-EVAL-04, le 2026-10-04
 
-Ferment : **D-193** (tests E1 à E3, changement de date signalé) et **C9** (A1, D-208 : organiser sans sujet). **D-202** avait déjà été fermé par D-209. Ouvrent, sans story : **D-212** (badge « à vérifier »), **D-215** (badge de liste sur la complétude), la **présélection** qui ignore les épreuves (ECARTS 25, dette à traiter au sprint 4) et la **lecture sans garde** (ECARTS 26, dette, convention à trancher).
+Ferment : **D-193** (tests E1 à E3, changement de date signalé) et **C9** (A1, D-208 : organiser sans sujet). **D-202** avait déjà été fermé par D-209. Ouvrent, sans story : **D-212** (badge « à vérifier »), **D-215** (badge de liste sur la complétude), la **présélection** qui ignore les épreuves (ECARTS 25, dette à traiter au sprint 4) et la **lecture sans garde** (ECARTS 26) est fermée par D-219.
 
-Net : quatorze ouverts avant cette clôture, moins deux fermés, plus quatre ouverts — **seize ouverts aujourd'hui**.
+Net : quatorze ouverts avant cette clôture, moins deux fermés, plus quatre ouverts — **seize ouverts à la clôture**, puis **quinze** après la fermeture de l'écart 26 (D-219, qui n'est pas un report mais un écart).
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 
