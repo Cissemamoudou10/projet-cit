@@ -140,7 +140,7 @@ MARCHES_PAR_EVENEMENT = {
 MARCHES_ECRITURE = {
     _SOUMIS: "Retirez la soumission (T3) avant de modifier les séances.",
     _VALIDE: "Annulez la validation (T9) : jamais d'annulation implicite.",
-    _AFFICHE: "Portez un avenant (T10) : le mode avenant arrive avec US-PLAN-05.",
+    _AFFICHE: "Portez un avenant (T10) depuis la modification de la séance.",
 }
 MARCHES_PAR_ETAT = {
     (SOUMETTRE, _SOUMIS): "Il est déjà soumis : retirez la soumission (T3) pour le corriger.",
@@ -350,9 +350,8 @@ class ServiceCircuitProgramme:
 
     @staticmethod
     def porter_avenant(agissant, programme, motif, nature):
-        """T10 — reste AFFICHÉ. Seule la journalisation est implantée ici : le
-        mode avenant (modification d'une séance d'un programme affiché) arrive
-        avec US-PLAN-05. Tant qu'il n'existe pas, la garde refuse toute écriture."""
+        """T10 — reste AFFICHÉ et journalise l'avenant (motif et nature exigés). La
+        modification de la séance passe par la porte, avec `avenant=True`."""
         with transaction.atomic():
             verrouille = _verrouiller(programme)
             transition = _transition(agissant, verrouille, PORTER_AVENANT)
@@ -365,15 +364,21 @@ class ServiceCircuitProgramme:
 
     @staticmethod
     def garde_modification(
-        programme, agissant, evenement=ECRIRE_SEANCE, declencheur=DECLENCHEUR_SEANCE
+        programme, agissant, evenement=ECRIRE_SEANCE, declencheur=DECLENCHEUR_SEANCE, avenant=False
     ):
         """V3 — appelée par chaque porte d'écriture et par la suppression de la
         régénération, AVANT toute écriture. Sous verrou : BROUILLON passe ;
         REJETÉ déclenche la reprise implicite (T6), journalisée, puis passe ;
         les autres états refusent, avec la marche à suivre. Doit être appelée
         dans la transaction de l'appelant (le verrou l'exige), qui annule tout
-        si la suite échoue. Retourne le programme relu."""
+        si la suite échoue. Retourne le programme relu.
+
+        M2 (prompt 41) : `avenant=True` admet l'écriture sur un programme affiché.
+        """
         verrouille = _verrouiller(programme)
+        if avenant:
+            _transition_admise(verrouille, PORTER_AVENANT)
+            return verrouille
         _transition_admise(verrouille, evenement)
         if verrouille.etat == _REJETE:
             reprise = TRANSITIONS[(REPRENDRE, _REJETE)]

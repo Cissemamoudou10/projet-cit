@@ -10,10 +10,11 @@ toujours et refuse si l'action est forcée (D-229).
 from dataclasses import dataclass
 
 from noyau.habilitations import a_permission
-from planification.models import Seance
+from planification.models import Avenant, Seance
 from planification.selectors_circuit import motif_rejet_visible
 from planification.services.circuit import (
     AFFICHER,
+    ANNULER_VALIDATION,
     PERMISSION_PAR_EVENEMENT,
     REJETER,
     REPRENDRE,
@@ -40,6 +41,7 @@ LIBELLES_ACTIONS = {
     REPRENDRE: ("Reprendre en correction", "planification:reprendre"),
     SIGNER: ("Enregistrer la signature", "planification:signer"),
     AFFICHER: ("Afficher le programme", "planification:afficher"),
+    ANNULER_VALIDATION: ("Annuler la validation", "planification:annuler_validation"),
 }
 
 
@@ -70,4 +72,7 @@ def contexte_circuit(programme, utilisateur):
     return {
         "actions_circuit": actions_disponibles(programme, utilisateur),
         "motif_rejet_visible": motif_rejet_visible(programme),
+        "avenants": Avenant.objects.filter(seance__programme=programme)
+        .select_related("seance__element_referentiel__matiere")
+        .order_by("pk"),
     }

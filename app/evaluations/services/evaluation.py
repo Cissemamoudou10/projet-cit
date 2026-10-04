@@ -22,6 +22,7 @@ from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from evaluations.models import Evaluation, TypeEvaluation
 from evaluations.services.conflits import conflits_de_l_epreuve
+from evaluations.services.suppression import supprimer_evaluation
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement, valider_instance
@@ -349,6 +350,11 @@ class ServiceEvaluation:
             conflits_de_l_epreuve(evaluation)
         )
         return evaluation
+
+    @staticmethod
+    def supprimer(agissant, evaluation):
+        """M8 (prompt 41) : supprime une évaluation non organisée et sans sujet retenu."""
+        return supprimer_evaluation(agissant, evaluation)
 
     @staticmethod
     def obtenir(pk):

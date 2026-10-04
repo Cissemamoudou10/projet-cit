@@ -1,6 +1,6 @@
 from django.urls import path
 
-from planification import views, views_circuit
+from planification import views, views_circuit, views_seance
 
 app_name = "planification"
 
@@ -15,4 +15,8 @@ urlpatterns = [
     path("planification/programmes/<int:pk>/reprendre/", views_circuit.reprendre, name="reprendre"),
     path("planification/programmes/<int:pk>/signer/", views_circuit.signer, name="signer"),
     path("planification/programmes/<int:pk>/afficher/", views_circuit.afficher, name="afficher"),
+    path("planification/programmes/<int:pk>/annuler-validation/", views_seance.annuler_validation, name="annuler_validation"),
+    path("planification/seances/<int:pk>/modifier/", views_seance.modifier_seance, name="modifier_seance"),
+    path("planification/seances/<int:pk>/supprimer/", views_seance.supprimer_seance, name="supprimer_seance"),
+    path("planification/seances/<int:pk>/deverrouiller/", views_seance.deverrouiller_seance, name="deverrouiller_seance"),
 ]

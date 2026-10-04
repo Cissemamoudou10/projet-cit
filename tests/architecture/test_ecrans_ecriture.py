@@ -458,6 +458,10 @@ ECRANS_ECRITURE = [
     EcranEcriture("planification:reprendre", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
     EcranEcriture("planification:signer", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
     EcranEcriture("planification:afficher", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:annuler_validation", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:modifier_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
+    EcranEcriture("planification:supprimer_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
+    EcranEcriture("planification:deverrouiller_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
     EcranEcriture("evaluations:creer_evaluation", "noyau.evaluations_ecriture"),
     # --- evaluations : modification de la date d'un examen final (US-EVAL-02) ---
@@ -524,8 +528,9 @@ ECRANS_ECRITURE = [
 
 # 102 adresses : les 97 précédentes (Prompt 37) plus les cinq adresses
 # d'écriture de l'organisation d'épreuve (US-EVAL-04, Prompt 38) ; 109 après le
-# circuit du programme (prompt 40, sept routes POST : soumission à signature).
-assert len(ECRANS_ECRITURE) == 109
+# circuit du programme (prompt 40, sept routes POST) ; 113 après la modification
+# manuelle et l'avenant (prompt 41, US-PLAN-05 : quatre routes POST).
+assert len(ECRANS_ECRITURE) == 113
 
 
 def _groupes_sans(permission):

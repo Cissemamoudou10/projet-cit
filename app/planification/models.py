@@ -184,6 +184,12 @@ class Seance(ModeleHorodate):
     fin = models.DateTimeField(verbose_name="fin")
     verrouillee = models.BooleanField(default=False, verbose_name="verrouillée")
 
+    @property
+    def est_un_controle(self):
+        """Vrai si une évaluation (contrôle) est rattachée à cette séance. Dérivé,
+        jamais stocké (M7) : la relation inverse `evaluation` le porte."""
+        return hasattr(self, "evaluation")
+
     class Meta:
         db_table = "planification_seance"
         verbose_name = "séance"
@@ -264,3 +270,50 @@ class LigneProgramme(ModeleHorodate):
         ).select_related("seance"):
             total += ligne.seance.fin - ligne.seance.debut
         return total / datetime.timedelta(hours=1)
+
+
+class NatureAvenant(models.TextChoices):
+    """M3 — l'opération décidée, stockée : les données de la séance ne
+    permettent plus de la retrouver après coup."""
+
+    REMPLACEMENT_INSTRUCTEUR = "remplacement_instructeur", "Remplacement d'instructeur"
+    CHANGEMENT_LIEU = "changement_lieu", "Changement de lieu"
+    BASCULE_SANS_LIEU = "bascule_sans_lieu", "Bascule sans lieu"
+    DEPLACEMENT = "deplacement", "Déplacement"
+    CHANGEMENT_MATIERE = "changement_matiere", "Changement de matière"
+    AJOUT = "ajout", "Ajout"
+
+
+class Avenant(ModeleHorodate):
+    """Avenant d'une séance affichée — BF-PLAN-05, CLS-05 § 6.6 (US-PLAN-05).
+
+    Rattaché à la séance en `PROTECT` : l'avenant est la trace d'une décision,
+    il ne disparaît jamais avec la séance (M4 refuse aussi la suppression).
+    `detail` est le texte généré par le service (ancienne et nouvelle valeur).
+    """
+
+    seance = models.ForeignKey(
+        Seance,
+        on_delete=models.PROTECT,
+        related_name="avenants",
+        verbose_name="séance",
+    )
+    motif = models.TextField(verbose_name="motif")
+    nature = models.CharField(
+        max_length=30, choices=NatureAvenant.choices, verbose_name="nature"
+    )
+    detail = models.TextField(blank=True, verbose_name="détail")
+
+    class Meta:
+        db_table = "planification_avenant"
+        verbose_name = "avenant"
+        verbose_name_plural = "avenants"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(motif__regex=r"\S"), name="ck_avenant_motif_non_vide"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(nature__in=NatureAvenant.values),
+                name="ck_avenant_nature_connue",
+            ),
+        ]

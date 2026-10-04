@@ -37,7 +37,7 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 47 | 8 | J2 |
+| 3 | 28/09 – 10/10 | 11 | 50 | 8 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
@@ -231,6 +231,10 @@ Ferment : **D-170** (insertion d'un contrôle refusée hors brouillon, C4, D-221
 ### Recompte à la clôture d'US-VAL-02, le 2026-10-04
 
 Ferme : **D-172** (lecture du programme par la pédagogique, D-231). Aucun report ne s'ouvre. Net : **douze ouverts**.
+
+### Recompte d'US-PLAN-05 (partielle), le 2026-10-04
+
+Ferme : **D-181** (suppression d'une évaluation et de sa séance verrouillée, D-240). Reste ouvert : **D-121** (E2 et A3, périodes bloquantes, D-243). Net : **onze ouverts**.
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 

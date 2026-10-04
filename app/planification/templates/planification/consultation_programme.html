@@ -104,6 +104,13 @@
     {% if programme.date_affichage %}
       <p class="text-gris-lecture">Affiché le {{ programme.date_affichage|date:"d/m/Y H:i" }}.</p>
     {% endif %}
+    {% for avenant in avenants %}
+      <p class="border-l-2 border-marine-700 pl-3 text-gris-lecture">
+        Avenant du {{ avenant.cree_le|date:"d/m/Y" }} — {{ avenant.get_nature_display }} :
+        <span class="text-encre">{{ avenant.motif }}</span>
+        <span class="text-2xs">({{ avenant.detail }})</span>
+      </p>
+    {% endfor %}
     <div class="flex flex-wrap items-end gap-2">
       {% for action in actions_circuit %}
         {% if action.evenement == "signer" %}
@@ -113,6 +120,16 @@
             <input type="text" name="signataire" required maxlength="150" placeholder="Nom du signataire"
                    class="border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm">
             <button type="submit" class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5 text-sm font-medium text-encre transition-colors duration-survol hover:border-marine-700">{{ action.libelle }}</button>
+          </form>
+        {% elif action.evenement == "annuler_validation" %}
+          <form method="post" action="{% url action.url_nom programme.pk %}" class="flex w-full flex-col gap-2">
+            {% csrf_token %}
+            <textarea name="motif" rows="2" required placeholder="Motif de l'annulation (obligatoire)"
+                      class="border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm"></textarea>
+            <label class="flex items-center gap-2 text-xs text-gris-lecture">
+              <input type="checkbox" name="confirmee" required> Je confirme l'annulation de la validation
+            </label>
+            <div><button type="submit" class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5 text-sm font-medium text-encre hover:border-marine-700">{{ action.libelle }}</button></div>
           </form>
         {% elif action.evenement == "rejeter" %}
           <form method="post" action="{% url action.url_nom programme.pk %}" class="flex w-full flex-col gap-2">
@@ -190,6 +207,10 @@
                     {% if cellule.est_controle %}
                       <span class="border border-marine-700 px-1 text-2xs font-semibold
                                    uppercase tracking-wide text-marine-900">Contrôle</span>
+                    {% endif %}
+                    {% if perms.noyau.programme_ecriture %}
+                      <a href="{% url 'planification:modifier_seance' cellule.seance.pk %}"
+                         class="ml-auto text-2xs text-marine-700 underline-offset-2 hover:underline">Modifier</a>
                     {% endif %}
                   </div>
                   <div class="mt-0.5 flex items-baseline gap-2 whitespace-nowrap text-2xs tabular-nums

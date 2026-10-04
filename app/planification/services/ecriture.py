@@ -28,6 +28,7 @@ from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.base import ServiceBase
 from planification.models import LigneProgramme, Seance
+from planification.services import modification
 from planification.services.circuit import (
     DECLENCHEUR_CONTROLE,
     DECLENCHEUR_GENERATION,
@@ -83,11 +84,10 @@ def _creer_une_seance(agissant, programme, candidates, verrouillee=False):
     return seance
 
 
-def _verifier_et_creer(programme, candidates, agissant, verrouillee=False):
+def _verifier_et_creer(programme, candidates, agissant, verrouillee, declencheur):
     """La garde d'état (V3) précède le contrôle des contraintes, sous le même
     verrou : une reprise implicite (T6) est annulée avec le reste si la
     séance est refusée."""
-    declencheur = DECLENCHEUR_CONTROLE if verrouillee else DECLENCHEUR_SEANCE
     with transaction.atomic():
         verrouille = ServiceCircuitProgramme.garde_modification(
             programme, agissant, declencheur=declencheur
@@ -155,7 +155,9 @@ class ServiceEcritureSeance:
         séance regroupée ne s'écrit jamais à moitié.
         """
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
-        return _verifier_et_creer(programme, candidates, agissant)
+        return _verifier_et_creer(
+            programme, candidates, agissant, verrouillee=True, declencheur=DECLENCHEUR_SEANCE
+        )
 
     @staticmethod
     def inserer_seance_de_controle(agissant, programme, candidates):
@@ -175,7 +177,34 @@ class ServiceEcritureSeance:
         test_inserer_seance_de_controle_n_est_appelee_que_depuis_evaluations`.
         """
         verifier_habilitation(agissant, PERMISSION_EVALUATIONS_ECRITURE)
-        return _verifier_et_creer(programme, candidates, agissant, verrouillee=True)
+        return _verifier_et_creer(
+            programme, candidates, agissant, verrouillee=True, declencheur=DECLENCHEUR_CONTROLE
+        )
+
+    @staticmethod
+    def supprimer_seance_de_controle(agissant, seance):
+        """M8 (prompt 41) : second point d'entrée de la suppression, réservé à la
+        suppression d'une évaluation (`evaluations_ecriture`), sur le modèle de
+        `inserer_seance_de_controle` (D-177). Même garde, même journal."""
+        return modification.supprimer_seance(
+            agissant, seance, permission=PERMISSION_EVALUATIONS_ECRITURE
+        )
+
+    @staticmethod
+    def modifier_seance(agissant, seance, changements, avenant=None, confirmee=False):
+        """US-PLAN-05 (M1) : délègue à `modification`, qui porte la garde, les
+        contraintes et le journal. Voir `planification.services.modification`."""
+        return modification.modifier_seance(agissant, seance, changements, avenant, confirmee)
+
+    @staticmethod
+    def supprimer_seance(agissant, seance):
+        """US-PLAN-05 (M1, M4, M7) : suppression d'une séance non affichée."""
+        return modification.supprimer_seance(agissant, seance)
+
+    @staticmethod
+    def deverrouiller_seance(agissant, seance):
+        """US-PLAN-05 (M7) : rend la séance à la régénération."""
+        return modification.deverrouiller_seance(agissant, seance)
 
     @staticmethod
     def creer_seances(agissant, programme, groupes_de_candidates):

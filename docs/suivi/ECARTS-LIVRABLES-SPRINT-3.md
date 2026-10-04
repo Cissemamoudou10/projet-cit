@@ -82,6 +82,17 @@ prompt 39 demande de les trancher seul et de les consigner ici.
 | 33 | Backlog US-VAL-01 c.3, et ETA-01 § 4.4 | « La cellule pédagogique est informée des programmes en attente » ; le programme n'a aucun champ d'auteur de soumission | Auteur lu dans le journal (entrée T2), une requête bornée ; compteur et page dans l'application, arbitrage A11 (D-228) | D-228 | Aucune ; si le mémoire veut l'auteur sur le programme, ce sera un champ écrit par le moteur, donc une story |
 | 34 | Matrice § 11.2, ligne P5, validation, et D-172 | La pédagogique lit le programme par `programme_validation_lecture` (D-172), sans `programme_lecture` | Arbitrage A8 du prompt 40 : `programme_lecture` accordée à la pédagogique (`administration/constantes.py`). Ceci révise D-172 et D-154 (D-233). Surface élargie : consultation de la semaine accessible en lecture, rubrique « Planification » visible dans sa navigation ; aucune écriture de planification | D-233 | Amender la ligne P5 de la matrice § 11.2 et la référence de `test_matrice_habilitations` (valeur `(True, False)`, commentée) ; décider au retour des cellules si la consultation complète doit lui être ouverte |
 | 35 | Backlog US-VAL-02 c.4, et RG-45 | « Le motif reste visible à la planification » ; le moteur efface le motif au retour à BROUILLON (D-227) | Motif lu dans le journal (dernier rejet, sans soumission ultérieure), moteur inchangé (D-231) | D-231 | Préciser RG-45 : le motif survit à la reprise dans la trace, pas dans le champ du programme |
+## US-PLAN-05 (Prompt 41) — tranchés seul ou reportés
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui a été implanté | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 36 | CU-P5-03 E2 (« faire rejeter » pour un programme validé) | L'issue d'un programme validé est le rejet | L'issue est l'annulation de validation (T9), avec motif et confirmation (D-242) | D-242 | Corriger CU-P5-03 E2 |
+| 37 | CLS-05 (`Avenant.natureModification : texte`) | Nature en texte libre | Nature stockée, six choix : l'opération décidée reste retrouvable (D-237) | D-237 | Corriger CLS-05 |
+| 38 | Prompt 41, M8 (suppression d'une évaluation) | Silencieux sur la certificative sans séance | Supprimable comme la formative sans séance, si ni organisée ni à sujet retenu (D-240) | D-240 | Confirmer le choix au retour des cellules |
+| 39 | RG-39 a) appliqué à la modification | Le volume programmé se contrôle sur le programme entier | Corrigé à la relecture : la modification compte les autres séances du même programme ; la régénération garde son propre calcul (D-243) | D-243 | Aucune |
+| 40 | Prompt 41, C4 (ajout manuel sur créneau libre) | Un écran d'ajout | Le service pose le verrou (`creer_seance`), aucun formulaire ne l'appelle | D-243 | Lot écran d'ajout à planifier |
+| 41 | D-121 E2 et A3 (périodes bloquantes) | Reports ouverts | Non traités dans cette story : énumération des séances recouvertes et rien restauré d'office restent à faire | D-243 | Lot dédié à planifier |
+| 42 | Backlog v9 US-PLAN-05 | Avenant absent de la story, estimation 5 points | Avenant rattaché à US-PLAN-05, estimation réestimée à 8 points par le chef de projet (prompt 41) | D-237 | Mettre à jour le backlog v10 |
 
 ## Ce que cette liste ne couvre pas
 

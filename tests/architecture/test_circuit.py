@@ -12,6 +12,8 @@ RACINE = pathlib.Path(__file__).resolve().parents[2]
 SRC = RACINE / "app"
 CIRCUIT = SRC / "planification" / "services" / "circuit.py"
 GENERATION = SRC / "planification" / "services" / "generation.py"
+MODIFICATION = SRC / "planification" / "services" / "modification.py"
+SUPPRESSEURS_AUTORISES = {MODIFICATION}
 ECRITURE = SRC / "planification" / "services" / "ecriture.py"
 
 METHODES_D_ECRITURE = {
@@ -60,6 +62,10 @@ def _affectations_de_l_etat(arbre):
     return lignes
 
 
+def _vaut_etat(noeud):
+    return isinstance(noeud, ast.Constant) and noeud.value == "etat"
+
+
 def _affectations_par_appel(appel):
     """`etat=` passé à l'ORM, `ProgrammeHebdomadaire(etat=…)`, `setattr(x,
     "etat", …)` et `defaults={"etat": …}` : quatre façons d'affecter l'état."""
@@ -67,9 +73,8 @@ def _affectations_par_appel(appel):
     lignes = []
     if nom in METHODES_D_ECRITURE or nom == "ProgrammeHebdomadaire":
         lignes += [k.lineno for k in appel.keywords if k.arg == "etat"]
-    if nom == "setattr" and len(appel.args) >= 2:
-        if isinstance(appel.args[1], ast.Constant) and appel.args[1].value == "etat":
-            lignes.append(appel.lineno)
+    if nom == "setattr" and len(appel.args) >= 2 and _vaut_etat(appel.args[1]):
+        lignes.append(appel.lineno)
     for argument in appel.keywords:
         if argument.arg == "defaults" and isinstance(argument.value, ast.Dict):
             lignes += [
@@ -108,7 +113,7 @@ def test_h2_seules_les_suppressions_de_seances_passent_par_la_generation():
             if not isinstance(noeud.func, ast.Attribute):
                 continue
             segment = ast.get_source_segment(texte, noeud.func.value) or ""
-            if ("Seance" in segment or "seance" in segment.lower()) and chemin != GENERATION:
+            if ("Seance" in segment or "seance" in segment.lower()) and chemin not in SUPPRESSEURS_AUTORISES:
                 fautifs.append(f"{chemin.relative_to(RACINE)} ligne {noeud.lineno}")
     assert not fautifs, "Suppression de séance hors de la génération :\n" + "\n".join(fautifs)
 
@@ -142,3 +147,12 @@ def test_h2_la_porte_d_ecriture_appelle_la_garde_dans_chaque_chemin():
     deux chemins qui créent des séances passent par la garde."""
     assert _lignes_d_appel(ECRITURE, "garde_modification", "_verifier_et_creer")
     assert _lignes_d_appel(ECRITURE, "garde_modification", "creer_seances")
+
+
+def test_h2_la_suppression_manuelle_appelle_la_garde_avant_d_effacer():
+    """US-PLAN-05 (M1) : `supprimer_seance` garde la séance par la garde avant
+    tout effacement."""
+    gardes = _lignes_d_appel(MODIFICATION, "garde_modification", "supprimer_seance")
+    suppressions = _lignes_d_appel(MODIFICATION, "_supprimer", "supprimer_seance")
+    assert gardes and suppressions
+    assert gardes[0] < suppressions[0]

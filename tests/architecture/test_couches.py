@@ -310,7 +310,8 @@ def test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme():
             if ligne.lstrip().startswith("#"):
                 continue
             for motif in motifs:
-                if motif in ligne:
+                # Frontière de mot : `FormulaireSeance(` n'est pas `Seance(` (prompt 41).
+                if re.search(r"(?<![A-Za-z0-9_])" + re.escape(motif), ligne):
                     fautifs.append(
                         "%s ligne %d : %s" % (chemin.relative_to(RACINE), i, ligne.strip())
                     )

@@ -41,6 +41,7 @@ from planification.services.contraintes import (
     _semaine,
 )
 from planification.services.ecriture import ServiceEcritureSeance
+from planification.services.modification import supprimer_seances_regenerables
 from ressources.models import CreneauType, GrilleHoraire
 
 PERMISSION_ECRITURE = ServiceEcritureSeance.PERMISSION_ECRITURE
@@ -94,7 +95,7 @@ def _supprimer_seances_regenerees(programme, brigades):
         if not brigades_seance & selectionnees:
             continue
         (a_supprimer if brigades_seance <= selectionnees else a_cheval).append(seance)
-    Seance.objects.filter(pk__in=[s.pk for s in a_supprimer]).delete()
+    supprimer_seances_regenerables(a_supprimer)
     return a_supprimer, a_cheval
 
 

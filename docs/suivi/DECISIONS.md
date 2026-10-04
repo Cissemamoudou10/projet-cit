@@ -31,6 +31,78 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-243 — US-PLAN-05 : périmètre livré, reports ouverts et limite connue (rendu du prompt 41)
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, § 2 et § 5) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le prompt 41 demande onze arbitrages, un écran d'ajout, et la fermeture des reports D-121 E2 et A3.
+**Décision** — Livré et testé : M1 à M10 (service et cycle HTTP), M11 pour les prérequis (test E), la séance de contrôle (D1) et la suppression d'évaluation (D2, D3, ferme D-181). **Non livré** : l'écran d'ajout manuel (le service `creer_seance` pose le verrou, mais aucun formulaire ne l'appelle) ; les reports D-121 E2 (énumérer les séances recouvertes à la création d'une période bloquante) et A3 (rien n'est restauré d'office après suppression d'une période) : ouverts, à reprendre dans un lot dédié. **Corrigé à la relecture** : le volume RG-39 a) d'une modification compte les autres séances du même programme (test `test_a2_volume_programme_compte_les_autres_seances_du_meme_programme`) ; la suppression de régénération passe par `supprimer_seances_regenerables`, seul autre chemin de suppression, dans le module de modification.
+**Alternative écartée** — Déclarer la story livrée en l'état : la limite de volume et les deux reports laissent des écarts ouverts.
+**Impact sur les livrables** — écarts 36 à 42 (ECARTS) ; reports D-121 (E2, A3) restent ouverts ; D-181 fermé.
+**Reporté au livrable** — oui.
+
+## D-242 — US-PLAN-05 (M10) : annulation de validation exposée sur le programme validé, motif et confirmation exigés
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M10, C8) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — T9 existe dans le moteur depuis US-VAL-03 ; aucun écran ne la proposait. CU-P5-03 E2 (« faire rejeter » pour un programme validé) n'est plus une issue : c'est l'annulation.
+**Décision** — L'action « Annuler la validation » entre dans la table d'actions de la consultation (`circuit_affichage`, même mécanisme que les autres actions) ; son formulaire exige un motif et une case de confirmation. Le moteur refuse sans l'un ou l'autre.
+**Alternative écartée** — Un bouton sans confirmation : contraire à RG-42 (aucune annulation implicite).
+**Impact sur les livrables** — CU-P5-03 E2 à corriger (écart 36).
+**Reporté au livrable** — non.
+
+## D-241 — US-PLAN-05 (M9, A2) : la bascule sans lieu est un choix humain, jamais présélectionné ; la matière qui exige un lieu refuse la bascule
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M9) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Une séance dont le lieu devient indisponible peut basculer vers une activité sans lieu. Le système ne doit jamais proposer cette bascule d'office.
+**Décision** — La bascule est une modification ordinaire (`lieu` vidé, matière d'une catégorie sans lieu). Une matière exigeant un lieu, vidée de son lieu, est refusée avant les six contraintes par `_verifier_lieu_requis` (test A9) : sans ce contrôle, un lieu vide serait lu comme « la salle attitrée » et la bascule admise d'office (relecture). Le formulaire n'a aucune option présélectionnée pour la nature d'avenant (F6) ; la bascule y est une option parmi d'autres.
+**Alternative écartée** — Une action « basculer » dédiée qui vide le lieu d'office : rendrait la bascule proposée par le système.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-240 — US-PLAN-05 (M8, D2, D3) : suppression d'une évaluation ; ferme le report D-181
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M8) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — D-181 : supprimer une évaluation et sa séance verrouillée, jamais hors du service d'évaluation. Une séance de contrôle ne peut plus être effacée qu'avec son évaluation (PROTECT).
+**Décision** — `ServiceEvaluation.supprimer` (module `evaluations/services/suppression.py`) : refus si l'évaluation est organisée ou dont un sujet est retenu. Sinon l'évaluation est supprimée, puis sa séance par la porte, par le second point d'entrée `supprimer_seance_de_controle` (permission `evaluations_ecriture`, sur le modèle de D-177). Le journal porte la suppression. Une évaluation certificative sans séance s'efface de la même manière : le prompt ne le précise pas, je tranche ainsi.
+**Alternative écartée** — Exiger `programme_ecriture` pour supprimer une évaluation : la cellule examens ne l'a pas, et la suppression deviendrait impossible pour son propre domaine.
+**Impact sur les livrables** — D-181 fermé. Certificative sans séance : choix de l'auteur, à confirmer (écart 38).
+**Reporté au livrable** — non.
+
+## D-239 — US-PLAN-05 (M7) : verrou à la modification et à l'ajout ; séance de contrôle non déverrouillable, non supprimable par la planification ; déplacement admis
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M7) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CU-P5-03 : une séance modifiée ou ajoutée à la main est verrouillée ; une séance d'évaluation ne se détache pas de son évaluation.
+**Décision** — `modifier_seance` et `creer_seance` posent `verrouillee`. `deverrouiller_seance` et `supprimer_seance` refusent une séance de contrôle (propriété dérivée `est_un_controle`, jamais stockée, relation inverse de l'évaluation). Le déplacement reste admis, la date de la formative suit la séance (A2). La suppression d'un contrôle est refusée par la planification et ne passe que par D-240.
+**Alternative écartée** — Stocker un drapeau « contrôle » sur la séance : dérivé, donc interdit (`modeles.md`).
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-238 — US-PLAN-05 (M4, M5, M6) : pas de suppression sur un affiché, pas de déplacement hors de la semaine, pas de modification d'une séance commencée
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M4, M5, M6) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Supprimer une séance affichée effacerait son avenant ; une séance commencée est un fait accompli ; un déplacement hors de la semaine romprait l'état de chaque programme.
+**Décision** — Trois refus avec message : suppression sur un programme affiché (renvoi à la non-exécution, sprint 4) ; déplacement dont le jour sort de la semaine du programme (supprimer puis ajouter dans la semaine cible) ; modification ou suppression d'une séance dont le début est passé.
+**Alternative écartée** — Autoriser la suppression sur un affiché avec un avenant de suppression : le prompt tranche (M4) et la non-exécution a sa place au sprint 4.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-237 — US-PLAN-05 (M3) : l'avenant est un objet rattaché à la séance ; sa nature est stockée, sa contrainte est en base
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M3) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — BF-PLAN-05 et CLS-05 § 6.6 : un avenant daté et motivé, à la place de la modification d'un programme affiché. CLS-05 porte `natureModification : texte`.
+**Décision** — Modèle `Avenant` (`planification/models.py`, migration `planification/0004`) : motif, nature (six choix, stockée), détail généré par le service (« ancienne → nouvelle »), auteur et date par la base. Rattaché à la séance en `PROTECT` : la trace d'une décision ne disparaît jamais avec la séance (relecture : `CASCADE` retiré). Deux contraintes en base : motif non vide (`ck_avenant_motif_non_vide`), nature connue (`ck_avenant_nature_connue`). Le journal de la modification porte la mention « avenant (nature) » ; aucune nouvelle nature RG-26 n'est ajoutée (patron de gestion existant).
+**Alternative écartée** — Nature en texte libre : le prompt la veut stockée, pour retrouver l'opération décidée. Nouvelle nature de journal : une extension de plus à RG-26 pour un détail déjà porté par la modification.
+**Impact sur les livrables** — CLS-05 `natureModification` : choix stocké, écart à consigner (écart 37).
+**Reporté au livrable** — oui.
+
+## D-236 — US-PLAN-05 (M2) : la garde admet l'écriture portant un avenant sur un programme affiché ; la table des transitions reste intacte
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M2) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La garde refuse toute écriture sur un programme affiché (« porter un avenant »). Le prompt en fait l'extension prévue, et la seule modification du moteur autorisée.
+**Décision** — `garde_modification(..., avenant=True)` admet l'écriture sur AFFICHÉ, qui reste AFFICHÉ, validation et signature intactes. Un avenant sur un autre état est refusé (« un avenant n'existe qu'après affichage »). La table `TRANSITIONS` ne change pas : l'oracle des 55 cas (ETA-01 § 4.1) reste vrai, la case « écriture sur AFFICHÉ » y reste « refus ». L'avenant est admis par la même case T10 (`_transition_admise`), non recodée (relecture).
+**Alternative écartée** — Ajouter une case admise à la table : aurait modifié le document de référence sans décision de cellule.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-235 — US-PLAN-05 (M1) : toute modification, suppression et déverrouillage passent par la porte unique ; vérification du contexte sans la séance elle-même
+**Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M1) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La porte unique écrit déjà les séances (creer_seance, creer_seances, inserer_seance_de_controle). M1 lui confie la modification, la suppression et le déverrouillage.
+**Décision** — `ServiceEcritureSeance` gagne `modifier_seance`, `supprimer_seance`, `deverrouiller_seance` (et `supprimer_seance_de_controle`), tous délégués à `planification/services/modification.py`. Chacun : habilitation, lecture du programme sous verrou, garde (avec l'avenant si présent), refus commencée, contrôle des six contraintes sur la séance résultante avec un contexte sans la séance elle-même (`dataclasses.replace` sur `seances_existantes`), écriture, journal. Le module est séparé pour rester sous 400 lignes ; `ecriture.py` reste la seule porte.
+**Alternative écartée** — Tout mettre dans `ecriture.py` : dépasse la limite de taille du fichier.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
 ## D-234 — US-VAL-04 (prompt 40, § 3) : signature réenregistrable jusqu'à l'affichage ; « Afficher » proposé seulement une fois signé ; mentions de validation et de signature sur le programme affiché
 **Date** 2026-10-04 · **Story** US-VAL-04 (Prompt 40, § 3, arbitrages du prompt) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — C1 à C4 du backlog v9 : l'affichage n'est proposé que sur un programme validé et signé ; la signature est manuscrite, hors système, et le système en enregistre la date et le nom ; l'affichage non signé est refusé côté serveur et contrôlé en base ; le passage à affiché est journalisé.
