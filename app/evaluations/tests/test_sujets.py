@@ -236,3 +236,10 @@ def test_d1_direction_formation_refusee_en_appel_direct_au_service(
         appel(direction_formation, certificative, sujet)
 
     assert certificative.sujets.count() == 1
+
+
+def test_obtenir_sujet_refuse_hors_evaluations_ecriture(direction_formation, examens, certificative):
+    sujet = _enregistrer(examens, certificative, "Pli garde")
+    with pytest.raises(ErreurHabilitation):
+        ServiceSujet.obtenir(direction_formation, sujet.pk)
+    assert ServiceSujet.obtenir(examens, sujet.pk).pk == sujet.pk

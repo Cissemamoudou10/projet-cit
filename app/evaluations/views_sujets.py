@@ -23,9 +23,9 @@ def _evaluation_ou_404(pk):
         raise Http404 from erreur
 
 
-def _sujet_ou_404(pk):
+def _sujet_ou_404(agissant, pk):
     try:
-        return ServiceSujet.obtenir(pk)
+        return ServiceSujet.obtenir(agissant, pk)
     except ErreurIntrouvable as erreur:
         raise Http404 from erreur
 
@@ -73,7 +73,7 @@ def vue_sujets(request, pk):
 
 @exige_habilitation(PERMISSION_ECRITURE)
 def vue_corriger_sujet(request, pk):
-    sujet = _sujet_ou_404(pk)
+    sujet = _sujet_ou_404(request.user, pk)
     formulaire = FormulaireSujet(request.POST)
     if formulaire.is_valid():
         try:
@@ -89,7 +89,7 @@ def vue_corriger_sujet(request, pk):
 
 @exige_habilitation(PERMISSION_ECRITURE)
 def vue_supprimer_sujet(request, pk):
-    sujet = _sujet_ou_404(pk)
+    sujet = _sujet_ou_404(request.user, pk)
     evaluation_pk = sujet.evaluation_id
     try:
         ServiceSujet.supprimer(request.user, sujet)
@@ -102,7 +102,7 @@ def vue_supprimer_sujet(request, pk):
 
 @exige_habilitation(PERMISSION_ECRITURE)
 def vue_retenir_sujet(request, pk):
-    sujet = _sujet_ou_404(pk)
+    sujet = _sujet_ou_404(request.user, pk)
     formulaire = FormulaireRetenirSujet(request.POST)
     confirmation = formulaire.is_valid() and formulaire.cleaned_data["confirmation"]
     try:
@@ -116,7 +116,7 @@ def vue_retenir_sujet(request, pk):
 
 @exige_habilitation(PERMISSION_ECRITURE)
 def vue_changer_retenu_sujet(request, pk):
-    sujet = _sujet_ou_404(pk)
+    sujet = _sujet_ou_404(request.user, pk)
     formulaire = FormulaireChangerRetenu(request.POST)
     motif = formulaire.cleaned_data["motif"] if formulaire.is_valid() else ""
     try:

@@ -233,7 +233,10 @@ class ServiceSujet:
         return evaluation.sujets.filter(retenu=True).first()
 
     @staticmethod
-    def obtenir(pk):
+    def obtenir(agissant, pk):
+        """Garde `evaluations_ecriture` : aucun appelant ne lit une référence de sujet
+        sans passer par la garde (D-219). L'écran la consulte via `consulter`."""
+        verifier_habilitation(agissant, PERMISSION_ECRITURE)
         try:
             return Sujet.objects.select_related("evaluation").get(pk=pk)
         except Sujet.DoesNotExist as erreur:

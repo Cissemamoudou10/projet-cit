@@ -47,6 +47,7 @@ class ServiceStagiaire:
     def lister_pour_export(agissant, session, filtres):
         """Mêmes filtres que `lister`, sans pagination — § 3, Prompt 26 :
         « ce qui est exporté, c'est exactement ce que l'écran montre »."""
+        verifier_habilitation(agissant, PERMISSION_LECTURE)
         return ServiceStagiaire._queryset_filtree(agissant, session, filtres)
 
     @staticmethod
