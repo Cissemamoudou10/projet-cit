@@ -1,8 +1,8 @@
 """RG-39 — volume et prérequis, deux volets arbitrés au Prompt 30 § 4 (voir
 docs/suivi/DECISIONS.md pour le détail des deux arbitrages) :
 
-(a) le volume programmé compte tous les programmes NON REJETÉS, à
-    l'exclusion du programme en cours d'évaluation (`ServiceContraintes.
+(a) le volume programmé compte tous les programmes, rejetés compris (V7,
+    US-VAL-03), à l'exclusion du programme en cours d'évaluation (`ServiceContraintes.
     contexte`, `_charger_volumes`) ;
 (b) un prérequis est « achevé » quand le volume programmé de la matière
     prérequise POUR CETTE BRIGADE atteint son volume prescrit — définition

@@ -12,6 +12,7 @@ import datetime
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Cast
 
 from noyau.models import ModeleHorodate
 from organisation.models import Brigade
@@ -20,11 +21,11 @@ from ressources.models import CreneauType, Instructeur, Lieu
 
 
 class EtatProgramme(models.TextChoices):
-    """CLS-04 — cinq valeurs déclarées dès ici pour éviter une migration de
-    plus au sprint 3, mais SEUL `BROUILLON` est atteignable depuis cette
-    story : aucune machine à états (RG-41, RG-44, US-VAL-03). Volontairement
-    AUCUNE contrainte de vérification ne restreint `etat` à `BROUILLON` —
-    elle casserait dès que US-VAL-03 fera transiter un programme."""
+    """CLS-04 — cinq états. Les transitions vivent dans
+    `planification.services.circuit` (ETA-01, US-VAL-03) : seul ce service
+    affecte `etat`. La base ne vérifie que la cohérence des faits attachés à
+    chaque état (voir `Meta.constraints`), jamais les transitions, qui
+    exigeraient l'ancien état."""
 
     BROUILLON = "brouillon", "Brouillon"
     SOUMIS = "soumis", "Soumis"
@@ -76,6 +77,52 @@ class ProgrammeHebdomadaire(ModeleHorodate):
             models.CheckConstraint(
                 condition=models.Q(lundi_de_semaine__iso_week_day=1),
                 name="ck_programme_lundi_est_un_lundi",
+            ),
+            # ETA-01 § 4.3 — les sept contraintes d'état de US-VAL-03.
+            models.CheckConstraint(
+                condition=~models.Q(etat=EtatProgramme.REJETE)
+                | (models.Q(motif_rejet__isnull=False) & models.Q(motif_rejet__regex=r"\S")),
+                name="ck_programme_rejet_motive",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(etat__in=[EtatProgramme.SOUMIS, EtatProgramme.VALIDE,
+                                              EtatProgramme.AFFICHE])
+                | models.Q(motif_rejet__isnull=True)
+                | models.Q(motif_rejet__regex=r"^\s*$"),
+                name="ck_programme_motif_hors_circuit",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(etat__in=[EtatProgramme.SOUMIS, EtatProgramme.VALIDE,
+                                              EtatProgramme.REJETE, EtatProgramme.AFFICHE])
+                | models.Q(date_soumission__isnull=False),
+                name="ck_programme_soumission_datee",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(etat__in=[EtatProgramme.VALIDE, EtatProgramme.AFFICHE])
+                | models.Q(valide_par__isnull=False, date_validation__isnull=False),
+                name="ck_programme_validation_nominative",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(date_signature__isnull=True, signataire__isnull=True)
+                | models.Q(date_signature__isnull=False, signataire__isnull=False),
+                name="ck_programme_signature_complete",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(date_signature__isnull=True)
+                | models.Q(
+                    date_validation__isnull=False,
+                    date_signature__gte=Cast("date_validation", models.DateField()),
+                ),
+                name="ck_programme_signature_sur_validation",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(etat=EtatProgramme.AFFICHE)
+                | models.Q(
+                    date_signature__isnull=False,
+                    signataire__isnull=False,
+                    date_affichage__isnull=False,
+                ),
+                name="ck_programme_affichage_signe",
             ),
         ]
 

@@ -45,6 +45,15 @@
       Voir cette semaine
     </button>
   </form>
+  <p class="border-t border-gris-trait px-4 py-2 text-sm text-gris-lecture">
+    Programme de la semaine :
+    {% if programme %}
+      <span class="ml-1 border border-marine-700 px-1.5 py-px text-2xs font-semibold
+                   tracking-wide text-marine-700">{{ programme.get_etat_display|upper }}</span>
+    {% else %}
+      <span class="text-encre">aucun programme</span>
+    {% endif %}
+  </p>
 </section>
 
 <section class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
@@ -52,6 +61,11 @@
             font-semibold uppercase tracking-wide text-marine-900">
     Brigades — semaine du {{ lundi|date:"d/m/Y" }}
   </p>
+  {% if motif_indisponible %}
+    <p class="mx-4 mt-4 border border-etat-ecart bg-etat-ecart-fond px-3 py-2 text-sm text-etat-ecart">
+      {{ motif_indisponible }}
+    </p>
+  {% endif %}
   <form method="post" class="flex flex-col gap-4 px-4 py-4">
     {% csrf_token %}
     <input type="hidden" name="semaine" value="{{ lundi|date:'Y-m-d' }}">
@@ -103,12 +117,20 @@
       </p>
     </div>
     <div class="flex items-center gap-3">
+      {% if motif_indisponible %}
+      <button type="submit" disabled aria-disabled="true"
+              class="inline-flex h-controle cursor-not-allowed items-center gap-2 border
+                     border-gris-trait bg-fond-bande px-3.5 text-sm font-semibold text-gris-lecture">
+        Générer / compléter
+      </button>
+      {% else %}
       <button type="submit"
               class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
                      px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
                      hover:bg-marine-700">
         Générer / compléter
       </button>
+      {% endif %}
       <a href="{% url 'planification:consultation_programme' %}?semaine={{ lundi|date:'Y-m-d' }}"
          class="text-sm text-marine-700 no-underline hover:underline">
         Annuler

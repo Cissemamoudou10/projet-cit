@@ -10,7 +10,7 @@ conversion, reports vérifiés, risques) ne l'étaient pas — exactement le mê
 défaut qui avait déjà retardé le prononcé de C1. Voir
 `docs/suivi/LECONS-SPRINT-2.md`, leçon 1. Sprint 3 engagé depuis le 28
 septembre ; ETA-01 (diagramme d'états, 5.3.17) produit le 30/09, voir « Ce
-qu'il faut surveiller » — R10. Quatre stories livrées (US-EVAL-04 le 4 octobre, 5 pts, organisation d'épreuve) : US-EVAL-01 (1er
+qu'il faut surveiller » — R10. Cinq stories livrées (US-VAL-03 et US-EVAL-04 le 4 octobre, 5 pts chacune, machine à états du programme et organisation d'épreuve) : US-EVAL-01 (1er
 octobre, 5 pts), US-EVAL-02 (2 octobre, 2 pts — date d'un examen final
 imposée et projetée, jamais copiée) et US-EVAL-03 (2 octobre, 5 pts —
 sujets d'examen, confidentialité par construction). Entre ces deux
@@ -37,7 +37,7 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 47 | 4 | J2 |
+| 3 | 28/09 – 10/10 | 11 | 47 | 5 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
@@ -56,6 +56,8 @@ faisabilité du solveur (Prompt 32, hors points chiffrés).
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
 
 ## Ce qu'il faut surveiller
+
+**Point de décision — mercredi 7 octobre au soir.** Si US-VAL-01, US-VAL-02 et US-VAL-04 ne sont pas livrées ce soir-là, US-PLAN-06 passe au sprint 4. Au 4 octobre, aucune des trois n'est livrée. US-VAL-03 a posé le moteur qu'elles consomment : soumission, validation, rejet et signature sont des transitions déjà testées, reste à brancher leurs écrans.
 
 **R6 — reclassé, ne relève plus de la faisabilité.** L'étude
 (`etudes/solveur/RECOMMANDATION.md`, D-162) a levé la question de faisabilité
@@ -177,11 +179,11 @@ majeures par rapport à la dernière version :
 | D-133 | 6 (changer de grille active ne touche pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 | D-133 | RG-64 (relation facultative séance↔créneau type) | US-PLAN-12 | *aucune story assignée* | **Ouvert, orpheline** — dette explicite, à surveiller (personne n'est chargé de la refermer) |
 | D-133 | refus de générer sans grille active (E6) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
-| **D-171** | RG-39 a) révisée (volume programmé compte aussi REJETÉ) | US-PLAN-04 (D-140) | US-VAL-03 (sprint 3) | **Ouvert — créé le 2026-09-30, prompt 34** |
+| **D-171** | RG-39 a) révisée (volume programmé compte aussi REJETÉ) | US-PLAN-04 (D-140) | US-VAL-03 (sprint 3) | **Fermé le 2026-10-04, prompt 39, par V7 (D-225)** — créé le 2026-09-30, prompt 34 |
 | **D-172** | lecture du programme par la cellule pédagogique (`programme_validation_lecture`) | US-PLAN-03 (D-154) | US-VAL-02 (sprint 3) | **Ouvert — créé le 2026-09-30, prompt 34** |
 | **D-181** | suppression d'une évaluation, et de sa séance verrouillée — jamais hors du service d'évaluation | US-EVAL-01 | US-PLAN-05 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35** (A7 ; vérification § 0.4 négative : aucune suppression de séance n'existait encore) |
 | **D-182** | mesure de l'écart de progression entre brigades (A8, E2, forme simplifiée retenue) | US-EVAL-01 | *aucune story assignée* | **Ouvert, orphelin — créé le 2026-10-01, prompt 35**, à arbitrer au backlog v10 |
-| **D-170** | insertion d'un contrôle refusée si le programme de la semaine est SOUMIS, VALIDÉ ou AFFICHÉ | US-EVAL-01 | US-VAL-03 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35**, cas à ajouter à l'oracle `ETA-01_table_transitions.md` quand la garde RG-41 (D-170) existera |
+| **D-170** | insertion d'un contrôle refusée si le programme de la semaine est SOUMIS, VALIDÉ ou AFFICHÉ | US-EVAL-01 | US-VAL-03 (sprint 3) | **Fermé le 2026-10-04, prompt 39, par C4 (D-221)** — créé le 2026-10-01, prompt 35, cas à ajouter à l'oracle `ETA-01_table_transitions.md` quand la garde RG-41 (D-170) existera |
 | **D-193** | une organisation d'épreuve devra être revérifiée quand la date d'une certificative change | US-EVAL-02 | US-EVAL-04 | **Fermé le 2026-10-04, prompt 38, par les tests E1 à E3 (`test_organisation_services.py`) : changement de date signalé, jamais refusé** : `modifier_date_certificative` ne touche à rien d'une organisation d'épreuve, qui n'existe pas encore (US-EVAL-04, sprint 3) — à vérifier dès que cette story existe |
 | **D-202** | la borne RG-51 (jour de l'épreuve) devra se resserrer à l'heure de l'épreuve | US-EVAL-03 | US-EVAL-04 | **Fermé le 2026-10-03, prompt 38, par décision (A10, D-209)** : la borne reste le jour entier, à dessein, plus stricte que celle de l'organisation |
 | **C9** (D-205) | aucune certificative organisée sans sujet retenu — garde `ServiceSujet.sujet_retenu`, à brancher au refus de l'organisation | US-EVAL-03 (c.7) | US-EVAL-04 | **Fermé le 2026-10-04 par A1 (D-208) : organiser sans sujet, prête seulement avec un sujet retenu (`est_prete`). Ouvert le 2026-10-02, prompt 37, absent de ce tableau jusqu'au 2026-10-03. Réinterprété par A1 du prompt 38 (D-208) : on organise sans sujet, l'épreuve n'est prête qu'avec un sujet retenu. ** |
@@ -221,6 +223,10 @@ pas à corriger silencieusement a posteriori.
 Ferment : **D-193** (tests E1 à E3, changement de date signalé) et **C9** (A1, D-208 : organiser sans sujet). **D-202** avait déjà été fermé par D-209. Ouvrent, sans story : **D-212** (badge « à vérifier »), **D-215** (badge de liste sur la complétude), la **présélection** qui ignore les épreuves (ECARTS 25, dette à traiter au sprint 4) et la **lecture sans garde** (ECARTS 26) est fermée par D-219.
 
 Net : quatorze ouverts avant cette clôture, moins deux fermés, plus quatre ouverts — **seize ouverts à la clôture**, puis **quinze** après la fermeture de l'écart 26 (D-219, qui n'est pas un report mais un écart).
+
+### Recompte à la clôture d'US-VAL-03, le 2026-10-04
+
+Ferment : **D-170** (insertion d'un contrôle refusée hors brouillon, C4, D-221) et **D-171** (volume programmé qui compte les rejetés, V7, D-225). Aucun report ne s'ouvre. Net : quinze ouverts avant cette clôture, moins deux fermés — **treize ouverts à la clôture**. Le report D-172 (lecture du programme par la pédagogique) reste assigné à US-VAL-02.
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 

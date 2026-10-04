@@ -31,6 +31,70 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-227 — US-VAL-03 : sept contraintes d'état en base ; retour à BROUILLON efface le circuit ; T10 journalisée seule
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — ETA-01 § 4.3 liste huit contraintes ; sept manquaient. ETA-01 ne dit pas ce que devient un programme revenu à BROUILLON. T10 (porter un avenant) est admise par la table, mais le mode avenant relève de US-PLAN-05.
+**Décision** — (1) Sept `CheckConstraint` ajoutées à `ProgrammeHebdomadaire` (migration `planification/0003`), chacune testée par écriture directe attendant `IntegrityError`, en ne violant que la contrainte nommée (groupe B, huit tests). `ck_programme_signature_sur_validation` compare la date de signature à `Cast(date_validation, DATE)`, en UTC : la contrainte est un peu moins stricte que le service (qui compare en heure locale), elle ne refuse donc jamais une écriture acceptée. (2) Tout retour à BROUILLON (T3, T6, T9) efface soumission, validation, validateur, motif de rejet et signature ; la journalisation garde la trace. (3) T10 est admise, son motif et sa nature sont exigés, elle est journalisée, l'état reste AFFICHÉ. Aucun effet sur les séances : la garde refuse toute écriture sur un programme affiché tant que le mode avenant n'existe pas.
+**Alternative écartée** — Ne pas effacer le circuit au retour à BROUILLON : la contrainte de signature imposerait de garder une validation pour une signature orpheline. Implanter l'avenant maintenant : c'est le périmètre de US-PLAN-05.
+**Impact sur les livrables** — ETA-01 § 4.3 (silence sur le retour à BROUILLON) à préciser, écarts 31 et 32 de `ECARTS-LIVRABLES-SPRINT-3.md`.
+**Reporté au livrable** — oui, au retour des cellules.
+
+## D-226 — US-VAL-03 (V8) : état affiché sur la consultation de la semaine et sur le lancement ; pas de liste ni de fiche multi-semaines
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2, V8) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le critère C4 demande l'état « sur la liste des programmes et sur leur détail ». Le dépôt n'a ni liste ni fiche détaillée : seule la consultation d'une semaine (`consultation_programme`) existe.
+**Décision** — L'état est affiché sur la consultation de la semaine (bandeau, déjà présent, testé par G1) et sur l'écran de lancement, qui affiche en plus l'état du programme de la semaine et, quand la génération est impossible, le motif (même texte que le refus du service, produit par la fonction pure `motif_refus_action`). Le bouton « Générer / compléter » est alors désactivé. Le POST sur une semaine non modifiable est refusé avant la confirmation de régénération (`ServiceGeneration.motif_indisponible`) ; l'exception `TransitionProgrammeRefusee` est rattrapée par la vue, sans quoi une génération refusée donnerait une erreur 500.
+**Alternative écartée** — Créer maintenant une liste et une fiche multi-semaines : hors périmètre de l'écran de la story et sans maquette de conception.
+**Impact sur les livrables** — Backlog US-VAL-03 c.4 à préciser (écart 28). Le test G3 vérifie le motif et le bouton désactivé.
+**Reporté au livrable** — oui.
+
+## D-225 — US-VAL-03 (V7) : le volume programmé compte les programmes rejetés ; D-171 fermé
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2, V7) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-39 a) excluait les programmes REJETÉS du volume programmé (D-140, prompt 30). Le livrable de conception dit l'inverse (arbitrage A7 du prompt 34, écart 10 de `ECARTS-LIVRABLES-SPRINT-3.md`) : aucun état n'exprime l'abandon.
+**Décision** — `ServiceContraintes._charger_volumes` compte toutes les lignes de programme, quel que soit l'état, à l'exclusion du seul programme évalué. La constante `ETATS_COMPTABILISES` disparaît. La règle est reprise dans la docstring de `regles_volume.py`. Tests : G4 (retourné : un programme rejeté compte désormais) et F (une génération sur une autre semaine ne place pas la matière dépassée, témoin à l'appui).
+**Alternative écartée** — Garder l'exclusion et la documenter : contredit A7 et laisserait une semaine rejetée libérer du volume alors que ses séances existent encore en base.
+**Impact sur les livrables** — RG-39 a) à réaligner (écart 10 déjà consigné). Report D-171 fermé.
+**Reporté au livrable** — non.
+
+## D-224 — US-VAL-03 (V6) : journal des transitions ; T4 et T5 gardent leurs natures RG-26
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2, V6) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — V6 demande une nature de journal pour les transitions, reprise implicite comprise. `TypeAction` déclare déjà `VALIDATION_PROGRAMME` (T4) et `REJET_PROGRAMME` (T5), natures RG-26.
+**Décision** — Nouvelle nature `TRANSITION_PROGRAMME` (migration `administration/0015`, extension à RG-26 listée dans `EXTENSIONS_HORS_RG26`) pour T2, T3, T6, T7, T8, T9, T10. T4 journalise `VALIDATION_PROGRAMME`, T5 `REJET_PROGRAMME`. Chaque entrée porte l'état de départ et d'arrivée (`valeur_avant`, `valeur_apres`), l'auteur, et dans le détail le numéro de transition ainsi que le motif de rejet, d'annulation ou d'avenant. La reprise implicite a la même entrée qu'une reprise explicite, avec son déclencheur (« implicite, déclenchée par : génération »).
+**Alternative écartée** — Une nature unique pour toutes les transitions, T4 et T5 compris : aurait fait perdre aux natures RG-26 leur lisibilité en consultation.
+**Impact sur les livrables** — Compte du journal à corriger dans ETA-01 § 4.1 (écart 30).
+**Reporté au livrable** — oui.
+
+## D-223 — US-VAL-03 (V5) : habilitations par transition, vérifiées par chaque méthode
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2, V5) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — ETA-01 § 4.2 et la matrice d'habilitations (`programme_ecriture` pour la planification, `programme_validation_ecriture` pour la pédagogique).
+**Décision** — T2, T3, T6, T7, T8, T9, T10 exigent `noyau.programme_ecriture` ; T4 et T5 exigent `noyau.programme_validation_ecriture`. Chaque méthode vérifie l'habilitation avant toute décision sur l'état : un profil non autorisé reçoit un refus d'habilitation quel que soit l'état. Le verrou de ligne est pris d'abord (V4) ; un profil non habilité prend donc ce verrou une fraction de seconde avant d'être refusé, sans effet sur l'état. La garde de modification ne vérifie PAS l'habilitation : chaque porte d'écriture la vérifie pour son domaine (voir D-221).
+**Alternative écartée** — Vérifier l'habilitation dans la garde : fermerait l'insertion de contrôle à la cellule examens (D-174).
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-222 — US-VAL-03 (V4) : verrou de ligne et relecture de l'état sous verrou
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2, V4) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Deux validations simultanées, ou une soumission concurrente d'une génération, pouvaient produire un état incohérent.
+**Décision** — Chaque transition et la garde relisent le programme par `select_for_update` dans la transaction de l'appelant, et contrôlent l'état relu, jamais celui de l'objet reçu. La porte d'écriture ouvre désormais sa transaction avant le contrôle des contraintes, pour que ce contrôle lise l'état verrouillé ; une reprise implicite est annulée avec le reste si la séance est refusée. La garde n'ouvre pas de transaction imbriquée : chacun de ses appelants en ouvre déjà une, et une transaction imbriquée ajouterait deux requêtes (SAVEPOINT, RELEASE) par appel, ce que le test de requêtes (P-38) mesure. Mesuré le 2026-10-04 : 47 requêtes (contre 45 avant la garde), soit les deux verrous ; la référence passe de 45 à 47, la marge reste à 2 (`test_generation_performance.py`, note datée).
+**Alternative écartée** — Transaction imbriquée dans la garde : protégerait mieux un appelant futur qui l'oublierait, mais coûte des requêtes à chaque appel, écarté pour la référence P-38.
+**Impact sur les livrables** — aucun. Limite : la concurrence réelle (deux threads sur une base partagée) n'est pas testée ; le test E vérifie la relecture sous verrou par une copie périmée, séquentiellement.
+**Reporté au livrable** — non.
+
+## D-221 — US-VAL-03 (V3) : garde de modification appelée avant toute écriture, y compris la suppression de la régénération
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2, V3) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La porte d'écriture (`ServiceEcritureSeance`) et la génération écrivent et suppriment des séances. Sans garde, un programme soumis, validé ou affiché changerait sans passer par le circuit (RG-41).
+**Décision** — `ServiceCircuitProgramme.garde_modification(programme, agissant, evenement, declencheur)` : sous verrou, BROUILLON passe ; REJETÉ déclenche la reprise implicite (T6), journalisée, puis passe ; SOUMIS, VALIDÉ et AFFICHÉ refusent avec la marche à suivre (retirer la soumission, annuler la validation — jamais implicite —, porter un avenant). Appels : `_verifier_et_creer` (saisie et contrôle), `creer_seances` (génération, lot), et `_generer_dans_programme` AVANT `_supprimer_seances_regenerees`. Deux écarts au texte de V3 : le paramètre `declencheur` (nécessaire à V6, il nomme la reprise dans le journal) et `evenement` (écriture ou génération, même table) ; et l'absence de vérification d'habilitation (D-223).
+**Alternative écartée** — Deux gardes distinctes (écriture, génération) : la table est la même, deux fonctions auraient dupliqué la règle.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-220 — US-VAL-03 (V1, V2) : un seul service porte le circuit ; une seule table de transitions
+**Date** 2026-10-04 · **Story** US-VAL-03 (Prompt 39, temps 2, V1 et V2) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — ETA-01 § 4.2 et § 4.3 et `.claude/rules/services.md` nomment le service du circuit `ServiceValidation`. Le prompt 39 (V1) le nomme `ServiceCircuitProgramme`.
+**Décision** — `ServiceCircuitProgramme` (`planification/services/circuit.py`) est le seul module qui affecte `ProgrammeHebdomadaire.etat` (test H1). Il porte T2 à T10 ; T1 (création du programme) reste dans la génération. Les cases admises tiennent dans une table unique, `TRANSITIONS`, clé (événement, état de départ) : treize cases, dont les quatre écritures (séance et génération, sur BROUILLON et sur REJETÉ). Une case absente est refusée ; le message vient de `motif_refus_action`, fonction pure. Oracle : les 55 cas sont lus dans ETA-01 § 4.1, paramétrés sous le nom inscrit dans le document, et un test de concordance vérifie que l'ensemble des cases admises est identique à celui du document.
+**Alternative écartée** — Nommer le service `ServiceValidation` comme ETA-01 : il ne couvrirait ni la garde appelée par la génération et la porte d'écriture, ni la génération elle-même, qui ne sont pas des validations.
+**Impact sur les livrables** — ETA-01 § 4.2 et § 4.3 à corriger (écart 27 ; `services.md` déjà mis à jour).
+**Reporté au livrable** — oui.
+
 ## D-219 — Convention des gardes de lecture : gardées par la vue, sauf donnée sensible ou export ; rendue mécanique par test d'architecture
 **Date** 2026-10-04 · **Story** Hors story (arbitrage de l'écart 26 d'US-EVAL-04) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — L'inventaire des services de lecture a trouvé une convention non écrite : 11 lectures portent leur garde dans le service, 30 non. Les vues gardent les 30 aujourd'hui, mais rien ne le garantissait.

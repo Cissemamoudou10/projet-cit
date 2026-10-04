@@ -13,6 +13,11 @@ class ErreurPlanification(ErreurMetier):
     """Racine des erreurs propres à `planification`."""
 
 
+class TransitionProgrammeRefusee(ErreurPlanification):
+    """Transition du circuit du programme refusée (ETA-01) : le message nomme
+    la règle et, quand elle existe, la marche à suivre."""
+
+
 class AucuneGrilleActive(ErreurPlanification):
     """E6 — aucune grille horaire active ; renvoi vers sa gestion."""
 

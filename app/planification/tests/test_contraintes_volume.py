@@ -8,6 +8,8 @@ entièrement fictives.
 
 import datetime
 
+from django.utils import timezone
+
 from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
 from planification.services.contraintes import Candidate, ServiceContraintes
 from planification.tests.conftest import Cours, creer_element, instant, qualifier
@@ -127,21 +129,29 @@ def test_g4_une_seance_d_un_programme_brouillon_compte_dans_le_volume(
     assert not verdict.accepte
 
 
-def test_g4_une_seance_d_un_programme_rejete_ne_compte_pas_dans_le_volume(
+def test_g4_une_seance_d_un_programme_rejete_compte_dans_le_volume(
     programme, formation, matiere, instructeur, brigade
 ):
+    """V7, US-VAL-03 (arbitrage A7) : aucun état n'exprime l'abandon, donc un
+    programme rejeté compte comme les autres. L'ancien filtre les excluait.
+
+    Exception à P-21 assumée : l'état est posé à la main parce que le test porte
+    sur la règle de volume, pas sur le circuit (couvert par test_circuit_*).
+    """
     lundi = programme.lundi_de_semaine
     cours = Cours(creer_element(formation, matiere, volume=2), instructeur)
     qualifier(instructeur, matiere)
     autre_programme = _autre_programme(lundi)
     _seance_dans(autre_programme, cours, brigade, instant(autre_programme.lundi_de_semaine, 0, 8))
     autre_programme.etat = EtatProgramme.REJETE
+    autre_programme.date_soumission = timezone.now()
+    autre_programme.motif_rejet = "Motif de test."
     autre_programme.save()
     candidate = _candidate(brigade, cours, instant(lundi, 0, 8), duree_min=30)
 
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
 
-    assert verdict.accepte
+    assert not verdict.accepte
 
 
 # --- G5/G6/G7 — prérequis ----------------------------------------------------

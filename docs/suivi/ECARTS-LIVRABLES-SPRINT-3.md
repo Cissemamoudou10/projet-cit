@@ -65,6 +65,21 @@ octobre) — l'écart sera reporté au diagramme à leur retour, pas avant.
 | 25 | Prompt 38, A6 et présélection de génération (`planification/generation/candidats.py`, `construire_cases`) | La présélection ne consulte que les périodes bloquantes | Une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 : l'issue (aucune séance dans le lieu) est juste, mais le constat est un écart de conception, non tranché | — | Dette technique, sprint 4 : la présélection doit connaître les épreuves ; mesurer son coût (candidats engendrés puis refusés sur le jeu représentatif) avant de la modifier |
 | 26 | Prompt 38, F4 | Lectures de l'organisation sous garde | Convention non écrite : lectures gardées par les vues, 11 services gardent aussi leurs lectures, 30 non | D-219 | Fermé par D-219 (convention écrite, deux exceptions corrigées, test d'architecture) |
 
+## US-VAL-03 (Prompt 39, temps 2) — tranchés seul, à reporter au retour des cellules
+
+Ces lignes ne sont pas des contradictions de conception tranchées par le chef de
+projet : ce sont des écarts entre le livrable et ce que le code a dû faire. Le
+prompt 39 demande de les trancher seul et de les consigner ici.
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui a été implanté | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 27 | ETA-01 § 4.2 et § 4.3, `.claude/rules/services.md` | Le service du circuit s'appelle `ServiceValidation` | `ServiceCircuitProgramme` (`planification/services/circuit.py`), nom retenu par le prompt 39 (V1) : il porte aussi la garde appelée par la génération et la porte d'écriture, qui ne sont pas des validations | D-220 | Corriger le nom dans ETA-01 § 4.2–4.3 et dans `services.md` au retour des cellules |
+| 28 | Backlog US-VAL-03 c.4 | « L'état est visible sur la liste des programmes et sur leur détail » | Il n'existe ni liste ni fiche détaillée de programme. La consultation de la semaine (`consultation_programme`) porte l'état et tient lieu de détail ; le lancement porte l'état et le motif d'indisponibilité | D-226 | Préciser c.4 : une liste et une fiche multi-semaines restent à concevoir, sans story assignée |
+| 29 | ETA-01 § 4.1, insertion d'un contrôle par la cellule examens (D-174) | Aucune ligne du tableau ne décrit l'insertion d'un contrôle hors brouillon | Note ajoutée sous le tableau : même colonne que « modifier / ajouter une séance », même garde. Le diagramme `ETA-01_etats_programme.puml` reste inchangé, comme D-174 le prévoit | D-221 | Reporter la note au diagramme à réception des retours des cellules |
+| 30 | ETA-01 § 4.1, journal (« sept valeurs manquent ») | Une nature de journal par transition manquante | Deux natures déjà présentes servent T4 (`VALIDATION_PROGRAMME`) et T5 (`REJET_PROGRAMME`), natures RG-26 ; les autres transitions portent une seule nouvelle nature, `TRANSITION_PROGRAMME`. Sept valeurs ne sont donc pas ajoutées, une seule l'est | D-224 | Aucune sur la conception ; mettre à jour le compte du journal dans ETA-01 § 4.1 |
+| 31 | ETA-01 § 4.1, « porter un avenant » (T10) | Transition admise sur AFFICHÉ, mode avenant absent du circuit | T10 est admise et journalisée (motif et nature exigés), l'état reste AFFICHÉ ; la garde refuse toute écriture de séance sur un programme affiché tant que US-PLAN-05 ne fournit pas le mode avenant | D-227 | Aucune ; US-PLAN-05 complète l'effet de l'avenant |
+| 32 | ETA-01 § 4.3, contraintes d'état | Silencieux sur ce que devient le circuit d'un programme revenu à BROUILLON | Un retour à BROUILLON (T3, T6, T9) efface la soumission, la validation, le validateur, le motif de rejet et la signature ; le journal garde la trace | D-227 | Préciser ETA-01 § 4.3 au retour des cellules |
+
 ## Ce que cette liste ne couvre pas
 
 Les huit arbitrages A1 à A8 (D-165 à D-172) portent sur des contradictions

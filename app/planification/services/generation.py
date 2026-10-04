@@ -29,7 +29,17 @@ from planification.generation.compte_rendu import construire as construire_compt
 from planification.generation.gloutonne import StrategieGloutonne
 from planification.generation.preparation import preparer
 from planification.models import ProgrammeHebdomadaire, Seance
-from planification.services.contraintes import ServiceContraintes, _charger_periodes_bloquantes, _semaine
+from planification.services.circuit import (
+    DECLENCHEUR_GENERATION,
+    GENERER,
+    ServiceCircuitProgramme,
+    motif_refus_action,
+)
+from planification.services.contraintes import (
+    ServiceContraintes,
+    _charger_periodes_bloquantes,
+    _semaine,
+)
 from planification.services.ecriture import ServiceEcritureSeance
 from ressources.models import CreneauType, GrilleHoraire
 
@@ -130,6 +140,16 @@ class ServiceGeneration:
     PERMISSION_ECRITURE = PERMISSION_ECRITURE
 
     @staticmethod
+    def motif_indisponible(lundi_de_semaine):
+        """V8 — motif pour lequel la génération ne peut pas être lancée sur
+        cette semaine, ou `None`. Lecture seule : l'écran de lancement s'en
+        sert pour dire pourquoi son bouton est indisponible."""
+        programme = ProgrammeHebdomadaire.objects.filter(lundi_de_semaine=lundi_de_semaine).first()
+        if programme is None:
+            return None
+        return motif_refus_action(GENERER, programme.etat)
+
+    @staticmethod
     def generer(agissant, lundi_de_semaine, brigades):
         """RG-31 : produit toujours un BROUILLON, aucun passage d'état.
         Complète le programme de la semaine s'il existe déjà (§ 2, RG-33
@@ -147,6 +167,11 @@ class ServiceGeneration:
 
     @staticmethod
     def _generer_dans_programme(agissant, programme, brigades, cases):
+        # V3 : la garde précède la SUPPRESSION des séances régénérées — un
+        # programme soumis, validé ou affiché n'en perd aucune (C2, C5).
+        programme = ServiceCircuitProgramme.garde_modification(
+            programme, agissant, evenement=GENERER, declencheur=DECLENCHEUR_GENERATION
+        )
         supprimees, a_cheval = _supprimer_seances_regenerees(programme, brigades)
         verrouillees = _seances_verrouillees_preservees(programme, brigades)
         contexte = ServiceContraintes.contexte(programme)

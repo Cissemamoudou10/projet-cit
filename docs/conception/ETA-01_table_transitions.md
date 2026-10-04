@@ -40,6 +40,8 @@ stories US-VAL-01 à 04 et US-PLAN-05/06/09.
 | **générer** (US-PLAN-03, sélection de brigades) | admis, complète (D-146) | refus (RG-41) | admis, précédé de T6 implicite | refus (RG-41) | refus |
 | ↳ tests | `test_brouillon_generation_admis` | `test_soumis_generation_refuse` | `test_rejete_generation_admis` | `test_valide_generation_refuse` | `test_affiche_generation_refuse` |
 
+**Insertion d'un contrôle** (cellule examens, D-174 et D-177, note de l'écart 29 de `docs/suivi/ECARTS-LIVRABLES-SPRINT-3.md`) : même colonne que « modifier / ajouter une séance » — admis sur BROUILLON, admis sur REJETÉ avec reprise implicite (T6), refusé sur SOUMIS, VALIDÉ et AFFICHÉ. La porte d'écriture passe par la même garde que toute autre séance.
+
 Chaque transition admise est journalisée (auteur, horodatage, état de
 départ, état d'arrivée, motif s'il y en a) ; chaque refus rend un message
 qui nomme la règle et, quand elle existe, la marche à suivre. **Écart

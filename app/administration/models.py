@@ -132,6 +132,7 @@ class TypeAction(models.TextChoices):
     EXPORT_DONNEES = "export_donnees", "Export de données"
     GENERATION_PROGRAMME = "generation_programme", "Génération d'un programme"
     CONSULTATION_SUJETS = "consultation_sujets", "Consultation des sujets d'examen"
+    TRANSITION_PROGRAMME = "transition_programme", "Transition d'un programme"
 
 
 class EntreeJournal(ModeleHorodate):

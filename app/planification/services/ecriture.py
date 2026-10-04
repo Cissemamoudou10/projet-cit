@@ -28,6 +28,12 @@ from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.base import ServiceBase
 from planification.models import LigneProgramme, Seance
+from planification.services.circuit import (
+    DECLENCHEUR_CONTROLE,
+    DECLENCHEUR_GENERATION,
+    DECLENCHEUR_SEANCE,
+    ServiceCircuitProgramme,
+)
 from planification.services.contraintes import ServiceContraintes
 
 OBJET_TYPE = "seance"
@@ -78,11 +84,17 @@ def _creer_une_seance(agissant, programme, candidates, verrouillee=False):
 
 
 def _verifier_et_creer(programme, candidates, agissant, verrouillee=False):
-    contexte = ServiceContraintes.contexte(programme)
-    verdicts = ServiceContraintes.verifier_lot(candidates, contexte)
-    _lever_si_refuse(verdicts)
+    """La garde d'état (V3) précède le contrôle des contraintes, sous le même
+    verrou : une reprise implicite (T6) est annulée avec le reste si la
+    séance est refusée."""
+    declencheur = DECLENCHEUR_CONTROLE if verrouillee else DECLENCHEUR_SEANCE
     with transaction.atomic():
-        seance = _creer_une_seance(agissant, programme, candidates, verrouillee)
+        verrouille = ServiceCircuitProgramme.garde_modification(
+            programme, agissant, declencheur=declencheur
+        )
+        contexte = ServiceContraintes.contexte(verrouille)
+        _lever_si_refuse(ServiceContraintes.verifier_lot(candidates, contexte))
+        seance = _creer_une_seance(agissant, verrouille, candidates, verrouillee)
         _journaliser(agissant, seance)
     return seance
 
@@ -187,14 +199,16 @@ class ServiceEcritureSeance:
         if not groupes_de_candidates:
             return []
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
-        contexte = ServiceContraintes.contexte(programme)
         candidates_a_plat = [candidate for groupe in groupes_de_candidates for candidate in groupe]
-        verdicts = ServiceContraintes.verifier_lot(candidates_a_plat, contexte)
-        _lever_si_refuse(verdicts)
-        maintenant = timezone.now()
         with transaction.atomic():
+            verrouille = ServiceCircuitProgramme.garde_modification(
+                programme, agissant, declencheur=DECLENCHEUR_GENERATION
+            )
+            contexte = ServiceContraintes.contexte(verrouille)
+            _lever_si_refuse(ServiceContraintes.verifier_lot(candidates_a_plat, contexte))
+            maintenant = timezone.now()
             seances = Seance.objects.bulk_create(
-                _construire_seances(programme, groupes_de_candidates, agissant, maintenant)
+                _construire_seances(verrouille, groupes_de_candidates, agissant, maintenant)
             )
             LigneProgramme.objects.bulk_create(
                 _construire_lignes(seances, groupes_de_candidates, agissant, maintenant)

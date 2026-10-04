@@ -50,7 +50,7 @@ from django.utils import timezone
 from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurJoursExamen, ResolveurOccupationsEpreuves
 from organisation.models import Brigade
-from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
+from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
 from planification.services import regles_calendrier, regles_instructeur, regles_lieu, regles_volume
 from referentiel.models import ElementReferentiel, Prerequis
 from ressources.models import (
@@ -61,10 +61,6 @@ from ressources.models import (
     PeriodeCalendrier,
     Qualification,
 )
-
-# Programmes non rejetés : contribuent tous au volume programmé (RG-39 a),
-# arbitrage du Prompt 30 § 4 — voir docs/suivi/DECISIONS.md.
-ETATS_COMPTABILISES = [etat for etat in EtatProgramme.values if etat != EtatProgramme.REJETE]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -155,13 +151,12 @@ def _charger_periodes_bloquantes(debut, fin):
 
 
 def _charger_volumes(programme):
-    """RG-39 a) : tous les programmes NON REJETÉS, à l'EXCLUSION du
-    programme évalué — sans quoi une régénération verrait ses propres
-    séances comme un dépassement (arbitrage du Prompt 30 § 4, docs/suivi/
-    DECISIONS.md)."""
+    """RG-39 a) : TOUS les programmes, quel que soit leur état — rejeté
+    compris (V7, US-VAL-03, arbitrage A7 : aucun état n'exprime l'abandon) —
+    à l'EXCLUSION du programme évalué, sans quoi une régénération verrait
+    ses propres séances comme un dépassement."""
     lignes = (
-        LigneProgramme.objects.filter(seance__programme__etat__in=ETATS_COMPTABILISES)
-        .exclude(seance__programme=programme)
+        LigneProgramme.objects.exclude(seance__programme=programme)
         .values("brigade_id", "seance__element_referentiel_id", "seance__debut", "seance__fin")
     )
     par_element: dict = {}

@@ -356,3 +356,35 @@ class ScenarioGeneration:
 @pytest.fixture
 def scenario(planificateur, grille_active, lundi_semaine):
     return ScenarioGeneration(planificateur=planificateur, lundi=lundi_semaine, grille=grille_active)
+
+
+@dataclasses.dataclass(frozen=True)
+class Acteurs:
+    """Les trois acteurs qui conduisent le circuit du programme (US-VAL-03)."""
+
+    planificateur: object
+    pedagogique: object
+    examens: object
+
+
+@dataclasses.dataclass(frozen=True)
+class CircuitDeTest:
+    """Le programme d'un test du circuit, son élément, sa brigade et ses
+    acteurs — regroupés pour respecter la limite de cinq paramètres."""
+
+    programme: object
+    cours: object
+    brigade: object
+    acteurs: Acteurs
+
+
+@pytest.fixture
+def acteurs(planificateur, redacteur, examens):
+    return Acteurs(planificateur=planificateur, pedagogique=redacteur, examens=examens)
+
+
+@pytest.fixture
+def circuit(programme, cours, brigade_formation, acteurs):
+    return CircuitDeTest(
+        programme=programme, cours=cours, brigade=brigade_formation, acteurs=acteurs
+    )

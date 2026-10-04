@@ -80,7 +80,7 @@ dédiée (A6) justifient une classe séparée plutôt qu'une méthode de plus su
 | `ServiceRessources` | disponibilité instructeurs et lieux, qualifications, calendrier, grille active |
 | `ServiceGeneration` | construction du programme hebdomadaire |
 | `ServiceContraintes` | les six contraintes dures |
-| `ServiceValidation` | machine à états du programme, validation et signature |
+| `ServiceCircuitProgramme` | machine à états du programme (US-VAL-03) : transitions, garde de modification, validation et signature |
 | `ServiceEvaluation` | évaluations, notes, moyennes |
 | `ServiceSujet` | sujets d'examen, sujet retenu (US-EVAL-03) |
 | `ServiceSuivi` | prescrit et réalisé, progression réalisée hebdomadaire |

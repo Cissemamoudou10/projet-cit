@@ -14,7 +14,11 @@ from django.utils import timezone
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
-from planification.exceptions import AucuneGrilleActive, SemaineEntierementBloquee
+from planification.exceptions import (
+    AucuneGrilleActive,
+    SemaineEntierementBloquee,
+    TransitionProgrammeRefusee,
+)
 from planification.forms import FormulaireLancementGeneration, FormulaireSemaine
 from planification.selectors import (
     apercu_regeneration,
@@ -59,8 +63,15 @@ def _afficher_lancement(request, grille, lundi, formulaire, brigades_selectionne
             "grille_active": grille,
             "groupes_brigades": brigades_groupees_par_session(lundi),
             "brigades_selectionnees": brigades_selectionnees,
+            "programme": programme_de_la_semaine(lundi),
+            "motif_indisponible": ServiceGeneration.motif_indisponible(lundi),
         },
     )
+
+
+def _redirection_lancement(lundi):
+    url = reverse("planification:lancement_generation")
+    return redirect(f"{url}?semaine={lundi.isoformat()}")
 
 
 def _traiter_lancement(request, grille):
@@ -69,6 +80,10 @@ def _traiter_lancement(request, grille):
     if not formulaire.is_valid():
         selection = set(request.POST.getlist("brigades"))
         return _afficher_lancement(request, grille, lundi, formulaire, selection)
+    motif = ServiceGeneration.motif_indisponible(lundi)
+    if motif:
+        messages.error(request, motif)
+        return _redirection_lancement(lundi)
     brigades = list(formulaire.cleaned_data["brigades"])
     if not formulaire.cleaned_data["confirme"]:
         impact = apercu_regeneration(lundi, brigades)
@@ -89,10 +104,10 @@ def _generer_et_afficher(request, lundi, brigades):
         SemaineEntierementBloquee,
         ErreurValidation,
         ErreurHabilitation,
+        TransitionProgrammeRefusee,
     ) as erreur:
         messages.error(request, str(erreur))
-        url = reverse("planification:lancement_generation")
-        return redirect(f"{url}?semaine={lundi.isoformat()}")
+        return _redirection_lancement(lundi)
     return render(
         request, "planification/compte_rendu_generation.html", {"compte_rendu": compte_rendu}
     )

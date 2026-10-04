@@ -47,7 +47,9 @@ INSTRUCTEURS_PAR_MATIERE = 2  # assez pour ne pas buter systématiquement sur un
 # borné analogue sans faire échouer ce test à chaque requête supplémentaire
 # légitime — toute dérive AU-DELÀ de la marge doit rester visible ici, pas
 # seulement dans MESURES-REFERENCE.md (Prompt 37, Temps 1).
-REQUETES_REFERENCE_US_PLAN_03 = 45
+# Note datée 2026-10-04 (US-VAL-03) : 45 → 47, les deux verrous `select_for_update`
+# de la garde de modification (D-222). Marge inchangée.
+REQUETES_REFERENCE_US_PLAN_03 = 47
 MARGE_REQUETES = 2
 
 journal = logging.getLogger(__name__)
