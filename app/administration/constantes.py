@@ -38,6 +38,7 @@ MATRICE = {
         "instructeurs_qualifications_lecture",
         "instructeurs_qualifications_ecriture",
         "lieux_calendrier_lecture",
+        "programme_lecture",
         "programme_validation_lecture",
         "programme_validation_ecriture",
         "suivi_lecture",

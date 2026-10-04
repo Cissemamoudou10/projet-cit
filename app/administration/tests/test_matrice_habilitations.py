@@ -38,7 +38,8 @@ TABLE_REFERENCE_11_2 = {
     ("lieux_calendrier", "examens"): (True, False),
     ("lieux_calendrier", "direction"): (True, False),
     ("lieux_calendrier", "administrateur"): (False, False),
-    ("programme", "pedagogique"): (False, False),
+    # Révisé par D-233 (prompt 40, A8) : la pédagogique lit le programme ; écart 34.
+    ("programme", "pedagogique"): (True, False),
     ("programme", "planification"): (True, True),
     ("programme", "examens"): (False, False),
     ("programme", "direction"): (True, False),

@@ -31,6 +31,30 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-233 — Révise D-172 et D-154 : la cellule pédagogique reçoit `programme_lecture` (lecture du programme, tous états), arbitrage A8 du prompt 34 appliqué par le prompt 40
+**Date** 2026-10-04 · **Story** US-VAL-02 (Prompt 40, § 2, arbitrage A8) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — D-172 (2026-09-30) avait retenu que la pédagogique lit le programme par `programme_validation_lecture`, sans étendre `programme_lecture`. Le prompt 40, § 2, rédigé après la clôture du prompt 39, tranche autrement l'arbitrage A8 : la pédagogique reçoit la permission de lecture du programme, tous états, par le mécanisme de la matrice, avec une écart à porter sur § 11.2. D-172 et D-154 sont donc révisés sur ce point.
+**Décision** — `programme_lecture` est accordée à la cellule pédagogique (`administration/constantes.py`). Conséquences à connaître, non détaillées dans D-172 : (1) la consultation de la semaine (grille, brigades, filtres) est accessible à la pédagogique en lecture ; (2) la rubrique « Planification » apparaît dans sa navigation ; (3) la pédagogique n'a aucune écriture de planification : la décision et la signature restent au périmètre des permissions d'écriture. `programme_validation_lecture` reste accordée et sert toujours au compteur et à la page d'attente.
+**Alternative écartée** — Une vue dédiée à la lecture du programme soumis, sans élargir `programme_lecture` : cela aurait contredit l'arbitrage A8 tel que le prompt 40 le formule, et ajouté une seconde voie de consultation à maintenir.
+**Impact sur les livrables** — matrice § 11.2, ligne P5 validation (écart 34) : la pédagogique lit le programme ; le test `test_matrice_habilitations` porte cette révision avec son commentaire. Périmètre d'accès élargi à la consultation de la semaine (écart 34).
+**Reporté au livrable** — oui, au retour des cellules : la référence § 11.2 doit être amendée.
+
+## D-232 — US-VAL-02 (prompt 40) : la décision porte sur le centre entier, une action par semaine
+**Date** 2026-10-04 · **Story** US-VAL-02 (Prompt 40, § 2, arbitrage A2 du prompt 34) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C5 et l'arbitrage du prompt 40 : la validation et le rejet portent sur la semaine, jamais sur une brigade.
+**Décision** — Les boutons de décision agissent sur le programme de la semaine (une seule ligne en base) ; aucun écran ne propose de décision par brigade. Un refus de la pédagogique par la planification est une absence de bouton et un 403, pas un écran de décision différent.
+**Alternative écartée** — Décision par brigade : contraire à RG-33 bis (un programme par semaine pour le centre).
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-231 — US-VAL-02 (prompt 40, C4) : lecture du programme par la pédagogique via la matrice ; motif de rejet lu dans le journal après reprise
+**Date** 2026-10-04 · **Story** US-VAL-02 (Prompt 40, § 2, arbitrage A8 du prompt 34, D-154) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — La cellule pédagogique ne peut ni consulter le programme soumis ni valider sans la lecture de `programme_lecture` (D-154, report D-172). Le prompt 40 demande aussi que le motif reste visible à la planification après la reprise, jusqu'à la soumission suivante, alors que le moteur efface le motif au retour à BROUILLON (D-227).
+**Décision** — (1) `programme_lecture` est accordée à la cellule pédagogique dans `administration/constantes.py` (mécanisme existant de la matrice) ; `test_matrice_habilitations` passe `("programme", "pedagogique")` à lecture seule. La pédagogique n'obtient aucune permission d'écriture de planification. (2) Le motif après reprise se lit dans le journal : dernier rejet (nature `REJET_PROGRAMME`), tant qu'aucune soumission (T2) ne lui est postérieure (`selectors_circuit.motif_rejet_visible`). Le moteur n'est pas modifié : la règle D-227 reste telle quelle.
+**Alternative écartée** — Ne plus effacer le motif dans le moteur : modifierait `ServiceCircuitProgramme`, ce que la condition d'arrêt du prompt 40 interdit ; et garderait un motif périmé sur un programme resoumis si l'effacement était remis en cause. Ajouter un champ « motif précédent » : duplique le journal.
+**Impact sur les livrables** — matrice § 11.2, ligne P5 validation : la pédagogique lit le programme (écart 34). Motif après reprise : écart 35.
+**Reporté au livrable** — oui, au retour des cellules.
+
 ## D-230 — Dépôt : travail sur `master`, sans branche par story (prompt 40 § 0.1)
 **Date** 2026-10-04 · **Story** Hors story (préalable du prompt 40, § 0.1) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Le CLAUDE.md du projet demandait une branche par story (`us-xxx-nn`). Toutes les stories ont été commitées sur `master` depuis le début, sans que la règle le dise.
@@ -507,6 +531,7 @@ reprendre. **Cette ligne n'est jamais vide.**
 **Alternative écartée** — Étendre `programme_lecture` à la cellule pédagogique pour réutiliser `vue_consultation_programme` telle quelle : écartée, D-154 avait déjà écarté ce chemin (modifier la matrice d'habilitation transverse hors mandat d'une story de planification) ; le domaine `programme_validation_lecture` existe précisément pour cet usage, sans y toucher.
 **Impact sur les livrables** — aucun sur le modèle d'habilitation, déjà complet ; US-VAL-02 doit choisir entre les deux mises en œuvre possibles ci-dessus.
 **Reporté au livrable** — oui, US-VAL-02 ; nouveau report ajouté au tableau d'`AVANCEMENT.md` (D-172).
+**Révisée par D-233 (2026-10-04)** sur le point de la lecture : la cellule pédagogique reçoit désormais `programme_lecture`.
 
 ## D-171 — Révise D-140 : le volume programmé compte aussi les programmes rejetés (A7)
 **Date** 2026-09-30 · **Story** Prompt 34 (ETA-01, tâche 5.3.17, hors story) · **Auteur** Lt Cissé (avec Claude Code)
