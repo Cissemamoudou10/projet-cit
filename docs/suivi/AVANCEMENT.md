@@ -37,7 +37,7 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 47 | 7 | J2 |
+| 3 | 28/09 – 10/10 | 11 | 47 | 8 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
@@ -57,7 +57,7 @@ faisabilité du solveur (Prompt 32, hors points chiffrés).
 
 ## Ce qu'il faut surveiller
 
-**Point de décision — mercredi 7 octobre au soir.** Si US-VAL-01, US-VAL-02 et US-VAL-04 ne sont pas livrées ce soir-là, US-PLAN-06 passe au sprint 4. Au 4 octobre, aucune des trois n'est livrée. US-VAL-03 a posé le moteur qu'elles consomment : soumission, validation, rejet et signature sont des transitions déjà testées, reste à brancher leurs écrans.
+**Point de décision — mercredi 7 octobre au soir.** Tenu le 4 octobre, avant son échéance : US-VAL-01, US-VAL-02 et US-VAL-04 sont livrées (commits `335d257`, `c51b353` et le commit de clôture de US-VAL-04 ; le code de US-VAL-04 est porté par `335d257`, voir P-41). US-PLAN-06 reste au sprint 3.
 
 **R6 — reclassé, ne relève plus de la faisabilité.** L'étude
 (`etudes/solveur/RECOMMANDATION.md`, D-162) a levé la question de faisabilité

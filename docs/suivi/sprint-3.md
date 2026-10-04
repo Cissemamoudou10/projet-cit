@@ -26,7 +26,7 @@ ligne ajoutée au tableau Sprints d'`AVANCEMENT.md`, ligne ajoutée à
 - [x] **US-VAL-03** — Gérer les états du programme · 5 pts · Must
 - [x] **US-VAL-01** — Soumettre un programme à validation · 3 pts · Must
 - [x] **US-VAL-02** — Valider ou rejeter un programme · 5 pts · Must
-- [ ] **US-VAL-04** — Empêcher l'affichage d'un programme non validé · 2 pts · Must
+- [x] **US-VAL-04** — Empêcher l'affichage d'un programme non validé · 2 pts · Must
 - [x] **US-EVAL-01** — Créer une évaluation selon son type · 5 pts · Must
 - [x] **US-EVAL-02** — Saisir la date d'un examen final · 2 pts · Must
 - [x] **US-EVAL-03** — Enregistrer les sujets transmis et sélectionner celui retenu · 5 pts · Must

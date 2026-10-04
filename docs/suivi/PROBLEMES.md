@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-41 — Le code d'US-VAL-04 est porté par le commit d'US-VAL-01
+**Date** 2026-10-04 · **Story** US-VAL-01 / US-VAL-04 (prompt 40) · **État** : résolu pour le suivi, historique conservé
+**Symptôme** — La relecture de US-VAL-04 a montré que les vues `signer` et `afficher`, le bloc de signature de la consultation et `circuit_affichage` (préconditions d'affichage) figurent dans `335d257`, commit d'US-VAL-01, qui ne mentionne pas US-VAL-04.
+**Cause** — Au commit d'US-VAL-01, `git add app/planification` a stagé l'ensemble du paquetage, y compris le code des écrans suivants, déjà présent dans l'arbre de travail.
+**Résolution** — Historique non réécrit (commit déjà publié sur `master`). Le test de US-VAL-04, son suivi et les corrections de relecture sont commités sous le message d'US-VAL-04. `AVANCEMENT.md` indique que le code est porté par `335d257`.
+**Risque concerné** — aucun sur le fonctionnement ; traçabilité des commits par story affaiblie pour le mémoire.
+**Leçon** — stager des chemins précis, jamais un paquetage entier, quand plusieurs stories sont en cours dans le même dossier.
+
 ## P-40 — Les fichiers de recette suivis étaient réécrits à chaque `pytest` et à chaque chargement du jeu
 **Date** 2026-10-03 · **Story** Jeu de recette sprint 2 (Prompt 34, US-SES-05) · **État** : résolu
 **Symptôme** — Chaque exécution de la suite `jeu_recette` et chaque `charger_jeu_recette` réécrivait les treize fichiers d'import et le lisez-moi de `docs/recette/fichiers-import/`, fichiers suivis par git. Le fichier `02-valide-5.xlsx` apparaissait modifié dans `git status` après chaque test.

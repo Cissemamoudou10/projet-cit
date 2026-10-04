@@ -31,6 +31,14 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-234 — US-VAL-04 (prompt 40, § 3) : signature réenregistrable jusqu'à l'affichage ; « Afficher » proposé seulement une fois signé ; mentions de validation et de signature sur le programme affiché
+**Date** 2026-10-04 · **Story** US-VAL-04 (Prompt 40, § 3, arbitrages du prompt) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C1 à C4 du backlog v9 : l'affichage n'est proposé que sur un programme validé et signé ; la signature est manuscrite, hors système, et le système en enregistre la date et le nom ; l'affichage non signé est refusé côté serveur et contrôlé en base ; le passage à affiché est journalisé.
+**Décision** — Deux actions distinctes pour la planification : « Enregistrer la signature » (date et nom du signataire, réenregistrable tant que le programme n'est pas affiché, T7) puis « Afficher » (T8), proposée seulement quand une signature est enregistrée. Le moteur refuse en plus (RG-46, date ET signataire) : un POST forgé est refusé, l'état reste. Le programme affiché porte, sur la consultation, la mention de sa validation (validateur, date) et de sa signature (signataire, date). C3 en base et C4 sont tenus par le moteur (contraintes `ck_programme_affichage_signe`, journal T8) et prouvés ici par le cycle HTTP ; rien n'est réimplanté.
+**Alternative écartée** — Signature unique non réenregistrable : une faute de saisie figerait le programme sans issue dans l'écran. Affichage proposé dès la validation : contraire à C1.
+**Impact sur les livrables** — aucun. La signature reste hors système (C2) : le système n'en vérifie que la forme et les dates.
+**Reporté au livrable** — non.
+
 ## D-233 — Révise D-172 et D-154 : la cellule pédagogique reçoit `programme_lecture` (lecture du programme, tous états), arbitrage A8 du prompt 34 appliqué par le prompt 40
 **Date** 2026-10-04 · **Story** US-VAL-02 (Prompt 40, § 2, arbitrage A8) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — D-172 (2026-09-30) avait retenu que la pédagogique lit le programme par `programme_validation_lecture`, sans étendre `programme_lecture`. Le prompt 40, § 2, rédigé après la clôture du prompt 39, tranche autrement l'arbitrage A8 : la pédagogique reçoit la permission de lecture du programme, tous états, par le mécanisme de la matrice, avec une écart à porter sur § 11.2. D-172 et D-154 sont donc révisés sur ce point.
