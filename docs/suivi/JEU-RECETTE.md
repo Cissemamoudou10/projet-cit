@@ -9,6 +9,10 @@ cohérence compare le générateur à ces fichiers suivis : s'il change, il éch
 et l'on décide alors de régénérer. Code : `app/planification/jeu_recette/` et
 `app/planification/management/commands/charger_jeu_recette.py`.
 
+## Étiquette de recette du sprint 2
+
+La recette manuelle du sprint 2 se joue sur l'étiquette `recette-sprint-2`, posée sur le commit de clôture du sprint 2 (`e05a1c3`, « Cloture le sprint 2 »). Le développement continue sur `master` sans la perturber (prompt 41, § 0.2) : pour rejouer la recette, `git checkout recette-sprint-2`.
+
 ## Base de données dédiée à la recette
 
 Ce jeu ne doit jamais coexister avec le jeu de démonstration (garde-fou, voir

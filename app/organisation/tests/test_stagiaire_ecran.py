@@ -19,8 +19,8 @@ from organisation.tests.conftest import donnees_stagiaire
 from organisation.tests.fichiers_stagiaires import construire_csv
 
 LIGNES = [
-    ["M001", "Ziani", "Karim", "Lt", "1er RTR"],
-    ["M002", "Bennani", "Yasmine", "Cne", "2e RTR"],
+    ["M001", "Zalbrok", "Kelvar", "Lt", "1er RTR"],
+    ["M002", "Bramvel", "Yasmine", "Cne", "2e RTR"],
 ]
 
 
@@ -170,7 +170,7 @@ def test_e2_import_complet_depot_analyse_confirmation_stagiaires_en_base(
 
 def test_e3_compte_rendu_affiche_reellement_numeros_de_ligne_et_motifs(client, redacteur, session):
     client.force_login(redacteur)
-    contenu = construire_csv([["", "Ziani", "Karim", "Lt", "1er RTR"]])
+    contenu = construire_csv([["", "Zalbrok", "Kelvar", "Lt", "1er RTR"]])
 
     reponse = client.post(
         reverse("organisation:importer_stagiaires", args=[session.pk]),

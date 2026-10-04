@@ -39,8 +39,8 @@ IDENTIFIANT_NOUVEAU = "ped.nouveau"
 IDENTIFIANT_VERROUILLE = "ver.demo"
 
 COMPTES = (
-    DonneesCompte("adm.demo", Profil.ADMINISTRATEUR, "Col", "El Amrani", "Rachid"),
-    DonneesCompte("ped.demo", Profil.CELLULE_PEDAGOGIQUE, "Cdt", "Bennani", "Yasmine"),
+    DonneesCompte("adm.demo", Profil.ADMINISTRATEUR, "Col", "El Amrovic", "Rachid"),
+    DonneesCompte("ped.demo", Profil.CELLULE_PEDAGOGIQUE, "Cdt", "Bramvel", "Yasmine"),
     DonneesCompte("pla.demo", Profil.CELLULE_PLANIFICATION, "Cne", "Chraibi", "Omar"),
     DonneesCompte("exa.demo", Profil.CELLULE_EXAMENS, "Lt", "Idrissi", "Sara"),
     DonneesCompte("dir.demo", Profil.DIRECTION_FORMATION, "Gal", "Alaoui", "Hicham"),
@@ -225,9 +225,9 @@ class InstructeurDemo:
 
 INSTRUCTEURS = (
     InstructeurDemo(
-        "ziani",
-        "Ziani",
-        "Karim",
+        "zalbrok",
+        "Zalbrok",
+        "Kelvar",
         "Cne",
         "Transmissions",
         Statut.MILITAIRE_DU_CENTRE,
@@ -236,7 +236,7 @@ INSTRUCTEURS = (
     InstructeurDemo(
         "fassi",
         "Fassi",
-        "Youssef",
+        "Yorgal",
         "Lt",
         "Chiffre",
         Statut.MILITAIRE_DU_CENTRE,
@@ -298,7 +298,7 @@ INSTRUCTEUR_SANS_QUALIFICATION = "belhaj"
 # n'en a délibérément aucune : archivé, il n'apparaît plus dans les écrans de
 # qualification, sa fiche vide n'y est donc jamais visible.
 QUALIFICATIONS = {
-    "ziani": ("Procédures radio", "Transmissions de données", "Réseaux de campagne", "Secourisme"),
+    "zalbrok": ("Procédures radio", "Transmissions de données", "Réseaux de campagne", "Secourisme"),
     "fassi": ("Chiffre et sécurité", "Topographie", "Secourisme"),
     "ouazzani": ("Protection électronique", "Topographie", "Réseaux de campagne"),
     "berrada": (

@@ -103,8 +103,8 @@ def test_creer_seances_tout_ou_rien_si_une_candidate_du_lot_est_refusee(
     y compris la première, qui aurait été acceptée seule."""
     qualifier(cours.instructeur, cours.element.matiere)
     instructeur_non_qualifie = Instructeur.objects.create(
-        nom="Amrani",
-        prenom="Yassir",
+        nom="Amrovic",
+        prenom="Yarnel",
         matricule="M24680",
         grade="Cne",
         specialite="Transmissions",

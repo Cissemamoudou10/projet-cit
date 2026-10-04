@@ -22,7 +22,7 @@ def _instant(jour, heure, minute=0):
 @pytest.fixture
 def autre_instructeur(db):
     return Instructeur.objects.create(
-        nom="Bennani",
+        nom="Bramvel",
         prenom="Yasmine",
         grade="Cne",
         specialite="Transmissions",

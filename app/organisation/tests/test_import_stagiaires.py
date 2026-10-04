@@ -18,8 +18,8 @@ from organisation.tests.conftest import donnees_stagiaire
 from organisation.tests.fichiers_stagiaires import construire_csv, construire_xlsx
 
 LIGNES_TROIS_STAGIAIRES = [
-    ["M001", "Ziani", "Karim", "Lt", "1er RTR"],
-    ["M002", "Bennani", "Yasmine", "Cne", "2e RTR"],
+    ["M001", "Zalbrok", "Kelvar", "Lt", "1er RTR"],
+    ["M002", "Bramvel", "Yasmine", "Cne", "2e RTR"],
     ["M003", "Chraibi", "Omar", "Sgt", "3e RTR"],
 ]
 
@@ -64,7 +64,7 @@ def test_b3_e1_extension_non_reconnue_refus_propre(session):
 
 def test_b4_e2_colonne_obligatoire_absente_refus_global_colonnes_nommees(session):
     contenu = construire_csv(
-        [["M001", "Ziani", "Karim", "Lt"]], entetes=["Matricule", "Nom", "Prénom", "Grade"]
+        [["M001", "Zalbrok", "Kelvar", "Lt"]], entetes=["Matricule", "Nom", "Prénom", "Grade"]
     )
 
     with pytest.raises(ErreurValidation) as info:
@@ -85,8 +85,8 @@ def test_b5_e3_toutes_les_lignes_en_anomalie_compte_rendu_aucune_confirmation_po
 def test_b6_e4_matricule_en_doublon_dans_le_fichier_ligne_signalee_et_exclue(session):
     contenu = construire_csv(
         [
-            ["M001", "Ziani", "Karim", "Lt", "1er RTR"],
-            ["M001", "Bennani", "Yasmine", "Cne", "2e RTR"],
+            ["M001", "Zalbrok", "Kelvar", "Lt", "1er RTR"],
+            ["M001", "Bramvel", "Yasmine", "Cne", "2e RTR"],
             ["M002", "Chraibi", "Omar", "Sgt", "3e RTR"],
         ]
     )
@@ -100,7 +100,7 @@ def test_b6_e4_matricule_en_doublon_dans_le_fichier_ligne_signalee_et_exclue(ses
 
 def test_b7_a2_matricule_deja_present_en_base_signale_ignore_distinct_de_b6(redacteur, session):
     ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M001"))
-    contenu = construire_csv([["M001", "Ziani", "Karim", "Lt", "1er RTR"]])
+    contenu = construire_csv([["M001", "Zalbrok", "Kelvar", "Lt", "1er RTR"]])
 
     rapport = analyser(session, contenu, "stagiaires.csv")
 
@@ -113,7 +113,7 @@ def test_b7_a2_matricule_deja_present_en_base_signale_ignore_distinct_de_b6(reda
 def test_b8_numeros_de_ligne_exacts_en_tete_compris_dans_le_decompte(session):
     """En-tête = ligne 1 (§ 8) : la dixième ligne de données, en anomalie,
     est donc annoncée en ligne 11, pas en ligne 10."""
-    lignes = [[f"M{i:03d}", "Ziani", "Karim", "Lt", "1er RTR"] for i in range(10)]
+    lignes = [[f"M{i:03d}", "Zalbrok", "Kelvar", "Lt", "1er RTR"] for i in range(10)]
     lignes[9][0] = ""  # matricule manquant sur la dixième ligne de données
     contenu = construire_csv(lignes)
 
@@ -161,7 +161,7 @@ def test_b10_separateur_virgule_accepte(session):
 
 def test_b11_ordre_des_colonnes_permute_accepte(session):
     entetes = ["Unité", "Grade", "Prénom", "Nom", "Matricule"]
-    lignes = [["1er RTR", "Lt", "Karim", "Ziani", "M001"]]
+    lignes = [["1er RTR", "Lt", "Kelvar", "Zalbrok", "M001"]]
     contenu = construire_csv(lignes, entetes=entetes)
 
     rapport = analyser(session, contenu, "stagiaires.csv")
@@ -213,7 +213,7 @@ def test_c1_confirmation_nominale_toutes_les_lignes_enregistrees_journal_porte_l
     assert Stagiaire.objects.filter(session=session).count() == 3
     entree = EntreeJournal.objects.get(objet_type="import_stagiaires")
     assert entree.valeur_apres["nombre_enregistres"] == 3
-    assert "Ziani" not in str(entree.valeur_apres)
+    assert "Zalbrok" not in str(entree.valeur_apres)
     assert "M001" not in str(entree.valeur_apres)
 
 

@@ -74,12 +74,12 @@ def test_b4_export_respecte_le_filtre_de_statut_deux_comptes_differents(
 
 
 def test_b5_export_respecte_la_recherche_en_cours(redacteur, session):
-    _creer_stagiaires(redacteur, session, ["Ziani", "Bennani"])
+    _creer_stagiaires(redacteur, session, ["Zalbrok", "Bramvel"])
 
-    exportes = ServiceStagiaire.exporter(redacteur, session, {"recherche": "ziani"}, "recherche")
+    exportes = ServiceStagiaire.exporter(redacteur, session, {"recherche": "zalbrok"}, "recherche")
 
     assert len(exportes) == 1
-    assert exportes[0].nom == "Ziani"
+    assert exportes[0].nom == "Zalbrok"
 
 
 def test_b6_csv_bom_separateur_point_virgule_accents_intacts_apres_relecture(redacteur, session):
@@ -106,7 +106,7 @@ def test_b7_nom_de_fichier_deterministe_sans_espace_accent_ni_caractere_interdit
 def test_b8_aller_retour_export_puis_reimport_sur_une_autre_session_csv_et_xlsx(
     redacteur, session, formation
 ):
-    _creer_stagiaires(redacteur, session, ["Éçàôù", "Bennani"])
+    _creer_stagiaires(redacteur, session, ["Éçàôù", "Bramvel"])
     autre_session = ServiceSession.creer(
         redacteur, donnees_session(formation, intitule="Session 2")
     )
@@ -155,12 +155,12 @@ def test_c1_export_produit_une_entree_de_journal(redacteur, session):
 
 
 def test_c2_l_entree_ne_contient_aucune_identite(redacteur, session):
-    _creer_stagiaires(redacteur, session, ["Ziani"])
+    _creer_stagiaires(redacteur, session, ["Zalbrok"])
 
     ServiceStagiaire.exporter(redacteur, session, {}, "toutes")
 
     entree = EntreeJournal.objects.get(objet_type="export_stagiaires")
-    assert "Ziani" not in str(entree.valeur_apres)
+    assert "Zalbrok" not in str(entree.valeur_apres)
     assert "M000" not in str(entree.valeur_apres)
 
 

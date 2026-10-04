@@ -76,16 +76,16 @@ def test_a6_tri_accentue_e_aigu_e_et_a_ranges_avant_z(redacteur, session):
     près de A, jamais après Z comme le ferait un tri naïf sur les points de
     code Unicode (É = U+00C9, largement après Z = U+005A)."""
     ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M001", nom="Zorro"))
-    ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M002", nom="Émile"))
-    ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M003", nom="Emile"))
-    ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M004", nom="Amar"))
+    ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M002", nom="Éloïs"))
+    ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M003", nom="Eloïs"))
+    ServiceStagiaire.creer(redacteur, session, donnees_stagiaire(matricule="M004", nom="Amrok"))
 
     page = ServiceStagiaire.lister(redacteur, session, {}, None)
 
     noms = [s.nom for s in page]
-    assert noms[0] == "Amar"
+    assert noms[0] == "Amrok"
     assert noms[-1] == "Zorro"
-    assert set(noms[1:3]) == {"Émile", "Emile"}
+    assert set(noms[1:3]) == {"Éloïs", "Eloïs"}
 
 
 def test_a7_stagiaire_deplace_apparait_sous_sa_brigade_courante(redacteur, session, stagiaire):

@@ -30,7 +30,7 @@ def test_planification_consulte_la_liste_et_la_fiche(client, planificateur, reda
 
     assert reponse_liste.status_code == 200
     assert reponse_fiche.status_code == 200
-    assert "Ziani" in reponse_fiche.content.decode()
+    assert "Zalbrok" in reponse_fiche.content.decode()
 
 
 def test_planification_ne_voit_ni_creer_ni_modifier_ni_archiver(client, planificateur, redacteur):
@@ -71,7 +71,7 @@ def test_le_badge_de_statut_distingue_les_trois_valeurs_par_le_mot(client, redac
     """
     ServiceInstructeur.creer(redacteur, _donnees(statut="militaire_du_centre"))
     ServiceInstructeur.creer(redacteur, _donnees(nom="Alaoui", matricule=None, statut="vacataire"))
-    ServiceInstructeur.creer(redacteur, _donnees(nom="Bennani", matricule=None, statut="civil"))
+    ServiceInstructeur.creer(redacteur, _donnees(nom="Bramvel", matricule=None, statut="civil"))
     client.force_login(redacteur)
 
     contenu = client.get(reverse("ressources:liste_instructeurs")).content.decode()

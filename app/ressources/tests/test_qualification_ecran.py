@@ -51,7 +51,7 @@ def test_entree_matiere_liste_les_instructeurs_non_archives(
     reponse = client.get(reverse("ressources:qualifications_matiere", args=[matiere.pk]))
     contenu = reponse.content.decode()
 
-    assert "Ziani" in contenu
+    assert "Zalbrok" in contenu
     assert "Archivé" not in contenu.replace("État", "")
 
 

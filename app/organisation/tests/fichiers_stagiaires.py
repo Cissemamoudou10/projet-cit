@@ -33,4 +33,4 @@ def construire_xlsx(lignes, *, entetes=None):
     return tampon.getvalue()
 
 
-LIGNE_TYPE = ["M001", "Ziani", "Karim", "Lt", "1er RTR"]
+LIGNE_TYPE = ["M001", "Zalbrok", "Kelvar", "Lt", "1er RTR"]

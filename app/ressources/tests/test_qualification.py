@@ -143,7 +143,7 @@ def test_doublon_refuse_avec_message_exploitable(redacteur, instructeur, matiere
     with pytest.raises(ErreurValidation) as info:
         ServiceQualification.ajouter(redacteur, instructeur, matiere)
 
-    assert "Ziani" in str(info.value)
+    assert "Zalbrok" in str(info.value)
     assert "Électronique numérique" in str(info.value)
 
 

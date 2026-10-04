@@ -232,8 +232,8 @@ def affecter_stagiaires(agissant, brigade, nombre, prefixe="M"):
 @pytest.fixture
 def instructeur(db):
     return Instructeur.objects.create(
-        nom="Ziani",
-        prenom="Karim",
+        nom="Zalbrok",
+        prenom="Kelvar",
         matricule="M12345",
         grade="Lt",
         specialite="Transmissions",
@@ -244,8 +244,8 @@ def instructeur(db):
 @pytest.fixture
 def autre_instructeur(db):
     return Instructeur.objects.create(
-        nom="Kibour",
-        prenom="Youssef",
+        nom="Kiborvan",
+        prenom="Yorgal",
         matricule="M67890",
         grade="Cne",
         specialite="Transmissions",

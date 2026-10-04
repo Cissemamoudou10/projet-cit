@@ -117,8 +117,8 @@ def objets(db, utilisateurs):
         motif="Essai",
     )
     instructeur = Instructeur.objects.create(
-        nom="Ziani",
-        prenom="Karim",
+        nom="Zalbrok",
+        prenom="Kelvar",
         matricule="M12345",
         grade="Lt",
         specialite="Transmissions",
@@ -148,8 +148,8 @@ def objets(db, utilisateurs):
     stagiaire = Stagiaire.objects.create(
         session=session,
         matricule="M001",
-        nom="Ziani",
-        prenom="Karim",
+        nom="Zalbrok",
+        prenom="Kelvar",
         grade="Lt",
         unite="1er RTR",
     )

@@ -186,8 +186,8 @@ def donnees_stagiaire(**supplement):
     Données entièrement fictives."""
     donnees = {
         "matricule": "M001",
-        "nom": "Ziani",
-        "prenom": "Karim",
+        "nom": "Zalbrok",
+        "prenom": "Kelvar",
         "grade": "Lt",
         "unite": "1er RTR",
     }

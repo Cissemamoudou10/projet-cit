@@ -80,8 +80,8 @@ def matiere(db):
 @pytest.fixture
 def instructeur(db):
     return Instructeur.objects.create(
-        nom="Ziani",
-        prenom="Karim",
+        nom="Zalbrok",
+        prenom="Kelvar",
         matricule="M12345",
         grade="Lt",
         specialite="Transmissions",

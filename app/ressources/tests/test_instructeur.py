@@ -16,8 +16,8 @@ from ressources.services.qualification import ServiceQualification
 
 def _donnees(**supplement):
     donnees = {
-        "nom": "Ziani",
-        "prenom": "Karim",
+        "nom": "Zalbrok",
+        "prenom": "Kelvar",
         "matricule": "M12345",
         "grade": "Lt",
         "specialite": "Transmissions",
@@ -31,8 +31,8 @@ def test_creation_avec_les_six_attributs(redacteur):
     instructeur = ServiceInstructeur.creer(redacteur, _donnees())
 
     assert instructeur.pk is not None
-    assert instructeur.nom == "Ziani"
-    assert instructeur.prenom == "Karim"
+    assert instructeur.nom == "Zalbrok"
+    assert instructeur.prenom == "Kelvar"
     assert instructeur.matricule == "M12345"
     assert instructeur.grade == "Lt"
     assert instructeur.specialite == "Transmissions"
@@ -74,7 +74,7 @@ def test_deux_vacataires_sans_matricule_coexistent(db):
     Instructeur.objects.create(**_donnees(matricule=None, statut=Statut.VACATAIRE, nom="Alaoui"))
 
     Instructeur.objects.create(  # ne lève pas
-        **_donnees(matricule=None, statut=Statut.CIVIL, nom="Bennani")
+        **_donnees(matricule=None, statut=Statut.CIVIL, nom="Bramvel")
     )
 
 
@@ -92,7 +92,7 @@ def test_matricule_duplique_est_refuse_avec_l_instructeur_existant(redacteur):
         ServiceInstructeur.creer(redacteur, _donnees(nom="Autre"))
 
     assert "M12345" in str(info.value)
-    assert "Ziani" in str(info.value)
+    assert "Zalbrok" in str(info.value)
 
 
 def test_colonne_nombre_de_qualifications_est_exacte(redacteur):
@@ -132,11 +132,11 @@ def test_recherche_par_nom_par_prenom_et_par_matricule(redacteur):
         redacteur, _donnees(nom="Alaoui", prenom="Yassine", matricule="M99999")
     )
 
-    par_nom = ServiceInstructeur.lister(redacteur, {"recherche": "Ziani"}, None)
+    par_nom = ServiceInstructeur.lister(redacteur, {"recherche": "Zalbrok"}, None)
     par_prenom = ServiceInstructeur.lister(redacteur, {"recherche": "Yassine"}, None)
     par_matricule = ServiceInstructeur.lister(redacteur, {"recherche": "M9999"}, None)
 
-    assert [i.nom for i in par_nom] == ["Ziani"]
+    assert [i.nom for i in par_nom] == ["Zalbrok"]
     assert [i.nom for i in par_prenom] == ["Alaoui"]
     assert [i.nom for i in par_matricule] == ["Alaoui"]
 
@@ -239,7 +239,7 @@ def test_creation_modification_archivage_sont_journalises(redacteur):
     ServiceInstructeur.archiver(redacteur, instructeur.pk)
 
     natures = list(
-        EntreeJournal.objects.filter(objet_type="instructeur", objet_identifiant="Ziani")
+        EntreeJournal.objects.filter(objet_type="instructeur", objet_identifiant="Zalbrok")
         .order_by("cree_le")
         .values_list("type_action", flat=True)
     )

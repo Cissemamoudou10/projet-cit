@@ -150,8 +150,8 @@ def instructeur(matiere):
     """Qualifié pour `matiere` dès sa création : la quasi-totalité des tests
     d'insertion de séance en ont besoin, jamais de l'instructeur seul."""
     instructeur = Instructeur.objects.create(
-        nom="Ziani",
-        prenom="Karim",
+        nom="Zalbrok",
+        prenom="Kelvar",
         matricule="M-EVAL1",
         grade="Lt",
         specialite="Transmissions",
