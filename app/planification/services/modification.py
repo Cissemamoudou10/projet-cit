@@ -238,6 +238,14 @@ def _creer_avenant(agissant, seance, avenant, detail):
     )
 
 
+def enregistrer_avenant(agissant, seance, avenant):
+    """Avenant hors modification : l'ajout d'une séance sur un programme
+    affiché (US-PLAN-05, fin, prompt 42). Même objet, même contrainte en base
+    que l'avenant d'une modification."""
+    _verifier_avenantage(avenant)
+    return _creer_avenant(agissant, seance, avenant, [f"nature : {avenant.nature}"])
+
+
 def supprimer_seances_regenerables(seances):
     """Régénération (D-235) : efface en lot les séances remplacées. Appelée par la
     génération APRÈS la garde de modification, seul autre chemin de suppression."""

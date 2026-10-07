@@ -233,6 +233,12 @@
                               tracking-wider text-gris-lecture">
                     {{ cellule.libelle_vide }}
                   </div>
+                  {% if perms.noyau.programme_ecriture %}
+                    <a href="{% url 'planification:ajouter_seance' programme.pk %}?brigade={{ ligne.brigade.pk }}&amp;date={{ date_du_jour|date:'Y-m-d' }}&amp;heure_debut={{ cellule.creneau.heure_debut|time:'H:i' }}&amp;heure_fin={{ cellule.creneau.heure_fin|time:'H:i' }}"
+                       class="mt-1 block text-2xs text-marine-700 underline-offset-2 hover:underline">
+                      + Ajouter une séance
+                    </a>
+                  {% endif %}
                 </td>
               {% endif %}
             {% endfor %}

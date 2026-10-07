@@ -126,7 +126,6 @@ MESSAGE_AFFICHAGE_NON_SIGNE = (
     "d'afficher (RG-46)."
 )
 MESSAGE_ANNULATION = "L'annulation de la validation exige une confirmation et un motif (T9)."
-MESSAGE_AVENANT = "Un avenant exige son motif et sa nature (T10)."
 
 MARCHES_PAR_EVENEMENT = {
     SIGNER: "La signature suit la validation (T4) : le programme doit être validé.",
@@ -347,20 +346,6 @@ class ServiceCircuitProgramme:
             if not confirmee or not (motif or "").strip():
                 raise TransitionProgrammeRefusee(MESSAGE_ANNULATION)
             return _appliquer(verrouille, transition, agissant, detail=motif.strip())
-
-    @staticmethod
-    def porter_avenant(agissant, programme, motif, nature):
-        """T10 — reste AFFICHÉ et journalise l'avenant (motif et nature exigés). La
-        modification de la séance passe par la porte, avec `avenant=True`."""
-        with transaction.atomic():
-            verrouille = _verrouiller(programme)
-            transition = _transition(agissant, verrouille, PORTER_AVENANT)
-            texte_motif = (motif or "").strip()
-            texte_nature = (nature or "").strip()
-            if not texte_motif or not texte_nature:
-                raise TransitionProgrammeRefusee(MESSAGE_AVENANT)
-            detail = f"nature : {texte_nature} — {texte_motif}"
-            return _appliquer(verrouille, transition, agissant, detail=detail)
 
     @staticmethod
     def garde_modification(

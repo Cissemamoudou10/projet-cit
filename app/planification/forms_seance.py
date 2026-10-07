@@ -10,6 +10,7 @@ import datetime
 from django import forms
 from django.utils import timezone
 
+from organisation.models import Brigade
 from planification.models import NatureAvenant
 from referentiel.models import ElementReferentiel
 from ressources.models import Instructeur, Lieu
@@ -72,3 +73,10 @@ class FormulaireSeance(forms.Form):
         if not donnees.get("motif_avenant", "").strip():
             return None
         return donnees["motif_avenant"].strip(), donnees["nature_avenant"]
+
+
+class FormulaireAjoutSeance(FormulaireSeance):
+    """Ajout manuel (C4, prompt 42) : la brigade se choisit ici, elle n'a
+    pas encore de ligne sur le programme."""
+
+    brigade = forms.ModelChoiceField(queryset=Brigade.objects.all(), label="Brigade")

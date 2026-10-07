@@ -31,6 +31,30 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-246 — D-121 A3 : la suppression d'une période bloquante ne restaure aucune séance
+**Date** 2026-10-07 · **Story** US-PLAN-05, fin (Prompt 42, partie 1, D-121 A3) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — D-121 demandait un arbitrage explicite : une séance qu'une période bloquante a empêché de programmer doit-elle réapparaître quand la période est supprimée ?
+**Décision** — Non. `ServicePeriodeCalendrier.supprimer` efface la période et rien d'autre (aucun signal, aucune restauration). Une séance redevenue programmable se replanifie par ajout manuel ou par régénération, comme toute case libre. Test qui le constate : supprimer une période bloquante ne change pas le nombre de séances du programme.
+**Alternative écartée** — Recréer d'office les séances qu'une génération aurait produites sans la période : suppose de rejouer la génération, avec un résultat qui dépend de l'état présent (brigades sélectionnées, autres séances), pas de l'état au moment du blocage — un résultat inventé, pas restauré.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-245 — D-121 E2 : les séances recouvertes par une période bloquante s'énumèrent depuis `planification`, reliées par URL depuis `ressources`
+**Date** 2026-10-07 · **Story** US-PLAN-05, fin (Prompt 42, partie 1, D-121 E2) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Le sélecteur `seances_recouvertes` (D-191, US-EVAL-02) annonçait fermer D-121 E2 à US-PLAN-05. L'écran de déclaration d'une période vit dans `ressources`, en amont de `planification` dans l'ordre des couches (`ressources` ne peut pas dépendre de `planification`, `tests/architecture/test_couches.py`) : il ne peut donc pas appeler ce sélecteur.
+**Décision** — Nouvelle vue `planification:seances_de_la_periode` (lecture seule, `programme_lecture`) : relit la période par `ressources.services.periode_calendrier.ServicePeriodeCalendrier.obtenir` (sens autorisé), résout sa portée en brigades (`brigades_de_la_periode`), puis appelle `seances_recouvertes`. La fiche de la période (`ressources/periode_calendrier_detail.html`), sur une période bloquante, porte un lien vers cette vue construit par `{% url %}` — une résolution de nom de route, jamais un import Python de `planification` depuis `ressources`. Chaque séance listée porte un lien vers sa modification ; rien n'est supprimé ni déplacé, l'arbitrage reste humain.
+**Alternative écartée** — Calculer l'énumération dans `ServicePeriodeCalendrier.creer` : aurait fait importer `planification` (et le modèle `Seance`) par `ressources`, une dépendance inverse interdite. Déplacer tout l'écran de déclaration dans `planification` : aurait dupliqué un écran déjà conçu et testé dans `ressources` pour fermer un seul report.
+**Impact sur les livrables** — aucun changement de règle métier ; précise où vit la fermeture du report, que D-191 laissait ouverte.
+**Reporté au livrable** — non.
+
+## D-244 — US-PLAN-05 (C4) : l'ajout manuel passe par la porte unique, avec avenant de nature « ajout » sur un programme affiché
+**Date** 2026-10-07 · **Story** US-PLAN-05, fin (Prompt 42, partie 1, C4) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — `ServiceEcritureSeance.creer_seance` existait déjà (US-PLAN-03/US-VAL-03) mais sans écran de saisie manuelle, et sans la possibilité de porter un avenant comme `modifier_seance`.
+**Décision** — `creer_seance` reçoit un paramètre `avenant` optionnel, transmis à la garde (`avenant=True` admet l'écriture sur un programme affiché, M2) et à un nouvel enregistrement (`modification.enregistrer_avenant`, même objet `Avenant`, même contrainte en base que la modification). Écran : un lien « Ajouter une séance » sur chaque créneau libre de la grille (gabarit, aucune condition d'état recodée : le moteur décide, l'écran affiche le refus s'il survient) ; formulaire commun avec la modification (matière, instructeur, lieu), plus la brigade. `_verifier_et_creer` regroupe `verrouillee`, `declencheur` et `avenant` dans un objet `OptionsEcriture` pour rester sous cinq paramètres.
+**Alternative écartée** — Présélectionner la nature « ajout » dans le formulaire : contraire à M9/l'esprit du prompt, la nature reste un choix humain même quand un seul choix est pertinent.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
 ## D-243 — US-PLAN-05 : périmètre livré, reports ouverts et limite connue (rendu du prompt 41)
 **Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, § 2 et § 5) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — Le prompt 41 demande onze arbitrages, un écran d'ajout, et la fermeture des reports D-121 E2 et A3.
@@ -84,14 +108,14 @@ reprendre. **Cette ligne n'est jamais vide.**
 **Contexte** — BF-PLAN-05 et CLS-05 § 6.6 : un avenant daté et motivé, à la place de la modification d'un programme affiché. CLS-05 porte `natureModification : texte`.
 **Décision** — Modèle `Avenant` (`planification/models.py`, migration `planification/0004`) : motif, nature (six choix, stockée), détail généré par le service (« ancienne → nouvelle »), auteur et date par la base. Rattaché à la séance en `PROTECT` : la trace d'une décision ne disparaît jamais avec la séance (relecture : `CASCADE` retiré). Deux contraintes en base : motif non vide (`ck_avenant_motif_non_vide`), nature connue (`ck_avenant_nature_connue`). Le journal de la modification porte la mention « avenant (nature) » ; aucune nouvelle nature RG-26 n'est ajoutée (patron de gestion existant).
 **Alternative écartée** — Nature en texte libre : le prompt la veut stockée, pour retrouver l'opération décidée. Nouvelle nature de journal : une extension de plus à RG-26 pour un détail déjà porté par la modification.
-**Impact sur les livrables** — CLS-05 `natureModification` : choix stocké, écart à consigner (écart 37).
+**Impact sur les livrables** — CLS-05 `natureModification` : choix stocké, écart à consigner (écart 37). `.claude/rules/modeles.md` (§ Suppression) listait encore l'avenant en `CASCADE` : corrigé (relecture complète, prompt 42, partie 1) pour refléter le `PROTECT` retenu ici.
 **Reporté au livrable** — oui.
 
 ## D-236 — US-PLAN-05 (M2) : la garde admet l'écriture portant un avenant sur un programme affiché ; la table des transitions reste intacte
 **Date** 2026-10-04 · **Story** US-PLAN-05 (Prompt 41, M2) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — La garde refuse toute écriture sur un programme affiché (« porter un avenant »). Le prompt en fait l'extension prévue, et la seule modification du moteur autorisée.
-**Décision** — `garde_modification(..., avenant=True)` admet l'écriture sur AFFICHÉ, qui reste AFFICHÉ, validation et signature intactes. Un avenant sur un autre état est refusé (« un avenant n'existe qu'après affichage »). La table `TRANSITIONS` ne change pas : l'oracle des 55 cas (ETA-01 § 4.1) reste vrai, la case « écriture sur AFFICHÉ » y reste « refus ». L'avenant est admis par la même case T10 (`_transition_admise`), non recodée (relecture).
-**Alternative écartée** — Ajouter une case admise à la table : aurait modifié le document de référence sans décision de cellule.
+**Décision** — `garde_modification(..., avenant=True)` admet l'écriture sur AFFICHÉ, qui reste AFFICHÉ, validation et signature intactes. Un avenant sur un autre état est refusé (« un avenant n'existe qu'après affichage »). La table `TRANSITIONS` ne change pas : l'oracle des 55 cas (ETA-01 § 4.1) reste vrai, la case « écriture sur AFFICHÉ » y reste « refus ». L'avenant est admis par la même case T10 (`_transition_admise`), non recodée. La méthode publique `ServiceCircuitProgramme.porter_avenant`, posée à US-VAL-03 avant que le mécanisme réel n'existe, n'était appelée que par son propre test : elle journalisait une transition T10 sans jamais créer d'`Avenant` ni valider sa nature contre `NatureAvenant.values`, en contradiction silencieuse avec D-237. Retirée à la relecture complète (prompt 42, partie 1), avec son test dédié : le seul chemin de l'avenant est désormais celui de `modification.py`.
+**Alternative écartée** — Ajouter une case admise à la table : aurait modifié le document de référence sans décision de cellule. Garder `porter_avenant` en la faisant déléguer au mécanisme réel : aurait laissé deux points d'entrée pour un seul geste, sans bénéfice.
 **Impact sur les livrables** — aucun.
 **Reporté au livrable** — non.
 

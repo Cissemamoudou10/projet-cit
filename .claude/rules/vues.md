@@ -31,8 +31,8 @@ corrective attendue**, pas seulement le refus.
 
 Mauvais : « Aucun instructeur qualifié disponible. »
 Bon : « Aucun instructeur qualifié disponible pour Matériel radio le lundi
-08:00–09:45 : Lt Ziani en mission du 24/04 au 09/05, Cne Kibour affecté à BCM1
-sur le même créneau. »
+08:00–09:45 : Lt Zalbrok en mission du 24/04 au 09/05, Cne Kiborvan affecté à
+BCM1 sur le même créneau. »
 
 ## Interface
 

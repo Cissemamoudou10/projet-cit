@@ -66,7 +66,10 @@ doit pouvoir ajouter une nature sans intervention sur le code.
 `PROTECT` par défaut sur toute clé étrangère vers une entité de référence.
 `CASCADE` uniquement en composition stricte : créneau type vers grille, ligne de
 programme vers séance, sujet vers évaluation, surveillance vers organisation
-d'épreuve, avenant et non-exécution vers leur porteur.
+d'épreuve, non-exécution vers son porteur. L'avenant (US-PLAN-05) est
+l'exception : `PROTECT` vers la séance, puisqu'il est la trace d'une décision
+qui ne doit jamais disparaître avec elle, même quand la séance s'efface par un
+autre chemin (D-237).
 `SET_NULL` pour les références facultatives : séance vers créneau type, séance
 vers évaluation.
 

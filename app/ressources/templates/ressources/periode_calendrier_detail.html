@@ -68,6 +68,13 @@
       <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Portée</dt>
       <dd>{{ periode.portee }}</dd>
     </div>
+    {% if periode.effet == "bloquant" %}
+      <div class="col-span-3">
+        <a href="{{ url_seances_impactees }}" class="text-sm text-marine-700 no-underline hover:underline">
+          Voir les séances déjà programmées concernées
+        </a>
+      </div>
+    {% endif %}
   </dl>
 </section>
 {% endblock %}

@@ -460,6 +460,7 @@ ECRANS_ECRITURE = [
     EcranEcriture("planification:afficher", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
     EcranEcriture("planification:annuler_validation", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
     EcranEcriture("planification:modifier_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
+    EcranEcriture("planification:ajouter_seance", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
     EcranEcriture("planification:supprimer_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     EcranEcriture("planification:deverrouiller_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
@@ -529,8 +530,9 @@ ECRANS_ECRITURE = [
 # 102 adresses : les 97 précédentes (Prompt 37) plus les cinq adresses
 # d'écriture de l'organisation d'épreuve (US-EVAL-04, Prompt 38) ; 109 après le
 # circuit du programme (prompt 40, sept routes POST) ; 113 après la modification
-# manuelle et l'avenant (prompt 41, US-PLAN-05 : quatre routes POST).
-assert len(ECRANS_ECRITURE) == 113
+# manuelle et l'avenant (prompt 41, US-PLAN-05) ; 114 après l'ajout manuel
+# (prompt 42, fin d'US-PLAN-05).
+assert len(ECRANS_ECRITURE) == 114
 
 
 def _groupes_sans(permission):

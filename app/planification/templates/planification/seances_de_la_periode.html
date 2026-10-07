@@ -1,0 +1,50 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Séances concernées — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Séances déjà programmées concernées</h1>
+  <p class="text-sm text-gris-lecture">
+    « {{ periode.intitule }} », du {{ periode.debut|date:"d/m/Y H:i" }} au {{ periode.fin|date:"d/m/Y H:i" }} —
+    {{ periode.portee }}
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if seances %}
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 text-sm text-gris-lecture">
+      Ces séances ne sont ni supprimées ni déplacées : à vous de décider, par la modification de chacune.
+    </p>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gris-trait bg-fond-bande text-left text-xs font-semibold uppercase tracking-wide text-marine-900">
+          <th class="px-4 py-2">Semaine</th>
+          <th class="px-4 py-2">Matière</th>
+          <th class="px-4 py-2">Début</th>
+          <th class="px-4 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for seance in seances %}
+          <tr class="border-b border-gris-trait">
+            <td class="px-4 py-2">Semaine du {{ seance.programme.lundi_de_semaine|date:"d/m/Y" }}
+              <span class="ml-1 text-2xs text-gris-lecture">({{ seance.programme.get_etat_display|lower }})</span></td>
+            <td class="px-4 py-2">{{ seance.element_referentiel.matiere }}</td>
+            <td class="px-4 py-2 tabular-nums">{{ seance.debut|date:"d/m/Y H:i" }}</td>
+            <td class="px-4 py-2 text-right">
+              {% if perms.noyau.programme_ecriture %}
+                <a href="{% url 'planification:modifier_seance' seance.pk %}" class="text-marine-700 no-underline hover:underline">Modifier</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="px-4 py-3 text-sm text-gris-lecture">Aucune séance déjà programmée n'est concernée.</p>
+  {% endif %}
+</section>
+{% endblock %}

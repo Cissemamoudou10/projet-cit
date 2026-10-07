@@ -19,6 +19,8 @@ Prompt 31 — voir docs/suivi/DECISIONS.md) :
   porte d'écriture.
 """
 
+import dataclasses
+
 from django.db import transaction
 from django.utils import timezone
 
@@ -84,18 +86,35 @@ def _creer_une_seance(agissant, programme, candidates, verrouillee=False):
     return seance
 
 
-def _verifier_et_creer(programme, candidates, agissant, verrouillee, declencheur):
+@dataclasses.dataclass(frozen=True)
+class OptionsEcriture:
+    """`.claude/rules/python.md`, § 5 paramètres max : `verrouillee`,
+    `declencheur` et `avenant` voyagent ensemble depuis `creer_seance` et
+    `inserer_seance_de_controle` jusqu'à `_verifier_et_creer`."""
+
+    verrouillee: bool = False
+    declencheur: str = DECLENCHEUR_SEANCE
+    avenant: object = None
+
+
+def _verifier_et_creer(programme, candidates, agissant, options):
     """La garde d'état (V3) précède le contrôle des contraintes, sous le même
     verrou : une reprise implicite (T6) est annulée avec le reste si la
-    séance est refusée."""
+    séance est refusée. `options.avenant` (US-PLAN-05, fin, prompt 42) : admet
+    l'ajout sur un programme affiché (M2), qui reste affiché."""
     with transaction.atomic():
         verrouille = ServiceCircuitProgramme.garde_modification(
-            programme, agissant, declencheur=declencheur
+            programme,
+            agissant,
+            declencheur=options.declencheur,
+            avenant=options.avenant is not None,
         )
         contexte = ServiceContraintes.contexte(verrouille)
         _lever_si_refuse(ServiceContraintes.verifier_lot(candidates, contexte))
-        seance = _creer_une_seance(agissant, verrouille, candidates, verrouillee)
+        seance = _creer_une_seance(agissant, verrouille, candidates, options.verrouillee)
         _journaliser(agissant, seance)
+        if options.avenant is not None:
+            modification.enregistrer_avenant(agissant, seance, options.avenant)
     return seance
 
 
@@ -145,19 +164,19 @@ class ServiceEcritureSeance:
     PERMISSION_EVALUATIONS_ECRITURE = PERMISSION_EVALUATIONS_ECRITURE
 
     @staticmethod
-    def creer_seance(agissant, programme, candidates):
+    def creer_seance(agissant, programme, candidates, avenant=None):
         """`candidates` : une ou plusieurs `planification.services.
         contraintes.Candidate` — plusieurs pour une séance regroupée
         (même `cle_regroupement`, une ligne de programme par candidate).
         Contrôle TOUJOURS via `ServiceContraintes` avant d'écrire quoi que
         ce soit (§ 5) ; lève `ErreurValidation` listant toutes les
         violations si une seule candidate est refusée — tout ou rien, une
-        séance regroupée ne s'écrit jamais à moitié.
+        séance regroupée ne s'écrit jamais à moitié. `avenant` : ajout sur
+        un programme affiché (C4, prompt 42, fin US-PLAN-05).
         """
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
-        return _verifier_et_creer(
-            programme, candidates, agissant, verrouillee=True, declencheur=DECLENCHEUR_SEANCE
-        )
+        options = OptionsEcriture(verrouillee=True, declencheur=DECLENCHEUR_SEANCE, avenant=avenant)
+        return _verifier_et_creer(programme, candidates, agissant, options)
 
     @staticmethod
     def inserer_seance_de_controle(agissant, programme, candidates):
@@ -177,9 +196,8 @@ class ServiceEcritureSeance:
         test_inserer_seance_de_controle_n_est_appelee_que_depuis_evaluations`.
         """
         verifier_habilitation(agissant, PERMISSION_EVALUATIONS_ECRITURE)
-        return _verifier_et_creer(
-            programme, candidates, agissant, verrouillee=True, declencheur=DECLENCHEUR_CONTROLE
-        )
+        options = OptionsEcriture(verrouillee=True, declencheur=DECLENCHEUR_CONTROLE)
+        return _verifier_et_creer(programme, candidates, agissant, options)
 
     @staticmethod
     def supprimer_seance_de_controle(agissant, seance):

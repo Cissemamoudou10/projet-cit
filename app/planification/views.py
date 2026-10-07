@@ -160,6 +160,7 @@ def vue_consultation_programme(request):
             **contexte_du_circuit,
             "programme": programme,
             "lundi": lundi,
+            "date_du_jour": lundi + datetime.timedelta(days=JOURS_OFFSET[jour_actif]),
             "creneaux": creneaux_du_jour,
             "jour_actif": jour_actif,
             "onglets_jours": _onglets_jours(jours, jour_actif, lundi),

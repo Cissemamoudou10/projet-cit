@@ -223,27 +223,6 @@ def test_annuler_la_validation_repasse_a_brouillon_et_efface_la_signature(circui
     assert programme.signataire is None
 
 
-def test_porter_un_avenant_sur_un_affiche_reste_affiche_et_journalise(circuit):
-    programme, acteurs = circuit.programme, circuit.acteurs
-    amener_a(EtatProgramme.AFFICHE, circuit)
-
-    ServiceCircuitProgramme.porter_avenant(
-        acteurs.planificateur, programme, "Changement de créneau.", "Modification mineure"
-    )
-
-    programme.refresh_from_db()
-    assert programme.etat == EtatProgramme.AFFICHE
-    assert _journal_du_programme(programme).filter(detail__startswith="T10").exists()
-
-
-def test_porter_un_avenant_sans_motif_ou_sans_nature_est_refuse(circuit):
-    programme, acteurs = circuit.programme, circuit.acteurs
-    amener_a(EtatProgramme.AFFICHE, circuit)
-
-    with pytest.raises(TransitionProgrammeRefusee, match="motif et sa nature"):
-        ServiceCircuitProgramme.porter_avenant(acteurs.planificateur, programme, "motif", "")
-
-
 # --- D — habilitations : chaque transition refusée aux profils non autorisés ---
 
 PROFILS_HORS_PLANIFICATION = ["redacteur", "direction_formation", "examens"]

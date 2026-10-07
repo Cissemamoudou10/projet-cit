@@ -50,6 +50,9 @@ def vue_detail_periode_calendrier(request, pk):
             "url_annuel": reverse("ressources:calendrier_annuel"),
             "url_modifier": reverse("ressources:modifier_periode_calendrier", args=[periode.pk]),
             "url_supprimer": reverse("ressources:supprimer_periode_calendrier", args=[periode.pk]),
+            # D-121 E2 : nom d'URL résolu par le routeur, sans import de `planification`
+            # (ressources ne peut pas en dépendre — tests/architecture/test_couches.py).
+            "url_seances_impactees": reverse("planification:seances_de_la_periode", args=[periode.pk]),
         },
     )
 

@@ -236,6 +236,10 @@ Ferme : **D-172** (lecture du programme par la pédagogique, D-231). Aucun repor
 
 Ferme : **D-181** (suppression d'une évaluation et de sa séance verrouillée, D-240). Reste ouvert : **D-121** (E2 et A3, périodes bloquantes, D-243). Net : **onze ouverts**.
 
+### Recompte à la clôture d'US-PLAN-05, le 2026-10-07
+
+Ferme : **D-121** (E2 par D-245, A3 par D-246). Aucun report ne s'ouvre. Net : **dix ouverts**.
+
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 
 | Code cité dans `DECISIONS.md` | Désigne réellement (`sprint-2.md`) |

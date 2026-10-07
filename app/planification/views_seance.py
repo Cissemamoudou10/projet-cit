@@ -13,9 +13,10 @@ from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurMetier
-from planification.forms_seance import FormulaireSeance
+from planification.forms_seance import FormulaireAjoutSeance, FormulaireSeance
 from planification.models import ProgrammeHebdomadaire, Seance
 from planification.services.circuit import ServiceCircuitProgramme
+from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
 from planification.services.modification import Avenantage
 
@@ -75,6 +76,57 @@ def modifier_seance(request, pk):
         request,
         "planification/modifier_seance.html",
         {"seance": seance, "programme": seance.programme, "formulaire": formulaire},
+    )
+
+
+def _valeurs_initiales_ajout(request):
+    valeurs = {}
+    if request.GET.get("brigade"):
+        valeurs["brigade"] = request.GET["brigade"]
+    if request.GET.get("date"):
+        valeurs["date_seance"] = request.GET["date"]
+    if request.GET.get("heure_debut"):
+        valeurs["heure_debut"] = request.GET["heure_debut"]
+    if request.GET.get("heure_fin"):
+        valeurs["heure_fin"] = request.GET["heure_fin"]
+    return valeurs
+
+
+def _appliquer_ajout(request, programme, formulaire):
+    donnees = formulaire.cleaned_data
+    candidate = Candidate(
+        brigade=donnees["brigade"],
+        element_referentiel=donnees["element_referentiel"],
+        instructeur=donnees["instructeur"],
+        lieu=donnees.get("lieu"),
+        debut=donnees["debut_instant"],
+        fin=donnees["fin_instant"],
+    )
+    demande = formulaire.motif_et_nature_avenant()
+    avenant = Avenantage(*demande) if demande else None
+    try:
+        ServiceEcritureSeance.creer_seance(request.user, programme, [candidate], avenant=avenant)
+    except ErreurMetier as erreur:
+        messages.error(request, str(erreur))
+        url = reverse("planification:ajouter_seance", args=[programme.pk])
+        return redirect(url)
+    messages.success(request, "Séance ajoutée et verrouillée.")
+    return _retour_consultation(programme)
+
+
+@exige_habilitation(PERMISSION_ECRITURE)
+def ajouter_seance(request, pk):
+    programme = get_object_or_404(ProgrammeHebdomadaire, pk=pk)
+    if request.method == "POST":
+        formulaire = FormulaireAjoutSeance(request.POST)
+        if formulaire.is_valid():
+            return _appliquer_ajout(request, programme, formulaire)
+    else:
+        formulaire = FormulaireAjoutSeance(initial=_valeurs_initiales_ajout(request))
+    return render(
+        request,
+        "planification/ajouter_seance.html",
+        {"programme": programme, "formulaire": formulaire},
     )
 
 

@@ -155,6 +155,7 @@ class CelluleProgramme:
     volume_cumule: float = 0.0
     autres_brigades: str = ""
     est_controle: bool = False
+    creneau: object = None
 
     @property
     def seance(self):
@@ -243,6 +244,7 @@ def grille_consultation(programme, creneaux, brigades):
                         volume_cumule=volumes.get(ligne.pk, 0) if ligne else 0,
                         autres_brigades=_autres_brigades(ligne) if ligne else "",
                         est_controle=ligne.seance_id in controles if ligne else False,
+                        creneau=creneau,
                     )
                 )
             lignes_affichees.append({"brigade": brigade, "cellules": cellules})
@@ -311,6 +313,22 @@ def seances_recouvertes(brigades, debut, fin):
         )
         .select_related("programme", "element_referentiel__matiere")
         .distinct()
+    )
+
+
+def brigades_de_la_periode(periode):
+    """D-121 E2 : résout la portée d'une période de calendrier (RG-30) en
+    brigades concrètes — centre entier si aucune cible, sinon l'union des
+    sessions et des brigades déclarées. Même règle que `PeriodeCalendrier.
+    portee`, qui ne fait que la décrire en texte."""
+    sessions = list(periode.sessions.all())
+    brigades = list(periode.brigades.all())
+    if not sessions and not brigades:
+        return list(Brigade.objects.all())
+    return list(
+        Brigade.objects.filter(
+            Q(session__in=sessions) | Q(pk__in=[b.pk for b in brigades])
+        ).distinct()
     )
 
 
