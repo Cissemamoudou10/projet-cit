@@ -37,7 +37,7 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 50 | 9 | J2 |
+| 3 | 28/09 – 10/10 | 11 | 50 | 10 | J2 |
 | 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
 | Réserve | conditionnel | 7 | 28 | 0 | — |
 
@@ -171,8 +171,8 @@ majeures par rapport à la dernière version :
 | **D-83** | R2-NRG-04/05 (brigade au programme en cours non supprimable) | US-SES-02 | séance programmée (sprint 2) | **Fermé le 2026-09-30** — mécanisme posé depuis US-PLAN-04 mais jamais testé par le vrai chemin de service jusqu'à ce jour ; comblé (voir ci-dessus) |
 | **D-108** | A3 (volume horaire dispensé signalé à l'affectation) | US-SES-06 | US-SUI-01 (sprint 4) | **Ouvert — jamais ajouté à ce tableau avant le 2026-09-30** |
 | D-119 | 4, RG-25 (indisponibilité, contrainte dure) | US-INS-03 | US-PLAN-04 (sprint 2) | Fermé le 2026-09-15 |
-| D-119 | 5, pts 4-5 (séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-09 (sprint 3) | Ouvert |
-| D-119 | A3, A4 (restriction extension, séances passées) | US-INS-03 | sprint 3 | Ouvert |
+| D-119 | 5, pts 4-5 (séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-09 (sprint 3) | **Fermé le 2026-10-07** — I2/C1 (D-257), `seances_impactees_par_indisponibilite` |
+| D-119 | A3, A4 (restriction extension, séances passées) | US-INS-03 | sprint 3 | **Fermé le 2026-10-07** — I6 (D-253) : une extension relit le même sélecteur, les séances passées en sont exclues par construction |
 | D-121 | 5, RG-38 (exclusion des périodes bloquantes) | US-PLAN-01 | US-PLAN-03/04 (sprint 2) | Fermé le 2026-09-15 |
 | D-121 | E2 (période bloquante recouvrant des séances programmées) | US-PLAN-01 | US-PLAN-05 (sprint 3) | Ouvert — **sélecteur `seances_recouvertes` posé à US-EVAL-02 (D-191, prompt 36)**, l'arbitrage explicite qu'exige ce report reste entier, à US-PLAN-05 |
 | D-121 | A3 (séances redevenues programmables) | US-PLAN-01 | sprint 3 | Ouvert |
@@ -239,6 +239,10 @@ Ferme : **D-181** (suppression d'une évaluation et de sa séance verrouillée, 
 ### Recompte à la clôture d'US-PLAN-05, le 2026-10-07
 
 Ferme : **D-121** (E2 par D-245, A3 par D-246). Aucun report ne s'ouvre. Net : **dix ouverts**.
+
+### Recompte à la clôture d'US-PLAN-09, le 2026-10-07
+
+Ferme : **D-119** (ses deux volets — pts 4-5 par D-257, A3/A4 par D-253), compté comme une seule décision qui se referme, même convention que D-121 ci-dessus. Aucun report ne s'ouvre. Net : dix ouverts avant cette clôture, moins un fermé — **neuf ouverts**.
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 

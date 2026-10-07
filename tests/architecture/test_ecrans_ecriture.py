@@ -465,6 +465,27 @@ ECRANS_ECRITURE = [
     EcranEcriture("planification:retirer_brigade", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     EcranEcriture("planification:supprimer_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     EcranEcriture("planification:deverrouiller_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
+    # --- planification : traitement d'une indisponibilité (US-PLAN-09, prompt 42, partie 3) ---
+    EcranEcriture(
+        "planification:remplacer_seance",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["indisponibilite_instructeur"].pk, objets["seance"].pk],
+    ),
+    EcranEcriture(
+        "planification:substituer_seance",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["indisponibilite_instructeur"].pk, objets["seance"].pk],
+    ),
+    EcranEcriture(
+        "planification:deprogrammer_seance",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["indisponibilite_instructeur"].pk, objets["seance"].pk],
+    ),
+    EcranEcriture(
+        "planification:lot_remplacement",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["indisponibilite_instructeur"].pk, objets["matiere"].pk],
+    ),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
     EcranEcriture("evaluations:creer_evaluation", "noyau.evaluations_ecriture"),
     # --- evaluations : modification de la date d'un examen final (US-EVAL-02) ---
@@ -535,7 +556,7 @@ ECRANS_ECRITURE = [
 # manuelle et l'avenant (prompt 41, US-PLAN-05) ; 114 après l'ajout manuel
 # (prompt 42, partie 1, fin d'US-PLAN-05) ; 116 après le regroupement de
 # brigades (prompt 42, partie 2, US-PLAN-06 : deux routes POST).
-assert len(ECRANS_ECRITURE) == 116
+assert len(ECRANS_ECRITURE) == 120  # 2026-10-07 : +4, US-PLAN-09 (prompt 42, partie 3)
 
 
 def _groupes_sans(permission):

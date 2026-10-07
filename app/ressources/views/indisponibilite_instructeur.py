@@ -110,7 +110,20 @@ def _colonnes():
         {"libelle": "Fin", "cle_tri": None},
         {"libelle": "Motif", "cle_tri": None},
         {"libelle": "État", "cle_tri": None},
+        {"libelle": "Séances impactées", "cle_tri": None},
     ]
+
+
+def _traitement_affiche(indisponibilite):
+    """I2 (US-PLAN-09, prompt 42, partie 3) : consultable depuis la liste,
+    pas seulement à l'enregistrement (C1). Aucune condition d'habilitation
+    ici : c'est l'écran de `planification` qui la vérifie pour son propre
+    domaine (même principe que le lien D-121 E2 vers `seances_de_la_periode`,
+    jamais gardé par `ressources`)."""
+    return format_html(
+        '<a href="{}" class="text-marine-900 no-underline hover:underline">Traiter</a>',
+        _url_traitement(indisponibilite.pk),
+    )
 
 
 def _ligne(indisponibilite, peut_ecrire, peut_lire_instructeur):
@@ -133,6 +146,7 @@ def _ligne(indisponibilite, peut_ecrire, peut_lire_instructeur):
             indisponibilite.fin.strftime("%d/%m/%Y %H:%M"),
             indisponibilite.motif,
             _badge_etat(indisponibilite),
+            _traitement_affiche(indisponibilite),
         ],
         "libelle": str(indisponibilite),
     }
@@ -232,6 +246,14 @@ def _rendre_fusion(request, instructeur, formulaire, proposition):
     )
 
 
+def _url_traitement(indisponibilite_pk):
+    """US-PLAN-09 (prompt 42, partie 3, C1) : la liste des séances
+    impactées appartient à `planification`, qui peut dépendre de
+    `ressources` — pas l'inverse. Lien par nom de route, aucun import
+    Python (même principe que D-121 E2)."""
+    return reverse("planification:traiter_indisponibilite", args=[indisponibilite_pk])
+
+
 def _traiter_saisie(request, formulaire):
     """Retourne une redirection/un rendu à renvoyer immédiatement, ou `None`
     pour laisser l'appelant réafficher le formulaire de saisie (motif
@@ -251,9 +273,11 @@ def _traiter_saisie(request, formulaire):
         return None
     if proposition.absorbees:
         return _rendre_fusion(request, instructeur, formulaire, proposition)
-    ServiceIndisponibiliteInstructeur.confirmer(request.user, instructeur, debut, fin, motif)
+    indisponibilite = ServiceIndisponibiliteInstructeur.confirmer(
+        request.user, instructeur, debut, fin, motif
+    )
     messages.success(request, "Indisponibilité déclarée.")
-    return redirect(_url_liste_filtree(instructeur.pk))
+    return redirect(_url_traitement(indisponibilite.pk))
 
 
 @exige_habilitation(ServiceIndisponibiliteInstructeur.PERMISSION_ECRITURE)
@@ -280,7 +304,7 @@ def vue_confirmer_fusion_indisponibilite(request):
     if formulaire.is_valid():
         instructeur = formulaire.cleaned_data["instructeur"]
         try:
-            ServiceIndisponibiliteInstructeur.confirmer(
+            indisponibilite = ServiceIndisponibiliteInstructeur.confirmer(
                 request.user,
                 instructeur,
                 formulaire.cleaned_data["debut"],
@@ -291,7 +315,7 @@ def vue_confirmer_fusion_indisponibilite(request):
             messages.error(request, str(erreur))
             return redirect(_url_declarer_filtree(instructeur.pk))
         messages.success(request, "Indisponibilité enregistrée.")
-        return redirect(_url_liste_filtree(instructeur.pk))
+        return redirect(_url_traitement(indisponibilite.pk))
     messages.error(request, "La proposition a expiré : reprenez la saisie depuis le début.")
     return redirect("ressources:declarer_indisponibilite_instructeur")
 

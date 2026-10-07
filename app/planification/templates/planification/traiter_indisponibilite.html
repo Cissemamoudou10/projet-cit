@@ -1,0 +1,92 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Traiter une indisponibilité — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Séances impactées</h1>
+  <p class="text-sm text-gris-lecture">
+    {{ indisponibilite.instructeur }} — indisponible du
+    {{ indisponibilite.debut|date:"d/m/Y H:i" }} au {{ indisponibilite.fin|date:"d/m/Y H:i" }}
+    ({{ indisponibilite.motif }})
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% if groupes_lot %}
+  <section class="mt-4 max-w-3xl border border-marine-700 bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Traitement en lot
+    </p>
+    <ul class="divide-y divide-gris-trait">
+      {% for groupe in groupes_lot %}
+        <li class="flex items-center justify-between px-4 py-2 text-sm">
+          <span>{{ groupe.matiere }} — {{ groupe.nombre }} séances</span>
+          <a href="{% url 'planification:lot_remplacement' indisponibilite.pk groupe.matiere.pk %}"
+             class="text-sm text-marine-700 no-underline hover:underline">Traiter en lot</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if lignes %}
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gris-trait bg-fond-bande text-left text-xs font-semibold
+                   uppercase tracking-wide text-marine-900">
+          <th class="px-4 py-2">Semaine</th>
+          <th class="px-4 py-2">Matière</th>
+          <th class="px-4 py-2">Brigades</th>
+          <th class="px-4 py-2">Créneau</th>
+          <th class="px-4 py-2">Programme</th>
+          <th class="px-4 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in lignes %}
+          <tr class="border-b border-gris-trait">
+            <td class="px-4 py-2">Semaine du
+              {{ ligne.seance.programme.lundi_de_semaine|date:"d/m/Y" }}</td>
+            <td class="px-4 py-2">{{ ligne.seance.element_referentiel.matiere }}</td>
+            <td class="px-4 py-2">{{ ligne.brigades }}</td>
+            <td class="px-4 py-2 tabular-nums">{{ ligne.seance.debut|date:"d/m/Y H:i" }}
+              –{{ ligne.seance.fin|date:"H:i" }}</td>
+            <td class="px-4 py-2">{{ ligne.seance.programme.get_etat_display }}</td>
+            <td class="px-4 py-2 text-right">
+              {% if ligne.bloquee %}
+                <span class="text-xs text-gris-lecture">{{ ligne.message_blocage }}</span>
+                <a href="{{ ligne.url_blocage }}"
+                   class="ml-1 text-sm text-marine-700 no-underline hover:underline">Y aller</a>
+              {% else %}
+                <a href="{% url 'planification:remplacer_seance' indisponibilite.pk ligne.seance.pk %}"
+                   class="text-sm text-marine-700 no-underline hover:underline">Remplacer</a>
+                <a href="{% url 'planification:substituer_seance' indisponibilite.pk ligne.seance.pk %}"
+                   class="ml-2 text-sm text-marine-700 no-underline hover:underline">Substituer</a>
+                {% if ligne.deprogrammer_possible %}
+                  <form method="post"
+                        action="{% url 'planification:deprogrammer_seance' indisponibilite.pk ligne.seance.pk %}"
+                        class="ml-2 inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="text-sm text-etat-ecart underline-offset-2 hover:underline">
+                      Déprogrammer
+                    </button>
+                  </form>
+                {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="px-4 py-3 text-sm text-gris-lecture">
+      Aucune séance non commencée de cet instructeur ne recoupe cette période.
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

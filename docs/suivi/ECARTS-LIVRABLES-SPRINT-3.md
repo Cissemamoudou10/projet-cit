@@ -99,6 +99,12 @@ prompt 39 demande de les trancher seul et de les consigner ici.
 |---|---|---|---|---|---|
 | 43 | CU-P5-04 A2 et A3 | La ligne retirée d'un regroupement « redevient une séance autonome » | Inexprimable (même instructeur, même créneau, RG-34) : le retrait supprime la ligne, le créneau redevient libre ; la dissolution est une suite de retraits (D-248) | D-248 | Corriger CU-P5-04 A2 et A3 |
 
+## US-PLAN-09 (Prompt 42, partie 3) — tranché seul
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui a été implanté | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 44 | CU-P5-07 A4 | Le traitement « annonce qu'il faut annuler la validation » sur un programme validé, sans préciser le renvoi | Devenu obsolète depuis ETA-01 : le moteur porte déjà ce message et le numéro de transition (T9) ; l'écran y renvoie au lieu de le recoder (D-256) | D-256 | Corriger CU-P5-07 A4, renvoyer à ETA-01 |
+
 ## Ce que cette liste ne couvre pas
 
 Les huit arbitrages A1 à A8 (D-165 à D-172) portent sur des contradictions

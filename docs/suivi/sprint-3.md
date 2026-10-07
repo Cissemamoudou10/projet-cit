@@ -22,7 +22,7 @@ ligne ajoutée au tableau Sprints d'`AVANCEMENT.md`, ligne ajoutée à
 
 - [x] **US-PLAN-05** — Modifier manuellement une affectation · 5 pts · Must
 - [x] **US-PLAN-06** — Regrouper plusieurs brigades sur une même séance · 5 pts · Must
-- [ ] **US-PLAN-09** — Traiter une indisponibilité déclarée · 5 pts · Must
+- [x] **US-PLAN-09** — Traiter une indisponibilité déclarée · 5 pts · Must
 - [x] **US-VAL-03** — Gérer les états du programme · 5 pts · Must
 - [x] **US-VAL-01** — Soumettre un programme à validation · 3 pts · Must
 - [x] **US-VAL-02** — Valider ou rejeter un programme · 5 pts · Must

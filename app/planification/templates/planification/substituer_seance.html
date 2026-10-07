@@ -1,0 +1,38 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Substituer la matière — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Substituer la matière</h1>
+  <p class="text-sm text-gris-lecture">
+    {{ seance.element_referentiel.matiere }} — {{ seance.debut|date:"d/m/Y H:i" }}
+    — programme {{ seance.programme.get_etat_display|lower }}
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
+  <form method="post" class="flex flex-col gap-4 px-4 py-4 text-sm">
+    {% csrf_token %}
+    {% for champ in formulaire %}
+      <div>
+        <label for="{{ champ.id_for_label }}" class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">{{ champ.label }}</label>
+        {{ champ }}
+        {% for erreur in champ.errors %}<p class="mt-1 text-xs text-etat-ecart">{{ erreur }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    {% for erreur in formulaire.non_field_errors %}<p class="text-xs text-etat-ecart">{{ erreur }}</p>{% endfor %}
+    <p class="text-xs text-gris-lecture">
+      L'instructeur ne se change que si besoin : laissez-le vide pour garder celui de la séance.
+      Prérequis et volume de la nouvelle matière restent vérifiés (C4).
+      Un avenant est obligatoire sur un programme affiché.
+    </p>
+    <div>
+      <button type="submit" class="inline-flex h-controle items-center border border-marine-900 bg-marine-900 px-3.5 text-sm font-semibold text-blanc hover:bg-marine-700">Substituer</button>
+      <a href="{% url 'planification:traiter_indisponibilite' indisponibilite.pk %}" class="ml-3 text-sm text-marine-700 no-underline hover:underline">Retour aux séances impactées</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

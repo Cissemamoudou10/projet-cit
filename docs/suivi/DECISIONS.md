@@ -31,6 +31,56 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-258 — US-PLAN-09 (I1) : écran de traitement, aucune nouvelle voie d'écriture ; lien depuis `ressources` par nom de route
+**Date** 2026-10-07 · **Story** US-PLAN-09 (Prompt 42, partie 3, I1) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Remplacer, substituer, déprogrammer une séance impactée par une indisponibilité sont déjà des opérations d'US-PLAN-05 (`ServiceEcritureSeance.modifier_seance`/`supprimer_seance`). US-PLAN-09 ne doit ajouter aucun chemin d'écriture.
+**Décision** — `planification/views_indisponibilite.py` appelle directement `ServiceEcritureSeance` pour chaque séance (remplacement, substitution, déprogrammation) ; seul `planification/services/indisponibilite.py` ajoute une fonction (`traiter_lot_remplacement`, I5), qui délègue elle-même à `modifier_seance` pour chaque séance du lot — aucune instanciation de `Seance`/`LigneProgramme` hors de la porte unique. La déclaration d'une indisponibilité reste dans `ressources` (US-INS-03, D-115) ; son écran renvoie à l'écran de traitement de `planification` par `reverse()` sur le nom de route, jamais par un import Python — `ressources` ne peut pas dépendre de `planification` (même principe que D-121 E2, partie 1 de ce prompt).
+**Alternative écartée** — Un nouveau service « US-PLAN-09 » qui réécrirait la garde et les contraintes : contredirait I1 et dupliquerait un contrôle déjà porté par `ServiceContraintes`/`ServiceCircuitProgramme`.
+**Impact sur les livrables** — aucun nouveau service dans le tableau des neuf (`.claude/rules/services.md`) : la liste n'est pas à amender.
+**Reporté au livrable** — non.
+
+## D-257 — US-PLAN-09 (I2, C1) : sélecteur des séances impactées à requêtes constantes ; affichage immédiat à la déclaration, lien permanent depuis la liste des indisponibilités
+**Date** 2026-10-07 · **Story** US-PLAN-09 (Prompt 42, partie 3, I2) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — C1 exige que la déclaration d'une indisponibilité liste immédiatement les séances affectées (I2), et que la liste reste consultable ensuite.
+**Décision** — `planification.selectors_indisponibilite.seances_impactees_par_indisponibilite` (fichier séparé de `selectors.py`, qui dépassait 400 lignes avec l'ajout — même raison que `selectors_circuit.py`) : séances non commencées (`debut > maintenant`, même frontière que `modification._refuser_si_commencee`), même instructeur, recouvrement défini une seule fois (`noyau/intervalles.py`), toutes brigades, programme déjà chargé — deux requêtes fixes (liste, préchargement des lignes), jamais une par séance. `ressources.views.indisponibilite_instructeur` redirige vers `planification:traiter_indisponibilite` après `confirmer` (déclaration ET fusion) au lieu de la liste des indisponibilités, et chaque ligne de cette liste porte désormais un lien « Traiter » vers le même écran — sans condition d'habilitation posée par `ressources` (même principe que le lien D-121 E2, qui ne garde jamais le lien, seul l'écran cible vérifie sa propre permission).
+**Alternative écartée** — Construire la liste des impactées dans le gabarit de `ressources` : impossible, `ressources` ne peut pas importer `planification`.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-256 — US-PLAN-09 (I3) : aucune condition d'état recodée, l'écran affiche le refus déjà produit par le moteur ; CU-P5-07 A4 obsolète
+**Date** 2026-10-07 · **Story** US-PLAN-09 (Prompt 42, partie 3, I3) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — I3 distingue trois états bloquants (VALIDÉ → T9, SOUMIS → T3, AFFICHÉ → avenant obligatoire) ; CU-P5-07 A4 décrit un traitement devenu obsolète depuis ETA-01.
+**Décision** — Le moteur portait déjà les trois messages avant cette story : `motif_refus_action(ECRIRE_SEANCE, etat)` (`circuit.py`, posé pour l'écran de lancement, V8) rend le message exact pour VALIDÉ et SOUMIS, et `circuit_affichage.LIBELLES_ACTIONS` porte déjà le nom de l'écran de déblocage (`annuler_validation`, `retirer_soumission`) par événement. `views_indisponibilite._ligne` appelle l'un et l'autre (table `EVENEMENT_DE_DEBLOCAGE : état → événement`, deux entrées) — rien n'est recodé. **Correction après relecture** : une première version paraphrasait ces messages dans une table locale (`MESSAGE_BLOCAGE`), ce que cette décision affirmait à tort avoir évité ; corrigé avant le commit. La déprogrammation sur un affiché était déjà refusée par `modification.supprimer_seance` (`MESSAGE_AFFICHEE`, « relève de la non-exécution ») : rien à écrire de nouveau.
+**Alternative écartée** — Une fonction qui recoderait ces trois conditions pour les exposer à l'écran : aurait dupliqué `MARCHES_ECRITURE`/`motif_refus_action`, contredisant `.claude/rules/python.md` (duplication).
+**Impact sur les livrables** — CU-P5-07 A4 à corriger (devenu obsolète, ETA-01 fait foi) ; voir `ECARTS-LIVRABLES-SPRINT-3.md`.
+**Reporté au livrable** — oui.
+
+## D-255 — US-PLAN-09 (I4) : sélecteur des remplaçants, `ResolveurOccupationsEpreuves` réutilisé sans nouveau résolveur
+**Date** 2026-10-07 · **Story** US-PLAN-09 (Prompt 42, partie 3, I4) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — I4 exige une liste de remplaçants qualifiés, libres sur le créneau, ni indisponibles, ni en séance, ni surveillants d'une épreuve sécante — cette dernière donnée appartient à `evaluations`, que `planification` ne peut pas importer.
+**Décision** — `ResolveurOccupationsEpreuves` (`noyau.services.parametres`, posé au Prompt 38 pour RG-34/RG-37, D-211/D-213) rend déjà, pour un intervalle, les instructeurs surveillants d'une épreuve qui le recouvre : `regles_instructeur._rg34_epreuves` l'utilise déjà pour RG-34. `planification.selectors_indisponibilite.instructeurs_remplacants` le réutilise tel quel (une requête par source : qualification, occupation de séance via `seances_occupant_instructeurs`, indisponibilité, occupation d'épreuve), sans poser de nouveau résolveur ni dupliquer celui-là.
+**Alternative écartée** — Un nouveau résolveur dédié à US-PLAN-09 : aurait dupliqué `ResolveurOccupationsEpreuves`, qui couvre déjà exactement ce besoin.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-254 — US-PLAN-09 (I5, C5) : le lot passe par une transaction unique ; « même matière » est une règle de service, pas de formulaire
+**Date** 2026-10-07 · **Story** US-PLAN-09 (Prompt 42, partie 3, I5) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — I5 : chaque séance du lot doit passer individuellement la garde et les contraintes, mais rien ne doit être écrit si une seule échoue. C5 : le lot ne réunit que des séances de la même matière.
+**Décision** — `planification.services.indisponibilite.traiter_lot_remplacement` enveloppe un appel à `modifier_seance` par séance dans une seule `transaction.atomic()` ; toute `ErreurMetier` levée par une séance remonte sans être absorbée, ce qui annule tout, séances déjà traitées comprises. La vérification « même matière » (`_verifier_lot`) vit dans ce service, jamais dans `FormulaireLotRemplacement` : une règle qui ne vivrait que dans le formulaire serait contournée par un appel direct au service (CLAUDE.md, règles non négociables).
+**Alternative écartée** — Revalider chaque séance avant d'écrire la première (double passe) : inutile, la transaction unique obtient le même résultat (tout ou rien) sans second parcours.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+*(D-252 non utilisé — saut de numérotation sans décision manquante, repéré en écrivant le rendu du prompt 42 ; aucune entrée n'y correspond.)*
+
+## D-253 — US-PLAN-09 (I6) : D-119 pts 4-5 et A3/A4 refermés ; écart contre CU-P5-07 A4
+**Date** 2026-10-07 · **Story** US-PLAN-09 (Prompt 42, partie 3, I6) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — D-119 attendait un sélecteur des séances impactées par une indisponibilité (pts 4-5) et une règle pour une extension de période et les séances déjà passées (A3/A4).
+**Décision** — Pts 4-5 : fermés par `seances_impactees_par_indisponibilite` (I2, C1, D-257). A3/A4 : une extension d'indisponibilité est une nouvelle déclaration ou une modification (`ServiceIndisponibiliteInstructeur.modifier`), qui relance d'elle-même la liste des impactées — le sélecteur ne mémorise rien, il relit l'indisponibilité à chaque appel ; les séances déjà passées sont exclues par construction (I2, `debut > maintenant`). CU-P5-07 A4 (« annonce qu'il faut annuler la validation ») est devenu obsolète depuis ETA-01 (D-256) : l'écran y renvoie au lieu de le recoder.
+**Alternative écartée** — Une fonction dédiée « séances impactées par une extension » : identique au sélecteur existant, rien à distinguer.
+**Impact sur les livrables** — D-119 à clore (`AVANCEMENT.md`) ; CU-P5-07 A4 à corriger (`ECARTS-LIVRABLES-SPRINT-3.md`).
+**Reporté au livrable** — oui.
+
 ## D-251 — US-PLAN-06 (R5) : brigades candidates au regroupement, en nombre de requêtes constant ; confirmation si la séance groupe déjà plusieurs brigades
 **Date** 2026-10-07 · **Story** US-PLAN-06 (Prompt 42, partie 2, R5) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — CU-P5-04 étape 2 : proposer les brigades pour lesquelles la matière est programmable au créneau, sans une requête par brigade candidate.
