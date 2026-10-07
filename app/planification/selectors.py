@@ -332,6 +332,29 @@ def brigades_de_la_periode(periode):
     )
 
 
+def brigades_candidates_au_regroupement(seance):
+    """US-PLAN-06, R5 : brigades que la séance peut accueillir — ni déjà sur
+    cette séance, ni déjà en séance sur ce créneau (toutes brigades
+    confondues, même programme) — en un nombre de requêtes constant, quel
+    que soit le nombre de brigades candidates (CU-P5-04, étape 2)."""
+    deja = LigneProgramme.objects.filter(seance=seance).values_list("brigade_id", flat=True)
+    occupees = (
+        LigneProgramme.objects.filter(
+            seance__programme=seance.programme_id,
+            seance__debut__lt=seance.fin,
+            seance__fin__gt=seance.debut,
+        )
+        .exclude(seance=seance)
+        .values_list("brigade_id", flat=True)
+    )
+    exclues = set(deja) | set(occupees)
+    return (
+        Brigade.objects.exclude(pk__in=exclues)
+        .select_related("session__formation")
+        .order_by("designation")
+    )
+
+
 def seances_occupant_lieux(ids_lieux, debut, fin) -> dict:
     """Lieu -> séances occupant ce lieu sur `[debut, fin)` — une requête pour N lieux."""
     resultat = {}

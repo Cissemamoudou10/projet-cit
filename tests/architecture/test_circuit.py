@@ -1,8 +1,10 @@
 """Architecture du circuit du programme (US-VAL-03, V1 et V3).
 
 H1 — une seule main écrit l'état du programme : `ServiceCircuitProgramme`.
-H2 — aucune suppression de séance hors de la génération, et la génération
-     comme la porte d'écriture appellent la garde AVANT toute écriture.
+H2 — aucune suppression de séance ou de ligne de programme hors de la
+     génération et des deux modules de support de la porte unique
+     (modification, US-PLAN-05 ; regroupement, US-PLAN-06), et chacun de ces
+     chemins appelle la garde AVANT toute écriture.
 """
 
 import ast
@@ -13,7 +15,8 @@ SRC = RACINE / "app"
 CIRCUIT = SRC / "planification" / "services" / "circuit.py"
 GENERATION = SRC / "planification" / "services" / "generation.py"
 MODIFICATION = SRC / "planification" / "services" / "modification.py"
-SUPPRESSEURS_AUTORISES = {MODIFICATION}
+REGROUPEMENT = SRC / "planification" / "services" / "regroupement.py"
+SUPPRESSEURS_AUTORISES = {MODIFICATION, REGROUPEMENT}
 ECRITURE = SRC / "planification" / "services" / "ecriture.py"
 
 METHODES_D_ECRITURE = {
@@ -103,6 +106,7 @@ def test_h1_le_service_du_circuit_affecte_bien_l_etat():
 
 
 def test_h2_seules_les_suppressions_de_seances_passent_par_la_generation():
+    marqueurs = ("seance", "ligne")
     fautifs = []
     for chemin in _fichiers_de_production():
         texte = chemin.read_text(encoding="utf-8")
@@ -112,10 +116,13 @@ def test_h2_seules_les_suppressions_de_seances_passent_par_la_generation():
                 continue
             if not isinstance(noeud.func, ast.Attribute):
                 continue
-            segment = ast.get_source_segment(texte, noeud.func.value) or ""
-            if ("Seance" in segment or "seance" in segment.lower()) and chemin not in SUPPRESSEURS_AUTORISES:
+            segment = (ast.get_source_segment(texte, noeud.func.value) or "").lower()
+            if any(marqueur in segment for marqueur in marqueurs) and chemin not in SUPPRESSEURS_AUTORISES:
                 fautifs.append(f"{chemin.relative_to(RACINE)} ligne {noeud.lineno}")
-    assert not fautifs, "Suppression de séance hors de la génération :\n" + "\n".join(fautifs)
+    assert not fautifs, (
+        "Suppression de séance ou de ligne de programme hors de la génération et "
+        "des modules de support de la porte unique :\n" + "\n".join(fautifs)
+    )
 
 
 def _lignes_d_appel(chemin, nom_appele, nom_fonction=None):
@@ -154,5 +161,14 @@ def test_h2_la_suppression_manuelle_appelle_la_garde_avant_d_effacer():
     tout effacement."""
     gardes = _lignes_d_appel(MODIFICATION, "garde_modification", "supprimer_seance")
     suppressions = _lignes_d_appel(MODIFICATION, "_supprimer", "supprimer_seance")
+    assert gardes and suppressions
+    assert gardes[0] < suppressions[0]
+
+
+def test_h2_le_retrait_d_une_brigade_appelle_la_garde_avant_d_effacer_sa_ligne():
+    """US-PLAN-06 (R1) : `retirer_brigade` garde le programme avant d'effacer
+    la ligne de la brigade retirée."""
+    gardes = _lignes_d_appel(REGROUPEMENT, "garde_modification", "retirer_brigade")
+    suppressions = _lignes_d_appel(REGROUPEMENT, "delete", "retirer_brigade")
     assert gardes and suppressions
     assert gardes[0] < suppressions[0]

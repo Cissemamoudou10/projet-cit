@@ -288,12 +288,20 @@ def test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme():
     """§ 5, Prompt 30 : garde mécanique — « l'ensemble des chemins
     d'affectation y passe, sans exception » ne vaut rien tant que rien ne
     la vérifie (leçon des 36 refus d'habilitation manquants du sprint 1).
-    Seul `planification.services.ecriture` (la porte d'écriture unique) a
-    le droit de construire ou d'enregistrer `Seance`/`LigneProgramme` — les
-    migrations et les fabriques de test (dossiers `tests/`) en sont
-    exemptées, comme la docstring du module le dit explicitement.
+    Seul `planification.services.ecriture` (la porte d'écriture unique) et
+    ses deux modules de support (`modification.py`, US-PLAN-05 ;
+    `regroupement.py`, US-PLAN-06 — séparés pour rester sous 400 lignes,
+    D-235) ont le droit de construire ou d'enregistrer `Seance`/
+    `LigneProgramme` — les migrations et les fabriques de test (dossiers
+    `tests/`) en sont exemptées, comme la docstring du module le dit
+    explicitement.
     """
-    porte = SRC / "planification" / "services" / "ecriture.py"
+    services = SRC / "planification" / "services"
+    porte_et_support = {
+        services / "ecriture.py",
+        services / "modification.py",
+        services / "regroupement.py",
+    }
     modeles = SRC / "planification" / "models.py"
     motifs = (
         "Seance(",
@@ -303,7 +311,7 @@ def test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme():
     )
     fautifs = []
     for chemin in fichiers("*.py"):
-        if chemin in (porte, modeles) or "tests" in chemin.parts:
+        if chemin in porte_et_support or chemin == modeles or "tests" in chemin.parts:
             continue
         texte = chemin.read_text(encoding="utf-8")
         for i, ligne in enumerate(texte.splitlines(), 1):

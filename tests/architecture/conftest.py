@@ -189,8 +189,8 @@ def objets(db, utilisateurs):
         programme=programme_seance,
         element_referentiel=element,
         instructeur=instructeur,
-        debut=datetime.datetime(2030, 1, 14, 8, 0, tzinfo=datetime.timezone.utc),
-        fin=datetime.datetime(2030, 1, 14, 10, 0, tzinfo=datetime.timezone.utc),
+        debut=datetime.datetime(2030, 1, 14, 8, 0, tzinfo=datetime.UTC),
+        fin=datetime.datetime(2030, 1, 14, 10, 0, tzinfo=datetime.UTC),
     )
     return {
         "seance": seance,

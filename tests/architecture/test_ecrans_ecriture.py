@@ -461,6 +461,8 @@ ECRANS_ECRITURE = [
     EcranEcriture("planification:annuler_validation", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
     EcranEcriture("planification:modifier_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     EcranEcriture("planification:ajouter_seance", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
+    EcranEcriture("planification:gerer_brigades", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
+    EcranEcriture("planification:retirer_brigade", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     EcranEcriture("planification:supprimer_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     EcranEcriture("planification:deverrouiller_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
@@ -531,8 +533,9 @@ ECRANS_ECRITURE = [
 # d'écriture de l'organisation d'épreuve (US-EVAL-04, Prompt 38) ; 109 après le
 # circuit du programme (prompt 40, sept routes POST) ; 113 après la modification
 # manuelle et l'avenant (prompt 41, US-PLAN-05) ; 114 après l'ajout manuel
-# (prompt 42, fin d'US-PLAN-05).
-assert len(ECRANS_ECRITURE) == 114
+# (prompt 42, partie 1, fin d'US-PLAN-05) ; 116 après le regroupement de
+# brigades (prompt 42, partie 2, US-PLAN-06 : deux routes POST).
+assert len(ECRANS_ECRITURE) == 116
 
 
 def _groupes_sans(permission):

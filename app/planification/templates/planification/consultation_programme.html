@@ -211,6 +211,8 @@
                     {% if perms.noyau.programme_ecriture %}
                       <a href="{% url 'planification:modifier_seance' cellule.seance.pk %}"
                          class="ml-auto text-2xs text-marine-700 underline-offset-2 hover:underline">Modifier</a>
+                      <a href="{% url 'planification:gerer_brigades' cellule.seance.pk %}"
+                         class="text-2xs text-marine-700 underline-offset-2 hover:underline">Brigades</a>
                     {% endif %}
                   </div>
                   <div class="mt-0.5 flex items-baseline gap-2 whitespace-nowrap text-2xs tabular-nums

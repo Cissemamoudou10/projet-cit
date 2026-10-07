@@ -29,4 +29,10 @@ urlpatterns = [
     path("planification/seances/<int:pk>/modifier/", views_seance.modifier_seance, name="modifier_seance"),
     path("planification/seances/<int:pk>/supprimer/", views_seance.supprimer_seance, name="supprimer_seance"),
     path("planification/seances/<int:pk>/deverrouiller/", views_seance.deverrouiller_seance, name="deverrouiller_seance"),
+    path("planification/seances/<int:pk>/brigades/", views_seance.gerer_brigades, name="gerer_brigades"),
+    path(
+        "planification/seances/<int:pk>/brigades/retirer/",
+        views_seance.retirer_brigade,
+        name="retirer_brigade",
+    ),
 ]

@@ -30,7 +30,7 @@ from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.base import ServiceBase
 from planification.models import LigneProgramme, Seance
-from planification.services import modification
+from planification.services import modification, regroupement
 from planification.services.circuit import (
     DECLENCHEUR_CONTROLE,
     DECLENCHEUR_GENERATION,
@@ -223,6 +223,19 @@ class ServiceEcritureSeance:
     def deverrouiller_seance(agissant, seance):
         """US-PLAN-05 (M7) : rend la séance à la régénération."""
         return modification.deverrouiller_seance(agissant, seance)
+
+    @staticmethod
+    def associer_brigades(agissant, seance, brigades, confirmee=False, avenant=None):
+        """US-PLAN-06 (R1) : regroupe des brigades sur une séance en lieu
+        partagé. Délègue à `regroupement`. Voir `planification.services.
+        regroupement`."""
+        return regroupement.associer_brigades(agissant, seance, brigades, confirmee, avenant)
+
+    @staticmethod
+    def retirer_brigade(agissant, seance, brigade):
+        """US-PLAN-06 (R1, R2) : retire une brigade d'un regroupement — jamais
+        une séance autonome."""
+        return regroupement.retirer_brigade(agissant, seance, brigade)
 
     @staticmethod
     def creer_seances(agissant, programme, groupes_de_candidates):

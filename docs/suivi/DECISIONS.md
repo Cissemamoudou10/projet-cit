@@ -31,6 +31,47 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-251 — US-PLAN-06 (R5) : brigades candidates au regroupement, en nombre de requêtes constant ; confirmation si la séance groupe déjà plusieurs brigades
+**Date** 2026-10-07 · **Story** US-PLAN-06 (Prompt 42, partie 2, R5) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CU-P5-04 étape 2 : proposer les brigades pour lesquelles la matière est programmable au créneau, sans une requête par brigade candidate.
+**Décision** — `planification.selectors.brigades_candidates_au_regroupement(seance)` exclut en deux requêtes bornées (déjà sur la séance ; déjà en séance sur ce créneau, toutes brigades confondues) puis rend le reste. Un seul écran (`gerer_brigades`) réunit l'association (formulaire, brigades candidates, avenant) et le retrait (un bouton par brigade actuelle) : CU-P5-03 E3 (confirmation si la séance réunit déjà plusieurs brigades) réutilise le même principe que la modification (`_verifier_confirmation`, même formulation que `_verifier_regroupement`).
+**Alternative écartée** — Deux écrans séparés (association, retrait) : aurait dupliqué la lecture des lignes actuelles.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-250 — US-PLAN-06 (R4) : sur un programme affiché, associer une brigade exige un avenant « ajout » ; retirer une brigade est refusé
+**Date** 2026-10-07 · **Story** US-PLAN-06 (Prompt 42, partie 2, R4) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-42 : un programme affiché ne se modifie que par avenant. Associer une brigade est un ajout pour elle ; retirer une brigade efface sa ligne, ce que M4 (US-PLAN-05) refuse déjà en le renvoyant à la non-exécution.
+**Décision** — `associer_brigades` passe par la garde avec `avenant=True` (même mécanisme que l'ajout et la modification, D-236/D-244) ; sans avenant sur un affiché, la garde refuse (« portez un avenant »). `retirer_brigade` refuse sur un affiché avec le même message que la suppression (`MESSAGE_AFFICHEE`, réutilisé depuis `modification.py`) : retirer une brigade EST une suppression partielle de la séance pour elle.
+**Alternative écartée** — Un avenant pour le retrait aussi : le prompt tranche (R4), le retrait rejoint la suppression, pas la modification.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+
+## D-249 — US-PLAN-06 (R1) : « brigades libres sur le créneau » est un contrôle propre au regroupement, hors des six contraintes dures
+**Date** 2026-10-07 · **Story** US-PLAN-06 (Prompt 42, partie 2, R1) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — RG-34 à RG-39 (les six contraintes dures, `ServiceContraintes`, implantation unique) portent sur l'instructeur, le lieu, le calendrier et le volume — jamais sur la brigade elle-même. Associer une brigade déjà en séance à un autre moment du même créneau n'était vérifié par aucune des six.
+**Décision** — `regroupement._verifier_brigades_libres` : une requête bornée (`LigneProgramme` de ce programme, hors la séance elle-même) refuse une brigade déjà en séance qui recouvre le créneau visé. Ce contrôle vit dans `regroupement.py`, pas dans `ServiceContraintes`, qui reste l'implantation exclusive des six règles nommées — en ajouter une septième l'aurait élargi au-delà de son périmètre déclaré (`.claude/rules/services.md`).
+**Alternative écartée** — Ajouter une septième contrainte dure à `ServiceContraintes` : contredit sa docstring et `.claude/rules/services.md`, qui le bornent à RG-34–RG-39.
+**Impact sur les livrables** — le tableau des contraintes (phase 4) ne porte que les six dures ; ce contrôle n'en est pas une septième, à préciser si le mémoire l'évoque.
+**Reporté au livrable** — non.
+
+## D-248 — US-PLAN-06 (R2) : le retrait supprime la ligne de la brigade, jamais une séance autonome ; la dissolution est une suite de retraits ; écart contre CU-P5-04 A2/A3
+**Date** 2026-10-07 · **Story** US-PLAN-06 (Prompt 42, partie 2, R2) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — CU-P5-04 A2/A3 : la ligne retirée « redevient une séance autonome ». Inexprimable : cette séance aurait le même instructeur au même créneau que la séance d'origine, ce que RG-34 interdit par construction (deux `Seance` distinctes ne partagent jamais un `cle_regroupement`, donc jamais exemptées l'une de l'autre).
+**Décision** — `retirer_brigade` supprime la `LigneProgramme` de la brigade retirée ; son créneau redevient libre, à replanifier par ajout manuel ou régénération. Refusé si c'est la dernière ligne (« retirer la dernière brigade reviendrait à supprimer la séance : utilisez la suppression »). La dissolution (CU-P5-04) est la composition de plusieurs retraits, jusqu'à la brigade choisie pour rester — aucune méthode dédiée, prouvée par un test qui enchaîne les retraits.
+**Alternative écartée** — Créer une nouvelle `Seance` pour la brigade retirée : RG-34 la refuserait immédiatement (même instructeur, même créneau), un contournement qui échouerait à l'écriture.
+**Impact sur les livrables** — CU-P5-04 A2 et A3 à corriger (le retrait ne recrée jamais de séance autonome).
+**Reporté au livrable** — oui.
+
+## D-247 — US-PLAN-06 (R1) : deux opérations de plus dans la porte unique, dans leur propre module ; une brigade ajoutée rejoint le regroupement existant de la séance
+**Date** 2026-10-07 · **Story** US-PLAN-06 (Prompt 42, partie 2, R1) · **Auteur** Lt Cissé (avec Claude Code)
+**Contexte** — Associer plusieurs brigades à une même séance (lieu partagé, CU-P5-04) doit passer par les six contraintes dures sur la séance résultante, sans dupliquer leur contrôle (`.claude/rules/services.md`).
+**Décision** — `ServiceEcritureSeance.associer_brigades`/`retirer_brigade`, délégués à un nouveau module `planification/services/regroupement.py` (même raison que `modification.py`, D-235 : rester sous 400 lignes). Pour une association, les candidates couvrent TOUTES les brigades du regroupement après ajout (lignes existantes inchangées + brigades ajoutées), toutes sous `cle_regroupement = seance.pk` — la convention déjà écrite dans la docstring de `Candidate` (« la même figure qu'une séance existante à plusieurs lignes, avant que la séance n'existe ») s'applique ici lettre pour lettre : `regles_lieu._occupants_du_lieu` reconnaît la séance existante comme le même regroupement (`_cle_regroupement(occupant) = occupant.pk`) et somme les effectifs ; `regles_instructeur` n'exempte cette séance que si elle est EXCLUE du contexte (elle n'a pas la même exemption pour les séances déjà en base que pour le lot) — contexte construit par `_contexte_sans_la_seance` (réutilisé de `modification.py`), comme pour une modification ordinaire.
+**Alternative écartée** — Construire les candidates uniquement pour les NOUVELLES brigades, séance gardée dans le contexte : casse RG-34 (`regles_instructeur._rg34_conflits_existants` n'exempte jamais une séance de la base, seulement les candidates d'un même lot) — la séance existante serait signalée comme son propre conflit.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non.
+**Relecture** — deux fuites d'exception technique corrigées : `associer_brigades` refusait une brigade déjà présente (ou dupliquée dans la liste) par l'`IntegrityError` brute de `uq_ligne_programme_seance_brigade`, pas par un refus métier — `_verifier_brigades_nouvelles` l'intercepte avant la boucle d'écriture ; `retirer_brigade` laissait fuiter `LigneProgramme.DoesNotExist` pour une brigade déjà absente (formulaire périmé, retrait concurrent) — remplacé par un refus nommé. Les deux chemins sont atteignables en usage réel (candidates affichées au GET devenues périmées au POST), pas seulement théoriques.
+
 ## D-246 — D-121 A3 : la suppression d'une période bloquante ne restaure aucune séance
 **Date** 2026-10-07 · **Story** US-PLAN-05, fin (Prompt 42, partie 1, D-121 A3) · **Auteur** Lt Cissé (avec Claude Code)
 **Contexte** — D-121 demandait un arbitrage explicite : une séance qu'une période bloquante a empêché de programmer doit-elle réapparaître quand la période est supprimée ?

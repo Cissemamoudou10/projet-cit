@@ -18,7 +18,35 @@ from ressources.models import Instructeur, Lieu
 CHOIX_NATURE = [("", "— choisir une nature —")] + list(NatureAvenant.choices)
 
 
-class FormulaireSeance(forms.Form):
+class ChampsAvenantMixin(forms.Form):
+    """Les deux champs de l'avenant et leur validation croisée (motif exige
+    une nature, nature exige un motif), partagés par tout formulaire qui
+    peut porter un avenant — modification, ajout, association (M3, M9)."""
+
+    nature_avenant = forms.ChoiceField(
+        choices=CHOIX_NATURE, required=False, label="Nature de l'avenant"
+    )
+    motif_avenant = forms.CharField(
+        required=False, widget=forms.Textarea(attrs={"rows": 2}), label="Motif de l'avenant"
+    )
+
+    def clean(self):
+        donnees = super().clean()
+        if donnees.get("motif_avenant", "").strip() and not donnees.get("nature_avenant"):
+            self.add_error("nature_avenant", "Un avenant exige une nature.")
+        if donnees.get("nature_avenant") and not donnees.get("motif_avenant", "").strip():
+            self.add_error("motif_avenant", "Un avenant exige un motif.")
+        return donnees
+
+    def motif_et_nature_avenant(self):
+        """(motif, nature) si un avenant est demandé, sinon None."""
+        donnees = self.cleaned_data
+        if not donnees.get("motif_avenant", "").strip():
+            return None
+        return donnees["motif_avenant"].strip(), donnees["nature_avenant"]
+
+
+class FormulaireSeance(ChampsAvenantMixin, forms.Form):
     element_referentiel = forms.ModelChoiceField(
         queryset=ElementReferentiel.objects.select_related("matiere"), label="Matière"
     )
@@ -30,26 +58,16 @@ class FormulaireSeance(forms.Form):
     heure_debut = forms.TimeField(label="Début", widget=forms.TimeInput(attrs={"type": "time"}))
     heure_fin = forms.TimeField(label="Fin", widget=forms.TimeInput(attrs={"type": "time"}))
     confirmee = forms.BooleanField(required=False, label="Je confirme la modification")
-    nature_avenant = forms.ChoiceField(
-        choices=CHOIX_NATURE, required=False, label="Nature de l'avenant"
-    )
-    motif_avenant = forms.CharField(
-        required=False, widget=forms.Textarea(attrs={"rows": 2}), label="Motif de l'avenant"
-    )
 
     def clean(self):
         donnees = super().clean()
-        debut, fin = donnees.get("date_seance"), None
+        debut = donnees.get("date_seance")
         if debut and donnees.get("heure_debut") and donnees.get("heure_fin"):
             fin = self._instant(debut, donnees["heure_fin"])
             donnees["debut_instant"] = self._instant(debut, donnees["heure_debut"])
             donnees["fin_instant"] = fin
             if fin <= donnees["debut_instant"]:
                 raise forms.ValidationError("L'heure de fin doit suivre l'heure de début.")
-        if donnees.get("motif_avenant", "").strip() and not donnees.get("nature_avenant"):
-            self.add_error("nature_avenant", "Un avenant exige une nature.")
-        if donnees.get("nature_avenant") and not donnees.get("motif_avenant", "").strip():
-            self.add_error("motif_avenant", "Un avenant exige un motif.")
         return donnees
 
     @staticmethod
@@ -67,16 +85,25 @@ class FormulaireSeance(forms.Form):
             "fin": donnees["fin_instant"],
         }
 
-    def motif_et_nature_avenant(self):
-        """(motif, nature) si un avenant est demandé, sinon None."""
-        donnees = self.cleaned_data
-        if not donnees.get("motif_avenant", "").strip():
-            return None
-        return donnees["motif_avenant"].strip(), donnees["nature_avenant"]
-
 
 class FormulaireAjoutSeance(FormulaireSeance):
     """Ajout manuel (C4, prompt 42) : la brigade se choisit ici, elle n'a
     pas encore de ligne sur le programme."""
 
     brigade = forms.ModelChoiceField(queryset=Brigade.objects.all(), label="Brigade")
+
+
+class FormulaireAssociationBrigades(ChampsAvenantMixin, forms.Form):
+    """US-PLAN-06 (R1, R5) : brigades à associer à une séance en lieu
+    partagé. Le queryset des candidates se pose à l'instanciation (bornées
+    au créneau), jamais fixé sur la classe."""
+
+    brigades = forms.ModelMultipleChoiceField(
+        queryset=Brigade.objects.none(), label="Brigades à associer"
+    )
+    confirmee = forms.BooleanField(required=False, label="Je confirme l'association")
+
+    def __init__(self, *args, brigades_candidates=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if brigades_candidates is not None:
+            self.fields["brigades"].queryset = brigades_candidates

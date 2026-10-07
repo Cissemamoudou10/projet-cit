@@ -13,8 +13,14 @@ from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurMetier
-from planification.forms_seance import FormulaireAjoutSeance, FormulaireSeance
+from organisation.models import Brigade
+from planification.forms_seance import (
+    FormulaireAjoutSeance,
+    FormulaireAssociationBrigades,
+    FormulaireSeance,
+)
 from planification.models import ProgrammeHebdomadaire, Seance
+from planification.selectors import brigades_candidates_au_regroupement
 from planification.services.circuit import ServiceCircuitProgramme
 from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
@@ -155,6 +161,64 @@ def deverrouiller_seance(request, pk):
         messages.error(request, str(erreur))
     else:
         messages.success(request, "Séance déverrouillée : la régénération pourra la remplacer.")
+    return _retour_consultation(programme)
+
+
+def _appliquer_association(request, seance, formulaire):
+    demande = formulaire.motif_et_nature_avenant()
+    avenant = Avenantage(*demande) if demande else None
+    try:
+        ServiceEcritureSeance.associer_brigades(
+            request.user,
+            seance,
+            list(formulaire.cleaned_data["brigades"]),
+            confirmee=formulaire.cleaned_data["confirmee"],
+            avenant=avenant,
+        )
+    except ErreurMetier as erreur:
+        messages.error(request, str(erreur))
+        return redirect(reverse("planification:gerer_brigades", args=[seance.pk]))
+    messages.success(request, "Brigades associées à la séance.")
+    return _retour_consultation(seance.programme)
+
+
+@exige_habilitation(PERMISSION_ECRITURE)
+def gerer_brigades(request, pk):
+    """US-PLAN-06 (R1, R5) : associe des brigades à une séance en lieu
+    partagé, ou en retire une (bouton par ligne). Brigades candidates en
+    nombre de requêtes constant (`brigades_candidates_au_regroupement`)."""
+    seance = get_object_or_404(Seance.objects.select_related("programme"), pk=pk)
+    candidates = brigades_candidates_au_regroupement(seance)
+    if request.method == "POST":
+        formulaire = FormulaireAssociationBrigades(request.POST, brigades_candidates=candidates)
+        if formulaire.is_valid():
+            return _appliquer_association(request, seance, formulaire)
+    else:
+        formulaire = FormulaireAssociationBrigades(brigades_candidates=candidates)
+    return render(
+        request,
+        "planification/gerer_brigades.html",
+        {
+            "seance": seance,
+            "programme": seance.programme,
+            "formulaire": formulaire,
+            "lignes": list(seance.lignes.select_related("brigade")),
+        },
+    )
+
+
+@require_POST
+@exige_habilitation(PERMISSION_ECRITURE)
+def retirer_brigade(request, pk):
+    seance = get_object_or_404(Seance.objects.select_related("programme"), pk=pk)
+    programme = seance.programme
+    brigade = get_object_or_404(Brigade, pk=request.POST.get("brigade"))
+    try:
+        ServiceEcritureSeance.retirer_brigade(request.user, seance, brigade)
+    except ErreurMetier as erreur:
+        messages.error(request, str(erreur))
+    else:
+        messages.success(request, "Brigade retirée de la séance.")
     return _retour_consultation(programme)
 
 

@@ -93,6 +93,11 @@ prompt 39 demande de les trancher seul et de les consigner ici.
 | 40 | Prompt 41, C4 (ajout manuel sur créneau libre) | Un écran d'ajout | Le service pose le verrou (`creer_seance`), aucun formulaire ne l'appelle | D-243 | Lot écran d'ajout à planifier |
 | 41 | D-121 E2 et A3 (périodes bloquantes) | Reports ouverts | Non traités dans cette story : énumération des séances recouvertes et rien restauré d'office restent à faire | D-243 | Lot dédié à planifier |
 | 42 | Backlog v9 US-PLAN-05 | Avenant absent de la story, estimation 5 points | Avenant rattaché à US-PLAN-05, estimation réestimée à 8 points par le chef de projet (prompt 41) | D-237 | Mettre à jour le backlog v10 |
+## US-PLAN-06 (Prompt 42, partie 2) — tranché seul
+
+| # | Livrable concerné | Ce qu'il dit | Ce qui a été implanté | Décision | Action attendue du chef de projet |
+|---|---|---|---|---|---|
+| 43 | CU-P5-04 A2 et A3 | La ligne retirée d'un regroupement « redevient une séance autonome » | Inexprimable (même instructeur, même créneau, RG-34) : le retrait supprime la ligne, le créneau redevient libre ; la dissolution est une suite de retraits (D-248) | D-248 | Corriger CU-P5-04 A2 et A3 |
 
 ## Ce que cette liste ne couvre pas
 
