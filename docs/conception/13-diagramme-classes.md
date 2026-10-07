@@ -456,7 +456,7 @@ Un changement de grille ne réécrit **jamais l'historique** : les séances pass
 
 **Le point de conception décisif : la grille est une aide à la génération, non une contrainte de stockage.**
 
-Trois objets se ressemblent et doivent être distingués. La **grille horaire** est le squelette de la semaine — l'ossature vide, sans matière ni instructeur. Le **créneau type** est une case de ce squelette : *lundi, deuxième créneau, de 10:10 à 12:00*, avec un jour de semaine, un rang, une heure de début et une heure de fin, et aucune date. Le mot *type* a le sens de modèle : c'est un patron répété chaque semaine. La **séance** est ce qui remplit une case un jour donné : *le jeudi 7 mai, de 10:10 à 12:00, EXP1 suit Matériel radio avec le lieutenant Ilhami en salle B1*.
+Trois objets se ressemblent et doivent être distingués. La **grille horaire** est le squelette de la semaine — l'ossature vide, sans matière ni instructeur. Le **créneau type** est une case de ce squelette : *lundi, deuxième créneau, de 10:10 à 12:00*, avec un jour de semaine, un rang, une heure de début et une heure de fin, et aucune date. Le mot *type* a le sens de modèle : c'est un patron répété chaque semaine. La **séance** est ce qui remplit une case un jour donné : *le jeudi 7 mai, de 10:10 à 12:00, EXP1 suit Matériel radio avec le lieutenant Kelvar en salle B1*.
 
 La séance porte ses heures réelles de début et de fin, et une référence *optionnelle* au créneau type dont elle est issue. Le générateur ne propose que des créneaux de la grille ; la saisie manuelle peut en sortir — séance du samedi, horaire décalé — sans rien casser. Le vendredi porte sa propre liste, plus courte ; le samedi et le dimanche ont une liste vide, ce qui les rend non programmables par défaut sans les interdire.
 

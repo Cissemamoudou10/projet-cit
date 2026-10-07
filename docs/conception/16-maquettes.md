@@ -38,7 +38,7 @@ Ces principes s'appliquent à tous les écrans et ne sont pas rappelés maquette
 
 **Terminologie du CIT** (BNF-08). Brigade, séance, progression, référentiel, AD/GROUPEMENT. Aucun terme inventé, aucun anglicisme.
 
-**Message d'erreur indiquant l'action corrective** (BNF-10). « Aucun instructeur qualifié disponible » n'est pas un message : « Lt ZIANI en mission du 24/04 au 09/05, Cne KIBOUR affecté à BCM1 sur le même créneau » en est un.
+**Message d'erreur indiquant l'action corrective** (BNF-10). « Aucun instructeur qualifié disponible » n'est pas un message : « Lt ZALBROK en mission du 24/04 au 09/05, Cne KIBORVAN affecté à BCM1 sur le même créneau » en est un.
 
 **Confirmation explicite avant toute action irréversible** (BNF-09), et pagination assortie d'une recherche dès qu'une liste peut dépasser vingt éléments (BNF-15).
 
@@ -49,7 +49,7 @@ Ces principes s'appliquent à tous les écrans et ne sont pas rappelés maquette
 ```plantuml
 @startsalt MAQ-01
 {
-{* Référentiel | Sessions | Ressources | <b>Planification</b> | Évaluations | Suivi | ^Lt CISSE — Planification^ }
+{* Référentiel | Sessions | Ressources | <b>Planification</b> | Évaluations | Suivi | ^Lt FALKREN — Planification^ }
 {+
   Semaine du | "04/05/2026    " | Sessions | ^Toutes les sessions actives^ | [ Générer ] | [ Optimiser ] | ^Grille active : Horaire ordinaire^
 }
@@ -59,24 +59,24 @@ Ces principes s'appliquent à tous les écrans et ne sont pas rappelés maquette
 {#
  <b>OFF</b>              | <b>08:00 - 09:45</b>          | <b>10:10 - 12:00</b>         | <b>13:00 - 14:15</b>        | <b>14:40 - 16:00</b>
  ANALYSTE            | Réseaux et architectures  | Réseaux et architectures | Plate-forme J2EE        | Projet fin de stage
- .                   | Lt AFATHI   11/40   I1    | Lt AFATHI   13/40   I1   | M. EL BOUZEKRI  4/30 I1 | Cne DAFIR   7/80   I1
+ .                   | Lt YARNEL   11/40   I1    | Lt YARNEL   13/40   I1   | M. EL FARNOK  4/30 I1 | Cne AMROVIC   7/80   I1
  CDP                 | Énergie renouvelable      | Mise en œuvre des SIC    | Emploi des transmissions| <color:#888>AD/GROUPEMENT</color>
- .                   | Lt EL AZOUZI 8/20  L.SIC  | Cdt BERGANNOU 12/25 L.SIC| Cne DAFIR  5/15  S.CONF | .
+ .                   | Lt EL BRAMEL 8/20  L.SIC  | Cdt BRAMVEL 12/25 L.SIC| Cne AMROVIC  5/15  S.CONF | .
  ==                  | ==                        | ==                       | ==                      | ==
  <b>BEODR</b>            | .                         | .                        | .                       | .
  EXP1                | Sources d'énergie         | Matériel radio           | Gestion chiffre         | Physique électricité
- .                   | Sgt ES        14/30   B1    | KZ          9/25    B1   | A/C BRABER  3/12   B1   | Cne HS       6/20   Amphi
+ .                   | Sgt QX        14/30   B1    | WN          9/25    B1   | A/C VARKEN  3/12   B1   | Cne ZD       6/20   Amphi
  EXP2                | Électronique              | Sources d'énergie        | Combat                  | <color:#888>AD/GROUPEMENT</color>
- .                   | BO          7/25    B2    | Sgt ES       14/30    B2   | S/Lt ILHAMI 4/16  EXT   | .
+ .                   | TZ          7/25    B2    | Sgt QX       14/30    B2   | S/Lt KELVAR 4/16  EXT   | .
  R.INFO 1            | Administration des réseaux| Administration réseaux   | Routage et commutation  | Administration réseaux
- .                   | Adj SM       22/48    E3    | Adj SM       24/48    E3   | Adj SM       11/30   E3   | Adj SM      26/48   E3
+ .                   | Adj VR       22/48    E3    | Adj VR       24/48    E3   | Adj VR       11/30   E3   | Adj VR      26/48   E3
 }
 --
 {+
   <b>Créneaux non pourvus — 3</b>
   {#
    Brigade | Créneau | Matière recherchée | Motif
-   EXP2 | Vendredi 14:40 - 16:00 | Guerre électronique | Aucun instructeur qualifié disponible : Lt ZIANI en mission (24/04 au 09/05), Cne KIBOUR affecté BCM1 même créneau
+   EXP2 | Vendredi 14:40 - 16:00 | Guerre électronique | Aucun instructeur qualifié disponible : Lt ZALBROK en mission (24/04 au 09/05), Cne KIBORVAN affecté BCM1 même créneau
    CDP  | Vendredi 14:40 - 16:00 | Anglais | Aucun lieu partagé disponible : S.CONF et Amphi occupés
    EXP1 | Mercredi 08:00 - 09:45 | Matériel radio | Volume prescrit atteint (30/30) — matière achevée
   }
@@ -112,7 +112,7 @@ Les cases sans séance portent la mention en usage au centre. Ce n'est pas un vi
 ```plantuml
 @startsalt MAQ-02
 {
-{* <b>Référentiel</b> | Sessions | Ressources | Planification | Évaluations | Suivi | ^Lt NIANGALY — Pédagogique^ }
+{* <b>Référentiel</b> | Sessions | Ressources | Planification | Évaluations | Suivi | ^Lt ZORVANE — Pédagogique^ }
 --
 <b>Référentiel de la formation : Analyste en informatique</b>   (type OFF)
 {+
@@ -165,11 +165,11 @@ L'écart de trois modules est signalé en avertissement, **jamais en refus**. C'
 ```plantuml
 @startsalt MAQ-03
 {
-{* Référentiel | Sessions | Ressources | <b>Planification</b> | Évaluations | Suivi | ^Lt NIANGALY — Pédagogique^ }
+{* Référentiel | Sessions | Ressources | <b>Planification</b> | Évaluations | Suivi | ^Lt ZORVANE — Pédagogique^ }
 --
 <b>Validation du programme hebdomadaire — semaine du 4 au 9 mai 2026</b>
 {+
-  État | <color:#B07000><b>SOUMIS</b></color> | Soumis par | Lt CISSE — Planification | le | 30/04/2026 14:12 | <color:#888>Programme verrouillé en modification (RG-41)</color>
+  État | <color:#B07000><b>SOUMIS</b></color> | Soumis par | Lt FALKREN — Planification | le | 30/04/2026 14:12 | <color:#888>Programme verrouillé en modification (RG-41)</color>
 }
 --
 {/ <b>Écart au référentiel</b> | Programme détaillé | Historique des validations }
@@ -232,9 +232,9 @@ Il est là pour une raison précise : la validation pédagogique **ne suffit pas
 ```plantuml
 @startsalt MAQ-04
 {
-{* Référentiel | Sessions | <b>Ressources</b> | Planification | Évaluations | Suivi | ^Lt CISSE — Planification^ }
+{* Référentiel | Sessions | <b>Ressources</b> | Planification | Évaluations | Suivi | ^Lt FALKREN — Planification^ }
 --
-<b>Indisponibilité — Lt ZIANI, instructeur</b>
+<b>Indisponibilité — Lt ZALBROK, instructeur</b>
 {+
   Du | "24/04/2026  08:00" | Au | "09/05/2026  16:00" | Motif | ^Mission^ | [ Enregistrer ]
   . | . | . | . | . | <color:#888>Saisie déléguée : rattachée à l'agent qui enregistre (RG-23)</color> | .
@@ -253,9 +253,9 @@ Il est là pour une raison précise : la validation pédagogique **ne suffit pas
   <b>Remplaçants proposés — Guerre électronique, lundi 04/05 14:40 - 16:00</b>
   {#
    <b>Rang</b> | <b>Instructeur</b> | <b>Charge semaine</b> | <b>Déjà intervenu sur CDP</b> | <b>Statut</b> | .
-   1 | Cne KIBOUR    | 6 h 30  | oui, 4 séances | Militaire du centre | (X) Désigner
-   2 | Cdt BERGANNOU | 11 h 15 | non            | Militaire du centre | ( ) Désigner
-   3 | M. AIT LHCEN  | 3 h 20  | non            | Vacataire           | ( ) Désigner
+   1 | Cne KIBORVAN    | 6 h 30  | oui, 4 séances | Militaire du centre | (X) Désigner
+   2 | Cdt BRAMVEL | 11 h 15 | non            | Militaire du centre | ( ) Désigner
+   3 | M. AIT KORVEN  | 3 h 20  | non            | Vacataire           | ( ) Désigner
   }
   <color:#888>Classement par règles explicites : qualification et disponibilité éliminatoires, puis charge croissante, antériorité sur la brigade, statut (RG-43). Vous restez libre de désigner un autre instructeur qualifié.</color>
 }
@@ -264,7 +264,7 @@ Il est là pour une raison précise : la validation pédagogique **ne suffit pas
   <b>Effet sur le programme affiché</b>
   Le programme <b>reste affiché</b> : la validation pédagogique et la signature du directeur demeurent acquises.
   La séance portera un <b>avenant</b> daté et motivé (RG-42).
-  Motif de l'avenant | "Mission Lt ZIANI du 24/04 au 09/05 — remplacement Cne KIBOUR                 "
+  Motif de l'avenant | "Mission Lt ZALBROK du 24/04 au 09/05 — remplacement Cne KIBORVAN                 "
   [ <b>Confirmer le remplacement</b> ] | [ Annuler ]
 }
 }
@@ -279,7 +279,7 @@ Chaque séance impactée propose son traitement : remplacer l'instructeur, repor
 
 ## 5.2 Le classement des remplaçants est explicable
 
-Les trois colonnes du tableau sont les critères du classement : charge de la semaine, antériorité sur la brigade, statut. L'utilisateur voit **pourquoi** Cne KIBOUR est en tête, et reste libre de désigner quelqu'un d'autre.
+Les trois colonnes du tableau sont les critères du classement : charge de la semaine, antériorité sur la brigade, statut. L'utilisateur voit **pourquoi** Cne KIBORVAN est en tête, et reste libre de désigner quelqu'un d'autre.
 
 C'est la traduction visuelle de `RG-43`. L'absence d'apprentissage automatique est une contrainte du projet — l'historique des affectations est confidentiel et inaccessible — mais elle produit ici un avantage : dans un contexte où l'affectation d'un instructeur est un acte de commandement, un classement explicable vaut mieux qu'un classement performant.
 
@@ -296,7 +296,7 @@ L'écran demande le motif de l'avenant avant de confirmer. C'est ce motif qui ap
 ```plantuml
 @startsalt MAQ-05
 {
-{* Référentiel | Sessions | Ressources | Planification | Évaluations | <b>Suivi</b> | ^Lt NIANGALY — Pédagogique^ }
+{* Référentiel | Sessions | Ressources | Planification | Évaluations | <b>Suivi</b> | ^Lt ZORVANE — Pédagogique^ }
 --
 <b>Rapprochement prescrit et réalisé</b>
 {+
@@ -322,12 +322,12 @@ L'écran demande le motif de l'avenant avant de confirmer. C'est ce motif qui ap
   {#
    <b>Brigade</b> | <b>Matière</b> | <b>Programmé</b> | <b>Réalisé</b> | <b>Écart et motif</b>
    ANALYSTE | Langage C              | 3 h 30 | 0 h    | <color:#B03030>Non exécuté</color> — instructeur absent, non déclaré à l'avance
-   ANALYSTE | Projet de fin de stage | 1 h 20 | 1 h 20 | <color:#0F6E56>Réalisé</color> — avenant : remplacement Cne KIBOUR
-   CDP      | Guerre électronique    | 1 h 15 | 0 h    | <color:#B03030>Non exécuté</color> — mission Lt ZIANI
+   ANALYSTE | Projet de fin de stage | 1 h 20 | 1 h 20 | <color:#0F6E56>Réalisé</color> — avenant : remplacement Cne KIBORVAN
+   CDP      | Guerre électronique    | 1 h 15 | 0 h    | <color:#B03030>Non exécuté</color> — mission Lt ZALBROK
    EXP2     | Guerre électronique    | 1 h 45 | 1 h 45 | <color:#0F6E56>Reportée au 12/05 puis tenue</color>
    .        | <b>Total du centre</b>    | <b>312 h</b> | <color:#B07000><b>298 h</b></color> | <color:#B07000><b>-14 h, soit 4,5 %</b></color>
   }
-  Édité par | Lt CISSE — Planification | le | 09/05/2026 15:40 | Signataire | "                    " | Date | "          "
+  Édité par | Lt FALKREN — Planification | le | 09/05/2026 15:40 | Signataire | "                    " | Date | "          "
   [ <b>Éditer le document</b> ] | [ Exporter en CSV ] | [ Consulter les avenants de la semaine ]
 }
 }
