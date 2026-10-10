@@ -10,7 +10,7 @@ autres consomment) ; **US-PLAN-05, 06, 09** (modification manuelle et
 regroupement doivent respecter la garde RG-41 posée par US-VAL-03, donc
 après elle).
 
-**Périmètre.** 11 stories, 47 points.
+**Périmètre.** 11 stories, 50 points (47 au cadrage, +3 : US-PLAN-05 réestimée à 8 points pour l'avenant, D-237, prompt 41 — voir `ECARTS-LIVRABLES-SPRINT-3.md`, ligne 42).
 
 **Jalon de sortie.** **J2 le 10 octobre** — démonstration de mi-parcours et décision go/no-go sur l'optimisation (US-PLAN-08) — **sans objet, arbitrée au sprint 2 (D-164) : renoncement retenu, US-PLAN-08 déclassée en perspective d'évolution.**
 
@@ -20,7 +20,7 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée,
 ligne ajoutée au tableau Sprints d'`AVANCEMENT.md`, ligne ajoutée à
 `heures-sprint-3.md` datée du jour (mesure corrective de R23, prompt 34).
 
-- [x] **US-PLAN-05** — Modifier manuellement une affectation · 5 pts · Must
+- [x] **US-PLAN-05** — Modifier manuellement une affectation · 8 pts (réestimée, D-237) · Must
 - [x] **US-PLAN-06** — Regrouper plusieurs brigades sur une même séance · 5 pts · Must
 - [x] **US-PLAN-09** — Traiter une indisponibilité déclarée · 5 pts · Must
 - [x] **US-VAL-03** — Gérer les états du programme · 5 pts · Must
@@ -34,13 +34,13 @@ ligne ajoutée au tableau Sprints d'`AVANCEMENT.md`, ligne ajoutée à
 
 ## Tâches transverses
 
-- [ ] Préparation de la démonstration de mi-parcours
+- [x] Préparation de la démonstration de mi-parcours — scénario, commande, guide (prompt 43, partie A)
 - [ ] Diagramme d'états ETA-01 (5.3.17) — produit le 30/09, soumis aux cellules le __, validé le __
 - [x] Décision écrite go/no-go sur US-PLAN-08 — sans objet, arbitrée au sprint 2, D-164
 
 ## Revue et rétrospective
 
-- [ ] Heures réelles saisies dans le classeur de pilotage
-- [ ] Vélocité mesurée, clé de conversion révisée
-- [ ] Registre des risques mis à jour
-- [ ] `AVANCEMENT.md` mis à jour
+- [ ] Heures réelles saisies dans le classeur de pilotage — classeur externe, hors de ce dépôt
+- [x] Vélocité mesurée (`REVUE-SPRINT-3.md`) ; clé de conversion **non révisée**, à dessein — heures humaines toujours absentes, échantillon de session trop hétérogène (un point pèse 61 % du temps mesuré)
+- [ ] Registre des risques mis à jour — propositions seulement (`RISQUES-PROPOSITIONS-J2.md`), le registre reste tenu par le chef de projet
+- [x] `AVANCEMENT.md` mis à jour

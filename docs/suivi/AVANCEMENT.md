@@ -162,7 +162,7 @@ majeures par rapport à la dernière version :
 | **D-23** | 4 (session bloque la suppression d'une formation) | US-REF-01 | US-SES-01 (sprint 2) | **Fermé — corrigé le 2026-09-30**, était marqué à tort « Ouvert ». `test_d1_formation_portant_une_session_ouverte_ne_peut_etre_supprimee`, `test_d2_meme_refus_par_le_vrai_cycle_http_...`, `test_d3_formation_portant_une_session_cloturee_est_aussi_protegee` (`app/organisation/tests/test_protection_formation.py`). Écart de libellé signalé : D-69 |
 | D-34 | 3, 4 (catégorie de lieu au moteur) | US-REF-04 | moteur de génération (sprint 2) | Fermé le 2026-09-16 — `test_generation_lieux.py` |
 | D-39 | 3, 4, volet moteur (prérequis exploités par le moteur) | US-REF-06 | moteur de génération (sprint 2) | Fermé le 2026-09-16 |
-| D-39 | 3, 4, volet saisie manuelle | US-REF-06 | US-PLAN-05 (sprint 3) | Ouvert |
+| D-39 | 3, 4, volet saisie manuelle | US-REF-06 | US-PLAN-05 (sprint 3) | **Fermé — jamais marqué, découvert en reparcourant le sprint au prompt 43** : `test_e_prerequis_non_acheve_refuse_une_modification_manuelle` (`modification.py::_verifier_contraintes`, réutilise `ServiceContraintes`/RG-39) |
 | D-45 | 4 (instructeur affecté à un programme en cours) | US-INS-01 | séance programmée (sprint 2) | Fermé le 2026-09-15 — `test_a9_suppression_instructeur_portant_une_seance_refusee` |
 | D-51 | E1 (retrait de qualification, instructeur à séances futures) | US-INS-02 | séance programmée (sprint 2) | Fermé le 2026-09-15 — reconfirmé 2026-09-30 : `test_retrait_refuse_si_une_seance_future_existe` (`app/planification/tests/test_resolveur_qualification.py`) teste bien le RETRAIT de qualification, pas le `PROTECT` sur `Seance.instructeur` |
 | D-54 | 4, volet brigade (lieu affecté à une brigade) | US-PLAN-02 | US-SES-03 (sprint 2) | Fermé le 2026-09-11 |
@@ -174,14 +174,14 @@ majeures par rapport à la dernière version :
 | D-119 | 5, pts 4-5 (séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-09 (sprint 3) | **Fermé le 2026-10-07** — I2/C1 (D-257), `seances_impactees_par_indisponibilite` |
 | D-119 | A3, A4 (restriction extension, séances passées) | US-INS-03 | sprint 3 | **Fermé le 2026-10-07** — I6 (D-253) : une extension relit le même sélecteur, les séances passées en sont exclues par construction |
 | D-121 | 5, RG-38 (exclusion des périodes bloquantes) | US-PLAN-01 | US-PLAN-03/04 (sprint 2) | Fermé le 2026-09-15 |
-| D-121 | E2 (période bloquante recouvrant des séances programmées) | US-PLAN-01 | US-PLAN-05 (sprint 3) | Ouvert — **sélecteur `seances_recouvertes` posé à US-EVAL-02 (D-191, prompt 36)**, l'arbitrage explicite qu'exige ce report reste entier, à US-PLAN-05 |
-| D-121 | A3 (séances redevenues programmables) | US-PLAN-01 | sprint 3 | Ouvert |
+| D-121 | E2 (période bloquante recouvrant des séances programmées) | US-PLAN-01 | US-PLAN-05 (sprint 3) | **Fermé le 2026-10-07, prompt 42 partie 1, par D-245** — ligne jamais mise à jour depuis, corrigée en reparcourant le sprint au prompt 43 |
+| D-121 | A3 (séances redevenues programmables) | US-PLAN-01 | sprint 3 | **Fermé le 2026-10-07, prompt 42 partie 1, par D-246** — ligne jamais mise à jour depuis, corrigée en reparcourant le sprint au prompt 43 |
 | D-133 | 6 (changer de grille active ne touche pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 | D-133 | RG-64 (relation facultative séance↔créneau type) | US-PLAN-12 | *aucune story assignée* | **Ouvert, orpheline** — dette explicite, à surveiller (personne n'est chargé de la refermer) |
 | D-133 | refus de générer sans grille active (E6) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 | **D-171** | RG-39 a) révisée (volume programmé compte aussi REJETÉ) | US-PLAN-04 (D-140) | US-VAL-03 (sprint 3) | **Fermé le 2026-10-04, prompt 39, par V7 (D-225)** — créé le 2026-09-30, prompt 34 |
 | **D-172** | lecture du programme par la cellule pédagogique (`programme_validation_lecture`) | US-PLAN-03 (D-154) | US-VAL-02 (sprint 3) | **Fermé le 2026-10-04, prompt 40, par US-VAL-02 (D-231)** — créé le 2026-09-30, prompt 34 |
-| **D-181** | suppression d'une évaluation, et de sa séance verrouillée — jamais hors du service d'évaluation | US-EVAL-01 | US-PLAN-05 (sprint 3) | **Ouvert — créé le 2026-10-01, prompt 35** (A7 ; vérification § 0.4 négative : aucune suppression de séance n'existait encore) |
+| **D-181** | suppression d'une évaluation, et de sa séance verrouillée — jamais hors du service d'évaluation | US-EVAL-01 | US-PLAN-05 (sprint 3) | **Fermé le 2026-10-04, prompt 41, par D-240** (M8, D2, D3) — créé le 2026-10-01, prompt 35 ; ligne jamais mise à jour depuis, corrigée en reparcourant le sprint au prompt 43 |
 | **D-182** | mesure de l'écart de progression entre brigades (A8, E2, forme simplifiée retenue) | US-EVAL-01 | *aucune story assignée* | **Ouvert, orphelin — créé le 2026-10-01, prompt 35**, à arbitrer au backlog v10 |
 | **D-170** | insertion d'un contrôle refusée si le programme de la semaine est SOUMIS, VALIDÉ ou AFFICHÉ | US-EVAL-01 | US-VAL-03 (sprint 3) | **Fermé le 2026-10-04, prompt 39, par C4 (D-221)** — créé le 2026-10-01, prompt 35, cas à ajouter à l'oracle `ETA-01_table_transitions.md` quand la garde RG-41 (D-170) existera |
 | **D-193** | une organisation d'épreuve devra être revérifiée quand la date d'une certificative change | US-EVAL-02 | US-EVAL-04 | **Fermé le 2026-10-04, prompt 38, par les tests E1 à E3 (`test_organisation_services.py`) : changement de date signalé, jamais refusé** : `modifier_date_certificative` ne touche à rien d'une organisation d'épreuve, qui n'existe pas encore (US-EVAL-04, sprint 3) — à vérifier dès que cette story existe |
@@ -243,6 +243,27 @@ Ferme : **D-121** (E2 par D-245, A3 par D-246). Aucun report ne s'ouvre. Net : *
 ### Recompte à la clôture d'US-PLAN-09, le 2026-10-07
 
 Ferme : **D-119** (ses deux volets — pts 4-5 par D-257, A3/A4 par D-253), compté comme une seule décision qui se referme, même convention que D-121 ci-dessus. Aucun report ne s'ouvre. Net : dix ouverts avant cette clôture, moins un fermé — **neuf ouverts**.
+
+### Recompte intégral du sprint 3, en reparcourant `DECISIONS.md` en entier (D-165 à D-258), le 2026-10-10
+
+Prompt 43, § B1 — leçon 6 du sprint 2 : une chaîne de recomptes locaux (ci-dessus) peut se tromper si elle hérite d'une base déjà fausse sans jamais la revérifier contre la source. En relisant chaque décision du sprint une à une plutôt qu'en continuant la chaîne : **deux fermetures jamais décomptées**, toutes deux antérieures même à la clôture d'US-PLAN-05 (donc présentes dans tous les recomptes ci-dessus sans que personne ne les retire) :
+- **D-39** (volet saisie manuelle, critère 4 US-REF-06) : fermé par la livraison d'US-PLAN-05 (`test_e_prerequis_non_acheve_refuse_une_modification_manuelle`), jamais marqué.
+- **D-181** (suppression d'une évaluation) : fermé le 2026-10-04 par **D-240** (US-PLAN-05, M8), jamais marqué — la fermeture est antérieure à la partielle du 2026-10-04 elle-même.
+
+Aucune autre ligne du tableau ci-dessus n'est en défaut : D-119, D-121 (les deux volets), D-171, D-172, D-170, D-193, D-202 sont bien fermés et désormais marqués comme tels ; D-108, D-133, D-182, D-212, D-215 et la présélection (ECARTS 25) sont bien de vrais reports orphelins ou de sprint 4, à raison hors du périmètre de ce sprint.
+
+**Net réel, vérifié à la clôture du sprint 3 : six reports ouverts**, tous hors du périmètre des onze stories livrées (aucune story assignée, ou assignée au sprint 4) :
+
+| Report | Objet | Story cible |
+|---|---|---|
+| D-108 | A3, volume horaire dispensé signalé à l'affectation | US-SUI-01 (sprint 4) |
+| D-133 | RG-64, relation facultative séance↔créneau type | *aucune, orpheline* |
+| D-182 | mesure de l'écart de progression entre brigades | *aucune, backlog v10* |
+| D-212 | badge « à vérifier » après changement de date | *aucune, backlog v10* |
+| D-215 | badge de liste sur la complétude | *aucune, backlog v10* |
+| Présélection (ECARTS 25) | la présélection de génération ignore les épreuves | *aucune, dette sprint 4* |
+
+La ligne « Ouverts aujourd'hui » du prompt 37 comptait quatorze reports. Trois d'entre eux (D-108, D-133, D-182) étaient déjà orphelins ou hors sprint 3 à cette date, et le restent. Les onze autres (D-39, D-119 ×2, D-121 ×2, D-171, D-172, D-170, D-181, D-193, D-202) appartenaient tous au périmètre du sprint 3 et sont désormais tous fermés. Trois reports supplémentaires se sont ouverts après le prompt 37, pendant US-EVAL-04 (D-212, D-215, Présélection/ECARTS 25) — eux aussi hors du périmètre des stories du sprint 3 (backlog v10 ou dette sprint 4). D'où les six ouverts du tableau ci-dessus : 3 + 3, aucun n'appartenant au périmètre livré.
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 
