@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-42 — Le lot d'US-PLAN-09 peut verrouiller plusieurs programmes dans un ordre non déterministe
+**Date** 2026-10-10 · **Story** Démonstration J2, partie A5 (prompt 43) · **État** : ouvert, dette sprint 4
+**Symptôme** — Des interblocages PostgreSQL (`deadlock detected`) sont apparus de façon intermittente pendant la session du prompt 42, lors d'exécutions complètes et prolongées de `pytest` ; non reproductibles en isolant les fichiers concernés.
+**Cause recherchée (§ A5 du prompt 43)** — Chaque chemin d'écriture verrouille un programme sous `select_for_update` (`circuit.py::_verrouiller`, `modification.py::_verrouiller_programme`) : génération, transitions du circuit et écriture individuelle d'une séance ne verrouillent jamais qu'**un seul** `ProgrammeHebdomadaire` par transaction — aucun ordre à respecter entre eux. `planification.services.indisponibilite.traiter_lot_remplacement` (US-PLAN-09) est le SEUL chemin qui peut verrouiller **plusieurs** programmes dans une même transaction — un par séance distincte du lot — et il les verrouille dans l'ordre où `FormulaireLotRemplacement.seances` (un `QuerySet` filtré par `pk__in`, sans `order_by` explicite) les rend, un ordre non garanti par Django. Deux appels concurrents à ce chemin (ou avec un autre chemin d'écriture) visant les mêmes programmes dans un ordre croisé provoqueraient un verrou en sens inverse, donc un interblocage réel, pas seulement un artefact de test.
+**Résolution** — Aucune aujourd'hui (§ A5 : « n'en corrige rien »). Correction proposée pour le sprint 4 : trier les séances du lot par `programme_id` (ou `pk`) avant la boucle de `traiter_lot_remplacement`, pour que tout appel verrouille les programmes dans le même ordre croissant quel que soit l'ordre de soumission.
+**Risque concerné** — voir `docs/suivi/RISQUES-PROPOSITIONS-J2.md` (risque nouveau, interblocage).
+**Leçon** — une porte unique qui verrouille UNE ressource par transaction ne pose pas ce risque ; dès qu'un chemin (ici, un traitement en lot) verrouille PLUSIEURS ressources de même nature dans la même transaction, l'ordre de verrouillage doit être explicite et déterministe — jamais laissé à l'ordre naturel d'un `QuerySet`.
+
 ## P-41 — Le code d'US-VAL-04 est porté par le commit d'US-VAL-01
 **Date** 2026-10-04 · **Story** US-VAL-01 / US-VAL-04 (prompt 40) · **État** : résolu pour le suivi, historique conservé
 **Symptôme** — La relecture de US-VAL-04 a montré que les vues `signer` et `afficher`, le bloc de signature de la consultation et `circuit_affichage` (préconditions d'affichage) figurent dans `335d257`, commit d'US-VAL-01, qui ne mentionne pas US-VAL-04.

@@ -127,6 +127,29 @@ class ResolveurJoursExamen:
         return []
 
 
+class ResolveurReinitialisationEvaluations:
+    """Prompt 43, § A3 : la base de démonstration J2 reçoit en direct les
+    évaluations que le scénario produit (contrôle, examen final) — le
+    chargement de `planification.jeu_demonstration_j2` doit pouvoir les
+    vider avant de recharger (§ A3, « rejouable ») sans que `planification`
+    importe `evaluations` (DEPENDANCES_AUTORISEES, sens interdit). Un
+    fournisseur (installé par `evaluations.apps.EvaluationsConfig.ready`),
+    un seul consommateur. Repli : aucun fournisseur ⇒ rien à vider
+    (`evaluations` non installée, ou tests isolés d'une seule application).
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls) -> None:
+        if cls._fournisseur is not None:
+            cls._fournisseur()
+
+
 class ResolveurOccupationsEpreuves:
     """A6, Prompt 38 : `planification` (RG-34, RG-37) ne peut pas importer
     `evaluations` — même motif que `ResolveurJoursExamen`. Un fournisseur, un
@@ -150,4 +173,3 @@ class ResolveurOccupationsEpreuves:
         if cls._fournisseur is not None:
             return cls._fournisseur(debut, fin)
         return []
-
