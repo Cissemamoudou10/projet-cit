@@ -279,6 +279,16 @@ Aucune autre ligne du tableau ci-dessus n'est en défaut : D-119, D-121 (les deu
 
 La ligne « Ouverts aujourd'hui » du prompt 37 comptait quatorze reports. Trois d'entre eux (D-108, D-133, D-182) étaient déjà orphelins ou hors sprint 3 à cette date, et le restent. Les onze autres (D-39, D-119 ×2, D-121 ×2, D-171, D-172, D-170, D-181, D-193, D-202) appartenaient tous au périmètre du sprint 3 et sont désormais tous fermés. Trois reports supplémentaires se sont ouverts après le prompt 37, pendant US-EVAL-04 (D-212, D-215, Présélection/ECARTS 25) — eux aussi hors du périmètre des stories du sprint 3 (backlog v10 ou dette sprint 4). D'où les six ouverts du tableau ci-dessus : 3 + 3, aucun n'appartenant au périmètre livré.
 
+### Report ouvert pendant US-SUI-05, le 2026-10-12 (prompt 44, Temps 2)
+
+**D-262** : `ServiceSuivi._session_cloturee()` retourne toujours `False` — l'annulation d'une non-exécution reste réversible sans condition tant qu'US-SES-09 (clôture de session, même sprint) n'existe pas. À compléter par US-SES-09 : prendre la ligne en paramètre, remonter à sa session, refuser l'annulation si elle est clôturée.
+
+| Report | Objet | Story cible |
+|---|---|---|
+| D-262 | réversibilité de la non-exécution, conditionnée à la clôture de la session | US-SES-09 (sprint 4) |
+
+Net : six reports ouverts avant US-SUI-05 (clôture du sprint 3), plus un nouveau — **sept ouverts** à ce jour.
+
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 
 | Code cité dans `DECISIONS.md` | Désigne réellement (`sprint-2.md`) |

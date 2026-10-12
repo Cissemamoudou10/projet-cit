@@ -39,7 +39,8 @@ CHAMPS_MODIFIABLES = ("element_referentiel", "instructeur", "lieu", "debut", "fi
 MESSAGE_COMMENCEE = "Une séance commencée ne se modifie plus : elle a eu lieu ou a commencé (M6)."
 MESSAGE_AFFICHEE = (
     "Une séance affichée ne se supprime pas : une séance qui n'aura pas lieu relève de la "
-    "non-exécution (sprint 4). Un avenant décrit ce qui a changé (M4)."
+    "non-exécution, à déclarer depuis la consultation du programme (US-SUI-05). Un avenant "
+    "décrit ce qui a changé (M4)."
 )
 MESSAGE_CONTROLE = (
     "Une séance de contrôle ne se supprime pas et ne se déverrouille pas : elle peut être "

@@ -486,6 +486,17 @@ ECRANS_ECRITURE = [
         "noyau.programme_ecriture",
         lambda objets: [objets["indisponibilite_instructeur"].pk, objets["matiere"].pk],
     ),
+    # --- planification : non-exécution d'une séance (US-SUI-05, prompt 44) ---
+    EcranEcriture(
+        "planification:declarer_non_execution",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["ligne_programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:annuler_non_execution",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["ligne_programme"].pk],
+    ),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
     EcranEcriture("evaluations:creer_evaluation", "noyau.evaluations_ecriture"),
     # --- evaluations : modification de la date d'un examen final (US-EVAL-02) ---
@@ -555,8 +566,11 @@ ECRANS_ECRITURE = [
 # circuit du programme (prompt 40, sept routes POST) ; 113 après la modification
 # manuelle et l'avenant (prompt 41, US-PLAN-05) ; 114 après l'ajout manuel
 # (prompt 42, partie 1, fin d'US-PLAN-05) ; 116 après le regroupement de
-# brigades (prompt 42, partie 2, US-PLAN-06 : deux routes POST).
-assert len(ECRANS_ECRITURE) == 120  # 2026-10-07 : +4, US-PLAN-09 (prompt 42, partie 3)
+# brigades (prompt 42, partie 2, US-PLAN-06 : deux routes POST) ; 120 après le
+# traitement d'une indisponibilité (prompt 42, partie 3, US-PLAN-09 : quatre
+# routes POST) ; 122 après la non-exécution d'une séance (prompt 44, Temps 2,
+# US-SUI-05 : deux routes POST, déclarer et annuler).
+assert len(ECRANS_ECRITURE) == 122
 
 
 def _groupes_sans(permission):

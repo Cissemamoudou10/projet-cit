@@ -6,6 +6,7 @@ from planification import (
     views_indisponibilite,
     views_periode,
     views_seance,
+    views_suivi,
 )
 
 app_name = "planification"
@@ -95,5 +96,15 @@ urlpatterns = [
         "planification/indisponibilites/<int:indispo_pk>/matieres/<int:matiere_pk>/lot/",
         views_indisponibilite.lot_remplacement,
         name="lot_remplacement",
+    ),
+    path(
+        "planification/lignes/<int:pk>/declarer-non-execution/",
+        views_suivi.declarer_non_execution,
+        name="declarer_non_execution",
+    ),
+    path(
+        "planification/lignes/<int:pk>/annuler-non-execution/",
+        views_suivi.annuler_non_execution,
+        name="annuler_non_execution",
     ),
 ]

@@ -19,7 +19,7 @@ from django.core.management import call_command
 from administration.constantes import GROUPES
 from evaluations.models import Evaluation, OrganisationEpreuve, Sujet, Surveillance, TypeEvaluation
 from organisation.models import Brigade, Session, Stagiaire
-from planification.models import ProgrammeHebdomadaire, Seance
+from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
 from referentiel.models import CategorieLieu, ElementReferentiel, Formation, Matiere, TypeFormation
 from referentiel.services.objectif_pedagogique import ServiceObjectifPedagogique
 from referentiel.services.prerequis import ServicePrerequis
@@ -192,8 +192,10 @@ def objets(db, utilisateurs):
         debut=datetime.datetime(2030, 1, 14, 8, 0, tzinfo=datetime.UTC),
         fin=datetime.datetime(2030, 1, 14, 10, 0, tzinfo=datetime.UTC),
     )
+    ligne_programme = LigneProgramme.objects.create(seance=seance, brigade=brigade)
     return {
         "seance": seance,
+        "ligne_programme": ligne_programme,
         "type_formation": type_formation,
         "formation": formation,
         "matiere": matiere,

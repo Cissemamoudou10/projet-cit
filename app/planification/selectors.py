@@ -20,6 +20,7 @@ from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurSeancesDeControle
 from organisation.models import Brigade
 from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
+from planification.selectors_suivi import non_executions_des_lignes
 from planification.services.temps import duree_heures
 from ressources.models import CreneauType, GrilleHoraire, Instructeur, Lieu
 
@@ -156,6 +157,7 @@ class CelluleProgramme:
     autres_brigades: str = ""
     est_controle: bool = False
     creneau: object = None
+    non_execution: object = None
 
     @property
     def seance(self):
@@ -164,6 +166,11 @@ class CelluleProgramme:
     @property
     def libelle_vide(self):
         return "AD/GROUPEMENT"
+
+    @property
+    def est_passee(self):
+        """US-SUI-05, S2 : séance passée = fin antérieure à maintenant."""
+        return self.seance is not None and self.seance.fin <= timezone.now()
 
 
 def _lignes_du_programme(programme, brigades):
@@ -220,6 +227,7 @@ def grille_consultation(programme, creneaux, brigades):
     lignes_qs = list(_lignes_du_programme(programme, brigades))
     volumes = _volumes_cumules(lignes_qs)
     controles = ResolveurSeancesDeControle.resoudre({ligne.seance_id for ligne in lignes_qs})
+    non_executions = non_executions_des_lignes([ligne.pk for ligne in lignes_qs])
     par_brigade_horaire = {}
     for ligne in lignes_qs:
         debut_local = timezone.localtime(ligne.seance.debut)
@@ -245,6 +253,7 @@ def grille_consultation(programme, creneaux, brigades):
                         autres_brigades=_autres_brigades(ligne) if ligne else "",
                         est_controle=ligne.seance_id in controles if ligne else False,
                         creneau=creneau,
+                        non_execution=non_executions.get(ligne.pk) if ligne else None,
                     )
                 )
             lignes_affichees.append({"brigade": brigade, "cellules": cellules})

@@ -317,3 +317,38 @@ class Avenant(ModeleHorodate):
                 name="ck_avenant_nature_connue",
             ),
         ]
+
+
+class NonExecution(ModeleHorodate):
+    """Non-exécution d'une séance — BF-SUI-05, CLS-05 § 6.7 (US-SUI-05, RG-60).
+
+    Rattachée à la LIGNE, pas à la séance (§ 6.7) : une séance regroupant
+    plusieurs brigades peut n'avoir été manquée que par l'une d'elles. `ligne`
+    en `OneToOneField` : au plus une non-exécution par ligne, garanti en base
+    (`.claude/rules/modeles.md`). `CASCADE` : composition stricte vers son
+    porteur, comme le prescrit la même règle — à la différence de l'avenant,
+    la non-exécution ne survit pas à la ligne qu'elle documente. `cree_le`/
+    `cree_par` (`ModeleHorodate`) portent déjà la date de déclaration et son
+    auteur (C5) : aucun champ de plus.
+    """
+
+    ligne = models.OneToOneField(
+        LigneProgramme,
+        on_delete=models.CASCADE,
+        related_name="non_execution",
+        verbose_name="ligne de programme",
+    )
+    motif = models.TextField(verbose_name="motif")
+
+    class Meta:
+        db_table = "planification_non_execution"
+        verbose_name = "non-exécution"
+        verbose_name_plural = "non-exécutions"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(motif__regex=r"\S"), name="ck_non_execution_motif_non_vide"
+            ),
+        ]
+
+    def __str__(self):
+        return f"non-exécution — {self.ligne}"

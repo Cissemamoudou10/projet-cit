@@ -103,6 +103,13 @@ class TypeAction(models.TextChoices):
     journaliser une LECTURE. `SELECTION_SUJET`, déjà déclarée ci-dessus
     (US-ADM-04, jamais atteinte avant cette story), porte la sélection et le
     changement du sujet retenu (A3/A4) — voir docs/suivi/DECISIONS.md.
+
+    `DECLARATION_NON_EXECUTION` (US-SUI-05, S6, prompt 44) — une extension de
+    plus : aucune nature existante ne porte la déclaration ou l'annulation
+    d'une non-exécution de séance, qui ne passe pas par le patron de gestion.
+    Une seule nature pour les deux gestes (`detail` les distingue), comme
+    `TRANSITION_PROGRAMME` distingue ses transitions — voir
+    docs/suivi/DECISIONS.md.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -133,6 +140,10 @@ class TypeAction(models.TextChoices):
     GENERATION_PROGRAMME = "generation_programme", "Génération d'un programme"
     CONSULTATION_SUJETS = "consultation_sujets", "Consultation des sujets d'examen"
     TRANSITION_PROGRAMME = "transition_programme", "Transition d'un programme"
+    DECLARATION_NON_EXECUTION = (
+        "declaration_non_execution",
+        "Déclaration de non-exécution d'une séance",
+    )
 
 
 class EntreeJournal(ModeleHorodate):

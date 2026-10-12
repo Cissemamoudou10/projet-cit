@@ -228,6 +228,36 @@
                   {% if cellule.autres_brigades %}
                     <p class="mt-1 text-2xs text-marine-700">{{ cellule.autres_brigades }}</p>
                   {% endif %}
+                  {% if programme.etat == "affiche" and cellule.est_passee %}
+                    {% if cellule.non_execution %}
+                      <p class="mt-1 border border-etat-ecart bg-etat-ecart-fond px-2 py-1 text-2xs text-etat-ecart">
+                        Non exécutée — {{ cellule.non_execution.motif }}
+                      </p>
+                      {% if perms.noyau.programme_ecriture %}
+                        <form method="post"
+                              action="{% url 'planification:annuler_non_execution' cellule.ligne.pk %}"
+                              class="mt-0.5">
+                          {% csrf_token %}
+                          <button type="submit"
+                                  class="text-2xs text-marine-700 underline-offset-2 hover:underline">
+                            Annuler la déclaration
+                          </button>
+                        </form>
+                      {% endif %}
+                    {% elif perms.noyau.programme_ecriture %}
+                      <form method="post"
+                            action="{% url 'planification:declarer_non_execution' cellule.ligne.pk %}"
+                            class="mt-1 flex flex-col gap-1">
+                        {% csrf_token %}
+                        <textarea name="motif" required rows="1" placeholder="Motif (obligatoire)"
+                                  class="border border-gris-trait bg-blanc px-1.5 py-1 text-2xs"></textarea>
+                        <button type="submit"
+                                class="self-start text-2xs text-marine-700 underline-offset-2 hover:underline">
+                          Déclarer non exécutée
+                        </button>
+                      </form>
+                    {% endif %}
+                  {% endif %}
                 </td>
               {% else %}
                 <td class="border-l border-gris-trait px-3 py-2">

@@ -31,6 +31,39 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-263 — US-SUI-05 (S6) : nature de journal `DECLARATION_NON_EXECUTION`, extension hors RG-26
+**Date** 2026-10-12 · **Story** US-SUI-05 (Prompt 44, Temps 2) · **Auteur** porteur non renseigné
+**Contexte** — Déclarer puis annuler une non-exécution (C5) doivent être journalisés, auteur et horodatage. Aucune nature de `TypeAction` existante ne porte ce geste, qui ne passe pas par le patron de gestion (`creation_element_gestion`/`suppression_element_gestion` supposeraient une écriture de `Seance`/`LigneProgramme`, qu'`US-SUI-05` n'est justement pas).
+**Décision** — Une nature de plus, `DECLARATION_NON_EXECUTION`, hors RG-26 (sixième extension du genre, après `ACCES_REFUSE`, `MODIFICATION_HABILITATIONS`, les quatre natures du patron de gestion comptées pour une, `EXPORT_DONNEES`, `GENERATION_PROGRAMME`, `CONSULTATION_SUJETS`). Une seule nature pour les deux gestes (déclarer, annuler) plutôt que deux : `detail` les distingue (« déclarée — <motif> » / « annulée »), même convention que `TRANSITION_PROGRAMME` pour ses dix transitions.
+**Alternative écartée** — Deux natures séparées (`DECLARATION_NON_EXECUTION`/`ANNULATION_NON_EXECUTION`) : aurait suivi RG-26 à la lettre (une nature par geste), mais ajouté une extension de plus pour une distinction que `detail` porte déjà, sans perte de traçabilité.
+**Impact sur les livrables** — RG-26 (CU-P6, § catalogue des natures) à compléter d'une septième extension ; aucune autre règle touchée.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire.
+
+## D-262 — US-SUI-05 (S4) : réversibilité sans condition, garde posée pour US-SES-09
+**Date** 2026-10-12 · **Story** US-SUI-05 (Prompt 44, Temps 2) · **Auteur** porteur non renseigné
+**Contexte** — C4 (backlog v10) : « la déclaration est réversible tant que la session n'est pas clôturée ». `US-SES-09` (clôture de session), qui porte cette notion, est au même sprint mais n'existe pas encore au moment d'implanter US-SUI-05.
+**Décision** — `ServiceSuivi.annuler_non_execution` appelle une garde dédiée, `_session_cloturee()`, qui retourne toujours `False` aujourd'hui — l'annulation reste donc inconditionnelle. La fonction existe déjà, nommée et appelée au bon endroit (dans la transaction, avant la suppression), pour qu'US-SES-09 n'ait qu'à lui donner un corps réel (prendre la ligne en paramètre, remonter à sa session, lire son état) sans toucher à `ServiceSuivi` autour.
+**Alternative écartée** — Ne poser aucune garde maintenant, l'ajouter seulement à US-SES-09 : aurait obligé à relire et modifier `annuler_non_execution` une seconde fois pour y insérer l'appel, avec le risque d'oublier l'un des deux call sites si l'annulation gagne un second point d'entrée entre-temps.
+**Impact sur les livrables** — aucun sur la conception ; CLS-05 § 6.7 ne mentionne pas explicitement cette dépendance temporelle entre stories du même sprint, à signaler si le mémoire détaille l'ordonnancement interne du sprint 4.
+**Reporté au livrable** — non applicable.
+**Report ouvert** — `_session_cloturee()` doit être complétée par US-SES-09 (même sprint) : prendre la ligne en paramètre, vérifier l'état de clôture de sa session, refuser l'annulation sinon. À ajouter à `docs/suivi/AVANCEMENT.md`, tableau des reports.
+
+## D-261 — US-SUI-05 (S2) : séance passée et programme affiché, deux gardes avant écriture
+**Date** 2026-10-12 · **Story** US-SUI-05 (Prompt 44, Temps 2) · **Auteur** porteur non renseigné
+**Contexte** — C1 : « une séance d'un programme affiché est réputée exécutée ». Le backlog v10 ne précise pas explicitement si la déclaration elle-même exige un programme affiché, ou seulement le calcul du réalisé (US-SUI-01, RG-60) — ambiguïté non couverte par un critère écrit.
+**Décision** — Les deux gardes sont posées dans `ServiceSuivi.declarer_non_execution`, dans cet ordre : programme affiché (RG-60, message nommant la règle et l'état réel du programme), puis séance passée (`seance.fin <= maintenant`, calculé une seule fois avant la transaction). Toute autre état de programme est refusé — déclarer une non-exécution sur un programme encore en brouillon, soumis, validé ou rejeté n'aurait aucun effet utile : RG-60 n'inclut ces séances dans le réalisé qu'après affichage, rien à y retrancher avant.
+**Alternative écartée** — Admettre la déclaration sur tout état, et ne filtrer qu'au calcul du réalisé (US-SUI-01) : aurait laissé le gabarit afficher une action qui échouerait silencieusement au regard du réalisé (déclarée mais sans effet observable), contraire à « un refus s'affiche par message, rien n'est écrit » (`.claude/rules/vues.md`).
+**Impact sur les livrables** — CLS-05 § 6.7 à préciser : la non-exécution se déclare sur un programme affiché, pas seulement « réputée exécutée » après affichage.
+**Reporté au livrable** — non, à faire au prochain relevé du mémoire. Écart RG-60 à consigner (précision, pas contradiction) dans `docs/suivi/ECARTS-LIVRABLES-SPRINT-4.md`.
+
+## D-260 — US-SUI-05 (S1, S3) : `NonExecution`, rattachée à la ligne, service dédié hors de la porte unique
+**Date** 2026-10-12 · **Story** US-SUI-05 (Prompt 44, Temps 2) · **Auteur** porteur non renseigné
+**Contexte** — CLS-05 § 6.7 fait foi : `NonExecution` est une classe propre, rattachée à `LigneProgramme` (`0..1`), jamais à `Seance` — une séance regroupant plusieurs brigades peut n'avoir été manquée que par l'une d'elles. La déclaration ne modifie ni `Seance` ni `LigneProgramme` : elle ne doit donc pas passer par `ServiceEcritureSeance`, seule porte autorisée à instancier ces deux modèles (`.claude/rules/services.md`).
+**Décision** — Modèle `NonExecution` (`planification/models.py`) : `OneToOneField` vers `LigneProgramme` (`CASCADE`, composition stricte vers son porteur — `.claude/rules/modeles.md`), `motif` (`TextField`, `CheckConstraint` non vide), `cree_le`/`cree_par` de `ModeleHorodate` portant déjà la date de déclaration et son auteur (C5) sans champ de plus. Service dédié, `ServiceSuivi` (`planification/services/suivi.py`), neuvième service déjà prévu par `.claude/rules/services.md` (prescrit/réalisé/progression) mais jamais implanté avant cette story — deux méthodes, `declarer_non_execution` et `annuler_non_execution`, aucune des deux n'écrit `Seance` ni `LigneProgramme`.
+**Alternative écartée** — Deux champs (`motif_non_execution`, nullable) directement sur `LigneProgramme` : aurait évité une table et une jointure, mais contredit explicitement CLS-05 (classe propre) et aurait mélangé dans le même modèle une donnée structurelle (la ligne existe dès la génération) et un fait déclaratif rare et réversible (la non-exécution).
+**Impact sur les livrables** — aucun : CLS-05 § 6.7 déjà exact, migration `planification/0005_nonexecution.py` matérialise l'association.
+**Reporté au livrable** — non applicable.
+
 ## D-259 — P-42 : verrouillage du lot d'US-PLAN-09, ordre croissant d'identifiant, posé une fois avant toute écriture
 **Date** 2026-10-12 · **Story** Correctif P-42 (Prompt 44, Temps 1 — hors story, ordre 0 de `sprint-4.md`) · **Auteur** porteur non renseigné
 **Contexte** — `traiter_lot_remplacement` (US-PLAN-09, I5) verrouille un `ProgrammeHebdomadaire` par séance du lot, via `modifier_seance`, dans l'ordre où les séances sont soumises — non maîtrisé (formulaire). Deux lots concurrents visant les mêmes programmes dans un ordre croisé verrouillent en sens inverse : interblocage PostgreSQL réel (P-42, constaté par intermittence au prompt 42, cause isolée au prompt 43 § A5).
