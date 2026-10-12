@@ -38,12 +38,16 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
 | 3 | 28/09 – 10/10 | 11 | 50 | 10 | J2 |
-| 4 | 12/10 – 24/10 | 15 | 61 | 0 | J3 |
-| Réserve | conditionnel | 7 | 28 | 0 | — |
+| 4 | 12/10 – 24/10 | 14 | 55 | 0 | J3 |
+| Réserve | conditionnel | 9 | 39 | 0 | — |
 
-**Périmètre total :** 60 stories, 255 points. 61 besoins fonctionnels. Sprint
-2 : périmètre entier livré (12/12 stories, 61/61 points), plus l'étude de
-faisabilité du solveur (Prompt 32, hors points chiffrés).
+**Périmètre total (backlog v10, 10/10) :** 61 stories, 263 points. 61 besoins
+fonctionnels. Sprint 4 recompté par le backlog v10 (prompt 44) : 15 → 14
+stories, 61 → 55 points — US-PLAN-08 déclassée en réserve (risque R6) et
+US-EVAL-11 (nouvelle en v10) affectée directement à la réserve, voir
+`docs/suivi/reserve.md`. Sprint 2 : périmètre entier livré (12/12 stories,
+61/61 points), plus l'étude de faisabilité du solveur (Prompt 32, hors
+points chiffrés).
 
 ## Indicateurs
 
@@ -56,6 +60,16 @@ faisabilité du solveur (Prompt 32, hors points chiffrés).
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
 
 ## Ce qu'il faut surveiller
+
+**Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des
+risques v7, prompt 44).** Numérotation du registre v7, distincte de « R10 »
+ci-dessous (registre antérieur) — même sujet (retour des cellules sur
+ETA-01) à rapprocher lors de la prochaine refonte du registre, pas assumé
+identique sans vérification.
+
+**Point de décision — mercredi 21 octobre au soir (sprint 4, prompt 44).**
+Toute story *Should* du sprint 4 non commencée à cette date passe en
+réserve, pour préserver la phase de tests qui commence le 26 octobre.
 
 **Point de décision — mercredi 7 octobre au soir.** Tenu le 4 octobre, avant son échéance : US-VAL-01, US-VAL-02 et US-VAL-04 sont livrées (commits `335d257`, `c51b353` et le commit de clôture de US-VAL-04 ; le code de US-VAL-04 est porté par `335d257`, voir P-41). US-PLAN-06 reste au sprint 3.
 
