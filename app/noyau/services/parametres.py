@@ -150,6 +150,31 @@ class ResolveurReinitialisationEvaluations:
             cls._fournisseur()
 
 
+class ResolveurVolumeRealiseBrigade:
+    """R6, US-SUI-01 (prompt 44, D-108 refermé) : `ServiceAffectation.
+    affecter` (`organisation`) signale le volume déjà réalisé par la
+    brigade, toutes matières confondues, sans que `organisation` importe
+    `planification` (sens de dépendance interdit — `planification` importe
+    déjà `organisation`, même motif qu'ailleurs dans ce module).
+
+    `resoudre(brigade)` rend le total en heures, à l'instant de l'appel.
+    Repli : aucun fournisseur ⇒ 0 (aucun volume connu, comportement
+    antérieur à cette story).
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, brigade) -> float:
+        if cls._fournisseur is not None:
+            return cls._fournisseur(brigade)
+        return 0.0
+
+
 class ResolveurOccupationsEpreuves:
     """A6, Prompt 38 : `planification` (RG-34, RG-37) ne peut pas importer
     `evaluations` — même motif que `ResolveurJoursExamen`. Un fournisseur, un

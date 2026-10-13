@@ -50,7 +50,7 @@ from django.utils import timezone
 from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurJoursExamen, ResolveurOccupationsEpreuves
 from organisation.models import Brigade
-from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
+from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
 from planification.services import regles_calendrier, regles_instructeur, regles_lieu, regles_volume
 from referentiel.models import ElementReferentiel, Prerequis
 from ressources.models import (
@@ -103,6 +103,7 @@ class Contexte:
     effectifs_reels: dict
     volume_programme_par_element: dict
     volume_programme_par_element_brigade: dict
+    volume_realise_par_element_brigade: dict
     prerequis_par_element: dict
 
 
@@ -150,18 +151,17 @@ def _charger_periodes_bloquantes(debut, fin):
     return resultat
 
 
-def _charger_volumes(programme):
-    """RG-39 a) : TOUS les programmes, quel que soit leur état — rejeté
-    compris (V7, US-VAL-03, arbitrage A7 : aucun état n'exprime l'abandon) —
-    à l'EXCLUSION du programme évalué, sans quoi une régénération verrait
-    ses propres séances comme un dépassement."""
-    lignes = (
-        LigneProgramme.objects.exclude(seance__programme=programme)
-        .values("brigade_id", "seance__element_referentiel_id", "seance__debut", "seance__fin")
-    )
+def _en_heures(table):
+    return {cle: valeur / datetime.timedelta(hours=1) for cle, valeur in table.items()}
+
+
+def _agreger_par_element_et_par_element_brigade(lignes_values):
+    """Même agrégation pour le programmé et le réalisé (R1/R4, US-SUI-01,
+    prompt 44) : seule la requête qui produit `lignes_values` diffère entre
+    les deux définitions."""
     par_element: dict = {}
     par_element_brigade: dict = {}
-    for ligne in lignes:
+    for ligne in lignes_values:
         duree = ligne["seance__fin"] - ligne["seance__debut"]
         element_id = ligne["seance__element_referentiel_id"]
         par_element[element_id] = par_element.get(element_id, datetime.timedelta()) + duree
@@ -170,8 +170,51 @@ def _charger_volumes(programme):
     return (_en_heures(par_element), _en_heures(par_element_brigade))
 
 
-def _en_heures(table):
-    return {cle: valeur / datetime.timedelta(hours=1) for cle, valeur in table.items()}
+def _valeurs_des_lignes(lignes):
+    return lignes.values(
+        "brigade_id", "seance__element_referentiel_id", "seance__debut", "seance__fin"
+    )
+
+
+def _charger_volumes(programme):
+    """RG-39 a) : TOUS les programmes, quel que soit leur état — rejeté
+    compris (V7, US-VAL-03, arbitrage A7 : aucun état n'exprime l'abandon) —
+    à l'EXCLUSION du programme évalué, sans quoi une régénération verrait
+    ses propres séances comme un dépassement."""
+    lignes = _valeurs_des_lignes(LigneProgramme.objects.exclude(seance__programme=programme))
+    return _agreger_par_element_et_par_element_brigade(lignes)
+
+
+def volumes_programmes_par_element_brigade(brigade_ids=None):
+    """R4 (US-SUI-01) : programmé = toutes les séances de la brigade pour la
+    matière, tous états de programme confondus, sans exclusion de programme
+    (à la différence de `_charger_volumes`, qui exclut le programme en
+    cours d'évaluation — notion sans objet pour un écran de lecture). Même
+    agrégation que le programmé des contraintes dures, « à réutiliser, pas
+    à réécrire »."""
+    lignes = LigneProgramme.objects.all()
+    if brigade_ids is not None:
+        lignes = lignes.filter(brigade_id__in=brigade_ids)
+    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
+        _valeurs_des_lignes(lignes)
+    )
+    return par_element_brigade
+
+
+def volumes_realises_par_element_brigade(a_la_date, brigade_ids=None):
+    """R1 (US-SUI-01) : réalisé à la date `a_la_date` — séances des
+    programmes AFFICHÉS, terminées avant cette date, moins celles qui
+    portent une non-exécution (RG-60). Jamais stockée (`.claude/rules/
+    modeles.md`) ; même agrégation que le programmé, une seule requête."""
+    lignes = LigneProgramme.objects.filter(
+        seance__programme__etat=EtatProgramme.AFFICHE, seance__fin__lte=a_la_date
+    ).exclude(non_execution__isnull=False)
+    if brigade_ids is not None:
+        lignes = lignes.filter(brigade_id__in=brigade_ids)
+    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
+        _valeurs_des_lignes(lignes)
+    )
+    return par_element_brigade
 
 
 def _charger_seances_existantes(programme):
@@ -229,6 +272,11 @@ class ServiceContraintes:
         )
         salles_attitrees, effectifs_reels = _charger_brigades()
         volume_par_element, volume_par_element_brigade = _charger_volumes(programme)
+        # R2 (US-SUI-01) : le prérequis se vérifie sur le réalisé avant le
+        # début de LA SEMAINE GÉNÉRÉE (`debut`), pas « maintenant » — une
+        # semaine dont le programme n'est pas encore affiché ne fournit
+        # donc aucun prérequis à la suivante (conséquence assumée).
+        volume_realise_par_element_brigade = volumes_realises_par_element_brigade(debut)
         return Contexte(
             programme=programme,
             semaine_debut=debut,
@@ -248,6 +296,7 @@ class ServiceContraintes:
             effectifs_reels=effectifs_reels,
             volume_programme_par_element=volume_par_element,
             volume_programme_par_element_brigade=volume_par_element_brigade,
+            volume_realise_par_element_brigade=volume_realise_par_element_brigade,
             prerequis_par_element=_charger_prerequis(),
         )
 

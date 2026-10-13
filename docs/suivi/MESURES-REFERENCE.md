@@ -17,6 +17,20 @@ test_mesures_de_reference_us_plan_03_paragraphe_10` — relancé le
 
 Bien en deçà des cinq minutes de BNF-04.
 
+**Mise à jour datée (2026-10-13, prompt 44, Temps 3, US-SUI-01, R2).** Le
+prérequis (RG-39 b) se vérifie désormais sur le réalisé
+(`volumes_realises_par_element_brigade`) plutôt que sur le programmé : une
+requête de plus à chaque chargement de `ServiceContraintes.contexte()`,
+deux chargements par génération — même mécanique que les deux mises à jour
+ci-dessous. Mesuré : **49 requêtes** (contre 47). Constante
+`REQUETES_REFERENCE_US_PLAN_03` mise à jour, marge (2) intégralement
+consommée par ce changement — à surveiller sans délai au prochain ajout.
+Écart constaté en préparant cette mise à jour : le passage **45 → 47**
+(US-VAL-03, D-222, deux verrous `select_for_update` de la garde de
+modification) n'avait jamais été consigné ici, seulement dans le
+commentaire du code — gap documentaire antérieur à ce prompt, signalé
+plutôt que corrigé rétroactivement avec des chiffres non revérifiés.
+
 **Mise à jour datée (2026-10-03, prompt 38, A6, D-211).** Le contexte de contraintes
 charge désormais les occupations d'épreuves (`ResolveurOccupationsEpreuves`) :
 une requête de plus à chaque chargement, deux chargements par génération

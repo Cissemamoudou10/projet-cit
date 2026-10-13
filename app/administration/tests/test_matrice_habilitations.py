@@ -55,8 +55,12 @@ TABLE_REFERENCE_11_2 = {
     ("evaluations", "direction"): (True, False),
     ("evaluations", "administrateur"): (False, False),
     ("suivi", "pedagogique"): (True, True),
-    ("suivi", "planification"): (True, False),
-    ("suivi", "examens"): (True, False),
+    # Révisé par D-264 (prompt 44, Temps 3) : § 11.2 croisait « L », jamais
+    # consommé avant US-SUI-01 ; le backlog v10 (C5) et son prompt ne
+    # donnent la lecture du rapprochement qu'à la pédagogique et à la
+    # Direction — corrigé ici et dans `MATRICE`, pas seulement l'écran.
+    ("suivi", "planification"): (False, False),
+    ("suivi", "examens"): (False, False),
     ("suivi", "direction"): (True, False),
     ("suivi", "administrateur"): (False, False),
 }

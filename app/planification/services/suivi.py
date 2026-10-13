@@ -1,10 +1,16 @@
-"""Suivi : prescrit, programmé, réalisé — US-SUI-05 (prompt 44, Temps 2).
+"""Suivi : prescrit, programmé, réalisé — US-SUI-05 (prompt 44, Temps 2) et
+US-SUI-01 (prompt 44, Temps 3).
 
 La non-exécution n'est pas une écriture de séance (S3) : elle ne passe pas
 par `ServiceEcritureSeance` (la porte unique de `Seance`/`LigneProgramme`),
 mais par ce service dédié, qui vérifie l'état du programme et ne touche
 jamais `Seance` ni `LigneProgramme` — seulement `NonExecution`, rattachée à
 la ligne (CLS-05 § 6.7).
+
+Le rapprochement (C5, US-SUI-01) est consultable par la cellule pédagogique
+et la Direction de formation seulement — `noyau.suivi_lecture`, corrigé
+dans `administration/constantes.py::MATRICE` pour cette story (D-264) :
+planification et examens en sont désormais exclus.
 """
 
 from django.db import transaction
@@ -16,8 +22,10 @@ from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.base import ServiceBase
 from planification.models import EtatProgramme, NonExecution
+from planification.selectors_rapprochement import rapprochement as _rapprochement
 
 PERMISSION_ECRITURE = "noyau.programme_ecriture"
+PERMISSION_LECTURE = "noyau.suivi_lecture"
 OBJET_TYPE = "ligne_programme"
 
 MESSAGE_MOTIF_OBLIGATOIRE = "Le motif de la non-exécution est obligatoire (RG-60)."
@@ -75,6 +83,20 @@ def _journaliser(agissant, ligne, detail):
 class ServiceSuivi:
     DOMAINE = "suivi"
     PERMISSION_ECRITURE = PERMISSION_ECRITURE
+    PERMISSION_LECTURE = PERMISSION_LECTURE
+
+    @staticmethod
+    def rapprochement(
+        agissant, formation_id=None, session_id=None, brigade_id=None, periode_fin=None
+    ):
+        """C5 : lecture seule, pédagogique et Direction de formation."""
+        verifier_habilitation(agissant, PERMISSION_LECTURE)
+        return _rapprochement(
+            formation_id=formation_id,
+            session_id=session_id,
+            brigade_id=brigade_id,
+            periode_fin=periode_fin,
+        )
 
     @staticmethod
     def declarer_non_execution(agissant, ligne, motif):

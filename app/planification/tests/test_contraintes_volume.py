@@ -1,9 +1,10 @@
 """US-PLAN-04, Groupe G — RG-39 : volume programmé et prérequis. Deux
-arbitrages du Prompt 30 § 4 exercés ici (voir docs/suivi/DECISIONS.md) —
-volume programmé = tous les programmes non rejetés SAUF celui évalué ;
-prérequis achevé = volume programmé (provisoire, pas encore réalisé) de la
-matière prérequise, POUR CETTE BRIGADE, atteignant son prescrit. Données
-entièrement fictives.
+arbitrages exercés ici — volume programmé = tous les programmes non rejetés
+SAUF celui évalué (Prompt 30 § 4, voir docs/suivi/DECISIONS.md) ; prérequis
+achevé = volume RÉALISÉ (RG-60, US-SUI-01, prompt 44, R2 — remplace la
+définition provisoire sur le programmé) de la matière prérequise, POUR
+CETTE BRIGADE, avant le début de la semaine générée, atteignant son
+prescrit. Données entièrement fictives.
 """
 
 import datetime
@@ -11,9 +12,21 @@ import datetime
 from django.utils import timezone
 
 from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
+from planification.services.circuit import ServiceCircuitProgramme
 from planification.services.contraintes import Candidate, ServiceContraintes
 from planification.tests.conftest import Cours, creer_element, instant, qualifier
 from referentiel.models import Prerequis
+
+SIGNATAIRE_ESSAI = "Signataire essai G"
+
+
+def _amener_a_affiche(prog, planificateur, pedagogique):
+    ServiceCircuitProgramme.soumettre(planificateur, prog)
+    ServiceCircuitProgramme.valider(pedagogique, prog)
+    ServiceCircuitProgramme.enregistrer_signature(
+        planificateur, prog, timezone.localdate(), SIGNATAIRE_ESSAI
+    )
+    ServiceCircuitProgramme.afficher(planificateur, prog)
 
 
 def _candidate(brigade, cours, debut, duree_min=120):
@@ -180,16 +193,55 @@ def test_g5_prerequis_non_acheve_refus_matiere_prerequise_nommee(
     assert str(matiere_prerequise) in violation["message"]
 
 
-def test_g6_prerequis_acheve_accepte(programme, formation, matiere, instructeur, brigade):
+def test_g6_prerequis_realise_et_affiche_avant_la_semaine_accepte(
+    programme, cours, brigade, acteurs
+):
+    """R2 (US-SUI-01, prompt 44) : le prérequis se vérifie désormais sur le
+    RÉALISÉ, avant le début de la semaine générée — la matière prérequise
+    doit être affichée et terminée avant `lundi`, pas seulement programmée."""
+    from referentiel.models import Matiere
+
+    formation, matiere, instructeur, element = (
+        cours.element.formation,
+        cours.element.matiere,
+        cours.instructeur,
+        cours.element,
+    )
+    lundi = programme.lundi_de_semaine
+    matiere_prerequise = Matiere.objects.create(intitule="Bases électroniques G6", code="BASE2")
+    element_prerequis = creer_element(formation, matiere_prerequise, volume=2)
+    Prerequis.objects.create(element=element, element_prerequis=element_prerequis)
+    qualifier(instructeur, matiere)
+    autre_programme = _autre_programme(lundi, decalage_semaines=-1)
+    _seance_dans(
+        autre_programme,
+        Cours(element_prerequis, instructeur),
+        brigade,
+        instant(autre_programme.lundi_de_semaine, 0, 8),
+    )
+    _amener_a_affiche(autre_programme, acteurs.planificateur, acteurs.pedagogique)
+    candidate = _candidate(brigade, Cours(element, instructeur), instant(lundi, 0, 8))
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert verdict.accepte
+
+
+def test_g6_bis_prerequis_programme_mais_pas_affiche_reste_non_acheve(
+    programme, formation, matiere, instructeur, brigade
+):
+    """R2 : une semaine dont le programme n'est pas encore affiché ne
+    fournit aucun prérequis à la suivante — conséquence assumée, même
+    volume que g6, jamais affiché cette fois."""
     from referentiel.models import Matiere
 
     lundi = programme.lundi_de_semaine
-    matiere_prerequise = Matiere.objects.create(intitule="Bases électroniques G6", code="BASE2")
+    matiere_prerequise = Matiere.objects.create(intitule="Bases électroniques G6bis", code="BASE2B")
     element_prerequis = creer_element(formation, matiere_prerequise, volume=2)
     element = creer_element(formation, matiere, volume=10)
     Prerequis.objects.create(element=element, element_prerequis=element_prerequis)
     qualifier(instructeur, matiere)
-    autre_programme = _autre_programme(lundi)
+    autre_programme = _autre_programme(lundi, decalage_semaines=-1)
     _seance_dans(
         autre_programme,
         Cours(element_prerequis, instructeur),
@@ -200,7 +252,41 @@ def test_g6_prerequis_acheve_accepte(programme, formation, matiere, instructeur,
 
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
 
-    assert verdict.accepte
+    assert not verdict.accepte
+
+
+def test_g6_ter_prerequis_retombe_si_non_execution_declaree(programme, cours, brigade, acteurs):
+    """R1 : le réalisé exclut les lignes portant une non-exécution — une
+    matière prérequise déclarée non exécutée retombe sous le prescrit,
+    même affichée et terminée avant la semaine générée."""
+    from planification.models import NonExecution
+    from referentiel.models import Matiere
+
+    formation, matiere, instructeur, element = (
+        cours.element.formation,
+        cours.element.matiere,
+        cours.instructeur,
+        cours.element,
+    )
+    lundi = programme.lundi_de_semaine
+    matiere_prerequise = Matiere.objects.create(intitule="Bases électroniques G6ter", code="BASE2T")
+    element_prerequis = creer_element(formation, matiere_prerequise, volume=2)
+    Prerequis.objects.create(element=element, element_prerequis=element_prerequis)
+    qualifier(instructeur, matiere)
+    autre_programme = _autre_programme(lundi, decalage_semaines=-1)
+    seance_prerequise = _seance_dans(
+        autre_programme,
+        Cours(element_prerequis, instructeur),
+        brigade,
+        instant(autre_programme.lundi_de_semaine, 0, 8),
+    )
+    _amener_a_affiche(autre_programme, acteurs.planificateur, acteurs.pedagogique)
+    NonExecution.objects.create(ligne=seance_prerequise.lignes.get(), motif="Essai G6ter.")
+    candidate = _candidate(brigade, Cours(element, instructeur), instant(lundi, 0, 8))
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
 
 
 def test_g7_matiere_sans_prerequis_acceptee_sans_controle(programme, cours, brigade):

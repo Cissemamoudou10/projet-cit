@@ -23,6 +23,7 @@ from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement
+from noyau.services.parametres import ResolveurVolumeRealiseBrigade
 from organisation.models import AffectationBrigade
 from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import PERMISSION_ECRITURE, PERMISSION_LECTURE
@@ -78,6 +79,7 @@ class ServiceAffectation:
         cls._verifier_date_effet(date_effet)
         avertissements = cls.verifier_controles(stagiaire, brigade)
         avertissements += avertissement_affectation_tardive(stagiaire.session)
+        avertissements += avertissement_volume_realise(brigade)
         instance = AffectationBrigade(stagiaire=stagiaire, brigade=brigade, date_effet=date_effet)
         try:
             with transaction.atomic():
@@ -213,6 +215,22 @@ def avertissement_affectation_tardive(session):
             "affectation_tardive",
             f"La session a débuté le {session.date_debut:%d/%m/%Y} : ce stagiaire "
             "rejoint sa brigade en décalage.",
+        )
+    ]
+
+
+def avertissement_volume_realise(brigade):
+    """C6, R6 (US-SUI-01, D-108 refermé) : volume déjà réalisé par la
+    brigade, toutes matières confondues — renvoie au rapprochement, sans
+    jamais refuser l'affectation."""
+    volume = ResolveurVolumeRealiseBrigade.resoudre(brigade)
+    if volume <= 0:
+        return []
+    return [
+        avertissement(
+            "volume_deja_realise",
+            f"« {brigade.designation} » a déjà {volume:.2f} h réalisées, toutes matières "
+            "confondues : voir le rapprochement prescrit/réalisé avant de confirmer.",
         )
     ]
 

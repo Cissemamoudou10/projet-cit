@@ -38,7 +38,7 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
 | 3 | 28/09 – 10/10 | 11 | 50 | 10 | J2 |
-| 4 | 12/10 – 24/10 | 14 | 55 | 0 | J3 |
+| 4 | 12/10 – 24/10 | 14 | 55 | 2 | J3 |
 | Réserve | conditionnel | 9 | 39 | 0 | — |
 
 **Périmètre total (backlog v10, 10/10) :** 61 stories, 263 points. 61 besoins

@@ -1,0 +1,127 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+{% load pagination %}
+
+{% block titre %}Rapprochement prescrit/réalisé — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Rapprochement prescrit / programmé / réalisé</h1>
+  <p class="text-sm text-gris-lecture">
+    Réalisé au {{ a_la_date|date:"d/m/Y H:i" }} — par brigade et par matière.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<form method="get"
+      class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
+  <div>
+    <label for="filtre-formation"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Formation</label>
+    <select id="filtre-formation" name="formation"
+            class="h-controle w-56 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Toutes</option>
+      {% for formation in formations %}
+        <option value="{{ formation.pk }}"
+                {% if request.GET.formation == formation.pk|stringformat:"s" %}selected{% endif %}>
+          {{ formation.intitule }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="filtre-session"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Session</label>
+    <select id="filtre-session" name="session"
+            class="h-controle w-56 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Toutes</option>
+      {% for session in sessions %}
+        <option value="{{ session.pk }}"
+                {% if request.GET.session == session.pk|stringformat:"s" %}selected{% endif %}>
+          {{ session.intitule }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="filtre-brigade"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Brigade</label>
+    <select id="filtre-brigade" name="brigade"
+            class="h-controle w-56 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Toutes</option>
+      {% for brigade in brigades %}
+        <option value="{{ brigade.pk }}"
+                {% if request.GET.brigade == brigade.pk|stringformat:"s" %}selected{% endif %}>
+          {{ brigade }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="filtre-jusquau"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Réalisé jusqu'au</label>
+    <input type="date" id="filtre-jusquau" name="jusquau" value="{{ request.GET.jusquau }}"
+           class="h-controle rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                  outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+  </div>
+  <button type="submit"
+          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol hover:bg-marine-700">
+    Filtrer
+  </button>
+  <a href="{% url 'planification:rapprochement' %}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
+</form>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if page %}
+    {% for groupe in page %}
+      <section class="border-t border-gris-trait first:border-t-0">
+        <p class="bg-fond-bande px-4 py-2 font-titre text-sm font-semibold text-marine-900">
+          {{ groupe.brigade }}
+        </p>
+        {% if groupe.sans_programme_affiche %}
+          <p class="px-4 py-3 text-sm text-gris-lecture">{{ message_sans_programme_affiche }}</p>
+        {% else %}
+          <table class="w-full border-collapse text-sm">
+            <thead>
+              <tr>
+                <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                       font-semibold uppercase tracking-wider text-blanc">Matière</th>
+                <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                       font-semibold uppercase tracking-wider text-blanc">Prescrit</th>
+                <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                       font-semibold uppercase tracking-wider text-blanc">Programmé</th>
+                <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                       font-semibold uppercase tracking-wider text-blanc">Réalisé</th>
+                <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                       font-semibold uppercase tracking-wider text-blanc">Écart</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ligne in groupe.lignes %}
+                <tr class="border-t border-gris-trait">
+                  <td class="px-3 py-2">{{ ligne.element_referentiel.matiere }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ ligne.prescrit|floatformat:2 }} h</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ ligne.programme|floatformat:2 }} h</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ ligne.realise|floatformat:2 }} h</td>
+                  <td class="px-3 py-2 text-right tabular-nums font-medium
+                             {% if ligne.ecart_heures > 0 %}text-etat-ecart{% elif ligne.ecart_heures < 0 %}text-marine-700{% else %}text-etat-conforme{% endif %}">
+                    {{ ligne.ecart_heures|floatformat:2 }} h ({{ ligne.ecart_pourcent|floatformat:0 }} %)
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      </section>
+    {% endfor %}
+    {% pagination page %}
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <p class="mb-1 font-titre text-lg font-semibold">Aucune brigade ne correspond aux filtres</p>
+      <p class="max-w-lg text-sm text-gris-lecture">Ajustez la recherche ou réinitialisez les filtres.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -25,6 +25,13 @@ PROFIL_VERS_GROUPE = {
 # § 11.2 du dossier des cas d'utilisation — neuf domaines, deux niveaux
 # chacun. « É » donne lecture et écriture ; « L » donne lecture seule. Voir
 # docs/suivi/DECISIONS.md pour le détail du calcul, croisement par croisement.
+#
+# Correction datée (2026-10-13, US-SUI-01, prompt 44, D-264) : le domaine
+# « suivi » était croisé « L » pour Cellule planification et Cellule examens
+# dans le dossier (§ 11.2), jamais consommé avant cette story. Le backlog
+# v10 d'US-SUI-01 (C5) et son prompt ne donnent la lecture du rapprochement
+# qu'à la cellule pédagogique et à la Direction de formation — les deux
+# lignes concernées sont corrigées ici, pas seulement dans l'écran.
 MATRICE = {
     "Administrateur": [
         "administration_lecture",
@@ -53,7 +60,6 @@ MATRICE = {
         "programme_lecture",
         "programme_ecriture",
         "programme_validation_lecture",
-        "suivi_lecture",
     ],
     "Cellule examens": [
         "referentiel_lecture",
@@ -61,7 +67,6 @@ MATRICE = {
         "lieux_calendrier_lecture",
         "evaluations_lecture",
         "evaluations_ecriture",
-        "suivi_lecture",
     ],
     "Direction de formation": [
         "referentiel_lecture",

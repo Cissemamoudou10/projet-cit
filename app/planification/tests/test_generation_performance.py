@@ -49,7 +49,15 @@ INSTRUCTEURS_PAR_MATIERE = 2  # assez pour ne pas buter systématiquement sur un
 # seulement dans MESURES-REFERENCE.md (Prompt 37, Temps 1).
 # Note datée 2026-10-04 (US-VAL-03) : 45 → 47, les deux verrous `select_for_update`
 # de la garde de modification (D-222). Marge inchangée.
-REQUETES_REFERENCE_US_PLAN_03 = 47
+# Note datée 2026-10-13 (US-SUI-01, prompt 44, Temps 3, R2) : 47 → 49 — le
+# prérequis se vérifie désormais sur le réalisé (`volumes_realises_par_
+# element_brigade`, un appel de plus dans `ServiceContraintes.contexte()`),
+# deux chargements par génération comme les requêtes déjà notées ci-dessus :
+# +2. Mesure consommée EXACTEMENT jusqu'à l'ancienne marge (49 avec
+# l'ancienne référence 47+2) — pas au-delà, condition d'arrêt de R3 non
+# déclenchée, mais la marge repart à zéro : prochaine dérive à surveiller
+# sans délai supplémentaire.
+REQUETES_REFERENCE_US_PLAN_03 = 49
 MARGE_REQUETES = 2
 
 journal = logging.getLogger(__name__)

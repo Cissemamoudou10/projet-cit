@@ -4,10 +4,14 @@ docs/suivi/DECISIONS.md pour le détail des deux arbitrages) :
 (a) le volume programmé compte tous les programmes, rejetés compris (V7,
     US-VAL-03), à l'exclusion du programme en cours d'évaluation (`ServiceContraintes.
     contexte`, `_charger_volumes`) ;
-(b) un prérequis est « achevé » quand le volume programmé de la matière
-    prérequise POUR CETTE BRIGADE atteint son volume prescrit — définition
-    PROVISOIRE, rattachée à US-SUI-01/RG-60 (le volume RÉALISÉ, sprint 4,
-    la remplacera).
+(b) un prérequis est « achevé » quand le volume RÉALISÉ (RG-60, US-SUI-01,
+    prompt 44, R2) de la matière prérequise POUR CETTE BRIGADE, avant le
+    début de la semaine générée, atteint son volume prescrit — définition
+    provisoire (volume programmé) remplacée par celle-ci au sprint 4 :
+    `contexte.volume_realise_par_element_brigade`
+    (`planification.services.contraintes.volumes_realises_par_element_brigade`).
+    Conséquence assumée : une semaine dont le programme n'est pas encore
+    affiché ne fournit aucun prérequis à la suivante.
 
 CUMUL PROVISOIRE DU LOT — les deux volets ne s'y comportent PAS pareil
 (Prompt 31 § 0.2, docs/suivi/DECISIONS.md, D-135 mis à jour) :
@@ -71,14 +75,14 @@ def _verifier_prerequis(candidate, contexte):
     violations = []
     for element_prerequis in prerequis:
         cle = (element_prerequis.pk, candidate.brigade.pk)
-        programme = contexte.volume_programme_par_element_brigade.get(cle, 0)
-        if programme >= element_prerequis.volume_horaire_prescrit:
+        realise = contexte.volume_realise_par_element_brigade.get(cle, 0)
+        if realise >= element_prerequis.volume_horaire_prescrit:
             continue
         violations.append(
             violation(
                 "RG-39",
                 f"{element_prerequis.matiere} est prérequise à {element.matiere} pour "
-                f"{candidate.brigade} : {programme:.2f} h programmées sur "
+                f"{candidate.brigade} : {realise:.2f} h réalisées sur "
                 f"{element_prerequis.volume_horaire_prescrit} h prescrites.",
             )
         )

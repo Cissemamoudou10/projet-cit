@@ -5,6 +5,7 @@ from planification import (
     views_circuit,
     views_indisponibilite,
     views_periode,
+    views_rapprochement,
     views_seance,
     views_suivi,
 )
@@ -106,5 +107,10 @@ urlpatterns = [
         "planification/lignes/<int:pk>/annuler-non-execution/",
         views_suivi.annuler_non_execution,
         name="annuler_non_execution",
+    ),
+    path(
+        "planification/rapprochement/",
+        views_rapprochement.vue_rapprochement,
+        name="rapprochement",
     ),
 ]
