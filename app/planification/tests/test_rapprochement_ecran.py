@@ -75,20 +75,21 @@ def test_http_filtre_par_brigade(
     assert page.count(str(autre_brigade)) == 1
 
 
-def test_http_habilitation_refusee_planification(client, circuit):
+def test_http_planification_autorisee(client, circuit):
+    """D-265 révise D-264 : § 11.2 fait foi, la planification lit le suivi."""
     client.force_login(circuit.acteurs.planificateur)
 
     reponse = client.get(_url())
 
-    assert reponse.status_code == 403
+    assert reponse.status_code == 200
 
 
-def test_http_habilitation_refusee_examens(client, circuit):
+def test_http_examens_autorisee(client, circuit):
     client.force_login(circuit.acteurs.examens)
 
     reponse = client.get(_url())
 
-    assert reponse.status_code == 403
+    assert reponse.status_code == 200
 
 
 def test_http_cellule_pedagogique_autorisee(client, circuit):

@@ -56,7 +56,10 @@ INSTRUCTEURS_PAR_MATIERE = 2  # assez pour ne pas buter systématiquement sur un
 # +2. Mesure consommée EXACTEMENT jusqu'à l'ancienne marge (49 avec
 # l'ancienne référence 47+2) — pas au-delà, condition d'arrêt de R3 non
 # déclenchée, mais la marge repart à zéro : prochaine dérive à surveiller
-# sans délai supplémentaire.
+# sans délai supplémentaire. Confirmé par le prompt 45, Temps 1.2 : la règle
+# du prompt 36 (A8) — on ne laisse pas la marge s'épuiser en silence — exige
+# cette relève, pas seulement une tolérance ; série complète 41→43→45→47→49
+# dans `docs/suivi/MESURES-REFERENCE.md`.
 REQUETES_REFERENCE_US_PLAN_03 = 49
 MARGE_REQUETES = 2
 

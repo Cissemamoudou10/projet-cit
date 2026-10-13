@@ -17,6 +17,20 @@ test_mesures_de_reference_us_plan_03_paragraphe_10` — relancé le
 
 Bien en deçà des cinq minutes de BNF-04.
 
+### Série complète des requêtes, 41 → 49 (prompt 45, Temps 1.2)
+
+Chaque pas est constant (même mesure rejouée, jamais une dérive silencieuse)
+et expliqué — c'est ce tableau qui le prouve, pas seulement le commentaire du
+code.
+
+| Requêtes | Date | Cause |
+|---|---|---|
+| 41 | 2026-09-19 | Référence post-P-38 (pente nulle de 40 à 200 séances, corrigée de 1 239/6 par séance) |
+| 41 → 43 | 2026-10-02 (prompt 36, A8) | US-EVAL-02 : seconde source de RG-38 (`Contexte.jours_examen`, `ResolveurJoursExamen`), un appel de plus par chargement de `ServiceContraintes.contexte()`, même sans examen en base |
+| 43 → 45 | 2026-10-03 (prompt 38, A6, D-211) | US-EVAL-04 : occupations d'épreuves (`ResolveurOccupationsEpreuves`), une requête de plus par chargement, deux chargements par génération |
+| 45 → 47 | 2026-10-04 (US-VAL-03, D-222) | Garde de modification : deux verrous `select_for_update` — passage jamais consigné ici avant le prompt 45, seulement dans le commentaire du code (gap documentaire comblé a posteriori) |
+| 47 → 49 | 2026-10-13 (prompt 44, Temps 3, US-SUI-01, R2) | Prérequis (RG-39 b) vérifié sur le réalisé plutôt que le programmé (`volumes_realises_par_element_brigade`), une requête de plus par chargement, deux chargements par génération — marge (2) intégralement consommée, référence relevée à 49 (prompt 45, Temps 1.2) pour ne pas la laisser s'épuiser en silence (règle du prompt 36, A8) |
+
 **Mise à jour datée (2026-10-13, prompt 44, Temps 3, US-SUI-01, R2).** Le
 prérequis (RG-39 b) se vérifie désormais sur le réalisé
 (`volumes_realises_par_element_brigade`) plutôt que sur le programmé : une

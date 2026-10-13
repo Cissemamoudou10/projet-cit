@@ -9,7 +9,6 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
-from noyau.exceptions import ErreurHabilitation
 from organisation.services.brigade import ServiceBrigade
 from organisation.tests.conftest import donnees_brigade
 from planification.models import NonExecution, ProgrammeHebdomadaire
@@ -198,25 +197,21 @@ def test_r7_requetes_constantes_avec_deux_et_dix_brigades(
     assert len(deux.captured_queries) == len(dix.captured_queries)
 
 
-# --- C5 — habilitations -------------------------------------------------
+# --- C5 — habilitations (D-265, la matrice § 11.2 fait foi, révise D-264) ---
 
 
-@pytest.mark.parametrize("profil", ["planificateur", "examens"])
-def test_c5_habilitation_refusee_en_service(circuit, profil):
-    """C5 : refusés — planification et examens. La pédagogique et la
-    Direction sont autorisées (voir les deux tests suivants)."""
+@pytest.mark.parametrize("profil", ["planificateur", "examens", "pedagogique"])
+def test_c5_lecture_autorisee_aux_quatre_profils_sauf_administrateur(circuit, profil):
+    """§ 11.2 : lecture du domaine « suivi » pour pédagogique, planification,
+    examens et Direction (ce dernier testé séparément ci-dessous)."""
     acteur = {
         "planificateur": circuit.acteurs.planificateur,
         "examens": circuit.acteurs.examens,
+        "pedagogique": circuit.acteurs.pedagogique,
     }[profil]
 
-    with pytest.raises(ErreurHabilitation):
-        ServiceSuivi.rapprochement(acteur)
+    ServiceSuivi.rapprochement(acteur)
 
 
 def test_c5_direction_de_formation_autorisee(circuit, direction_formation):
     ServiceSuivi.rapprochement(direction_formation)
-
-
-def test_c5_cellule_pedagogique_autorisee(circuit):
-    ServiceSuivi.rapprochement(circuit.acteurs.pedagogique)

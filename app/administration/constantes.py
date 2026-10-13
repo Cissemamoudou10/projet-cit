@@ -26,12 +26,11 @@ PROFIL_VERS_GROUPE = {
 # chacun. « É » donne lecture et écriture ; « L » donne lecture seule. Voir
 # docs/suivi/DECISIONS.md pour le détail du calcul, croisement par croisement.
 #
-# Correction datée (2026-10-13, US-SUI-01, prompt 44, D-264) : le domaine
-# « suivi » était croisé « L » pour Cellule planification et Cellule examens
-# dans le dossier (§ 11.2), jamais consommé avant cette story. Le backlog
-# v10 d'US-SUI-01 (C5) et son prompt ne donnent la lecture du rapprochement
-# qu'à la cellule pédagogique et à la Direction de formation — les deux
-# lignes concernées sont corrigées ici, pas seulement dans l'écran.
+# Le domaine « suivi » : la matrice fait foi (D-265 révise D-264, même
+# principe que D-44/D-93/D-96 — un critère d'acceptation incomplet n'est pas
+# une raison de restreindre un accès déjà accordé par § 11.2). Lecture pour
+# Cellule planification, Cellule examens et Direction de formation ;
+# lecture et écriture pour Cellule pédagogique.
 MATRICE = {
     "Administrateur": [
         "administration_lecture",
@@ -60,6 +59,7 @@ MATRICE = {
         "programme_lecture",
         "programme_ecriture",
         "programme_validation_lecture",
+        "suivi_lecture",
     ],
     "Cellule examens": [
         "referentiel_lecture",
@@ -67,6 +67,7 @@ MATRICE = {
         "lieux_calendrier_lecture",
         "evaluations_lecture",
         "evaluations_ecriture",
+        "suivi_lecture",
     ],
     "Direction de formation": [
         "referentiel_lecture",

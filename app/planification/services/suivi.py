@@ -7,10 +7,11 @@ mais par ce service dédié, qui vérifie l'état du programme et ne touche
 jamais `Seance` ni `LigneProgramme` — seulement `NonExecution`, rattachée à
 la ligne (CLS-05 § 6.7).
 
-Le rapprochement (C5, US-SUI-01) est consultable par la cellule pédagogique
-et la Direction de formation seulement — `noyau.suivi_lecture`, corrigé
-dans `administration/constantes.py::MATRICE` pour cette story (D-264) :
-planification et examens en sont désormais exclus.
+Le rapprochement (US-SUI-01) est gardé par `noyau.suivi_lecture` — la
+matrice § 11.2 l'accorde à quatre profils (pédagogique, planification,
+examens, Direction de formation) ; le critère C5 du backlog v10 n'en citait
+que deux, omission corrigée au backlog, pas à la matrice (D-265, qui révise
+D-264 — voir `administration/constantes.py::MATRICE`).
 """
 
 from django.db import transaction

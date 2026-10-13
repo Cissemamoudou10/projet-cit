@@ -53,11 +53,18 @@ points chiffrés).
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 31 / 53 planifiées | — |
-| Points livrés | 136 / 227 planifiés | — |
+| Stories livrées | 39 / 52 planifiées | — |
+| Points livrés | 176 / 224 planifiés | — |
 | Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
 | Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
+
+**Recalcul daté (2026-10-13, prompt 45, Temps 1.4).** Points livrés : 169
+(avant le prompt 44) + 7 (US-SUI-05, 2 pts ; US-SUI-01, 5 pts) = **176**.
+Dénominateur recalculé sur le périmètre v10 hors réserve : 263 − 39 = **224**
+points, 61 − 9 = **52** stories (voir « Sprints » et `docs/suivi/reserve.md`
+ci-dessus). Stories livrées : 15 (sprint 1) + 12 (sprint 2) + 10 (sprint 3,
+ligne non revérifiée ici) + 2 (sprint 4, US-SUI-05/US-SUI-01) = **39**.
 
 ## Ce qu'il faut surveiller
 

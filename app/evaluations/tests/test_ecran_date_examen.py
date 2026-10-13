@@ -11,13 +11,17 @@ from evaluations.services.evaluation import ServiceEvaluation
 from evaluations.tests.conftest import creer_brigade
 
 
-def _certificative(examens, element_referentiel, brigade, jours=30):
+def _certificative(examens, element_referentiel, brigade, jours=30, date=None):
+    """`date` l'emporte sur `jours` quand fourni — P-43 : un appelant qui a
+    besoin d'une date dans un mois précis (test_e4, lié au calendrier) ne
+    doit jamais la faire dépendre de `timezone.localdate()`, seule source
+    de dérive une fois une borne de mois franchie depuis l'écriture du test."""
     donnees = {
         "element_referentiel": element_referentiel,
         "type": "certificative",
         "session": None,
         "brigade": brigade,
-        "date": timezone.localdate() + datetime.timedelta(days=jours),
+        "date": date or timezone.localdate() + datetime.timedelta(days=jours),
         "creneau_type": None,
         "instructeur": None,
         "lieu": None,
@@ -97,13 +101,19 @@ def test_e3_post_creation_jour_occupe_redirection_avertissement_affiche(
 def test_e4_vue_annuelle_et_mensuelle_jour_d_examen_affiche_requetes_stables(
     client, planificateur, controle, redacteur, session
 ):
+    """P-43 : la date de l'examen doit tomber dans le même mois que `jour`,
+    celui qu'interroge `url_mensuel` — jamais dérivée de `timezone.
+    localdate()` (`jours=`), qui peut tomber dans un autre mois que `jour`
+    une fois une borne de mois franchie entre l'écriture du test et son
+    exécution (`jour` vient de `lundi_semaine`, toujours 14 à 20 jours dans
+    le futur ; +5 jours depuis aujourd'hui ne l'est pas forcément)."""
     jour = controle.jour_creneau.jour
     annee_formation = jour.year if jour.month >= 9 else jour.year - 1
     url_mensuel = reverse("ressources:calendrier_mensuel") + f"?annee={jour.year}&mois={jour.month}"
     url_annuel = reverse("ressources:calendrier_annuel") + f"?annee={annee_formation}"
     client.force_login(planificateur)
 
-    _certificative(controle.examens, controle.element_referentiel, controle.brigade, jours=5)
+    _certificative(controle.examens, controle.element_referentiel, controle.brigade, date=jour)
     with CaptureQueriesContext(connection) as mensuel_un:
         reponse_mensuel = client.get(url_mensuel)
     assert reponse_mensuel.status_code == 200
@@ -111,7 +121,7 @@ def test_e4_vue_annuelle_et_mensuelle_jour_d_examen_affiche_requetes_stables(
 
     for i in range(9):
         brigade_i = creer_brigade(redacteur, session, f"E4-{i}")
-        _certificative(controle.examens, controle.element_referentiel, brigade_i, jours=5)
+        _certificative(controle.examens, controle.element_referentiel, brigade_i, date=jour)
     with CaptureQueriesContext(connection) as mensuel_dix:
         reponse_dix = client.get(url_mensuel)
     assert reponse_dix.status_code == 200

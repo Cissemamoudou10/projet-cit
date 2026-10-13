@@ -55,12 +55,14 @@ TABLE_REFERENCE_11_2 = {
     ("evaluations", "direction"): (True, False),
     ("evaluations", "administrateur"): (False, False),
     ("suivi", "pedagogique"): (True, True),
-    # Révisé par D-264 (prompt 44, Temps 3) : § 11.2 croisait « L », jamais
-    # consommé avant US-SUI-01 ; le backlog v10 (C5) et son prompt ne
-    # donnent la lecture du rapprochement qu'à la pédagogique et à la
-    # Direction — corrigé ici et dans `MATRICE`, pas seulement l'écran.
-    ("suivi", "planification"): (False, False),
-    ("suivi", "examens"): (False, False),
+    # D-264 (prompt 44, Temps 3) avait retiré ces deux croix « L », au motif
+    # que § 11.2 n'était jamais consommé avant US-SUI-01 et que le backlog
+    # v10 (C5) ne citait que la pédagogique et la Direction. D-265 (prompt
+    # 45, Temps 1.3) révise D-264 : la matrice fait foi sur un critère
+    # incomplet, même principe que D-44/D-93/D-96 — rétabli tel que § 11.2
+    # le porte.
+    ("suivi", "planification"): (True, False),
+    ("suivi", "examens"): (True, False),
     ("suivi", "direction"): (True, False),
     ("suivi", "administrateur"): (False, False),
 }
