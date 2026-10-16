@@ -4,3 +4,12 @@ pytest==8.3.3
 pytest-django==4.9.0
 pytest-cov==6.0.0
 ruff==0.7.4
+
+# Dépendance de TEST uniquement (US-SUI-06, prompt 45) : relit le texte d'un
+# PDF déjà produit par WeasyPrint, pour les tests marqués `pdf`
+# (.claude/rules/tests.md). Jamais utilisée par le système livré — ni
+# requirements.txt, ni le paquet hors ligne, voir docs/suivi/DECISIONS.md et
+# docs/suivi/INSTALLATION-HORS-LIGNE.md. Roue pure Python (`py3-none-any`),
+# aucune compilation, aucune dépendance transitive — vérifié réellement le
+# 2026-10-16.
+pypdf==6.21.0

@@ -451,20 +451,74 @@ ECRANS_ECRITURE = [
     # --- planification : génération du programme hebdomadaire (US-PLAN-03) ---
     EcranEcriture("planification:lancement_generation", "noyau.programme_ecriture"),
     # --- planification : circuit du programme (prompt 40, US-VAL-01, 02, 04) ---
-    EcranEcriture("planification:soumettre", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:retirer_soumission", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:valider", "noyau.programme_validation_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:rejeter", "noyau.programme_validation_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:reprendre", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:signer", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:afficher", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:annuler_validation", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:modifier_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
-    EcranEcriture("planification:ajouter_seance", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]),
-    EcranEcriture("planification:gerer_brigades", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
-    EcranEcriture("planification:retirer_brigade", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
-    EcranEcriture("planification:supprimer_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
-    EcranEcriture("planification:deverrouiller_seance", "noyau.programme_ecriture", lambda objets: [objets["seance"].pk]),
+    EcranEcriture(
+        "planification:soumettre",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:retirer_soumission",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:valider",
+        "noyau.programme_validation_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:rejeter",
+        "noyau.programme_validation_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:reprendre",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:signer", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]
+    ),
+    EcranEcriture(
+        "planification:afficher",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:annuler_validation",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:modifier_seance",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["seance"].pk],
+    ),
+    EcranEcriture(
+        "planification:ajouter_seance",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:gerer_brigades",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["seance"].pk],
+    ),
+    EcranEcriture(
+        "planification:retirer_brigade",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["seance"].pk],
+    ),
+    EcranEcriture(
+        "planification:supprimer_seance",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["seance"].pk],
+    ),
+    EcranEcriture(
+        "planification:deverrouiller_seance",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["seance"].pk],
+    ),
     # --- planification : traitement d'une indisponibilité (US-PLAN-09, prompt 42, partie 3) ---
     EcranEcriture(
         "planification:remplacer_seance",
@@ -496,6 +550,17 @@ ECRANS_ECRITURE = [
         "planification:annuler_non_execution",
         "noyau.programme_ecriture",
         lambda objets: [objets["ligne_programme"].pk],
+    ),
+    # --- planification : progression réalisée hebdomadaire (US-SUI-06, prompt 45) ---
+    EcranEcriture(
+        "planification:editer_progression",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
+    EcranEcriture(
+        "planification:signer_progression",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["edition_progression"].pk],
     ),
     # --- evaluations : création d'une évaluation (US-EVAL-01) ---
     EcranEcriture("evaluations:creer_evaluation", "noyau.evaluations_ecriture"),
@@ -569,8 +634,11 @@ ECRANS_ECRITURE = [
 # brigades (prompt 42, partie 2, US-PLAN-06 : deux routes POST) ; 120 après le
 # traitement d'une indisponibilité (prompt 42, partie 3, US-PLAN-09 : quatre
 # routes POST) ; 122 après la non-exécution d'une séance (prompt 44, Temps 2,
-# US-SUI-05 : deux routes POST, déclarer et annuler).
-assert len(ECRANS_ECRITURE) == 122
+# US-SUI-05 : deux routes POST, déclarer et annuler) ; 124 après la
+# progression réalisée hebdomadaire (prompt 45, Temps 2, US-SUI-06 : éditer
+# et signer — télécharger est une lecture, gardée par `suivi_lecture`, hors
+# de cette table réservée à `programme_ecriture` et assimilés).
+assert len(ECRANS_ECRITURE) == 124
 
 
 def _groupes_sans(permission):

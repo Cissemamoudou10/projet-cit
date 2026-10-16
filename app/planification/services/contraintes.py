@@ -201,16 +201,32 @@ def volumes_programmes_par_element_brigade(brigade_ids=None):
     return par_element_brigade
 
 
-def volumes_realises_par_element_brigade(a_la_date, brigade_ids=None):
+def volume_programme_de_la_semaine(programme) -> dict:
+    """US-SUI-06, C1 : le programmé D'UNE SEULE semaine, par (élément,
+    brigade) — à ne pas confondre avec `volumes_programmes_par_element_
+    brigade` (cumul de toutes les semaines). Même agrégation, portée
+    différente : les séances de CE programme seulement."""
+    lignes = LigneProgramme.objects.filter(seance__programme=programme)
+    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
+        _valeurs_des_lignes(lignes)
+    )
+    return par_element_brigade
+
+
+def volumes_realises_par_element_brigade(a_la_date, brigade_ids=None, programme_id=None):
     """R1 (US-SUI-01) : réalisé à la date `a_la_date` — séances des
     programmes AFFICHÉS, terminées avant cette date, moins celles qui
     portent une non-exécution (RG-60). Jamais stockée (`.claude/rules/
-    modeles.md`) ; même agrégation que le programmé, une seule requête."""
+    modeles.md`) ; même agrégation que le programmé, une seule requête.
+    `programme_id` (US-SUI-06, P2) : borne le réalisé à une seule semaine —
+    même fonction, aucun second calcul."""
     lignes = LigneProgramme.objects.filter(
         seance__programme__etat=EtatProgramme.AFFICHE, seance__fin__lte=a_la_date
     ).exclude(non_execution__isnull=False)
     if brigade_ids is not None:
         lignes = lignes.filter(brigade_id__in=brigade_ids)
+    if programme_id is not None:
+        lignes = lignes.filter(seance__programme_id=programme_id)
     _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
         _valeurs_des_lignes(lignes)
     )

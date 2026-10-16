@@ -38,3 +38,13 @@
     font-size: 8pt;
   }
 }
+
+/* Saut de page entre brigades — US-SUI-06, P6 : une section par brigade,
+   jamais deux brigades sur la même page. Sur la PREMIÈRE section d'une
+   page, le saut avant serait superflu (`:first-of-type` l'évite). */
+[data-impression="section-brigade"] {
+  break-before: page;
+}
+[data-impression="section-brigade"]:first-of-type {
+  break-before: avoid;
+}

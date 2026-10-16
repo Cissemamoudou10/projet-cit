@@ -25,7 +25,14 @@ appelés, contraintes portées en base, tests prévus. **Attends ma validation.*
 ordre. Un test au moins par critère d'acceptation.
 
 **5. Vérifier.** Lance `pytest` puis `pytest tests/architecture -q`. Montre la
-sortie. Si un test échoue, corrige la cause, ne le contourne pas.
+sortie. Si un test échoue, corrige la cause, ne le contourne pas. **Si la
+story produit un PDF** (tests marqués `pytest.mark.pdf`, ignorés sous
+Windows — WeasyPrint y exige des bibliothèques natives absentes) : lance en
+plus `pytest -m pdf` dans le conteneur de production
+(`python:3.14-slim-bookworm`) et montre cette sortie aussi — une story PDF
+n'est pas vérifiée tant que ce marqueur n'a pas tourné là où WeasyPrint
+s'exécute réellement. Voir `.claude/rules/tests.md` et P-44
+(`docs/suivi/PROBLEMES.md`, prompt 45).
 
 **6. Relire.** Fais examiner le diff par le sous-agent `relecteur-conception`.
 Corrige les écarts de conformité ; ignore les préférences de style.

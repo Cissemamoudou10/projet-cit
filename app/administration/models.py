@@ -213,3 +213,47 @@ class EntreeJournal(ModeleHorodate):
 
     def __str__(self):
         return f"{self.get_type_action_display()} — {self.identifiant_saisi}"
+
+
+class TypeDocument(models.TextChoices):
+    """RG-58 (US-SUI-06, prompt 45, P5) : un type par document produit par
+    `ServiceDocument`. Deux au moins, dès cette story, pour que le mécanisme
+    se généralise sans le redécouvrir à US-EVAL-07 (procès-verbal) : le type
+    lui-même est fixé par le code (ce que `ServiceDocument` sait produire),
+    seul son CONTENU (`GabaritDocument`) est éditable par l'administrateur —
+    à la différence de `NatureEvenement`, le terrain n'en ajoute pas."""
+
+    PROGRESSION_REALISEE = "progression_realisee", "Progression réalisée hebdomadaire"
+    PROCES_VERBAL = "proces_verbal", "Procès-verbal de résultats"
+
+
+class GabaritDocument(ModeleHorodate):
+    """En-tête, mentions et bloc de signature d'un type de document — des
+    DONNÉES, jamais du texte en dur dans un gabarit Django (P5). Un jeu
+    initial est chargé par la commande `initialiser_gabarits_documents`,
+    jamais par une migration de données (leçon de D-122 : une migration de
+    données ne survit pas à `transactional_db`)."""
+
+    type_document = models.CharField(
+        max_length=30,
+        choices=TypeDocument.choices,
+        unique=True,
+        verbose_name="type de document",
+    )
+    en_tete = models.TextField(verbose_name="en-tête")
+    mentions = models.TextField(blank=True, verbose_name="mentions")
+    bloc_signature = models.TextField(blank=True, verbose_name="bloc de signature")
+
+    class Meta:
+        db_table = "administration_gabarit_document"
+        verbose_name = "gabarit de document"
+        verbose_name_plural = "gabarits de document"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(type_document__in=TypeDocument.values),
+                name="ck_gabarit_document_type",
+            ),
+        ]
+
+    def __str__(self):
+        return self.get_type_document_display()

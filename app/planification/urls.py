@@ -5,6 +5,7 @@ from planification import (
     views_circuit,
     views_indisponibilite,
     views_periode,
+    views_progression,
     views_rapprochement,
     views_seance,
     views_suivi,
@@ -112,5 +113,25 @@ urlpatterns = [
         "planification/rapprochement/",
         views_rapprochement.vue_rapprochement,
         name="rapprochement",
+    ),
+    path(
+        "planification/programmes/<int:pk>/progression-realisee/",
+        views_progression.vue_progression,
+        name="progression_realisee",
+    ),
+    path(
+        "planification/programmes/<int:pk>/progression-realisee/editer/",
+        views_progression.editer_progression,
+        name="editer_progression",
+    ),
+    path(
+        "planification/progression-realisee/<int:edition_pk>/signer/",
+        views_progression.signer_progression,
+        name="signer_progression",
+    ),
+    path(
+        "planification/progression-realisee/<int:edition_pk>/telecharger/",
+        views_progression.telecharger_progression,
+        name="telecharger_progression",
     ),
 ]

@@ -85,15 +85,22 @@ class ProgrammeHebdomadaire(ModeleHorodate):
                 name="ck_programme_rejet_motive",
             ),
             models.CheckConstraint(
-                condition=~models.Q(etat__in=[EtatProgramme.SOUMIS, EtatProgramme.VALIDE,
-                                              EtatProgramme.AFFICHE])
+                condition=~models.Q(
+                    etat__in=[EtatProgramme.SOUMIS, EtatProgramme.VALIDE, EtatProgramme.AFFICHE]
+                )
                 | models.Q(motif_rejet__isnull=True)
                 | models.Q(motif_rejet__regex=r"^\s*$"),
                 name="ck_programme_motif_hors_circuit",
             ),
             models.CheckConstraint(
-                condition=~models.Q(etat__in=[EtatProgramme.SOUMIS, EtatProgramme.VALIDE,
-                                              EtatProgramme.REJETE, EtatProgramme.AFFICHE])
+                condition=~models.Q(
+                    etat__in=[
+                        EtatProgramme.SOUMIS,
+                        EtatProgramme.VALIDE,
+                        EtatProgramme.REJETE,
+                        EtatProgramme.AFFICHE,
+                    ]
+                )
                 | models.Q(date_soumission__isnull=False),
                 name="ck_programme_soumission_datee",
             ),
@@ -299,9 +306,7 @@ class Avenant(ModeleHorodate):
         verbose_name="séance",
     )
     motif = models.TextField(verbose_name="motif")
-    nature = models.CharField(
-        max_length=30, choices=NatureAvenant.choices, verbose_name="nature"
-    )
+    nature = models.CharField(max_length=30, choices=NatureAvenant.choices, verbose_name="nature")
     detail = models.TextField(blank=True, verbose_name="détail")
 
     class Meta:
@@ -352,3 +357,44 @@ class NonExecution(ModeleHorodate):
 
     def __str__(self):
         return f"non-exécution — {self.ligne}"
+
+
+class EditionProgression(ModeleHorodate):
+    """Édition de la progression réalisée hebdomadaire — BF-SUI-06, RG-58,
+    RG-60 (US-SUI-06, prompt 45, P1).
+
+    Le document lui-même n'est JAMAIS stocké : seule l'édition l'est —
+    l'acte de l'avoir produit, et sa signature éventuelle. Rééditer
+    recalcule tout depuis les données réelles (`.claude/rules/modeles.md`).
+    Plusieurs éditions d'une même semaine sont possibles et conservées ; la
+    plus récente fait foi. `cree_le`/`cree_par` (`ModeleHorodate`) portent
+    déjà la date d'édition et son auteur (C5) : aucun champ de plus.
+
+    `programme` en `PROTECT` : trace d'une décision, comme `Avenant` vers
+    `Seance` — une édition ne disparaît jamais avec le programme qu'elle
+    documente.
+    """
+
+    programme = models.ForeignKey(
+        ProgrammeHebdomadaire,
+        on_delete=models.PROTECT,
+        related_name="editions_progression",
+        verbose_name="programme",
+    )
+    date_signature = models.DateField(null=True, blank=True, verbose_name="date de signature")
+    signataire = models.CharField(max_length=150, null=True, blank=True, verbose_name="signataire")
+
+    class Meta:
+        db_table = "planification_edition_progression"
+        verbose_name = "édition de progression réalisée"
+        verbose_name_plural = "éditions de progression réalisée"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(date_signature__isnull=True, signataire__isnull=True)
+                | models.Q(date_signature__isnull=False, signataire__isnull=False),
+                name="ck_edition_progression_signature_complete",
+            ),
+        ]
+
+    def __str__(self):
+        return f"progression réalisée — {self.programme} (édité le {self.cree_le:%d/%m/%Y})"

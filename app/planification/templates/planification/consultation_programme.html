@@ -26,6 +26,14 @@
           <svg class="h-3.5 w-3.5" aria-hidden="true"><use href="{% static 'icones/planche.svg' %}#impression"></use></svg>
           Imprimer
         </a>
+        {% if perms.noyau.suivi_lecture %}
+          <a href="{% url 'planification:progression_realisee' programme.pk %}"
+             class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                    text-sm font-medium text-encre no-underline transition-colors duration-survol
+                    hover:border-marine-700">
+            Progression réalisée
+          </a>
+        {% endif %}
       {% endif %}
       {% if perms.noyau.programme_ecriture %}
         <a href="{% url 'planification:lancement_generation' %}"

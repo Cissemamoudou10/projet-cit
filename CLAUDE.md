@@ -16,6 +16,11 @@ pytest                                     # suite complète
 pytest tests/architecture -q               # après chaque série d'éditions
 pytest chemin/test_x.py::test_y            # un seul test — à privilégier
 python -m pytest app/referentiel -q        # les tests d'une application
+pip install -r requirements-dev.txt        # dépendances dev + test (pytest, ruff, pypdf…)
+pytest -m pdf                              # tests qui produisent un vrai PDF — jamais sous
+                                            # Windows (WeasyPrint y exige des bibliothèques
+                                            # natives absentes, P-44) : à lancer dans le
+                                            # conteneur python:3.14-slim-bookworm
 ```
 
 ## Cinq règles non négociables

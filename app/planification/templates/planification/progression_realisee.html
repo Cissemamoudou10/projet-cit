@@ -1,0 +1,88 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Progression réalisée — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Progression réalisée hebdomadaire</h1>
+  <p class="text-sm text-gris-lecture">
+    Semaine du {{ programme.lundi_de_semaine|date:"d/m/Y" }}
+    — programme {{ programme.get_etat_display|lower }}
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% if perms.noyau.programme_ecriture and programme.etat == "affiche" %}
+  <form method="post" action="{% url 'planification:editer_progression' programme.pk %}" class="mt-4">
+    {% csrf_token %}
+    <button type="submit"
+            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol hover:bg-marine-700">
+      Éditer la progression réalisée
+    </button>
+  </form>
+{% elif perms.noyau.programme_ecriture %}
+  <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
+    L'édition exige un programme affiché (RG-60) : ce programme est encore
+    {{ programme.get_etat_display|lower }}.
+  </p>
+{% endif %}
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if editions %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Édité le</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Édité par</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Signature</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Document</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for edition in editions %}
+          <tr class="border-t border-gris-trait align-top">
+            <td class="px-3 py-2">{{ edition.cree_le|date:"d/m/Y H:i" }}</td>
+            <td class="px-3 py-2">{{ edition.cree_par }}</td>
+            <td class="px-3 py-2">
+              {% if edition.date_signature %}
+                {{ edition.signataire }} — {{ edition.date_signature|date:"d/m/Y" }}
+              {% elif perms.noyau.programme_ecriture %}
+                <form method="post" action="{% url 'planification:signer_progression' edition.pk %}"
+                      class="flex flex-wrap items-end gap-2">
+                  {% csrf_token %}
+                  <input type="date" name="date_signature" required
+                         class="border border-gris-trait bg-blanc px-2 py-1 text-xs">
+                  <input type="text" name="signataire" required maxlength="150" placeholder="Signataire"
+                         class="border border-gris-trait bg-blanc px-2 py-1 text-xs">
+                  <button type="submit"
+                          class="inline-flex h-controle items-center border border-gris-trait bg-fond-bloc
+                                 px-2.5 text-xs text-encre hover:border-marine-700">
+                    Enregistrer
+                  </button>
+                </form>
+              {% else %}
+                Non signé
+              {% endif %}
+            </td>
+            <td class="px-3 py-2">
+              <a href="{% url 'planification:telecharger_progression' edition.pk %}"
+                 class="text-2xs text-marine-700 underline-offset-2 hover:underline">
+                Télécharger le PDF
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="px-4 py-3 text-sm text-gris-lecture">Aucune édition pour cette semaine.</p>
+  {% endif %}
+</section>
+{% endblock %}

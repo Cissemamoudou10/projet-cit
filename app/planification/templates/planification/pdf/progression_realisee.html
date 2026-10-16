@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/polices.css">
+<link rel="stylesheet" href="css/document_pdf.css">
+<style>
+  body { font-family: 'IBM Plex Sans', sans-serif; font-size: 10pt; color: #111; }
+  h1, h2 { font-family: 'Barlow', sans-serif; font-weight: 700; margin: 0 0 4pt; }
+  h1 { font-size: 13pt; }
+  h2 { font-size: 11.5pt; margin-top: 10pt; }
+  table { border-collapse: collapse; width: 100%; margin-top: 4pt; }
+  th, td { border: 0.5pt solid #333; padding: 3pt 5pt; text-align: left; font-size: 9pt; }
+  th { font-family: 'Barlow', sans-serif; font-weight: 600; }
+  td.chiffre, th.chiffre { text-align: right; }
+  .ecarts { margin-top: 6pt; font-size: 9pt; }
+  .ecarts ul { margin: 2pt 0 0; padding-left: 14pt; }
+  .mentions { margin-top: 12pt; font-size: 8pt; color: #333; }
+</style>
+</head>
+<body data-impression="paysage"
+      data-reference="Progression réalisée — semaine du {{ programme.lundi_de_semaine|date:'d/m/Y' }}">
+  <header data-impression="entete">
+    <strong>{{ gabarit.en_tete }}</strong>
+    — Progression réalisée, semaine du {{ programme.lundi_de_semaine|date:"d/m/Y" }}
+  </header>
+
+  <h1>Progression réalisée — semaine du {{ programme.lundi_de_semaine|date:"d/m/Y" }}</h1>
+  <p>Édité le {{ edition.cree_le|date:"d/m/Y H:i" }} par {{ edition.cree_par }}.</p>
+
+  {% for type_formation, groupes_brigades in groupes.items %}
+    {% for groupe in groupes_brigades %}
+      <section data-impression="section-brigade">
+        <h2>{{ groupe.brigade }} — {{ type_formation }}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Matière</th>
+              <th class="chiffre">Programmé (semaine)</th>
+              <th class="chiffre">Dispensé</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ligne in groupe.lignes %}
+              <tr>
+                <td>{{ ligne.element_referentiel.matiere }}</td>
+                <td class="chiffre">{{ ligne.programme_semaine|floatformat:2 }} h</td>
+                <td class="chiffre">{{ ligne.dispense|floatformat:2 }} h</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if groupe.ecarts %}
+          <div class="ecarts" data-impression="bloc">
+            <strong>Écarts de la semaine</strong>
+            <ul>
+              {% for ecart in groupe.ecarts %}
+                <li>{{ ecart.libelle }} — {{ ecart.matiere }} : {{ ecart.motif }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% endfor %}
+
+  <p class="mentions">{{ gabarit.mentions }}</p>
+  <div data-impression="signature">
+    <p>{{ gabarit.bloc_signature }}</p>
+    {% if edition.date_signature %}
+      <p>Signé par {{ edition.signataire }} le {{ edition.date_signature|date:"d/m/Y" }}.</p>
+    {% else %}
+      <p>Non signé.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

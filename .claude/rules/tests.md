@@ -67,3 +67,23 @@ serait *écrit* littéralement.
 `tests/architecture/` vérifie ce que les consignes ne garantissent pas : aucune
 vue n'importe un modèle directement, aucune dépendance hors de la liste validée.
 Lance-les après chaque série d'éditions.
+
+## Tests PDF — marqueur `pdf`
+
+WeasyPrint charge ses bibliothèques natives (GTK3/Pango/Cairo) dès son propre
+`import`, pas seulement à l'usage — absentes du poste de développement
+Windows (P-44, `docs/suivi/PROBLEMES.md`, prompt 45). Conséquences :
+
+- **`weasyprint` s'importe toujours à l'intérieur de la fonction qui le
+  consomme, jamais en tête de module** (`administration/services/document.py`
+  en est le seul point — tout le reste du code passe par `ServiceDocument`,
+  jamais par un second `import weasyprint`).
+- **Tout test qui produit réellement un PDF porte `@pytest.mark.pdf`**, et un
+  `@pytest.mark.skipif(sys.platform.startswith("win"), reason=...)` explicite
+  — jamais un skip silencieux. Les tests du calcul, du modèle, des
+  habilitations et du cycle HTTP qui ne produisent pas de PDF tournent
+  partout, sans ce marqueur.
+- **Pour toute story qui produit un PDF, `pytest -m pdf` dans le conteneur de
+  production (`python:3.14-slim-bookworm`) fait partie de la définition de
+  fini** — au même titre que `pytest` et `pytest tests/architecture -q`, pas
+  une vérification facultative. Le rendu de la story cite ce résultat.

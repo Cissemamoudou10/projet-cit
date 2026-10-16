@@ -27,6 +27,8 @@ DEPENDANCES_VALIDEES = {
     "openpyxl",
     "pytest",
     "pytest-django",
+    "pytest-cov",
+    "pypdf",
     "ruff",
     "python-dateutil",
     "gunicorn",
