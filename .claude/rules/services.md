@@ -66,13 +66,16 @@ cas d'utilisation (génération, saisie manuelle, regroupement, duplication...)
 doivent produire le même contrôle suit ce patron : une porte d'écriture
 nommée, un test d'architecture qui vérifie qu'elle est la seule.
 
-## Les neuf services
+## Les onze services
 
 `ServiceSujet` s'est détaché de `ServiceEvaluation` à US-EVAL-03 (D-206,
 docs/suivi/DECISIONS.md) : la confidentialité des sujets (A5, visibilité
 réservée à `evaluations_ecriture` seule, écran dédié) et leur journalisation
 dédiée (A6) justifient une classe séparée plutôt qu'une méthode de plus sur
-`ServiceEvaluation` — neuf services désormais, pas huit.
+`ServiceEvaluation`. `ServiceNote` (US-EVAL-05) et `ServiceMoyenne`
+(US-EVAL-06, D-272) s'en détachent au même titre, pour la même raison —
+confidentialité réservée à `evaluations_ecriture` seule, jamais la lecture
+normale des évaluations : onze services désormais, pas neuf.
 
 | Service | Responsabilité |
 |---|---|
@@ -81,8 +84,10 @@ dédiée (A6) justifient une classe séparée plutôt qu'une méthode de plus su
 | `ServiceGeneration` | construction du programme hebdomadaire |
 | `ServiceContraintes` | les six contraintes dures |
 | `ServiceCircuitProgramme` | machine à états du programme (US-VAL-03) : transitions, garde de modification, validation et signature |
-| `ServiceEvaluation` | évaluations, notes, moyennes |
+| `ServiceEvaluation` | évaluations (création, date, suppression) |
 | `ServiceSujet` | sujets d'examen, sujet retenu (US-EVAL-03) |
+| `ServiceNote` | saisie et vérification des notes (US-EVAL-05) |
+| `ServiceMoyenne` | moyennes et classement, jamais stockés (US-EVAL-06) |
 | `ServiceSuivi` | prescrit et réalisé, progression réalisée hebdomadaire |
 | `ServiceDocument` | production des documents depuis les gabarits |
 

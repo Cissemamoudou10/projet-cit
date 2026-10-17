@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-47 — Une requête par brigade dans l'écran des moyennes : `Brigade.__str__` lit `self.session`, jamais préchargé par le reverse manager
+**Date** 2026-10-17 · **Story** US-EVAL-06 (Prompt 46, point 2) · **État** : résolu
+**Symptôme** — `test_requetes_constantes_avec_deux_et_dix_brigades` (`evaluations/tests/test_moyennes_ecran.py`) : 16 requêtes avec 2 brigades, 32 avec 10 — exactement le double, pas une marge qui se consomme en silence (A8).
+**Cause** — `ServiceMoyenne._donnees_session` récupère les brigades via `session.brigades.order_by(...)` (un gestionnaire inverse) : Django ne met JAMAIS en cache le côté « parent » d'une relation inverse — chaque `Brigade` récupérée ainsi ignore que son propre `session_id` pointe vers l'objet `session` déjà en main. `Brigade.__str__` (`f"{self.designation} — {self.session}"`) lit cet attribut à chaque affichage dans le gabarit, déclenchant une requête PAR BRIGADE affichée, qu'elle figure dans un résultat ou dans un manquant.
+**Résolution** — Après la requête des brigades, `brigade.session = session` pose la valeur déjà connue dans le cache de l'attribut Django (aucune requête, aucune ligne SQL en plus) ; les brigades portées par `affectations_actives_des_brigades` (une requête séparée, donc des instances `Brigade` différentes pour la même ligne) sont remplacées par cette même instance déjà mise en cache, via un dictionnaire par identifiant — jamais une seconde copie non préchargée.
+**Risque concerné** — aucun nouveau ; même famille que les N+1 déjà rencontrés sur ce projet (RG le plus coûteux, `.claude/rules/python.md`), mais ici déclenché par un `__str__`, pas par une boucle de service explicite — angle mort à garder en tête pour tout écran qui affiche des objets récupérés par un gestionnaire inverse (`qqch.enfants.all()`).
+**Leçon** — un `__str__` qui lit une relation n'est jamais gratuit : le tester avec `CaptureQueriesContext` à deux tailles différentes (ici 2 et 10) reste le seul moyen fiable de le voir, une relecture du code ne le repère pas toujours.
+
 ## P-46 — `etat_transitoire.decoder("")` rend des octets vides, pas `None` : un champ caché absent plante sur `json.loads`
 **Date** 2026-10-17 · **Story** US-EVAL-05 (Prompt 46, point 1) · **État** : résolu dans ce fichier, latent ailleurs
 **Symptôme** — `test_confirmation_sans_verification_prealable_refuse_proprement` (POST sur `confirmer_notes` sans le champ `lignes_b64`) levait une `JSONDecodeError` non interceptée (500) au lieu du message attendu « la vérification a expiré ».

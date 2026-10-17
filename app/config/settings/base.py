@@ -153,6 +153,15 @@ MOIS_DEBUT_ANNEE_FORMATION = int(os.environ.get("MOIS_DEBUT_ANNEE_FORMATION", "9
 GENERATION_STRATEGIE = os.environ.get("GENERATION_STRATEGIE", "gloutonne")
 GENERATION_BORNE_TEMPS_SECONDES = int(os.environ.get("GENERATION_BORNE_TEMPS_SECONDES", "300"))
 
+# Moyennes (US-EVAL-06, N6, prompt 46). Traitement d'une absence au calcul :
+# « zero » compte l'évaluation comme une note de zéro (valeur par défaut, la
+# plus défavorable — ne peut jamais avantager un stagiaire par erreur) ;
+# « exclusion » retire l'évaluation du calcul du module pour ce seul
+# stagiaire. Question ajoutée au terrain, réponse non reçue à ce jour — voir
+# docs/suivi/DECISIONS.md. Les deux valeurs admises sont nommées dans
+# evaluations/constantes.py, jamais en dur dans le service.
+TRAITEMENT_ABSENCE_NOTE = os.environ.get("TRAITEMENT_ABSENCE_NOTE", "zero")
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

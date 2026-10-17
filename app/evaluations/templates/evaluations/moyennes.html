@@ -1,0 +1,89 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Moyennes — {{ session }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Moyennes — {{ session }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Calculées à la demande, jamais enregistrées — visible uniquement de la cellule examens.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% if modules_ignores %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+      Modules sans aucune évaluation — ignorés de la moyenne générale (M4)
+    </p>
+    <p class="text-sm text-gris-lecture">
+      {% for module in modules_ignores %}{{ module.matiere }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </p>
+  </section>
+{% endif %}
+
+{% if manquants_par_module %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Notes manquantes — une seule bloque le calcul du stagiaire concerné (M5)
+    </p>
+    {% for module, par_brigade in manquants_par_module.items %}
+      <div class="border-t border-gris-trait px-4 py-2.5">
+        <p class="mb-1 text-sm font-semibold text-encre">{{ module.matiere }}</p>
+        {% for brigade, stagiaires in par_brigade.items %}
+          <p class="text-xs text-gris-lecture">
+            <span class="font-medium">{{ brigade }}</span> —
+            {% for stagiaire in stagiaires %}{{ stagiaire }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </section>
+{% endif %}
+
+{% for brigade, resultats in par_brigade.items %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      {{ brigade }}
+    </p>
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Stagiaire</th>
+          <th scope="col" class="w-28 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Moyenne</th>
+          <th scope="col" class="w-28 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Rang (brigade)</th>
+          <th scope="col" class="w-28 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Rang (session)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for resultat in resultats %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ resultat.stagiaire }}</th>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ resultat.moyenne }}</td>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ resultat.rang_brigade }}</td>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ resultat.rang_session }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% empty %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="text-sm text-gris-lecture">Aucune moyenne calculable pour l'instant.</p>
+  </section>
+{% endfor %}
+
+<p class="mt-4 text-2xs text-gris-lecture">
+  Classement de compétition : deux stagiaires à égalité partagent le même rang, le
+  suivant reprend après le nombre d'ex aequo (1, 2, 2, 4). Comparaison sur la moyenne
+  arrondie à deux décimales.
+</p>
+{% endblock %}

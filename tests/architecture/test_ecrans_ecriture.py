@@ -570,6 +570,14 @@ ECRANS_ECRITURE = [
         "noyau.evaluations_ecriture",
         lambda objets: [objets["evaluation"].pk],
     ),
+    # --- evaluations : moyennes et classement (US-EVAL-06, prompt 46) ---
+    # M8 : même figure que les notes, lecture seule mais réservée à
+    # evaluations_ecriture (le backlog ne nomme que la cellule examens).
+    EcranEcriture(
+        "evaluations:moyennes_session",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
     # --- evaluations : notes (US-EVAL-05, prompt 46) --- N5 : même figure
     # que les sujets ci-dessous, la lecture de la grille suit
     # evaluations_ecriture, pas de permission de lecture séparée.
@@ -651,8 +659,10 @@ ECRANS_ECRITURE = [
 # de cette table réservée à `programme_ecriture` et assimilés) ; 126 après la
 # saisie des notes (prompt 46, US-EVAL-05 : la grille et sa confirmation,
 # même figure que les sujets — la lecture de la grille est elle-même gardée
-# par `evaluations_ecriture`, BNF-02).
-assert len(ECRANS_ECRITURE) == 126
+# par `evaluations_ecriture`, BNF-02) ; 127 après les moyennes et le
+# classement (prompt 46, US-EVAL-06 : un seul écran de lecture, gardé par
+# `evaluations_ecriture` comme les notes et les sujets).
+assert len(ECRANS_ECRITURE) == 127
 
 
 def _groupes_sans(permission):
