@@ -110,6 +110,12 @@ class TypeAction(models.TextChoices):
     Une seule nature pour les deux gestes (`detail` les distingue), comme
     `TRANSITION_PROGRAMME` distingue ses transitions — voir
     docs/suivi/DECISIONS.md.
+
+    `CONSULTATION_NOTES` (US-EVAL-05, N5, prompt 46) — une extension de
+    plus, même patron que `CONSULTATION_SUJETS` : BNF-02 exige de
+    journaliser chaque AFFICHAGE de la grille des notes, pas seulement leur
+    saisie — `SAISIE_NOTE`/`MODIFICATION_NOTE` (déjà déclarées ci-dessus,
+    RG-26) ne portent que l'écriture.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -144,6 +150,7 @@ class TypeAction(models.TextChoices):
         "declaration_non_execution",
         "Déclaration de non-exécution d'une séance",
     )
+    CONSULTATION_NOTES = "consultation_notes", "Consultation des notes"
 
 
 class EntreeJournal(ModeleHorodate):

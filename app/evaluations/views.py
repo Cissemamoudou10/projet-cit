@@ -17,6 +17,7 @@ from evaluations.services.evaluation import (
     PERMISSION_LECTURE,
     ServiceEvaluation,
 )
+from evaluations.services.note import PERMISSION_ECRITURE as PERMISSION_NOTES
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.habilitations import a_permission
 from noyau.pagination import paginer
@@ -147,6 +148,7 @@ def vue_detail_evaluation(request, pk):
             "resume_sujets": resume_sujets(evaluation),
             "peut_gerer_sujets": a_permission(request.user, PERMISSION_ECRITURE),
             "peut_modifier_date": a_permission(request.user, PERMISSION_ECRITURE),
+            "peut_saisir_notes": a_permission(request.user, PERMISSION_NOTES),
         },
     )
 

@@ -27,6 +27,7 @@ EXTENSIONS_HORS_RG26 = {
     TypeAction.CONSULTATION_SUJETS,
     TypeAction.TRANSITION_PROGRAMME,
     TypeAction.DECLARATION_NON_EXECUTION,
+    TypeAction.CONSULTATION_NOTES,
 }
 # US-REF-00 (D-18) : quatrième extension à RG-26, quatre valeurs génériques
 # réutilisées par les cinq stories du patron de gestion — SUPPRESSION_ELEMENT_GESTION

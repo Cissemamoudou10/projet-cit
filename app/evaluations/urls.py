@@ -1,6 +1,6 @@
 from django.urls import path
 
-from evaluations import views, views_organisation, views_sujets
+from evaluations import views, views_notes, views_organisation, views_sujets
 
 app_name = "evaluations"
 
@@ -12,6 +12,12 @@ urlpatterns = [
         "evaluations/<int:pk>/modifier-date/",
         views.vue_modifier_date_certificative,
         name="modifier_date_certificative",
+    ),
+    path("evaluations/<int:pk>/notes/", views_notes.vue_notes, name="notes"),
+    path(
+        "evaluations/<int:pk>/notes/confirmer/",
+        views_notes.vue_confirmer_notes,
+        name="confirmer_notes",
     ),
     path("evaluations/<int:pk>/sujets/", views_sujets.vue_sujets, name="sujets"),
     path(
@@ -34,7 +40,11 @@ urlpatterns = [
         views_sujets.vue_changer_retenu_sujet,
         name="changer_retenu_sujet",
     ),
-    path("evaluations/<int:pk>/organisation/", views_organisation.vue_organisation, name="organisation"),
+    path(
+        "evaluations/<int:pk>/organisation/",
+        views_organisation.vue_organisation,
+        name="organisation",
+    ),
     path(
         "evaluations/<int:pk>/organisation/creneau/",
         views_organisation.vue_fixer_creneau,
@@ -60,5 +70,7 @@ urlpatterns = [
         views_organisation.vue_retirer_surveillant,
         name="retirer_surveillant",
     ),
-    path("evaluations/<int:pk>/convocation/", views_organisation.vue_convocation, name="convocation"),
+    path(
+        "evaluations/<int:pk>/convocation/", views_organisation.vue_convocation, name="convocation"
+    ),
 ]

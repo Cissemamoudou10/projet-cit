@@ -237,7 +237,9 @@ def creneau_du_jour(grille, jour):
 
 def affecter_stagiaires(agissant, brigade, nombre, prefixe="M"):
     """Peuple `brigade.effectif_reel` — RG-37 (capacité d'un lieu) ne
-    compare jamais à `effectif_previsionnel`, toujours à l'effectif réel."""
+    compare jamais à `effectif_previsionnel`, toujours à l'effectif réel.
+    Retourne les stagiaires créés (US-EVAL-05 en a besoin pour les notes)."""
+    stagiaires = []
     for i in range(nombre):
         stagiaire = Stagiaire.objects.create(
             session=brigade.session,
@@ -248,6 +250,8 @@ def affecter_stagiaires(agissant, brigade, nombre, prefixe="M"):
             unite="1er RTR EVAL",
         )
         ServiceAffectation.affecter(agissant, stagiaire, brigade)
+        stagiaires.append(stagiaire)
+    return stagiaires
 
 
 @dataclasses.dataclass(frozen=True)

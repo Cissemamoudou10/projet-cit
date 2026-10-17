@@ -3,13 +3,14 @@
 Aucune règle métier ici : voir .claude/rules/modeles.md.
 """
 
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F
 from django.db.models.functions import Upper
 from django.utils import timezone
 
 from noyau.models import ModeleHorodate
-from organisation.models import Brigade, Session
+from organisation.models import Brigade, Session, Stagiaire
 from planification.models import Seance
 from referentiel.models import ElementReferentiel
 from ressources.models import Instructeur, Lieu
@@ -71,6 +72,13 @@ class Evaluation(ModeleHorodate):
     )
     heure_debut = models.TimeField(null=True, blank=True, verbose_name="heure de début")
     heure_fin = models.TimeField(null=True, blank=True, verbose_name="heure de fin")
+    note_maximale = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=20,
+        validators=[MinValueValidator(0.01)],
+        verbose_name="note maximale",
+    )
 
     class Meta:
         db_table = "evaluations_evaluation"
@@ -127,6 +135,10 @@ class Evaluation(ModeleHorodate):
                     models.Q(heure_debut__isnull=True) | models.Q(type=TypeEvaluation.CERTIFICATIVE)
                 ),
                 name="ck_evaluation_creneau_certificative",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(note_maximale__gt=0),
+                name="ck_evaluation_note_maximale_positive",
             ),
         ]
 
@@ -200,6 +212,65 @@ class Sujet(ModeleHorodate):
         doit pas divulguer ce que le système ne stocke que pour la cellule
         examens."""
         return f"{self.evaluation} — sujet n° {self.rang}"
+
+
+class Note(ModeleHorodate):
+    """US-EVAL-05, N1, CLS-05. Une valeur **ou** une absence, jamais les
+    deux, jamais ni l'une ni l'autre : une note non saisie n'a pas de ligne
+    (BNF-02, confidentialité — voir `evaluations.services.note`).
+
+    `CASCADE` vers `Evaluation` : même composition stricte que `Sujet`, une
+    note n'a pas de sens sans son évaluation. `PROTECT` vers `Stagiaire` :
+    un stagiaire radié garde ses notes (N2) — la radiation ne supprime
+    jamais la ligne (`organisation.models.Stagiaire`), seulement son
+    éligibilité aux listes actives ; ce `PROTECT` ne joue donc aucun rôle
+    dans ce cas précis, il reste la règle par défaut vers une entité de
+    référence (`.claude/rules/modeles.md`).
+
+    La borne supérieure (valeur ≤ `evaluation.note_maximale`) est
+    inter-tables : vérifiée en service, jamais en base (N1)."""
+
+    evaluation = models.ForeignKey(
+        Evaluation,
+        on_delete=models.CASCADE,
+        related_name="notes",
+        verbose_name="évaluation",
+    )
+    stagiaire = models.ForeignKey(
+        Stagiaire,
+        on_delete=models.PROTECT,
+        related_name="notes",
+        verbose_name="stagiaire",
+    )
+    valeur = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="valeur"
+    )
+    absent = models.BooleanField(default=False, verbose_name="absent")
+
+    class Meta:
+        db_table = "evaluations_note"
+        verbose_name = "note"
+        verbose_name_plural = "notes"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["evaluation", "stagiaire"], name="uq_note_evaluation_stagiaire"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(valeur__isnull=True) | models.Q(valeur__gte=0),
+                name="ck_note_valeur_positive_ou_nulle",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    (models.Q(valeur__isnull=False) & models.Q(absent=False))
+                    | (models.Q(valeur__isnull=True) & models.Q(absent=True))
+                ),
+                name="ck_note_valeur_ou_absence_exclusif",
+            ),
+        ]
+
+    def __str__(self):
+        """Jamais la valeur (BNF-02) — même discrétion que `Sujet.__str__`."""
+        return f"{self.stagiaire} — {self.evaluation}"
 
 
 class OrganisationEpreuve(ModeleHorodate):

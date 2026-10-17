@@ -570,6 +570,17 @@ ECRANS_ECRITURE = [
         "noyau.evaluations_ecriture",
         lambda objets: [objets["evaluation"].pk],
     ),
+    # --- evaluations : notes (US-EVAL-05, prompt 46) --- N5 : même figure
+    # que les sujets ci-dessous, la lecture de la grille suit
+    # evaluations_ecriture, pas de permission de lecture séparée.
+    EcranEcriture(
+        "evaluations:notes", "noyau.evaluations_ecriture", lambda objets: [objets["evaluation"].pk]
+    ),
+    EcranEcriture(
+        "evaluations:confirmer_notes",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["evaluation"].pk],
+    ),
     # --- evaluations : sujets d'examen (US-EVAL-03) --- A5 : la visibilité
     # des sujets suit evaluations_ecriture, y compris l'écran de
     # consultation (GET) — `sujets` est donc une adresse d'écriture au sens
@@ -637,8 +648,11 @@ ECRANS_ECRITURE = [
 # US-SUI-05 : deux routes POST, déclarer et annuler) ; 124 après la
 # progression réalisée hebdomadaire (prompt 45, Temps 2, US-SUI-06 : éditer
 # et signer — télécharger est une lecture, gardée par `suivi_lecture`, hors
-# de cette table réservée à `programme_ecriture` et assimilés).
-assert len(ECRANS_ECRITURE) == 124
+# de cette table réservée à `programme_ecriture` et assimilés) ; 126 après la
+# saisie des notes (prompt 46, US-EVAL-05 : la grille et sa confirmation,
+# même figure que les sujets — la lecture de la grille est elle-même gardée
+# par `evaluations_ecriture`, BNF-02).
+assert len(ECRANS_ECRITURE) == 126
 
 
 def _groupes_sans(permission):

@@ -32,6 +32,14 @@
           Gérer les sujets
         </a>
       {% endif %}
+      {% if peut_saisir_notes %}
+        <a href="{% url 'evaluations:notes' evaluation.pk %}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
+                  text-sm font-semibold text-marine-900 no-underline transition-colors duration-survol
+                  hover:bg-fond-bande">
+          Notes
+        </a>
+      {% endif %}
       {% if peut_modifier_date and evaluation.est_certificative and not evaluation.date_echue %}
         <a href="{% url 'evaluations:modifier_date_certificative' evaluation.pk %}"
            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5

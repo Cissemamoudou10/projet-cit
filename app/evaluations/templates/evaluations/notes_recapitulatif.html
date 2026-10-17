@@ -1,0 +1,85 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Vérification des notes — {{ evaluation }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">
+    Vérification des notes — {{ evaluation }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Aperçu seul : aucune note n'est encore enregistrée. La confirmation revalide
+    intégralement la saisie avant écriture.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 grid grid-cols-4 gap-6">
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Notes saisies</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">{{ rapport.saisies|length }}</p>
+  </div>
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Absences</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">{{ rapport.absences|length }}</p>
+  </div>
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Manquantes</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">{{ rapport.manquants|length }}</p>
+  </div>
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Moyenne de l'évaluation</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">
+      {% if rapport.moyenne %}{{ rapport.moyenne|floatformat:2 }}{% else %}—{% endif %}</p>
+  </div>
+</section>
+
+{% if rapport.saisies %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="text-sm text-gris-lecture">
+      Note la plus basse : <span class="font-medium text-encre tabular-nums">{{ rapport.minimum }}</span>
+      — note la plus haute : <span class="font-medium text-encre tabular-nums">{{ rapport.maximum }}</span>
+    </p>
+  </section>
+{% endif %}
+
+{% if rapport.manquants %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Stagiaires sans note ni absence — saisie partielle admise (A3)
+    </p>
+    <ul class="divide-y divide-gris-trait text-sm">
+      {% for stagiaire in rapport.manquants %}
+        <li class="px-4 py-1.5">{{ stagiaire }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+  <form method="post" action="{{ url_confirmer }}" class="flex items-center justify-between gap-3">
+    {% csrf_token %}
+    <input type="hidden" name="lignes_b64" value="{{ lignes_b64 }}">
+    <p class="text-sm text-gris-lecture">
+      {{ rapport.saisies|length }} note(s) et {{ rapport.absences|length }} absence(s) seront
+      enregistrées, en une seule opération.
+    </p>
+    <div class="flex gap-2">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Modifier la saisie</a>
+      <button type="submit"
+              class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                     px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        Confirmer
+      </button>
+    </div>
+  </form>
+</section>
+{% endblock %}

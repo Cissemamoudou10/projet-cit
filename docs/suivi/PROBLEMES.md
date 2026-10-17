@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-46 — `etat_transitoire.decoder("")` rend des octets vides, pas `None` : un champ caché absent plante sur `json.loads`
+**Date** 2026-10-17 · **Story** US-EVAL-05 (Prompt 46, point 1) · **État** : résolu dans ce fichier, latent ailleurs
+**Symptôme** — `test_confirmation_sans_verification_prealable_refuse_proprement` (POST sur `confirmer_notes` sans le champ `lignes_b64`) levait une `JSONDecodeError` non interceptée (500) au lieu du message attendu « la vérification a expiré ».
+**Cause** — `noyau.services.etat_transitoire.decoder` appelle `base64.b64decode(valeur, validate=True)` : pour une chaîne vide, cet appel réussit et rend `b""`, PAS `None` — seule une chaîne réellement corrompue (mauvais alphabet base64) déclenche l'exception interceptée qui rend `None`. Le motif `if contenu is None:` repris de `organisation/views/import_stagiaires.py` et `organisation/views/repartition.py` (même mécanisme d'état transitoire) ne couvre donc pas le cas d'un champ absent ou vidé, seulement celui d'un champ trafiqué.
+**Résolution** — `evaluations/views_notes.py::vue_confirmer_notes` teste `if not contenu:` (couvre `None` ET `b""`), avec un commentaire explicite sur la distinction.
+**Risque concerné** — aucun nouveau ; le même motif existe dans `organisation/views/repartition.py::_decoder_proposition` (passe `contenu` à `json.loads` via `proposition_module.deserialiser`, même crash possible sur un POST sans `proposition_b64`) — non corrigé ici, hors périmètre de cette story ; `import_stagiaires.py` est moins exposé (le contenu sert de flux d'octets à un parseur de fichier, pas à `json.loads` directement), mais mérite la même vérification si l'un des deux est retouché.
+**Leçon** — `etat_transitoire.decoder` documente déjà qu'il « ne lève jamais », mais ne dit pas qu'il peut rendre une valeur vide valide : tout appelant qui enchaîne sur `json.loads` doit tester la valeur vide autant que `None`, jamais seulement l'un des deux.
+
 ## P-45 — Trois attributs de CLS-01 (coefficient, poidsFormatif, poidsCertificatif) jamais implantés depuis US-REF-03
 **Date** 2026-10-16 · **Story** Préalable (Prompt 46, § 0.3 — hors story) · **État** : résolu
 **Symptôme** — Le préalable 0.3 du prompt 46 (condition d'arrêt) demandait de vérifier la présence, sur `ElementReferentiel`, du coefficient, du poids formatif et du poids certificatif, nécessaires au calcul des moyennes d'US-EVAL-06 (M3, M4). Aucun des trois n'existe sur le modèle réel (`app/referentiel/models.py`), ni ailleurs dans le dépôt.
