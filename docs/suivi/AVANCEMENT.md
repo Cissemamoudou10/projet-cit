@@ -38,7 +38,7 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
 | 3 | 28/09 – 10/10 | 11 | 50 | 10 | J2 |
-| 4 | 12/10 – 24/10 | 14 | 55 | 5 | J3 |
+| 4 | 12/10 – 24/10 | 14 | 55 | 6 | J3 |
 | Réserve | conditionnel | 9 | 39 | 0 | — |
 
 **Périmètre total (backlog v10, 10/10) :** 61 stories, 263 points. 61 besoins
@@ -53,8 +53,8 @@ points chiffrés).
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 42 / 52 planifiées | — |
-| Points livrés | 189 / 224 planifiés | — |
+| Stories livrées | 43 / 52 planifiées | — |
+| Points livrés | 194 / 224 planifiés | — |
 | Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
 | Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
@@ -81,10 +81,10 @@ classement, 5 pts) livrée. Points livrés : 184 + 5 = **189** / 224.
 Stories livrées : 41 + 1 = **42** / 52. Sprint 4 : 5 / 14 stories, 20 / 55
 points.
 
-**Recalcul daté (2026-10-17, prompt 46, point 1).** US-EVAL-05 (saisie et
-vérification des notes, 5 pts) livrée. Points livrés : 179 + 5 = **184** / 224.
-Stories livrées : 40 + 1 = **41** / 52. Sprint 4 : 4 / 14 stories, 15 / 55
-points.
+**Recalcul daté (2026-10-17, prompt 46, point 3).** US-EVAL-07 (procès-verbaux
+de résultats, 5 pts) livrée — dernière story Must du projet. Points livrés :
+189 + 5 = **194** / 224. Stories livrées : 42 + 1 = **43** / 52. Sprint 4 :
+6 / 14 stories, 25 / 55 points. **Périmètre Must entier (194 points) livré.**
 
 ## Ce qu'il faut surveiller
 
