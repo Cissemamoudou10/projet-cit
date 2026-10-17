@@ -72,6 +72,34 @@ class RapportMoyennes:
     modules_ignores: list
 
 
+@dataclasses.dataclass(frozen=True)
+class ResultatModule:
+    """US-EVAL-07, V1 : le « procès-verbal d'une évaluation » rapporte un
+    seul module, pas la moyenne générale — même forme que `ResultatStagiaire`
+    sans les coefficients des autres modules."""
+
+    stagiaire: object
+    brigade: object
+    note: decimal.Decimal
+    rang_session: int
+    rang_brigade: int
+
+
+@dataclasses.dataclass(frozen=True)
+class RapportModule:
+    resultats: list
+    manquants: list
+
+
+def evaluations_de_la_session(session) -> list:
+    """US-EVAL-07, V3 : toutes les évaluations du périmètre de la session
+    (verrouillage d'un procès-verbal de fin de formation) — même
+    résolution que `calculer`, sans refaire la requête ici une seconde
+    fois."""
+    _, _, evaluations, _, _ = _donnees_session(session)
+    return evaluations
+
+
 def _donnees_session(session):
     """Cinq requêtes au total, jamais une par brigade, par module ou par
     stagiaire (M8)."""
@@ -223,6 +251,32 @@ def _classer(paires) -> dict:
     return rangs
 
 
+def _resultat_module_brut(module, affectation, contexte):
+    """Une affectation -> `(stagiaire, brigade, note)` si calculable, ou
+    un `NoteManquante` si bloquée — jamais les deux (M5)."""
+    note, manquante = _note_module(module, affectation.stagiaire, affectation.brigade, contexte)
+    if manquante:
+        return None, NoteManquante(
+            module=module, brigade=affectation.brigade, stagiaire=affectation.stagiaire
+        )
+    if note is None:
+        return None, None
+    return (affectation.stagiaire, affectation.brigade, note.quantize(DEUX_DECIMALES)), None
+
+
+def _classer_session_et_brigades(resultats_bruts, brigades) -> dict:
+    """M6/M7 : un classement sur l'ensemble, un second par brigade —
+    factorisé, `calculer` et `calculer_module` partagent cette forme."""
+    rangs_session = _classer([(s, v) for s, _, v in resultats_bruts])
+    rangs: dict = {}
+    for brigade in brigades:
+        de_la_brigade = [(s, v) for s, b, v in resultats_bruts if b.pk == brigade.pk]
+        rangs_brigade = _classer(de_la_brigade)
+        for stagiaire, _ in de_la_brigade:
+            rangs[stagiaire.pk] = (rangs_session[stagiaire.pk], rangs_brigade[stagiaire.pk])
+    return rangs
+
+
 class ServiceMoyenne:
     DOMAINE = "evaluations"
     PERMISSION_ECRITURE = PERMISSION_ECRITURE
@@ -250,21 +304,53 @@ class ServiceMoyenne:
             if moyenne is not None:
                 resultats_bruts.append((affectation.stagiaire, affectation.brigade, moyenne))
 
-        rangs_session = _classer([(s, m) for s, _, m in resultats_bruts])
-        resultats = []
-        for brigade in brigades:
-            de_la_brigade = [(s, m) for s, b, m in resultats_bruts if b.pk == brigade.pk]
-            rangs_brigade = _classer(de_la_brigade)
-            for stagiaire, moyenne in de_la_brigade:
-                resultats.append(
-                    ResultatStagiaire(
-                        stagiaire=stagiaire,
-                        brigade=brigade,
-                        moyenne=moyenne,
-                        rang_session=rangs_session[stagiaire.pk],
-                        rang_brigade=rangs_brigade[stagiaire.pk],
-                    )
-                )
+        rangs = _classer_session_et_brigades(resultats_bruts, brigades)
+        resultats = [
+            ResultatStagiaire(
+                stagiaire=stagiaire,
+                brigade=brigade,
+                moyenne=moyenne,
+                rang_session=rangs[stagiaire.pk][0],
+                rang_brigade=rangs[stagiaire.pk][1],
+            )
+            for stagiaire, brigade, moyenne in resultats_bruts
+        ]
         return RapportMoyennes(
             resultats=resultats, manquants=manquants, modules_ignores=modules_ignores
         )
+
+    @staticmethod
+    def calculer_module(agissant, session, module) -> RapportModule:
+        """US-EVAL-07, V1 : résultat d'un seul module — le « procès-verbal
+        d'une évaluation » rapporte ce module, pas la moyenne générale.
+        Même fonction de calcul que `calculer` (`_note_module`, M3), une
+        seule définition."""
+        verifier_habilitation(agissant, PERMISSION_ECRITURE)
+        _, brigades, evaluations, notes, affectations = _donnees_session(session)
+        contexte = ContexteCalcul(
+            session=session,
+            evaluations_par_module_type=_grouper_evaluations(evaluations),
+            notes=notes,
+        )
+
+        resultats_bruts = []
+        manquants = []
+        for affectation in affectations:
+            resultat, manquant = _resultat_module_brut(module, affectation, contexte)
+            if manquant is not None:
+                manquants.append(manquant)
+            elif resultat is not None:
+                resultats_bruts.append(resultat)
+
+        rangs = _classer_session_et_brigades(resultats_bruts, brigades)
+        resultats = [
+            ResultatModule(
+                stagiaire=stagiaire,
+                brigade=brigade,
+                note=note,
+                rang_session=rangs[stagiaire.pk][0],
+                rang_brigade=rangs[stagiaire.pk][1],
+            )
+            for stagiaire, brigade, note in resultats_bruts
+        ]
+        return RapportModule(resultats=resultats, manquants=manquants)

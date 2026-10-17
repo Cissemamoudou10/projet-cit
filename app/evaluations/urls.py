@@ -1,6 +1,13 @@
 from django.urls import path
 
-from evaluations import views, views_moyennes, views_notes, views_organisation, views_sujets
+from evaluations import (
+    views,
+    views_moyennes,
+    views_notes,
+    views_organisation,
+    views_proces_verbal,
+    views_sujets,
+)
 
 app_name = "evaluations"
 
@@ -17,6 +24,26 @@ urlpatterns = [
         "evaluations/sessions/<int:session_pk>/moyennes/",
         views_moyennes.vue_moyennes,
         name="moyennes_session",
+    ),
+    path(
+        "evaluations/sessions/<int:session_pk>/proces-verbaux/",
+        views_proces_verbal.vue_proces_verbaux,
+        name="proces_verbaux",
+    ),
+    path(
+        "evaluations/sessions/<int:session_pk>/proces-verbaux/apercu/",
+        views_proces_verbal.vue_apercu_proces_verbal,
+        name="apercu_proces_verbal",
+    ),
+    path(
+        "evaluations/sessions/<int:session_pk>/proces-verbaux/generer/",
+        views_proces_verbal.vue_generer_proces_verbal,
+        name="generer_proces_verbal",
+    ),
+    path(
+        "evaluations/proces-verbaux/<int:pk>/telecharger/",
+        views_proces_verbal.vue_telecharger_proces_verbal,
+        name="telecharger_proces_verbal",
     ),
     path("evaluations/<int:pk>/notes/", views_notes.vue_notes, name="notes"),
     path(

@@ -1,0 +1,94 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Aperçu du procès-verbal — {{ session }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Aperçu — {{ session }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Aperçu seul : aucun procès-verbal n'est encore généré. La confirmation recalcule
+    intégralement avant d'écrire.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+{% if apercu.manquants %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Génération bloquée — notes manquantes (M5)
+    </p>
+    <ul class="divide-y divide-gris-trait text-sm">
+      {% for manquant in apercu.manquants %}
+        <li class="px-4 py-1.5">
+          {{ manquant.module.matiere }} — {{ manquant.brigade }} — {{ manquant.stagiaire }}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% else %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      {{ apercu.lignes|length }} stagiaire(s) — seuil d'admission {{ apercu.seuil }} / 20
+    </p>
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Stagiaire</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Brigade</th>
+          <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Valeur</th>
+          <th scope="col" class="w-20 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Rang</th>
+          <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Décision</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in apercu.lignes %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ ligne.stagiaire }}</th>
+            <td class="px-3 py-1.5">{{ ligne.brigade }}</td>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.valeur }}</td>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.rang_session }}</td>
+            <td class="px-3 py-1.5">{{ ligne.decision }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endif %}
+
+<section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+  <form method="post" action="{{ url_generer }}" class="flex items-center justify-between gap-3">
+    {% csrf_token %}
+    <input type="hidden" name="type_pv" value="{{ type_pv }}">
+    <input type="hidden" name="evaluation_pk" value="{{ evaluation.pk|default:'' }}">
+    <input type="hidden" name="numero" value="{{ numero }}">
+    <p class="text-sm text-gris-lecture">
+      {% if apercu.manquants %}
+        Corrigez la saisie des notes avant de générer.
+      {% else %}
+        Le procès-verbal sera enregistré, en une seule opération.
+      {% endif %}
+    </p>
+    <div class="flex gap-2">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      {% if not apercu.manquants %}
+        <button type="submit"
+                class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                       px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                       hover:bg-marine-700">
+          Générer
+        </button>
+      {% endif %}
+    </div>
+  </form>
+</section>
+{% endblock %}

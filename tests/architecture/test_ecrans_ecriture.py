@@ -578,6 +578,20 @@ ECRANS_ECRITURE = [
         "noyau.evaluations_ecriture",
         lambda objets: [objets["session"].pk],
     ),
+    # --- evaluations : procès-verbaux (US-EVAL-07, prompt 46) --- V10 :
+    # générer seul suit evaluations_ecriture ; consulter/télécharger
+    # suivent evaluations_lecture (examens ET Direction), hors de cette
+    # table réservée à l'écriture.
+    EcranEcriture(
+        "evaluations:apercu_proces_verbal",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
+    EcranEcriture(
+        "evaluations:generer_proces_verbal",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
     # --- evaluations : notes (US-EVAL-05, prompt 46) --- N5 : même figure
     # que les sujets ci-dessous, la lecture de la grille suit
     # evaluations_ecriture, pas de permission de lecture séparée.
@@ -661,8 +675,12 @@ ECRANS_ECRITURE = [
 # même figure que les sujets — la lecture de la grille est elle-même gardée
 # par `evaluations_ecriture`, BNF-02) ; 127 après les moyennes et le
 # classement (prompt 46, US-EVAL-06 : un seul écran de lecture, gardé par
-# `evaluations_ecriture` comme les notes et les sujets).
-assert len(ECRANS_ECRITURE) == 127
+# `evaluations_ecriture` comme les notes et les sujets) ; 129 après les
+# procès-verbaux (prompt 46, US-EVAL-07 : aperçu et génération, deux routes
+# POST — à la différence des trois écrans précédents, consulter et
+# télécharger suivent `evaluations_lecture`, pas `evaluations_ecriture`,
+# hors de cette table réservée à l'écriture, V10).
+assert len(ECRANS_ECRITURE) == 129
 
 
 def _groupes_sans(permission):

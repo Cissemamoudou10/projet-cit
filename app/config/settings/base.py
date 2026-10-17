@@ -162,6 +162,14 @@ GENERATION_BORNE_TEMPS_SECONDES = int(os.environ.get("GENERATION_BORNE_TEMPS_SEC
 # evaluations/constantes.py, jamais en dur dans le service.
 TRAITEMENT_ABSENCE_NOTE = os.environ.get("TRAITEMENT_ABSENCE_NOTE", "zero")
 
+# Procès-verbaux (US-EVAL-07, V6, prompt 46). Seuil d'admission, sur 20 :
+# « Admis » si la moyenne (ou la note du module, selon le type de
+# procès-verbal) est supérieure ou égale à ce seuil. Chaîne plutôt qu'un
+# entier : parsée en `decimal.Decimal` au point d'usage, pour rester
+# cohérente avec les moyennes elles-mêmes (jamais de flottant sur une note,
+# `.claude/rules/modeles.md`).
+SEUIL_ADMISSION_PROCES_VERBAL = os.environ.get("SEUIL_ADMISSION_PROCES_VERBAL", "10")
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

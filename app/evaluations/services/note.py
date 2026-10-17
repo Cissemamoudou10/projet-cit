@@ -130,14 +130,17 @@ def _rapport(saisies, absences, manquants) -> RapportNotes:
     )
 
 
-def _verifier_non_verrouillee(evaluation):  # noqa: ARG001 — signature stable, câblée au temps 3
+def _verifier_non_verrouillee(evaluation):
     """N7, RG-55 : refuse toute écriture sur une note d'une évaluation déjà
     couverte par un procès-verbal — prédicat CALCULÉ (CLS-05 porte un
-    booléen `notesVerrouillees` stocké, écart consigné au temps de
-    US-EVAL-07, où `ProcesVerbal` existera). Stub à False ici : ce modèle
-    n'existe pas encore à ce point du prompt 46 — câblé réellement dans le
-    même prompt, Temps 3, sans changement de signature pour l'appelant."""
-    return
+    booléen `notesVerrouillees` stocké, écart D-270/D-273), jamais stocké :
+    l'existence d'une ligne dans `evaluations_couvertes` suffit, câblé
+    réellement depuis US-EVAL-07 (D-270)."""
+    if evaluation.proces_verbaux_verrouillants.exists():
+        raise ErreurValidation(
+            f"{evaluation} : les notes sont verrouillées par un procès-verbal déjà généré — "
+            "une correction relève de la réglementation (CU-P6-05 A4), pas de la ressaisie."
+        )
 
 
 def _valeur_affichee(note):

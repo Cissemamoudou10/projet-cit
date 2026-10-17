@@ -116,6 +116,14 @@ class TypeAction(models.TextChoices):
     journaliser chaque AFFICHAGE de la grille des notes, pas seulement leur
     saisie — `SAISIE_NOTE`/`MODIFICATION_NOTE` (déjà déclarées ci-dessus,
     RG-26) ne portent que l'écriture.
+
+    `GENERATION_PROCES_VERBAL` (US-EVAL-07, V4, prompt 46) — même patron
+    que `GENERATION_PROGRAMME` : un `ProcesVerbal` ne passe pas par le
+    patron de gestion (`CREATION_ELEMENT_GESTION` ne convient pas), sa
+    génération est un acte distinct, daté et verrouillant.
+    `TELECHARGEMENT_PROCES_VERBAL` (US-EVAL-07, V10) — même patron que
+    `CONSULTATION_SUJETS`/`CONSULTATION_NOTES` : donnée sensible, chaque
+    téléchargement journalisé (D-219 cas a), pas seulement la génération.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -151,6 +159,11 @@ class TypeAction(models.TextChoices):
         "Déclaration de non-exécution d'une séance",
     )
     CONSULTATION_NOTES = "consultation_notes", "Consultation des notes"
+    GENERATION_PROCES_VERBAL = "generation_proces_verbal", "Génération d'un procès-verbal"
+    TELECHARGEMENT_PROCES_VERBAL = (
+        "telechargement_proces_verbal",
+        "Téléchargement d'un procès-verbal",
+    )
 
 
 class EntreeJournal(ModeleHorodate):
@@ -224,14 +237,24 @@ class EntreeJournal(ModeleHorodate):
 
 class TypeDocument(models.TextChoices):
     """RG-58 (US-SUI-06, prompt 45, P5) : un type par document produit par
-    `ServiceDocument`. Deux au moins, dès cette story, pour que le mécanisme
-    se généralise sans le redécouvrir à US-EVAL-07 (procès-verbal) : le type
-    lui-même est fixé par le code (ce que `ServiceDocument` sait produire),
-    seul son CONTENU (`GabaritDocument`) est éditable par l'administrateur —
-    à la différence de `NatureEvenement`, le terrain n'en ajoute pas."""
+    `ServiceDocument`. Le type lui-même est fixé par le code (ce que
+    `ServiceDocument` sait produire), seul son CONTENU (`GabaritDocument`)
+    est éditable par l'administrateur — à la différence de
+    `NatureEvenement`, le terrain n'en ajoute pas.
+
+    `PROCES_VERBAL` (US-SUI-06, anticipation d'US-EVAL-07) prévoyait un seul
+    type — V8 d'US-EVAL-07 (prompt 46, point 3) en demande deux, l'en-tête
+    et les mentions pouvant différer entre un procès-verbal de fin de
+    formation (toute la session) et celui d'une seule évaluation. Scindé ici
+    avant toute donnée réelle (seule la commande d'initialisation le
+    consommait) — voir docs/suivi/DECISIONS.md."""
 
     PROGRESSION_REALISEE = "progression_realisee", "Progression réalisée hebdomadaire"
-    PROCES_VERBAL = "proces_verbal", "Procès-verbal de résultats"
+    PROCES_VERBAL_FIN_FORMATION = (
+        "proces_verbal_fin_formation",
+        "Procès-verbal de fin de formation",
+    )
+    PROCES_VERBAL_EVALUATION = "proces_verbal_evaluation", "Procès-verbal d'évaluation"
 
 
 class GabaritDocument(ModeleHorodate):

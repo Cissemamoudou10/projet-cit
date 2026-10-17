@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/polices.css">
+<link rel="stylesheet" href="css/document_pdf.css">
+<style>
+  body { font-family: 'IBM Plex Sans', sans-serif; font-size: 10pt; color: #111; }
+  h1, h2 { font-family: 'Barlow', sans-serif; font-weight: 700; margin: 0 0 4pt; }
+  h1 { font-size: 13pt; }
+  h2 { font-size: 11.5pt; margin-top: 10pt; }
+  table { border-collapse: collapse; width: 100%; margin-top: 4pt; }
+  th, td { border: 0.5pt solid #333; padding: 3pt 5pt; text-align: left; font-size: 9pt; }
+  th { font-family: 'Barlow', sans-serif; font-weight: 600; }
+  td.chiffre, th.chiffre { text-align: right; }
+  .mentions { margin-top: 12pt; font-size: 8pt; color: #333; }
+</style>
+</head>
+<body data-reference="Procès-verbal — {{ session }}{% if evaluation %} — {{ evaluation }}{% endif %} — v{{ version }}">
+  <header data-impression="entete">
+    <strong>{{ gabarit.en_tete }}</strong>
+  </header>
+
+  {% if evaluation %}
+    <h1>Procès-verbal — {{ evaluation }}</h1>
+  {% else %}
+    <h1>Procès-verbal de fin de formation — {{ session }}</h1>
+  {% endif %}
+  <p>
+    Généré le {{ genere_le|date:"d/m/Y H:i" }} par {{ genere_par }}
+    {% if numero %} — n° {{ numero }}{% endif %}
+    — version {{ version }}.
+  </p>
+  <p>Seuil d'admission : {{ seuil }} / 20.</p>
+
+  {% regroup lignes by brigade as groupes_brigade %}
+  {% for groupe in groupes_brigade %}
+    <section data-impression="section-brigade">
+      <h2>{{ groupe.grouper }}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Stagiaire</th>
+            <th class="chiffre">{% if evaluation %}Note{% else %}Moyenne{% endif %}</th>
+            <th class="chiffre">Rang (brigade)</th>
+            <th class="chiffre">Rang (session)</th>
+            <th>Décision</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ligne in groupe.list %}
+            <tr>
+              <td>{{ ligne.stagiaire }}</td>
+              <td class="chiffre">{{ ligne.valeur }}</td>
+              <td class="chiffre">{{ ligne.rang_brigade }}</td>
+              <td class="chiffre">{{ ligne.rang_session }}</td>
+              <td>{{ ligne.decision }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endfor %}
+
+  <p class="mentions">{{ gabarit.mentions }}</p>
+  <div data-impression="signature">
+    <p>{{ gabarit.bloc_signature }}</p>
+  </div>
+</body>
+</html>

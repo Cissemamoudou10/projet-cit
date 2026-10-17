@@ -1,6 +1,12 @@
 """Évaluations — CU-P6-01, RG-48, RG-52, RG-52 bis, CLS-05, Prompt 35.
 
 Aucune règle métier ici : voir .claude/rules/modeles.md.
+
+Scindé en modules dès qu'`models.py` a dépassé 400 lignes (US-EVAL-07,
+prompt 46, point 3) : un fichier par agrégat, ré-exporté par
+`evaluations/models/__init__.py` pour que `from evaluations.models import X`
+continue de fonctionner sans changement ailleurs dans le projet — même
+patron que `ressources.models`.
 """
 
 from django.core.validators import MinValueValidator

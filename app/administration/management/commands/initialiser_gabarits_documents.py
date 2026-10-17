@@ -18,9 +18,20 @@ GABARITS_INITIAUX = {
         "mentions": "Document calculé automatiquement par le système de gestion des activités de formation.",
         "bloc_signature": "Visa du directeur de formation :",
     },
-    TypeDocument.PROCES_VERBAL: {
+    TypeDocument.PROCES_VERBAL_FIN_FORMATION: {
         "en_tete": "Centre d'instruction des transmissions — Direction de formation",
-        "mentions": "Procès-verbal de résultats.",
+        "mentions": (
+            "Procès-verbal de résultats — fin de formation. "
+            "Modèle provisoire — format réglementaire non communiqué."
+        ),
+        "bloc_signature": "Visa du directeur de formation :",
+    },
+    TypeDocument.PROCES_VERBAL_EVALUATION: {
+        "en_tete": "Centre d'instruction des transmissions — Direction de formation",
+        "mentions": (
+            "Procès-verbal de résultats — une évaluation. "
+            "Modèle provisoire — format réglementaire non communiqué."
+        ),
         "bloc_signature": "Visa du directeur de formation :",
     },
 }

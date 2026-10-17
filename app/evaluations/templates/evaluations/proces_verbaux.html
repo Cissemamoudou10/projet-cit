@@ -1,0 +1,105 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Procès-verbaux — {{ session }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Procès-verbaux — {{ session }}</h1>
+  <p class="text-sm text-gris-lecture">
+    Document officiel : une fois généré, le fichier ne change plus — une correction
+    du gabarit crée une nouvelle version, l'ancienne reste consultable.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Procès-verbaux générés
+  </p>
+  {% if not proces_verbaux %}
+    <p class="px-4 py-3.5 text-sm text-gris-lecture">Aucun procès-verbal généré.</p>
+  {% else %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Type</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Évaluation</th>
+          <th scope="col" class="w-20 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Version</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Généré le</th>
+          <th scope="col" class="w-20 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pv in proces_verbaux %}
+          <tr class="h-ligne border-t border-gris-trait">
+            <td class="px-3 py-1.5">{{ pv.get_type_display }}</td>
+            <td class="px-3 py-1.5">{{ pv.evaluation|default:"—" }}</td>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ pv.version }}</td>
+            <td class="px-3 py-1.5">{{ pv.cree_le|date:"d/m/Y H:i" }} — {{ pv.cree_par }}</td>
+            <td class="px-3 py-1.5 text-right">
+              <a href="{% url 'evaluations:telecharger_proces_verbal' pv.pk %}"
+                 class="text-marine-700 no-underline hover:underline">Télécharger</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</section>
+
+{% if peut_generer %}
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+            font-semibold uppercase tracking-wide text-marine-900">
+    Générer un procès-verbal
+  </p>
+  <form method="post" action="{{ url_apercu }}" class="flex flex-wrap items-end gap-3 px-4 py-3.5">
+    {% csrf_token %}
+    <div class="w-56">
+      <label class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Type</label>
+      <select name="type_pv" class="h-controle w-full rounded border border-gris-trait bg-fond-bloc
+                                     px-2.5 text-sm outline-none hover:border-marine-700
+                                     focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        <option value="fin_de_formation">Fin de formation (toute la session)</option>
+        <option value="evaluation">Une évaluation</option>
+      </select>
+    </div>
+    <div class="w-64">
+      <label class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+        Évaluation (si « une évaluation »)</label>
+      <select name="evaluation_pk" class="h-controle w-full rounded border border-gris-trait
+                                          bg-fond-bloc px-2.5 text-sm outline-none
+                                          hover:border-marine-700 focus:border-marine-700
+                                          focus:ring-2 focus:ring-focus">
+        <option value="">—</option>
+        {% for evaluation in evaluations %}
+          <option value="{{ evaluation.pk }}">{{ evaluation }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="w-40">
+      <label class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+        Numéro (facultatif)</label>
+      <input type="text" name="numero"
+             class="h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                    outline-none hover:border-marine-700 focus:border-marine-700
+                    focus:ring-2 focus:ring-focus">
+    </div>
+    <button type="submit"
+            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700">
+      Aperçu
+    </button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

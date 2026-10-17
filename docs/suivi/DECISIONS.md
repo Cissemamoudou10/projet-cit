@@ -39,6 +39,22 @@ reprendre. **Cette ligne n'est jamais vide.**
 **Impact sur les livrables** — aucun sur le diagramme de classes ; question ajoutée au terrain, au même titre que N6 (US-EVAL-05) et V6 (US-EVAL-07) : les coefficients et poids réels par formation/matière restent à communiquer, les valeurs par défaut ne sont qu'un repli technique.
 **Reporté au livrable** — non applicable ; à rouvrir si le terrain fixe des valeurs différentes.
 
+## D-275 — WeasyPrint éprouvé pour le procès-verbal dans le conteneur, condition d'arrêt non atteinte
+**Date** 2026-10-17 · **Story** US-EVAL-07 (Prompt 46, point 3) · **Auteur** porteur non renseigné
+**Contexte** — Le prompt posait une condition d'arrêt explicite (héritée d'US-SUI-06, D-267) si WeasyPrint ne s'exécutait pas dans le conteneur de production pour le procès-verbal.
+**Décision** — `pytest -m pdf` exécuté dans `python:3.14-slim-bookworm` (réseau Docker `developpement_default`, hôte `base`) : **9 tests passés** (les six de la progression réalisée, US-SUI-06, plus les trois du procès-verbal). WeasyPrint rend le gabarit du procès-verbal sans erreur — la condition d'arrêt n'a pas été atteinte. Un défaut d'extraction de texte trouvé et contourné en cours de route (P-48, espace parasite au sein d'un mot, crénage de police probable) — sans rapport avec le rendu lui-même.
+**Alternative écartée** — Considérer l'exécution déjà faite pour la progression réalisée (US-SUI-06) comme suffisante pour cette story aussi : écartée, chaque gabarit est un rendu distinct (polices, mise en page, `{% regroup %}`), rien ne garantit qu'un gabarit qui s'exécute implique que tous les autres le fassent aussi.
+**Impact sur les livrables** — aucun.
+**Reporté au livrable** — non applicable.
+
+## D-274 — `TypeDocument.PROCES_VERBAL` scindé en deux avant toute donnée réelle
+**Date** 2026-10-17 · **Story** US-EVAL-07 (Prompt 46, point 3) · **Auteur** porteur non renseigné
+**Contexte** — US-SUI-06 avait posé `TypeDocument.PROCES_VERBAL` (une seule valeur), en anticipation explicite d'US-EVAL-07. V8 de cette story (prompt 46) demande deux gabarits distincts — « procès-verbal de fin de formation » et « procès-verbal d'évaluation » — l'en-tête et les mentions pouvant différer entre les deux portées.
+**Décision** — `PROCES_VERBAL` retiré, remplacé par `PROCES_VERBAL_FIN_FORMATION` et `PROCES_VERBAL_EVALUATION`. Sans risque : seule `initialiser_gabarits_documents` (commande, jamais une migration de données, D-122) consommait cette valeur ; aucun `GabaritDocument` réel n'a jamais porté l'ancienne valeur en dehors d'un jeu de test.
+**Alternative écartée** — Garder un seul type « procès-verbal » et distinguer les deux portées par un simple paramètre de contexte au rendu (même gabarit, en-tête identique) : aurait empêché l'administrateur de personnaliser séparément les mentions de chaque portée, ce que V8 demande explicitement.
+**Impact sur les livrables** — aucun sur le diagramme de classes (`TypeDocument` n'y figure pas, c'est une énumération technique du mécanisme de gabarits).
+**Reporté au livrable** — non applicable.
+
 ## D-273 — M5 (US-EVAL-06) et N5 (US-EVAL-05) ne citent pas RG-59 bis : le prompt se trompe de règle
 **Date** 2026-10-17 · **Story** US-EVAL-06 (Prompt 46, point 2 — trouvé en relecture) · **Auteur** porteur non renseigné
 **Contexte** — Le prompt 46 (M5, US-EVAL-06) écrit : « la liste des manquants est rendue par module et par brigade (RG-59 bis) ». Or le skill `regles-metier` (vingt-cinq règles structurantes, « ne doivent jamais être réinterprétées ») définit RG-59 bis sans ambiguïté : « Un seul procès-verbal par fin de formation, rattaché à la session » — une règle sur l'UNICITÉ d'un procès-verbal (US-EVAL-07), sans aucun rapport avec le regroupement des notes manquantes. Trouvé en relecture (`relecteur-conception`) : la citation avait été recopiée telle quelle dans `evaluations/services/moyenne.py` et `evaluations/views_moyennes.py`, propageant l'erreur du prompt dans le code.

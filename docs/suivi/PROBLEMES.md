@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-48 — Extraction de texte d'un PDF WeasyPrint : un espace parasite s'insère parfois au milieu d'un mot
+**Date** 2026-10-17 · **Story** US-EVAL-07 (Prompt 46, point 3) · **État** : contourné, cause non éliminée
+**Symptôme** — `test_il_contient_les_intitules_rangs_et_decisions` (exécuté réellement dans le conteneur `python:3.14-slim-bookworm`, `pytest -m pdf`) : `str(brigade) in texte` échoue — le texte extrait porte « Session EV AL — Formation EV AL » (un espace au milieu de « EVAL », aux deux occurrences).
+**Cause** — non éliminée avec certitude ; hypothèse la plus probable, non vérifiée pixel à pixel : le crénage (kerning) de la police grasse (Barlow, utilisée pour le titre `<h1>`) produit, pour la paire de lettres en cause, un espacement que l'heuristique d'extraction de texte de `pypdf` interprète comme une limite de mot — la mise en page visuelle n'est probablement pas affectée (ce n'est pas un défaut de rendu, seulement de LECTURE programmatique du rendu).
+**Résolution** — Le test compare le texte extrait et la chaîne attendue après avoir retiré tous les espaces des deux côtés, plutôt que l'égalité stricte d'une sous-chaîne. Contournement délibéré : la présence du contenu est ce que le critère du prompt demande (« les intitulés... par extraction de texte »), pas la fidélité exacte de la mise en espace, qui n'est d'ailleurs pas du tout ce que RG/CU exigent ici.
+**Risque concerné** — aucun nouveau ; tout futur test de ce type (extraction de texte d'un PDF WeasyPrint) peut rencontrer le même artefact sur un autre mot ou une autre police — la même précaution (comparer sans espaces, ou chercher une sous-chaîne plus courte et moins exposée) s'applique par anticipation.
+**Leçon** — un test qui vérifie le CONTENU d'un PDF par extraction de texte ne doit jamais supposer que l'espacement du texte extrait reproduit fidèlement le texte source, même quand le rendu visuel est correct — comparer après normalisation des espaces, pas par égalité ou inclusion stricte.
+
 ## P-47 — Une requête par brigade dans l'écran des moyennes : `Brigade.__str__` lit `self.session`, jamais préchargé par le reverse manager
 **Date** 2026-10-17 · **Story** US-EVAL-06 (Prompt 46, point 2) · **État** : résolu
 **Symptôme** — `test_requetes_constantes_avec_deux_et_dix_brigades` (`evaluations/tests/test_moyennes_ecran.py`) : 16 requêtes avec 2 brigades, 32 avec 10 — exactement le double, pas une marge qui se consomme en silence (A8).

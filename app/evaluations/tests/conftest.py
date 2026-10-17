@@ -367,3 +367,29 @@ def _enregistrer(agissant, evaluation, reference, date_depot=None):
         evaluation,
         {"reference": reference, "date_depot": date_depot or timezone.localdate()},
     )
+
+
+# --- US-EVAL-07 : procès-verbaux — fixtures partagées entre test_proces_verbal.py,
+# test_proces_verbal_ecran.py et test_proces_verbal_pdf.py
+# (`.claude/rules/python.md`, § 5 paramètres max : un dossier plutôt que
+# cinq fixtures injectées séparément dans chaque test).
+
+
+@dataclasses.dataclass(frozen=True)
+class DossierProcesVerbal:
+    examens: object
+    redacteur: object
+    session: object
+    brigade: object
+    certificative: object
+
+
+@pytest.fixture
+def dossier_pv(examens, redacteur, session, brigade, certificative):
+    return DossierProcesVerbal(
+        examens=examens,
+        redacteur=redacteur,
+        session=session,
+        brigade=brigade,
+        certificative=certificative,
+    )
