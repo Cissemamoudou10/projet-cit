@@ -129,7 +129,11 @@ def vue_modifier_element_referentiel(request, formation_pk, element_pk):
         else:
             messages.success(request, f"« {element.matiere} » modifiée.")
     else:
-        messages.error(request, "Volume ou catégorie de lieu non valide.")
+        messages.error(
+            request,
+            "Rattachement non valide : vérifiez le volume, le coefficient, les poids "
+            "formatif et certificatif, et la catégorie de lieu.",
+        )
     return redirect("referentiel:referentiel_formation", formation.pk)
 
 

@@ -3,6 +3,8 @@ CU-P2-04, CU-P2-05. Le modèle et ses contraintes, en base, en contournant
 l'ORM — le déroulement et les écrans sont dans test_referentiel_ecran.py.
 """
 
+import decimal
+
 import pytest
 from django.db import IntegrityError, transaction
 
@@ -51,6 +53,41 @@ def test_volume_nul_ou_negatif_est_refuse_en_base(formation, matiere, volume):
         ElementReferentiel.objects.create(
             formation=formation, matiere=matiere, **_donnees(volume_horaire_prescrit=volume)
         )
+
+
+@pytest.mark.parametrize("coefficient", [0, -1])
+def test_coefficient_nul_ou_negatif_est_refuse_en_base(formation, matiere, coefficient):
+    """P-45 : attribut de CLS-01 ajouté au prompt 46, strictement positif."""
+    with pytest.raises(IntegrityError), transaction.atomic():
+        ElementReferentiel.objects.create(
+            formation=formation, matiere=matiere, **_donnees(coefficient=coefficient)
+        )
+
+
+@pytest.mark.parametrize("champ", ["poids_formatif", "poids_certificatif"])
+def test_un_poids_negatif_est_refuse_en_base(formation, matiere, champ):
+    with pytest.raises(IntegrityError), transaction.atomic():
+        ElementReferentiel.objects.create(
+            formation=formation, matiere=matiere, **_donnees(**{champ: -1})
+        )
+
+
+def test_les_deux_poids_nuls_a_la_fois_sont_refuses_en_base(formation, matiere):
+    with pytest.raises(IntegrityError), transaction.atomic():
+        ElementReferentiel.objects.create(
+            formation=formation,
+            matiere=matiere,
+            **_donnees(poids_formatif=0, poids_certificatif=0),
+        )
+
+
+def test_un_seul_poids_nul_est_accepte_en_base(formation, matiere):
+    """Le cas du PFE formatif dans une formation, certificatif dans une
+    autre (`.claude/rules/tests.md`) : un seul des deux poids à zéro reste
+    licite, seuls les deux à la fois sont refusés."""
+    ElementReferentiel.objects.create(
+        formation=formation, matiere=matiere, **_donnees(poids_formatif=1, poids_certificatif=0)
+    )  # ne lève pas
 
 
 def test_categorie_lieu_partage_sans_type_est_refusee_en_base(formation, matiere):
@@ -125,6 +162,33 @@ def test_modifier_vers_lieu_partage_sans_type_est_refuse_par_le_service(
             element,
             _donnees(categorie_lieu=CategorieLieu.LIEU_PARTAGE, type_lieu_partage=""),
         )
+
+
+def test_rattacher_avec_les_deux_poids_nuls_est_refuse_par_le_service(
+    redacteur, formation, matiere
+):
+    with pytest.raises(ErreurValidation) as info:
+        ServiceReferentiel.rattacher(
+            redacteur, formation, matiere, _donnees(poids_formatif=0, poids_certificatif=0)
+        )
+
+    assert "nuls" in str(info.value).lower()
+    assert not ElementReferentiel.objects.filter(formation=formation, matiere=matiere).exists()
+
+
+def test_modifier_le_coefficient_et_les_poids_les_change_reellement(redacteur, formation, matiere):
+    element = ServiceReferentiel.rattacher(redacteur, formation, matiere, _donnees())
+
+    ServiceReferentiel.modifier_volume(
+        redacteur,
+        element,
+        _donnees(coefficient=2, poids_formatif="0.6", poids_certificatif="0.4"),
+    )
+
+    element.refresh_from_db()
+    assert element.coefficient == decimal.Decimal("2")
+    assert element.poids_formatif == decimal.Decimal("0.60")
+    assert element.poids_certificatif == decimal.Decimal("0.40")
 
 
 def test_suppression_d_une_matiere_rattachee_est_refusee(formation, matiere):

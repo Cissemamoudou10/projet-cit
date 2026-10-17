@@ -172,6 +172,30 @@ class ElementReferentiel(ModeleHorodate):
         blank=True,
         verbose_name="type de lieu partagé",
     )
+    # P-45 : attributs de CLS-01 (coefficient, poidsFormatif, poidsCertificatif)
+    # jamais implantés depuis US-REF-03, faute de critère d'acceptation qui les
+    # portait — ajoutés au prompt 46, voir docs/suivi/PROBLEMES.md.
+    coefficient = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=1,
+        validators=[MinValueValidator(0.01)],
+        verbose_name="coefficient",
+    )
+    poids_formatif = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=1,
+        validators=[MinValueValidator(0)],
+        verbose_name="poids formatif",
+    )
+    poids_certificatif = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=1,
+        validators=[MinValueValidator(0)],
+        verbose_name="poids certificatif",
+    )
 
     class Meta:
         db_table = "referentiel_element_referentiel"
@@ -196,6 +220,18 @@ class ElementReferentiel(ModeleHorodate):
                     )
                 ),
                 name="ck_element_referentiel_type_lieu_coherent",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(coefficient__gt=0),
+                name="ck_element_referentiel_coefficient_positif",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(poids_formatif__gte=0) & models.Q(poids_certificatif__gte=0),
+                name="ck_element_referentiel_poids_positifs_ou_nuls",
+            ),
+            models.CheckConstraint(
+                condition=~(models.Q(poids_formatif=0) & models.Q(poids_certificatif=0)),
+                name="ck_element_referentiel_poids_non_tous_nuls",
             ),
         ]
 

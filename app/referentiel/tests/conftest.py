@@ -96,6 +96,9 @@ def donnees_element_referentiel(**supplement):
         "volume_horaire_prescrit": 40,
         "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
         "type_lieu_partage": None,
+        "coefficient": 1,
+        "poids_formatif": 1,
+        "poids_certificatif": 1,
     }
     donnees.update(supplement)
     return donnees

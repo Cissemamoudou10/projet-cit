@@ -165,6 +165,9 @@ def _donnees_coherentes(donnees):
     un « lieu partagé » sans type réel s'enregistrait alors silencieusement.
     """
     donnees = dict(donnees)
+    donnees.setdefault("coefficient", 1)
+    donnees.setdefault("poids_formatif", 1)
+    donnees.setdefault("poids_certificatif", 1)
     donnees["type_lieu_partage"] = donnees.get("type_lieu_partage") or None
     if donnees["categorie_lieu"] != CategorieLieu.LIEU_PARTAGE:
         donnees["type_lieu_partage"] = None
@@ -172,6 +175,12 @@ def _donnees_coherentes(donnees):
         raise ErreurValidation(
             "Le type de lieu partagé est obligatoire pour la catégorie « Lieu partagé » : "
             "amphithéâtre, laboratoire ou salle spécialisée."
+        )
+    if donnees["poids_formatif"] == 0 and donnees["poids_certificatif"] == 0:
+        raise ErreurValidation(
+            "Le poids formatif et le poids certificatif ne peuvent pas être nuls "
+            "tous les deux : indiquez au moins l'un des deux, selon le type "
+            "d'évaluation du module pour cette formation."
         )
     return donnees
 

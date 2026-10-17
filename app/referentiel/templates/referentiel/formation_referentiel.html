@@ -55,6 +55,12 @@
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Volume</th>
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Coefficient</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Poids formatif</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Poids certificatif</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Catégorie de lieu</th>
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Type de lieu partagé</th>
@@ -85,6 +91,27 @@
                   <span class="flex items-center border-l border-gris-trait bg-fond-bande px-2
                                text-2xs text-gris-lecture">h</span>
                 </span>
+              </td>
+              <td class="px-3 py-1.5">
+                <input type="number" min="0.01" step="0.01" name="coefficient"
+                       form="ligne-{{ element.pk }}" value="{{ element.coefficient }}"
+                       aria-label="Coefficient — {{ element.matiere }}"
+                       class="h-ligne w-20 border border-gris-trait bg-fond-bloc px-2 text-right
+                              text-xs tabular-nums outline-none">
+              </td>
+              <td class="px-3 py-1.5">
+                <input type="number" min="0" step="0.01" name="poids_formatif"
+                       form="ligne-{{ element.pk }}" value="{{ element.poids_formatif }}"
+                       aria-label="Poids formatif — {{ element.matiere }}"
+                       class="h-ligne w-20 border border-gris-trait bg-fond-bloc px-2 text-right
+                              text-xs tabular-nums outline-none">
+              </td>
+              <td class="px-3 py-1.5">
+                <input type="number" min="0" step="0.01" name="poids_certificatif"
+                       form="ligne-{{ element.pk }}" value="{{ element.poids_certificatif }}"
+                       aria-label="Poids certificatif — {{ element.matiere }}"
+                       class="h-ligne w-20 border border-gris-trait bg-fond-bloc px-2 text-right
+                              text-xs tabular-nums outline-none">
               </td>
               <td class="px-3 py-1.5">
                 <select name="categorie_lieu" form="ligne-{{ element.pk }}"
@@ -135,7 +162,7 @@
             {% endif %}
           </tr>
           <tr class="border-t border-gris-trait bg-fond-bloc">
-            <td colspan="{% if perms.noyau.referentiel_ecriture %}5{% else %}4{% endif %}"
+            <td colspan="{% if perms.noyau.referentiel_ecriture %}8{% else %}7{% endif %}"
                 class="px-3 py-1.5 text-left">
               <details class="group">
                 <summary class="flex cursor-pointer list-none items-center gap-2 text-xs
@@ -205,6 +232,30 @@
       {% if formulaire_rattachement.volume_horaire_prescrit.errors %}
         <p class="mt-1 text-2xs text-etat-ecart">
           {{ formulaire_rattachement.volume_horaire_prescrit.errors|first }}</p>
+      {% endif %}
+    </div>
+    <div class="w-24">
+      <label for="{{ formulaire_rattachement.coefficient.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Coefficient</label>
+      {{ formulaire_rattachement.coefficient }}
+      {% if formulaire_rattachement.coefficient.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">{{ formulaire_rattachement.coefficient.errors|first }}</p>
+      {% endif %}
+    </div>
+    <div class="w-28">
+      <label for="{{ formulaire_rattachement.poids_formatif.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Poids formatif</label>
+      {{ formulaire_rattachement.poids_formatif }}
+      {% if formulaire_rattachement.poids_formatif.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">{{ formulaire_rattachement.poids_formatif.errors|first }}</p>
+      {% endif %}
+    </div>
+    <div class="w-28">
+      <label for="{{ formulaire_rattachement.poids_certificatif.id_for_label }}"
+             class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Poids certificatif</label>
+      {{ formulaire_rattachement.poids_certificatif }}
+      {% if formulaire_rattachement.poids_certificatif.errors %}
+        <p class="mt-1 text-2xs text-etat-ecart">{{ formulaire_rattachement.poids_certificatif.errors|first }}</p>
       {% endif %}
     </div>
     <div class="w-48">

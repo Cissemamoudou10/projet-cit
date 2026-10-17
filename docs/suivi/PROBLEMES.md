@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-45 — Trois attributs de CLS-01 (coefficient, poidsFormatif, poidsCertificatif) jamais implantés depuis US-REF-03
+**Date** 2026-10-16 · **Story** Préalable (Prompt 46, § 0.3 — hors story) · **État** : résolu
+**Symptôme** — Le préalable 0.3 du prompt 46 (condition d'arrêt) demandait de vérifier la présence, sur `ElementReferentiel`, du coefficient, du poids formatif et du poids certificatif, nécessaires au calcul des moyennes d'US-EVAL-06 (M3, M4). Aucun des trois n'existe sur le modèle réel (`app/referentiel/models.py`), ni ailleurs dans le dépôt.
+**Cause** — `docs/conception/13-diagramme-classes.md` (qui fait foi) porte bien les trois attributs sur `ElementReferentiel` depuis sa rédaction, avec leur justification terrain (coefficient variable par formation, deux poids pour le cas du PFE formatif dans une formation, certificatif dans une autre). Mais aucun critère d'acceptation d'aucune story livrée (US-REF-03, qui construit l'écran de composition du référentiel, ni aucune autre) ne les nommait : ils sont restés absents du modèle Django sans qu'aucun test n'échoue, faute d'un seul critère qui les exerce — même motif que le modèle `Avenant` de CLS-04, resté non implanté un temps pour la même raison (`docs/suivi/DECISIONS.md`, D-165).
+**Résolution** — Trois champs `DecimalField` ajoutés à `ElementReferentiel` (`coefficient`, `poids_formatif`, `poids_certificatif`), migration de schéma seule (les valeurs par défaut suffisent aux lignes existantes, D-269). Saisie intégrée à l'écran existant de composition du référentiel (US-REF-03) : mêmes habilitations, même journalisation que le volume horaire, pas un second écran ni un second service.
+**Risque concerné** — aucun nouveau ; révèle un défaut de méthode transverse, voir Leçon.
+**Leçon** — un attribut porté par le diagramme de classes (qui fait foi) mais absent de tout critère d'acceptation d'une story livrée ne se découvre pas par la relecture habituelle (qui vérifie le critère, pas le diagramme dans son ensemble) : seul un audit direct du diagramme contre le modèle réel le révèle. Un tel audit a été fait une fois (ce prompt, voir le rendu) ; il resterait à répéter si d'autres attributs du diagramme restent dans le même angle mort.
+
 ## P-44 — Un `import weasyprint` en tête de module fait échouer l'import de tout module qui en dépend, sous Windows
 **Date** 2026-10-13 · **Story** US-SUI-06 (Prompt 45, Temps 2) · **État** : résolu
 **Symptôme** — Après l'ajout de `ServiceDocument` (`administration/services/document.py`, `from weasyprint import HTML` en tête de module), `pytest tests/architecture/test_ecrans_ecriture.py` est passé de quelques dizaines de tests à **497 échecs** (pour 1 seul test passé), touchant des vues de `evaluations` totalement sans rapport avec le PDF (`retirer_organisation`, `ajouter_surveillant`, etc.).

@@ -100,6 +100,9 @@ def test_rattacher_par_l_ecran_rattache_reellement_la_matiere(
             "volume_horaire_prescrit": 40,
             "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
             "type_lieu_partage": "",
+            "coefficient": "1",
+            "poids_formatif": "1",
+            "poids_certificatif": "1",
         },
     )
 
@@ -120,11 +123,64 @@ def test_modifier_l_element_par_l_ecran_change_reellement_le_volume(
             "volume_horaire_prescrit": 60,
             "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
             "type_lieu_partage": "",
+            "coefficient": "1",
+            "poids_formatif": "1",
+            "poids_certificatif": "1",
         },
     )
 
     element.refresh_from_db()
     assert element.volume_horaire_prescrit == 60
+
+
+def test_modifier_par_l_ecran_change_reellement_le_coefficient_et_les_poids(
+    client, redacteur, formation, matiere
+):
+    """P-45 : les trois attributs ajoutés au prompt 46 passent par le même
+    formulaire HTML que le volume, pas par un second chemin."""
+    element = ServiceReferentiel.rattacher(redacteur, formation, matiere, _donnees())
+    client.force_login(redacteur)
+
+    client.post(
+        reverse("referentiel:modifier_element_referentiel", args=[formation.pk, element.pk]),
+        {
+            "volume_horaire_prescrit": 40,
+            "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
+            "type_lieu_partage": "",
+            "coefficient": "2.5",
+            "poids_formatif": "0.6",
+            "poids_certificatif": "0.4",
+        },
+    )
+
+    element.refresh_from_db()
+    assert str(element.coefficient) == "2.50"
+    assert str(element.poids_formatif) == "0.60"
+    assert str(element.poids_certificatif) == "0.40"
+
+
+def test_modifier_avec_les_deux_poids_nuls_est_refuse_par_l_ecran(
+    client, redacteur, formation, matiere
+):
+    element = ServiceReferentiel.rattacher(redacteur, formation, matiere, _donnees())
+    client.force_login(redacteur)
+
+    reponse = client.post(
+        reverse("referentiel:modifier_element_referentiel", args=[formation.pk, element.pk]),
+        {
+            "volume_horaire_prescrit": 40,
+            "categorie_lieu": CategorieLieu.SALLE_ATTITREE,
+            "type_lieu_partage": "",
+            "coefficient": "1",
+            "poids_formatif": "0",
+            "poids_certificatif": "0",
+        },
+        follow=True,
+    )
+
+    element.refresh_from_db()
+    assert element.poids_formatif == 1  # inchangé
+    assert "nuls" in reponse.content.decode("utf-8").lower()
 
 
 def test_methode_d_enumeration_des_bloquants_existe_et_ne_trouve_rien(

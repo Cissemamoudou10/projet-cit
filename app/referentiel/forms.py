@@ -114,6 +114,30 @@ class FormulaireRattachementMatiere(forms.Form):
         required=False,
         widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
     )
+    coefficient = forms.DecimalField(
+        label="Coefficient",
+        min_value=0.01,
+        max_digits=4,
+        decimal_places=2,
+        initial=1,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_TEXTE, "step": "0.01"}),
+    )
+    poids_formatif = forms.DecimalField(
+        label="Poids formatif",
+        min_value=0,
+        max_digits=4,
+        decimal_places=2,
+        initial=1,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_TEXTE, "step": "0.01"}),
+    )
+    poids_certificatif = forms.DecimalField(
+        label="Poids certificatif",
+        min_value=0,
+        max_digits=4,
+        decimal_places=2,
+        initial=1,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_TEXTE, "step": "0.01"}),
+    )
 
     def __init__(self, *args, matieres_disponibles, **kwargs):
         super().__init__(*args, **kwargs)
@@ -121,7 +145,7 @@ class FormulaireRattachementMatiere(forms.Form):
 
 
 class FormulaireElementReferentiel(forms.Form):
-    """A2 : modification en place d'un rattachement existant — mêmes trois
+    """A2 : modification en place d'un rattachement existant — mêmes six
     champs que le rattachement, sans la matière, qui ne change jamais.
     """
 
@@ -140,6 +164,27 @@ class FormulaireElementReferentiel(forms.Form):
         label="Type de lieu partagé",
         required=False,
         widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
+    )
+    coefficient = forms.DecimalField(
+        label="Coefficient",
+        min_value=0.01,
+        max_digits=4,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "step": "0.01"}),
+    )
+    poids_formatif = forms.DecimalField(
+        label="Poids formatif",
+        min_value=0,
+        max_digits=4,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "step": "0.01"}),
+    )
+    poids_certificatif = forms.DecimalField(
+        label="Poids certificatif",
+        min_value=0,
+        max_digits=4,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={"class": CLASSES_CHAMP_UNITE, "step": "0.01"}),
     )
 
 
