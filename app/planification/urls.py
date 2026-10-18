@@ -29,6 +29,11 @@ urlpatterns = [
         name="seances_de_la_periode",
     ),
     path(
+        "planification/programmes/",
+        views_circuit.vue_liste_programmes,
+        name="liste_programmes",
+    ),
+    path(
         "planification/programmes/en-attente/",
         views_circuit.attente_validation,
         name="attente_validation",

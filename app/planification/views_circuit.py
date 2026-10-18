@@ -1,9 +1,12 @@
-"""Écrans du circuit du programme (prompt 40, US-VAL-01, 02 et 04).
+"""Écrans du circuit du programme (prompt 40, US-VAL-01, 02 et 04 ; prompt 47,
+US-VAL-05).
 
 Chaque écran d'écriture est une action POST : elle appelle le moteur
 `ServiceCircuitProgramme` et n'en reprend aucune règle. Un refus du moteur
 s'affiche par message, l'état reste celui du moteur.
 """
+
+import datetime
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -11,15 +14,21 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
+from noyau.pagination import paginer
 from planification.exceptions import TransitionProgrammeRefusee
 from planification.forms_circuit import FormulaireSignature
-from planification.models import ProgrammeHebdomadaire
-from planification.selectors_circuit import auteurs_des_soumissions, programmes_en_attente
+from planification.models import EtatProgramme, ProgrammeHebdomadaire
+from planification.selectors_circuit import (
+    auteurs_des_soumissions,
+    programmes_en_attente,
+    programmes_filtres,
+)
 from planification.services.circuit import ServiceCircuitProgramme
 
 PERMISSION_PLANIFICATION = "noyau.programme_ecriture"
 PERMISSION_PEDAGOGIQUE = "noyau.programme_validation_ecriture"
 PERMISSION_PEDAGOGIQUE_LECTURE = "noyau.programme_validation_lecture"
+PERMISSION_LECTURE = "noyau.programme_lecture"
 
 
 def _retour_consultation(programme):
@@ -134,4 +143,35 @@ def attente_validation(request):
         request,
         "planification/attente_validation.html",
         {"lignes": lignes},
+    )
+
+
+def _date_filtre(request, nom):
+    valeur = request.GET.get(nom)
+    if not valeur:
+        return None
+    try:
+        return datetime.date.fromisoformat(valeur)
+    except ValueError:
+        return None
+
+
+@exige_habilitation(PERMISSION_LECTURE)
+def vue_liste_programmes(request):
+    """US-VAL-05, H2 : toutes les semaines, filtrables par état et par
+    période — chaque ligne mène à la consultation de la semaine, qui porte
+    son historique (H1). `programme_lecture`, pas `programme_validation_
+    lecture` (celle d'`attente_validation`, ci-dessus) : cet écran liste des
+    PROGRAMMES, le circuit de validation n'en est qu'une colonne parmi
+    d'autres — choix distinct signalé en relecture, les deux permissions se
+    recoupent aujourd'hui exactement dans `MATRICE` (D-280)."""
+    etat = request.GET.get("etat") or None
+    periode_debut = _date_filtre(request, "debut")
+    periode_fin = _date_filtre(request, "fin")
+    programmes = programmes_filtres(etat=etat, periode_debut=periode_debut, periode_fin=periode_fin)
+    page = paginer(programmes, request.GET.get("page"))
+    return render(
+        request,
+        "planification/liste_programmes.html",
+        {"page": page, "etats": EtatProgramme.choices},
     )

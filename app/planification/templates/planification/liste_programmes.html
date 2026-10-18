@@ -1,0 +1,106 @@
+{% extends "noyau/base.html" %}
+{% load pagination %}
+
+{% block titre %}Programmes hebdomadaires — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Programmes hebdomadaires</h1>
+  <p class="text-sm text-gris-lecture">Toutes les semaines, filtrables par état et par période.</p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<form method="get"
+      class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
+  <div>
+    <label for="filtre-etat"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</label>
+    <select id="filtre-etat" name="etat"
+            class="h-controle w-48 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Tous</option>
+      {% for valeur, libelle in etats %}
+        <option value="{{ valeur }}" {% if request.GET.etat == valeur %}selected{% endif %}>
+          {{ libelle }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="filtre-debut"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Semaine du</label>
+    <input type="date" id="filtre-debut" name="debut" value="{{ request.GET.debut }}"
+           class="h-controle rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                  outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+  </div>
+  <div>
+    <label for="filtre-fin"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">au</label>
+    <input type="date" id="filtre-fin" name="fin" value="{{ request.GET.fin }}"
+           class="h-controle rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                  outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+  </div>
+  <button type="submit"
+          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol hover:bg-marine-700">
+    Filtrer
+  </button>
+  <a href="{% url 'planification:liste_programmes' %}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
+</form>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if page %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Semaine</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">État</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Dernière transition</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for programme in page %}
+          <tr class="border-t border-gris-trait">
+            <td class="px-3 py-2">Semaine du {{ programme.lundi_de_semaine|date:"d/m/Y" }}</td>
+            <td class="px-3 py-2">
+              <span class="border border-marine-700 px-1.5 py-px text-2xs font-semibold
+                           tracking-wide text-marine-700">{{ programme.get_etat_display|upper }}</span>
+            </td>
+            <td class="px-3 py-2 text-gris-lecture">
+              {% if programme.etat == "affiche" %}
+                Affiché le {{ programme.date_affichage|date:"d/m/Y H:i" }}
+              {% elif programme.etat == "valide" %}
+                {% if programme.date_signature %}
+                  Signé le {{ programme.date_signature|date:"d/m/Y" }}
+                {% else %}
+                  Validé le {{ programme.date_validation|date:"d/m/Y H:i" }} par {{ programme.valide_par|default:"—" }}
+                {% endif %}
+              {% elif programme.etat == "rejete" %}
+                Rejeté — {{ programme.motif_rejet|default:"—" }}
+              {% elif programme.etat == "soumis" %}
+                Soumis le {{ programme.date_soumission|date:"d/m/Y H:i" }}
+              {% else %}
+                En préparation
+              {% endif %}
+            </td>
+            <td class="px-3 py-2 text-right">
+              <a href="{% url 'planification:consultation_programme' %}?semaine={{ programme.lundi_de_semaine|date:'Y-m-d' }}"
+                 class="text-marine-700 no-underline hover:underline">Ouvrir</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% pagination page %}
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <p class="mb-1 font-titre text-lg font-semibold">Aucun programme ne correspond aux filtres</p>
+      <p class="max-w-lg text-sm text-gris-lecture">Ajustez la recherche ou réinitialisez les filtres.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

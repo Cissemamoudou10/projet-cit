@@ -30,6 +30,7 @@ from planification.selectors import (
     jours_disponibles,
     programme_de_la_semaine,
 )
+from planification.selectors_circuit import historique_du_programme
 from planification.selectors_ecart_volume import ecarts_volume_horaire
 from planification.services.generation import PERMISSION_ECRITURE, ServiceGeneration
 
@@ -172,5 +173,7 @@ def vue_consultation_programme(request):
             # US-PLAN-07, E2 : visible avant soumission, mêmes brigades que
             # la grille consultée — aucun calcul nouveau (E1).
             "ecarts_volume_horaire": ecarts_volume_horaire(brigades),
+            # US-VAL-05, H1 : lu dans le journal, aucune table nouvelle.
+            "historique": historique_du_programme(programme) if programme else [],
         },
     )

@@ -35,6 +35,14 @@
           </a>
         {% endif %}
       {% endif %}
+      {% if perms.noyau.programme_lecture %}
+        <a href="{% url 'planification:liste_programmes' %}"
+           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                  text-sm font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-marine-700">
+          Programmes
+        </a>
+      {% endif %}
       {% if perms.noyau.programme_ecriture %}
         <a href="{% url 'planification:lancement_generation' %}"
            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
@@ -155,6 +163,38 @@
       {% endfor %}
     </div>
   </div>
+</section>
+{% endif %}
+{% if historique %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc" aria-label="Historique du programme">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold
+            uppercase tracking-wide text-marine-900">
+    Historique
+  </p>
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Date</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Transition</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Auteur</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Détail</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entree in historique %}
+        <tr class="border-t border-gris-trait">
+          <td class="px-3 py-2 tabular-nums">{{ entree.cree_le|date:"d/m/Y H:i" }}</td>
+          <td class="px-3 py-2">{{ entree.get_type_action_display }}</td>
+          <td class="px-3 py-2">{{ entree.auteur|default:"—" }}</td>
+          <td class="px-3 py-2 text-gris-lecture">{{ entree.detail|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </section>
 {% endif %}
 {% if ecarts_volume_horaire %}
