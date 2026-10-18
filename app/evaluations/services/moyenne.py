@@ -1,4 +1,4 @@
-"""`ServiceMoyenne` — US-EVAL-06, RG-56, RG-57, prompt 46.
+"""`ServiceMoyenne` — US-EVAL-06, RG-56, RG-57, RG-59 bis (D-276), prompt 46.
 
 M1 : rien n'est stocké — moyennes et rangs se recalculent à chaque appel, à
 partir des notes déjà saisies (US-EVAL-05) et des poids du référentiel
@@ -48,7 +48,7 @@ class ContexteCalcul:
 
 @dataclasses.dataclass(frozen=True)
 class NoteManquante:
-    """M5 : une entrée par (module, stagiaire) — jamais une par
+    """M5, RG-59 bis : une entrée par (module, stagiaire) — jamais une par
     évaluation en cause, quel que soit leur nombre."""
 
     module: object
@@ -73,20 +73,24 @@ class RapportMoyennes:
 
 
 @dataclasses.dataclass(frozen=True)
-class ResultatModule:
-    """US-EVAL-07, V1 : le « procès-verbal d'une évaluation » rapporte un
-    seul module, pas la moyenne générale — même forme que `ResultatStagiaire`
-    sans les coefficients des autres modules."""
+class ResultatEvaluation:
+    """US-EVAL-07, V1 (D-277 révise le choix pris seul au prompt 46) : le
+    « procès-verbal d'une évaluation » rapporte CETTE évaluation seule
+    (CU-P6-07 A1), jamais la moyenne du module qui agrégerait d'autres
+    évaluations hors du périmètre du document. `note` vaut `None` quand
+    l'absence est exclue du calcul (`TRAITEMENT_ABSENCE_NOTE`, N6) : le
+    stagiaire est alors affiché absent, sans note ni rang."""
 
     stagiaire: object
     brigade: object
-    note: decimal.Decimal
-    rang_session: int
-    rang_brigade: int
+    note: decimal.Decimal | None
+    absent: bool
+    rang_session: int | None
+    rang_brigade: int | None
 
 
 @dataclasses.dataclass(frozen=True)
-class RapportModule:
+class RapportEvaluation:
     resultats: list
     manquants: list
 
@@ -175,8 +179,8 @@ def _note_module(module, stagiaire, brigade, contexte):
     """M3 : moyenne simple par type, puis moyenne des deux pondérée par les
     poids du module — un type sans évaluation APPLICABLE est retiré du
     calcul et son poids avec lui. Rend `(note_ou_None, manquante)` ;
-    `manquante=True` bloque le stagiaire entier (M5), pas seulement ce
-    module."""
+    `manquante=True` bloque le stagiaire entier (M5, RG-59 bis), pas
+    seulement ce module."""
     manquante = False
     moyennes_par_type = {}
     for type_eval, nom_poids in _POIDS_PAR_TYPE:
@@ -210,7 +214,7 @@ def _note_module(module, stagiaire, brigade, contexte):
 
 
 def _resultat_stagiaire(stagiaire, brigade, modules_avec_evaluation, contexte):
-    """M4/M5 : moyenne générale pondérée par les coefficients des modules —
+    """M4/M5, RG-59 bis : moyenne générale pondérée par les coefficients des modules —
     une seule note manquante, sur un seul module, bloque la moyenne entière
     du stagiaire ; les modules sans évaluation applicable à CE stagiaire
     (brigade différente) sont silencieusement écartés, pas signalés : ce
@@ -251,22 +255,44 @@ def _classer(paires) -> dict:
     return rangs
 
 
-def _resultat_module_brut(module, affectation, contexte):
-    """Une affectation -> `(stagiaire, brigade, note)` si calculable, ou
-    un `NoteManquante` si bloquée — jamais les deux (M5)."""
-    note, manquante = _note_module(module, affectation.stagiaire, affectation.brigade, contexte)
-    if manquante:
-        return None, NoteManquante(
-            module=module, brigade=affectation.brigade, stagiaire=affectation.stagiaire
-        )
+def _perimetre_evaluation(evaluation, brigades, affectations):
+    """RG-52 : le périmètre d'une évaluation est une session ou une
+    brigade, jamais les deux — restreint le classement et les affectations
+    considérées à ce seul périmètre, pas à toute la session."""
+    if evaluation.brigade_id is None:
+        return brigades, affectations
+    brigades_perimetre = [brigade for brigade in brigades if brigade.pk == evaluation.brigade_id]
+    affectations_perimetre = [
+        affectation
+        for affectation in affectations
+        if affectation.brigade_id == evaluation.brigade_id
+    ]
+    return brigades_perimetre, affectations_perimetre
+
+
+def _resultat_evaluation_brut(evaluation, affectation, notes):
+    """Une affectation -> `(stagiaire, brigade, valeur_ou_None, absent)` si
+    une note existe pour CETTE évaluation, ou un `NoteManquante` si elle
+    n'a même pas été saisie — jamais les deux (M5, RG-59 bis). `valeur` est
+    `None` quand l'absence est exclue du calcul (N6) : le stagiaire reste
+    affiché, sans valeur ni rang."""
+    note = notes.get((evaluation.pk, affectation.stagiaire_id))
     if note is None:
-        return None, None
-    return (affectation.stagiaire, affectation.brigade, note.quantize(DEUX_DECIMALES)), None
+        return None, NoteManquante(
+            module=evaluation.element_referentiel,
+            brigade=affectation.brigade,
+            stagiaire=affectation.stagiaire,
+        )
+    valeur = _valeur_pour_le_calcul(note, evaluation)
+    if valeur is not None:
+        valeur = valeur.quantize(DEUX_DECIMALES)
+    resultat = (affectation.stagiaire, affectation.brigade, valeur, note.absent)
+    return resultat, None
 
 
 def _classer_session_et_brigades(resultats_bruts, brigades) -> dict:
     """M6/M7 : un classement sur l'ensemble, un second par brigade —
-    factorisé, `calculer` et `calculer_module` partagent cette forme."""
+    factorisé, `calculer` et `calculer_evaluation` partagent cette forme."""
     rangs_session = _classer([(s, v) for s, _, v in resultats_bruts])
     rangs: dict = {}
     for brigade in brigades:
@@ -320,37 +346,37 @@ class ServiceMoyenne:
         )
 
     @staticmethod
-    def calculer_module(agissant, session, module) -> RapportModule:
-        """US-EVAL-07, V1 : résultat d'un seul module — le « procès-verbal
-        d'une évaluation » rapporte ce module, pas la moyenne générale.
-        Même fonction de calcul que `calculer` (`_note_module`, M3), une
-        seule définition."""
+    def calculer_evaluation(agissant, session, evaluation) -> RapportEvaluation:
+        """US-EVAL-07, V1 (D-277) : résultat d'une seule évaluation —
+        CU-P6-07 A1 impose que le « procès-verbal d'une évaluation » ne
+        rapporte que celle-ci, jamais la moyenne du module qui agrégerait
+        d'autres évaluations hors de son périmètre (RG-52)."""
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
-        _, brigades, evaluations, notes, affectations = _donnees_session(session)
-        contexte = ContexteCalcul(
-            session=session,
-            evaluations_par_module_type=_grouper_evaluations(evaluations),
-            notes=notes,
+        _, brigades, _, notes, affectations = _donnees_session(session)
+        brigades_perimetre, affectations_perimetre = _perimetre_evaluation(
+            evaluation, brigades, affectations
         )
 
         resultats_bruts = []
         manquants = []
-        for affectation in affectations:
-            resultat, manquant = _resultat_module_brut(module, affectation, contexte)
+        for affectation in affectations_perimetre:
+            resultat, manquant = _resultat_evaluation_brut(evaluation, affectation, notes)
             if manquant is not None:
                 manquants.append(manquant)
-            elif resultat is not None:
+            else:
                 resultats_bruts.append(resultat)
 
-        rangs = _classer_session_et_brigades(resultats_bruts, brigades)
+        classables = [(s, b, v) for s, b, v, _ in resultats_bruts if v is not None]
+        rangs = _classer_session_et_brigades(classables, brigades_perimetre)
         resultats = [
-            ResultatModule(
+            ResultatEvaluation(
                 stagiaire=stagiaire,
                 brigade=brigade,
-                note=note,
-                rang_session=rangs[stagiaire.pk][0],
-                rang_brigade=rangs[stagiaire.pk][1],
+                note=valeur,
+                absent=absent,
+                rang_session=rangs.get(stagiaire.pk, (None, None))[0],
+                rang_brigade=rangs.get(stagiaire.pk, (None, None))[1],
             )
-            for stagiaire, brigade, note in resultats_bruts
+            for stagiaire, brigade, valeur, absent in resultats_bruts
         ]
-        return RapportModule(resultats=resultats, manquants=manquants)
+        return RapportEvaluation(resultats=resultats, manquants=manquants)

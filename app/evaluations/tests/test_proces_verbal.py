@@ -4,6 +4,8 @@ PDF réel et le déroulement HTTP sont dans test_proces_verbal_pdf.py et
 test_proces_verbal_ecran.py.
 """
 
+import decimal
+
 import pytest
 from django.db import IntegrityError, transaction
 from django.test import override_settings
@@ -12,7 +14,7 @@ from administration.models import EntreeJournal, TypeAction
 from evaluations.models import ProcesVerbal, TypeProcesVerbal
 from evaluations.services.note import ServiceNote
 from evaluations.services.proces_verbal import ServiceProcesVerbal
-from evaluations.tests.conftest import affecter_stagiaires
+from evaluations.tests.conftest import _formative, affecter_stagiaires
 from noyau.exceptions import ErreurValidation
 
 
@@ -183,6 +185,38 @@ def test_seuil_modifie_par_parametre_change_la_decision(dossier_pv):
     with override_settings(SEUIL_ADMISSION_PROCES_VERBAL="15"):
         apercu_seuil_releve = ServiceProcesVerbal.apercu(dossier_pv.examens, dossier_pv.session)
     assert apercu_seuil_releve.lignes[0].decision == "Ajourné"
+
+
+def test_pv_d_une_evaluation_rapporte_sa_propre_note_pas_la_moyenne_du_module(dossier_pv, controle):
+    """1.2 (prompt 47, D-277) : CU-P6-07 A1 — le procès-verbal d'une
+    évaluation ne porte que sur elle. Le même module porte aussi un
+    formatif noté 5 (poids égal par défaut, D-269) : la moyenne du module
+    serait (15+5)/2 = 10.00, jamais ce que ce document doit afficher."""
+    stagiaire = _noter(dossier_pv, "PVU1", valeur="15")
+    formative = _formative(controle)
+    ServiceNote.confirmer(
+        dossier_pv.examens, formative, {str(stagiaire.pk): {"valeur": "5", "absent": False}}
+    )
+
+    apercu = ServiceProcesVerbal.apercu(
+        dossier_pv.examens, dossier_pv.session, dossier_pv.certificative
+    )
+
+    assert apercu.lignes[0].valeur == decimal.Decimal("15.00")
+
+
+def test_pv_d_une_evaluation_ne_porte_aucune_decision_admis_ajourne(dossier_pv):
+    """1.2 : la décision sanctionne la formation (BF-EVAL-07) — elle
+    n'existe qu'au procès-verbal de fin de formation, jamais à celui d'une
+    seule évaluation."""
+    _noter(dossier_pv, "PVU2")
+
+    apercu = ServiceProcesVerbal.apercu(
+        dossier_pv.examens, dossier_pv.session, dossier_pv.certificative
+    )
+
+    assert apercu.seuil is None
+    assert apercu.lignes[0].decision is None
 
 
 def test_generation_est_journalisee(dossier_pv):

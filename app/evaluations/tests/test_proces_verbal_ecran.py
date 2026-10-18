@@ -43,6 +43,27 @@ def test_apercu_http_affiche_les_decisions(client, dossier_pv):
     assert "Admis" in reponse.content.decode("utf-8")
 
 
+def test_apercu_http_d_une_evaluation_n_affiche_aucune_decision(client, dossier_pv):
+    """1.2 (prompt 47) : CU-P6-07 A1 — ni « Admis » ni « Ajourné » à
+    l'aperçu du procès-verbal d'une seule évaluation."""
+    _noter(dossier_pv, "PVH5")
+    client.force_login(dossier_pv.examens)
+
+    reponse = client.post(
+        reverse("evaluations:apercu_proces_verbal", args=[dossier_pv.session.pk]),
+        {
+            "type_pv": "evaluation",
+            "evaluation_pk": dossier_pv.certificative.pk,
+            "numero": "",
+        },
+    )
+
+    contenu = reponse.content.decode("utf-8")
+    assert reponse.status_code == 200
+    assert "Admis" not in contenu
+    assert "Ajourné" not in contenu
+
+
 def test_generation_http_ecrit_reellement(client, dossier_pv):
     _noter(dossier_pv, "PVH2")
     client.force_login(dossier_pv.examens)

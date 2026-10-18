@@ -18,7 +18,7 @@
   <section class="mt-4 border border-gris-trait bg-fond-bloc">
     <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
               font-semibold uppercase tracking-wide text-marine-900">
-      Génération bloquée — notes manquantes (M5)
+      Génération bloquée — notes manquantes (M5, RG-59 bis)
     </p>
     <ul class="divide-y divide-gris-trait text-sm">
       {% for manquant in apercu.manquants %}
@@ -32,7 +32,11 @@
   <section class="mt-4 border border-gris-trait bg-fond-bloc">
     <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
               font-semibold uppercase tracking-wide text-marine-900">
-      {{ apercu.lignes|length }} stagiaire(s) — seuil d'admission {{ apercu.seuil }} / 20
+      {% if apercu.seuil %}
+        {{ apercu.lignes|length }} stagiaire(s) — seuil d'admission {{ apercu.seuil }} / 20
+      {% else %}
+        {{ apercu.lignes|length }} stagiaire(s) — {{ evaluation }}
+      {% endif %}
     </p>
     <table class="w-full border-collapse text-sm">
       <thead>
@@ -46,7 +50,9 @@
           <th scope="col" class="w-20 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Rang</th>
           <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
-                                 font-semibold uppercase tracking-wider text-blanc">Décision</th>
+                                 font-semibold uppercase tracking-wider text-blanc">
+            {% if apercu.seuil %}Décision{% else %}Absence{% endif %}
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -54,9 +60,11 @@
           <tr class="h-ligne border-t border-gris-trait">
             <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ ligne.stagiaire }}</th>
             <td class="px-3 py-1.5">{{ ligne.brigade }}</td>
-            <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.valeur }}</td>
-            <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.rang_session }}</td>
-            <td class="px-3 py-1.5">{{ ligne.decision }}</td>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.valeur|default:"—" }}</td>
+            <td class="px-3 py-1.5 text-right tabular-nums">{{ ligne.rang_session|default:"—" }}</td>
+            <td class="px-3 py-1.5">
+              {% if apercu.seuil %}{{ ligne.decision }}{% elif ligne.absent %}Absent{% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

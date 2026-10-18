@@ -84,6 +84,24 @@ def test_il_contient_les_intitules_rangs_et_decisions(dossier_pv):
     assert "1" in texte  # rang
 
 
+def test_le_pv_d_une_evaluation_ne_contient_aucune_decision(dossier_pv):
+    """1.2 (prompt 47, D-277) : CU-P6-07 A1 — ni « Admis » ni « Ajourné »
+    dans le PDF réel d'un procès-verbal d'une seule évaluation."""
+    stagiaire = _noter(dossier_pv, "PVPDF4")
+
+    pv = ServiceProcesVerbal.generer(
+        dossier_pv.examens,
+        dossier_pv.session,
+        TypeProcesVerbal.EVALUATION,
+        dossier_pv.certificative,
+    )
+    texte = _texte_du_pdf(bytes(pv.fichier_pdf))
+
+    assert "Admis" not in texte
+    assert "Ajourné" not in texte
+    assert str(stagiaire).replace(" ", "") in texte.replace(" ", "").replace("\n", "")
+
+
 def test_aucune_requete_reseau(dossier_pv, monkeypatch):
     _noter(dossier_pv, "PVPDF2")
 

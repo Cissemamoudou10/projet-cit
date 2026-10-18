@@ -31,7 +31,7 @@
     {% if numero %} — n° {{ numero }}{% endif %}
     — version {{ version }}.
   </p>
-  <p>Seuil d'admission : {{ seuil }} / 20.</p>
+  {% if seuil %}<p>Seuil d'admission : {{ seuil }} / 20.</p>{% endif %}
 
   {% regroup lignes by brigade as groupes_brigade %}
   {% for groupe in groupes_brigade %}
@@ -44,17 +44,17 @@
             <th class="chiffre">{% if evaluation %}Note{% else %}Moyenne{% endif %}</th>
             <th class="chiffre">Rang (brigade)</th>
             <th class="chiffre">Rang (session)</th>
-            <th>Décision</th>
+            <th>{% if evaluation %}Absence{% else %}Décision{% endif %}</th>
           </tr>
         </thead>
         <tbody>
           {% for ligne in groupe.list %}
             <tr>
               <td>{{ ligne.stagiaire }}</td>
-              <td class="chiffre">{{ ligne.valeur }}</td>
-              <td class="chiffre">{{ ligne.rang_brigade }}</td>
-              <td class="chiffre">{{ ligne.rang_session }}</td>
-              <td>{{ ligne.decision }}</td>
+              <td class="chiffre">{{ ligne.valeur|default:"—" }}</td>
+              <td class="chiffre">{{ ligne.rang_brigade|default:"—" }}</td>
+              <td class="chiffre">{{ ligne.rang_session|default:"—" }}</td>
+              <td>{% if evaluation %}{% if ligne.absent %}Absent{% endif %}{% else %}{{ ligne.decision }}{% endif %}</td>
             </tr>
           {% endfor %}
         </tbody>

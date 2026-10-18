@@ -133,6 +133,7 @@ def _creer_evaluations_et_notes(session, module_m, brigade_1, stagiaires):
     # x3 n'a jamais de note sur e1 : manquant, volontairement omis.
     Note.objects.create(evaluation=e2, stagiaire=stagiaires.y1, valeur=10)
     Note.objects.create(evaluation=e2, stagiaire=stagiaires.y2, valeur=10)
+    return e1, e2
 
 
 @pytest.fixture
@@ -141,7 +142,7 @@ def scenario(redacteur, session, module_m, module_jamais_evalue):
     module à deux types pondérés différemment, une évaluation sur 10
     ramenée sur 20, une absence, une note jamais saisie, deux ex aequo."""
     brigade_1, brigade_2, stagiaires = _creer_brigades_et_stagiaires(redacteur, session)
-    _creer_evaluations_et_notes(session, module_m, brigade_1, stagiaires)
+    e1, e2 = _creer_evaluations_et_notes(session, module_m, brigade_1, stagiaires)
     return {
         "brigade_1": brigade_1,
         "brigade_2": brigade_2,
@@ -152,6 +153,8 @@ def scenario(redacteur, session, module_m, module_jamais_evalue):
         "y2": stagiaires.y2,
         "module_m": module_m,
         "module_jamais_evalue": module_jamais_evalue,
+        "e1_formative_brigade1": e1,
+        "e2_certificative_session": e2,
     }
 
 
@@ -229,3 +232,59 @@ def test_n6_absence_en_exclusion_retire_l_evaluation_du_calcul(examens, session,
     rapport = ServiceMoyenne.calculer(examens, session)
 
     assert _moyenne_de(rapport, scenario["x2"]).moyenne == decimal.Decimal("10.00")
+
+
+# --- US-EVAL-07, V1 (D-277, prompt 47 § 1.2) : `calculer_evaluation` rapporte
+# UNE évaluation, jamais la moyenne de son module — mêmes stagiaires que
+# `scenario` ci-dessus, pour comparer directement les deux résultats.
+
+
+def _resultat_de(rapport, stagiaire):
+    return next(r for r in rapport.resultats if r.stagiaire.pk == stagiaire.pk)
+
+
+def test_note_d_une_evaluation_distincte_de_la_moyenne_du_module(examens, session, scenario):
+    """X1 : moyenne du module M (E1=16, E2=7/10*20=14, poids 3/1) = 15.50 ;
+    la note de la seule E2 doit être 14.00, jamais 15.50."""
+    e2 = scenario["e2_certificative_session"]
+    rapport = ServiceMoyenne.calculer_evaluation(examens, session, e2)
+
+    assert _resultat_de(rapport, scenario["x1"]).note == decimal.Decimal("14.00")
+
+
+def test_absence_sur_l_evaluation_affichee_sans_bloquer_le_rang(examens, session, scenario):
+    """X2 est absent sur E2 (N6 défaut : compte zéro) — affiché comme
+    absent, avec une note et un rang, pas exclu de la liste."""
+    e2 = scenario["e2_certificative_session"]
+    rapport = ServiceMoyenne.calculer_evaluation(examens, session, e2)
+
+    resultat = _resultat_de(rapport, scenario["x2"])
+    assert resultat.absent is True
+    assert resultat.note == decimal.Decimal("0.00")
+
+
+def test_manquant_sur_le_module_n_est_pas_manquant_sur_une_autre_evaluation(
+    examens, session, scenario
+):
+    """X3 est manquant sur E1 (jamais saisie) donc bloqué pour la moyenne du
+    module (M5, RG-59 bis) — mais E2 porte bien sa note : il doit apparaître
+    dans le résultat de E2, pas dans ses manquants."""
+    e2 = scenario["e2_certificative_session"]
+    rapport = ServiceMoyenne.calculer_evaluation(examens, session, e2)
+
+    assert not rapport.manquants
+    assert _resultat_de(rapport, scenario["x3"]).note == decimal.Decimal("14.00")
+
+
+def test_evaluation_de_brigade_restreint_le_perimetre_et_le_classement(examens, session, scenario):
+    """E1 (formative, brigade B1 seulement, RG-52) ne doit rapporter que
+    X1/X2/X3 — Y1/Y2 (brigade B2) absents du résultat ET du classement.
+    X3 n'a jamais saisi E1 : manquant, énuméré par cette seule évaluation."""
+    e1 = scenario["e1_formative_brigade1"]
+    rapport = ServiceMoyenne.calculer_evaluation(examens, session, e1)
+
+    stagiaires_rapportes = {r.stagiaire.pk for r in rapport.resultats}
+    assert stagiaires_rapportes == {scenario["x1"].pk, scenario["x2"].pk}
+    assert scenario["x3"].pk in {m.stagiaire.pk for m in rapport.manquants}
+    assert _resultat_de(rapport, scenario["x1"]).rang_brigade == 1
+    assert _resultat_de(rapport, scenario["x1"]).rang_session == 1

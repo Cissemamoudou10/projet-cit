@@ -30,7 +30,7 @@ def _regrouper_resultats(resultats):
 
 
 def _regrouper_manquants(manquants):
-    """M5 : par module, puis par brigade — à l'affichage seulement,
+    """M5, RG-59 bis : par module, puis par brigade — à l'affichage seulement,
     aucune règle métier dans cette vue."""
     par_module: dict = {}
     for manquant in manquants:

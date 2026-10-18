@@ -48,20 +48,26 @@ _TYPE_DOCUMENT_PAR_TYPE_PV = {
 
 
 @dataclasses.dataclass(frozen=True)
-class LigneDecision:
+class LigneResultat:
+    """Une ligne de l'aperçu ou du PDF. `decision` et `seuil` n'existent
+    que pour le procès-verbal de fin de formation (BF-EVAL-07, la décision
+    sanctionne la FORMATION, jamais une seule évaluation — D-277) ; `absent`
+    n'existe que pour celui d'une évaluation (CU-P6-07 A1)."""
+
     stagiaire: object
     brigade: object
-    valeur: decimal.Decimal
-    rang_session: int
-    rang_brigade: int
-    decision: str
+    valeur: decimal.Decimal | None
+    rang_session: int | None
+    rang_brigade: int | None
+    decision: str | None = None
+    absent: bool = False
 
 
 @dataclasses.dataclass(frozen=True)
 class ApercuProcesVerbal:
     lignes: list
     manquants: list
-    seuil: decimal.Decimal
+    seuil: decimal.Decimal | None
 
 
 def _seuil_admission() -> decimal.Decimal:
@@ -72,33 +78,46 @@ def _decision(valeur, seuil) -> str:
     return "Admis" if valeur >= seuil else "Ajourné"
 
 
-def _valeur_resultat(resultat):
-    """`ResultatStagiaire.moyenne` (fin de formation) ou
-    `ResultatModule.note` (une évaluation) — même forme sinon."""
-    return resultat.moyenne if hasattr(resultat, "moyenne") else resultat.note
-
-
-def _rapport(agissant, session, evaluation):
-    if evaluation is None:
-        return ServiceMoyenne.calculer(agissant, session)
-    return ServiceMoyenne.calculer_module(agissant, session, evaluation.element_referentiel)
-
-
-def _apercu(agissant, session, evaluation):
-    rapport = _rapport(agissant, session, evaluation)
+def _apercu_fin_de_formation(agissant, session):
+    rapport = ServiceMoyenne.calculer(agissant, session)
     seuil = _seuil_admission()
     lignes = [
-        LigneDecision(
+        LigneResultat(
             stagiaire=resultat.stagiaire,
             brigade=resultat.brigade,
-            valeur=_valeur_resultat(resultat),
+            valeur=resultat.moyenne,
             rang_session=resultat.rang_session,
             rang_brigade=resultat.rang_brigade,
-            decision=_decision(_valeur_resultat(resultat), seuil),
+            decision=_decision(resultat.moyenne, seuil),
         )
         for resultat in rapport.resultats
     ]
     return ApercuProcesVerbal(lignes=lignes, manquants=rapport.manquants, seuil=seuil)
+
+
+def _apercu_evaluation(agissant, session, evaluation):
+    """CU-P6-07 A1, D-277 : aucune décision — elle sanctionnerait la
+    formation entière sur la base d'une seule évaluation, ce que
+    BF-EVAL-07 réserve au procès-verbal de fin de formation."""
+    rapport = ServiceMoyenne.calculer_evaluation(agissant, session, evaluation)
+    lignes = [
+        LigneResultat(
+            stagiaire=resultat.stagiaire,
+            brigade=resultat.brigade,
+            valeur=resultat.note,
+            rang_session=resultat.rang_session,
+            rang_brigade=resultat.rang_brigade,
+            absent=resultat.absent,
+        )
+        for resultat in rapport.resultats
+    ]
+    return ApercuProcesVerbal(lignes=lignes, manquants=rapport.manquants, seuil=None)
+
+
+def _apercu(agissant, session, evaluation):
+    if evaluation is None:
+        return _apercu_fin_de_formation(agissant, session)
+    return _apercu_evaluation(agissant, session, evaluation)
 
 
 def _message_manquants(manquants):
@@ -108,7 +127,7 @@ def _message_manquants(manquants):
     )
     return (
         f"{len(manquants)} note(s) manquante(s), par module et par brigade : {detail} — "
-        "complétez la saisie avant de générer (M5)."
+        "complétez la saisie avant de générer (M5, RG-59 bis)."
     )
 
 
