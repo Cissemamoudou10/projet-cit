@@ -30,6 +30,7 @@ from planification.selectors import (
     jours_disponibles,
     programme_de_la_semaine,
 )
+from planification.selectors_ecart_volume import ecarts_volume_horaire
 from planification.services.generation import PERMISSION_ECRITURE, ServiceGeneration
 
 PERMISSION_LECTURE = "noyau.programme_lecture"
@@ -168,5 +169,8 @@ def vue_consultation_programme(request):
             "groupes": groupes,
             "nombre_brigades": len(brigades),
             "toutes_brigades": brigades_pour_filtre(),
+            # US-PLAN-07, E2 : visible avant soumission, mêmes brigades que
+            # la grille consultée — aucun calcul nouveau (E1).
+            "ecarts_volume_horaire": ecarts_volume_horaire(brigades),
         },
     )

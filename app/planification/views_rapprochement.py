@@ -11,6 +11,7 @@ from django.utils import timezone
 from administration.habilitations import exige_habilitation
 from noyau.pagination import paginer
 from planification.selectors import brigades_pour_filtre
+from planification.selectors_ecart_volume import decorer_rapprochement
 from planification.selectors_rapprochement import formations_pour_filtre, sessions_pour_filtre
 from planification.services.suivi import PERMISSION_LECTURE, ServiceSuivi
 
@@ -47,6 +48,10 @@ def vue_rapprochement(request):
         brigade_id=brigade_id,
         periode_fin=periode_fin,
     )
+    # US-PLAN-07, E2 : même mise en évidence des écarts de volume horaire
+    # que sur la consultation du programme — aucune requête de plus, une
+    # simple décoration des groupes déjà calculés.
+    groupes = decorer_rapprochement(groupes)
     page = paginer(groupes, request.GET.get("page"))
     return render(
         request,

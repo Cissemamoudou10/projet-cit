@@ -33,6 +33,8 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 | 11 | US-SUI-03 — Consulter le tableau de bord des formations | 5 | Should | |
 | 12 | US-INS-04 — Consulter la charge d'un instructeur | 3 | Should | |
 | 13 | US-REF-09 — Historiser les modifications du référentiel | 3 | Should | |
+
+**Item 10 (US-SUI-02) — à arbitrer avant clôture du sprint.** L'implantation d'US-PLAN-07 (item 7, prompt 47 Temps 2) a, sur demande explicite de ce même prompt, décoré l'écran du rapprochement (`CU-P6-11`, US-SUI-01) du statut retard/dépassement que `CU-P6-12` (US-SUI-02, cette ligne) décrit à la lettre — voir D-279, `docs/suivi/DECISIONS.md`. US-SUI-02 reste non cochée ici tant que le chef de projet n'a pas arbitré : retirer la story, la fusionner formellement avec US-PLAN-07, ou la garder distincte.
 | 14 | US-PLAN-11 — Dupliquer un programme hebdomadaire | 5 | Should | |
 
 Totaux : 14 stories, **55 points** — 25 Must, 30 Should.

@@ -170,6 +170,14 @@ TRAITEMENT_ABSENCE_NOTE = os.environ.get("TRAITEMENT_ABSENCE_NOTE", "zero")
 # `.claude/rules/modeles.md`).
 SEUIL_ADMISSION_PROCES_VERBAL = os.environ.get("SEUIL_ADMISSION_PROCES_VERBAL", "10")
 
+# Écarts de volume horaire (US-PLAN-07, E3, prompt 47). Pourcentage du volume
+# prescrit au-delà duquel un écart programmé/prescrit est signalé — distinct
+# du seuil d'admission des procès-verbaux ci-dessus, un autre domaine. Chaîne
+# parsée en `float` au point d'usage, comme les volumes horaire eux-mêmes
+# (`LigneRapprochement`, US-SUI-01 — jamais de `Decimal` ici, réservé aux
+# notes et coefficients, `.claude/rules/modeles.md`).
+SEUIL_ECART_VOLUME_HORAIRE = os.environ.get("SEUIL_ECART_VOLUME_HORAIRE", "10")
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

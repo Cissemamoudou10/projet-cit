@@ -157,6 +157,34 @@
   </div>
 </section>
 {% endif %}
+{% if ecarts_volume_horaire %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc" aria-label="Écarts de volume horaire">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold
+            uppercase tracking-wide text-marine-900">
+    Écarts de volume horaire — prescrit / programmé
+  </p>
+  <ul class="divide-y divide-gris-trait text-sm">
+    {% for groupe in ecarts_volume_horaire %}
+      {% for ligne in groupe.lignes %}
+        <li class="flex items-center justify-between gap-3 px-4 py-1.5">
+          <span>{{ groupe.brigade }} — {{ ligne.element_referentiel.matiere }}
+            <span class="text-gris-lecture">
+              ({{ ligne.prescrit|floatformat:2 }} h prescrites, {{ ligne.programme|floatformat:2 }} h programmées)
+            </span>
+          </span>
+          {% if ligne.statut == "retard" %}
+            <span class="text-xs font-medium tabular-nums text-etat-ecart">
+              retard {{ ligne.ecart_pourcent|floatformat:0 }} %</span>
+          {% elif ligne.statut == "depassement" %}
+            <span class="text-xs font-medium tabular-nums text-etat-attention">
+              dépassement {{ ligne.ecart_pourcent|floatformat:0 }} %</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 {% if not programme %}
   <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
     Aucun programme généré pour cette semaine.

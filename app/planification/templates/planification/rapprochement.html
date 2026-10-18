@@ -95,19 +95,32 @@
                 <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
                                        font-semibold uppercase tracking-wider text-blanc">Réalisé</th>
                 <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
-                                       font-semibold uppercase tracking-wider text-blanc">Écart</th>
+                                       font-semibold uppercase tracking-wider text-blanc">Écart (réalisé)</th>
+                <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                       font-semibold uppercase tracking-wider text-blanc">Volume horaire</th>
               </tr>
             </thead>
             <tbody>
-              {% for ligne in groupe.lignes %}
+              {% for decoree in groupe.lignes %}
                 <tr class="border-t border-gris-trait">
-                  <td class="px-3 py-2">{{ ligne.element_referentiel.matiere }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums">{{ ligne.prescrit|floatformat:2 }} h</td>
-                  <td class="px-3 py-2 text-right tabular-nums">{{ ligne.programme|floatformat:2 }} h</td>
-                  <td class="px-3 py-2 text-right tabular-nums">{{ ligne.realise|floatformat:2 }} h</td>
+                  <td class="px-3 py-2">{{ decoree.ligne.element_referentiel.matiere }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ decoree.ligne.prescrit|floatformat:2 }} h</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ decoree.ligne.programme|floatformat:2 }} h</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ decoree.ligne.realise|floatformat:2 }} h</td>
                   <td class="px-3 py-2 text-right tabular-nums font-medium
-                             {% if ligne.ecart_heures > 0 %}text-etat-ecart{% elif ligne.ecart_heures < 0 %}text-marine-700{% else %}text-etat-conforme{% endif %}">
-                    {{ ligne.ecart_heures|floatformat:2 }} h ({{ ligne.ecart_pourcent|floatformat:0 }} %)
+                             {% if decoree.ligne.ecart_heures > 0 %}text-etat-ecart{% elif decoree.ligne.ecart_heures < 0 %}text-marine-700{% else %}text-etat-conforme{% endif %}">
+                    {{ decoree.ligne.ecart_heures|floatformat:2 }} h ({{ decoree.ligne.ecart_pourcent|floatformat:0 }} %)
+                  </td>
+                  <td class="px-3 py-2">
+                    {% if decoree.statut == "conforme" %}
+                      <span class="text-xs font-medium tabular-nums text-etat-conforme">conforme</span>
+                    {% elif decoree.statut == "en_cours" %}
+                      <span class="text-xs font-medium tabular-nums text-marine-700">en cours</span>
+                    {% elif decoree.statut == "retard" %}
+                      <span class="text-xs font-medium tabular-nums text-etat-ecart">retard {{ decoree.ecart_pourcent|floatformat:0 }} %</span>
+                    {% elif decoree.statut == "depassement" %}
+                      <span class="text-xs font-medium tabular-nums text-etat-attention">dépassement {{ decoree.ecart_pourcent|floatformat:0 }} %</span>
+                    {% endif %}
                   </td>
                 </tr>
               {% endfor %}
