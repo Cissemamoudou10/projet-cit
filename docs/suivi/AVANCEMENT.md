@@ -86,6 +86,19 @@ de résultats, 5 pts) livrée — dernière story Must du projet. Points livrés
 189 + 5 = **194** / 224. Stories livrées : 42 + 1 = **43** / 52. Sprint 4 :
 6 / 14 stories, 25 / 55 points. **Périmètre Must entier (194 points) livré.**
 
+**Recalcul daté (2026-10-18/19, prompt 47).** Trois stories Should livrées :
+US-PLAN-07 (écarts de volume horaire, 3 pts), US-VAL-05 (liste et historique
+des programmes, 5 pts), US-SES-09 (clôture de session, 3 pts). Points
+livrés : 194 + 3 + 5 + 3 = **205** / 224. Stories livrées : 43 + 3 = **46** /
+52. Sprint 4 : 9 / 14 stories, 36 / 55 points. Point de décision du 21
+octobre (§ « Ce qu'il faut surveiller ») non encore atteint à la livraison :
+les cinq stories Should restantes du sprint 4 (US-SUI-02, US-SUI-03,
+US-INS-04, US-REF-09, et le solde) restent à statuer à cette date. D-262
+fermé par US-SES-09 (voir § reports ci-dessous). D-279 ouvre un arbitrage de
+backlog non technique (chevauchement US-PLAN-07/US-SUI-02, à trancher par le
+chef de projet — US-SUI-02 non décomptée ici tant que l'arbitrage n'est pas
+rendu).
+
 ## Ce qu'il faut surveiller
 
 **Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des
@@ -315,6 +328,10 @@ La ligne « Ouverts aujourd'hui » du prompt 37 comptait quatorze reports. Trois
 | D-262 | réversibilité de la non-exécution, conditionnée à la clôture de la session | US-SES-09 (sprint 4) |
 
 Net : six reports ouverts avant US-SUI-05 (clôture du sprint 3), plus un nouveau — **sept ouverts** à ce jour.
+
+### Recompte à la clôture d'US-SES-09, le 2026-10-19 (prompt 47, Temps 4)
+
+Ferme : **D-262** — `ServiceSuivi._session_cloturee` lit désormais la vraie session via la brigade de la ligne et refuse l'annulation ET la déclaration d'une non-exécution sur une session clôturée (C4). Aucun report ne s'ouvre. Net : sept ouverts avant cette clôture, moins un fermé — **six ouverts**.
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 
