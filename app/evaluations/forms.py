@@ -9,7 +9,8 @@ fait que capter la saisie et proposer des choix.
 from django import forms
 
 from evaluations.models import TypeEvaluation
-from organisation.models import Brigade, Session
+from organisation.models import Brigade
+from organisation.services.session import ServiceSession
 from planification.selectors import instructeurs_qualifies_pour, lieux_pour_choix
 from referentiel.models import ElementReferentiel
 from ressources.models import CreneauType, Instructeur, Lieu
@@ -49,13 +50,20 @@ class FormulaireEvaluation(forms.Form):
         widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
     )
     session = forms.ModelChoiceField(
-        queryset=Session.objects.select_related("formation").order_by("intitule"),
+        # C3, US-SES-09 (prompt 47) : une session clôturée disparaît de la
+        # sélection — seule implantation du filtre, `ServiceSession.
+        # disponibles_pour_selection`, jamais recopiée ici.
+        queryset=ServiceSession.disponibles_pour_selection()
+        .select_related("formation")
+        .order_by("intitule"),
         required=False,
         label="Session (périmètre)",
         widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
     )
     brigade = forms.ModelChoiceField(
-        queryset=Brigade.objects.select_related("session").order_by("designation"),
+        queryset=Brigade.objects.filter(session__in=ServiceSession.disponibles_pour_selection())
+        .select_related("session")
+        .order_by("designation"),
         required=False,
         label="Brigade (périmètre)",
         widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),

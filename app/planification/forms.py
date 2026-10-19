@@ -11,6 +11,7 @@ import datetime
 from django import forms
 
 from organisation.models import Brigade
+from organisation.services.session import ServiceSession
 
 CLASSES_CHAMP_DATE = (
     "w-full border border-gris-trait bg-blanc px-2.5 py-1.5 text-sm text-encre "
@@ -56,7 +57,11 @@ class FormulaireLancementGeneration(forms.Form):
 
     semaine = _champ_semaine()
     brigades = forms.ModelMultipleChoiceField(
-        queryset=Brigade.objects.all(),
+        # US-SES-09, C3 : confort d'écran seulement — ServiceGeneration.generer
+        # refuse aussi, au niveau service, toute brigade d'une session clôturée.
+        queryset=Brigade.objects.filter(
+            session__in=ServiceSession.disponibles_pour_selection()
+        ).select_related("session"),
         label="Brigades",
         widget=forms.CheckboxSelectMultiple,
     )

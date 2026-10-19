@@ -6,7 +6,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
 from planification.models import Seance
-from planification.selectors import seances_occupant_instructeurs, seances_occupant_lieux
+from planification.selectors_occupation import seances_occupant_instructeurs, seances_occupant_lieux
 from planification.tests.conftest import instant
 from ressources.models import Lieu
 

@@ -15,6 +15,7 @@ from noyau.habilitations import a_permission
 from noyau.pagination import paginer
 from organisation.forms import FormulaireSession
 from organisation.services.brigade import ServiceBrigade
+from organisation.services.cloture import ServiceClotureSession
 from organisation.services.session import ServiceSession
 from organisation.services.stagiaire import ServiceStagiaire
 from referentiel.services.formation import ServiceFormation
@@ -219,6 +220,7 @@ def vue_detail_session(request, pk):
             "url_brigades": reverse("organisation:brigades_session", args=[session.pk]),
             "url_stagiaires": reverse("organisation:liste_stagiaires", args=[session.pk]),
             "url_repartition": reverse("organisation:repartition_session", args=[session.pk]),
+            "url_cloturer": reverse("organisation:cloturer_session", args=[session.pk]),
             "nombre_matieres": resume["nombre_matieres"],
             "volume_total_referentiel": resume["volume_total"],
             "page_referentiel": paginer(resume["elements"], request.GET.get("page")),
@@ -318,5 +320,32 @@ def vue_confirmer_suppression_session(request, pk):
             "titre_dialogue": f"Supprimer « {session.intitule} »",
             "texte_explication": f"« {session.intitule} » sera supprimée définitivement.",
             "url_annuler": reverse("organisation:liste_sessions"),
+        },
+    )
+
+
+@exige_habilitation(ServiceClotureSession.PERMISSION_ECRITURE)
+def vue_confirmer_cloture_session(request, pk):
+    """US-SES-09 (prompt 47, Temps 4) — C6 : aucune réouverture, la
+    confirmation explicite est donc la seule garde avant un geste
+    irréversible (`.claude/rules/vues.md`)."""
+    session = _session_ou_404(pk)
+    if request.method == "POST":
+        try:
+            ServiceClotureSession.cloturer(request.user, session)
+        except ErreurValidation as erreur:
+            messages.error(request, str(erreur))
+        else:
+            messages.success(request, "Session clôturée.")
+        return redirect("organisation:detail_session", session.pk)
+    non_finalisees = ServiceClotureSession.evaluations_non_finalisees(request.user, session)
+    return render(
+        request,
+        "organisation/session_confirmer_cloture.html",
+        {
+            "titre_dialogue": f"Clôturer « {session.intitule} »",
+            "texte_explication": f"« {session.intitule} » sera clôturée.",
+            "url_annuler": reverse("organisation:detail_session", args=[session.pk]),
+            "non_finalisees": non_finalisees,
         },
     )

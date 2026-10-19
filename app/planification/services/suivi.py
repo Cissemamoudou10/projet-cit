@@ -23,6 +23,7 @@ from administration.services.document import ServiceDocument
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.base import ServiceBase
+from organisation.models import EtatSession
 from planification.models import EditionProgression, EtatProgramme, NonExecution
 from planification.selectors_progression import progression_realisee as _progression_realisee
 from planification.selectors_rapprochement import rapprochement as _rapprochement
@@ -48,6 +49,9 @@ MESSAGE_AUCUNE_DECLARATION = "Cette ligne ne porte aucune non-exécution à annu
 MESSAGE_SESSION_CLOTUREE = (
     "La session est clôturée : la déclaration de non-exécution n'est plus réversible."
 )
+MESSAGE_SESSION_CLOTUREE_DECLARATION = (
+    "La session est clôturée : aucune non-exécution ne peut plus y être déclarée."
+)
 MESSAGE_PROGRAMME_NON_AFFICHE_PROGRESSION = (
     "La progression réalisée ne s'édite que pour un programme affiché (RG-60) : ce "
     "programme est encore {etat}."
@@ -56,13 +60,11 @@ MESSAGE_SIGNATURE_INCOMPLETE = "La signature exige une date et un nom de signata
 MESSAGE_SIGNATURE_FUTURE = "La date de signature ne peut pas être postérieure à aujourd'hui."
 
 
-def _session_cloturee():
-    """S4 : la clôture de session (US-SES-09) n'existe pas encore dans ce
-    sprint — garde posée dès maintenant, toujours `False` jusqu'à ce
-    qu'US-SES-09 la complète (report ouvert, voir docs/suivi/DECISIONS.md).
-    Prendra alors la ligne en paramètre, pour remonter à sa session ;
-    aucun paramètre deviné avant d'en avoir besoin."""
-    return False
+def _session_cloturee(ligne):
+    """C4, US-SES-09 (prompt 47, D-262 refermé) : la session se lit depuis
+    la ligne, via sa brigade (`planification` peut importer `organisation`,
+    sens de dépendance autorisé — `tests/architecture/test_couches.py`)."""
+    return ligne.brigade.session.etat == EtatSession.CLOTUREE
 
 
 def _verifier_programme_affiche(ligne):
@@ -136,13 +138,16 @@ class ServiceSuivi:
         """C1 à C3, C5 : refuse une séance future (S2) ou un programme pas
         affiché (S2, RG-60), puis retranche le volume de la ligne du
         réalisé — par construction, puisque le calcul du réalisé (US-SUI-01)
-        exclut les lignes portant une non-exécution."""
+        exclut les lignes portant une non-exécution. C4, US-SES-09 : refuse
+        aussi sur une session clôturée — aucune nouvelle déclaration."""
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
         motif_propre = (motif or "").strip()
         if not motif_propre:
             raise ErreurValidation(MESSAGE_MOTIF_OBLIGATOIRE)
         if getattr(ligne, "non_execution", None) is not None:
             raise ErreurValidation(MESSAGE_DEJA_DECLAREE)
+        if _session_cloturee(ligne):
+            raise ErreurValidation(MESSAGE_SESSION_CLOTUREE_DECLARATION)
         maintenant = timezone.now()
         with transaction.atomic():
             _verifier_programme_affiche(ligne)
@@ -154,14 +159,14 @@ class ServiceSuivi:
 
     @staticmethod
     def annuler_non_execution(agissant, ligne):
-        """C4 : réversible sans condition tant qu'US-SES-09 n'existe pas
-        (`_session_cloturee`)."""
+        """C4, US-SES-09 (D-262 refermé) : irréversible dès que la session
+        est clôturée (`_session_cloturee`)."""
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
         non_execution = getattr(ligne, "non_execution", None)
         if non_execution is None:
             raise ErreurValidation(MESSAGE_AUCUNE_DECLARATION)
         with transaction.atomic():
-            if _session_cloturee():
+            if _session_cloturee(ligne):
                 raise ErreurValidation(MESSAGE_SESSION_CLOTUREE)
             non_execution.delete()
             _journaliser(agissant, ligne, "annulée")

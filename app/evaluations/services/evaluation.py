@@ -26,6 +26,7 @@ from evaluations.services.suppression import supprimer_evaluation
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement, valider_instance
+from organisation.models import EtatSession
 from planification.models import ProgrammeHebdomadaire
 from planification.selectors import JOUR_SEMAINE_PAR_ISO, seances_recouvertes
 from planification.services.contraintes import Candidate
@@ -69,6 +70,16 @@ def _verifier_perimetre(session, brigade):
     if bool(session) == bool(brigade):
         raise ErreurValidation(
             "Choisissez exactement un périmètre pour l'évaluation : une session, ou une brigade."
+        )
+
+
+def _verifier_session_ouverte(perimetre):
+    """US-SES-09 : refuse une session clôturée, pas seulement filtrée à
+    l'écran (`.claude/rules/vues.md`)."""
+    session = perimetre.session_visee
+    if session.etat == EtatSession.CLOTUREE:
+        raise ErreurValidation(
+            f"La session « {session} » est clôturée : aucune nouvelle évaluation n'y est possible."
         )
 
 
@@ -298,6 +309,7 @@ class ServiceEvaluation:
             element=donnees["element_referentiel"], session=session, brigade=brigade
         )
         _verifier_module(perimetre)
+        _verifier_session_ouverte(perimetre)
         type_ = donnees["type"]
         date = donnees.get("date")
         if type_ == TypeEvaluation.CERTIFICATIVE:

@@ -19,6 +19,7 @@ from django.utils import timezone
 from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurSeancesDeControle
 from organisation.models import Brigade
+from organisation.services.session import ServiceSession
 from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
 from planification.selectors_suivi import non_executions_des_lignes
 from planification.services.temps import duree_heures
@@ -124,8 +125,19 @@ def _etats_semaine(lundi_de_semaine, brigades):
 
 def brigades_groupees_par_session(lundi_de_semaine=None):
     """Brigades présentées par session (§ 9, critère 1), chacune portant
-    l'état de ses séances pour la semaine ciblée si elle est connue."""
-    brigades = list(brigades_pour_filtre())
+    l'état de ses séances pour la semaine ciblée si elle est connue.
+
+    C3, US-SES-09 (prompt 47) : une session clôturée disparaît de cette
+    sélection — la génération ne doit plus lui proposer de brigade.
+    `ServiceSession.disponibles_pour_selection` est la seule implantation
+    du filtre (pas une seconde recopie de `etat != CLOTUREE` ici) ; jamais
+    appliqué à `brigades_pour_filtre` elle-même, que la consultation
+    réutilise pour FILTRER un programme déjà affiché (les données d'une
+    session clôturée restent consultables)."""
+    sessions_actives = set(ServiceSession.disponibles_pour_selection().values_list("pk", flat=True))
+    brigades = [
+        brigade for brigade in brigades_pour_filtre() if brigade.session_id in sessions_actives
+    ]
     etats = _etats_semaine(lundi_de_semaine, brigades)
     groupes, ordre = {}, []
     for brigade in brigades:
@@ -362,38 +374,3 @@ def brigades_candidates_au_regroupement(seance):
         .select_related("session__formation")
         .order_by("designation")
     )
-
-
-def seances_occupant_lieux(ids_lieux, debut, fin) -> dict:
-    """Lieu -> séances occupant ce lieu sur `[debut, fin)` — une requête pour N lieux."""
-    resultat = {}
-    if not ids_lieux:
-        return resultat
-    requete = (
-        Seance.objects.filter(
-            filtre_recouvrement("debut", "fin", debut, fin), lieu_id__in=list(ids_lieux)
-        )
-        .select_related("element_referentiel__matiere", "instructeur", "lieu")
-        .order_by("debut")
-    )
-    for seance in requete:
-        resultat.setdefault(seance.lieu_id, []).append(seance)
-    return resultat
-
-
-def seances_occupant_instructeurs(ids_instructeurs, debut, fin) -> dict:
-    """Instructeur -> séances de cet instructeur sur `[debut, fin)` — une requête pour N."""
-    resultat = {}
-    if not ids_instructeurs:
-        return resultat
-    requete = (
-        Seance.objects.filter(
-            filtre_recouvrement("debut", "fin", debut, fin),
-            instructeur_id__in=list(ids_instructeurs),
-        )
-        .select_related("element_referentiel__matiere", "instructeur", "lieu")
-        .order_by("debut")
-    )
-    for seance in requete:
-        resultat.setdefault(seance.instructeur_id, []).append(seance)
-    return resultat

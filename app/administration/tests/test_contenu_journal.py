@@ -30,6 +30,7 @@ EXTENSIONS_HORS_RG26 = {
     TypeAction.CONSULTATION_NOTES,
     TypeAction.GENERATION_PROCES_VERBAL,
     TypeAction.TELECHARGEMENT_PROCES_VERBAL,
+    TypeAction.CLOTURE_SESSION,
 }
 # US-REF-00 (D-18) : quatrième extension à RG-26, quatre valeurs génériques
 # réutilisées par les cinq stories du patron de gestion — SUPPRESSION_ELEMENT_GESTION

@@ -12,6 +12,7 @@ class EvaluationsConfig(AppConfig):
             vider_evaluations_demonstration_j2,
         )
         from noyau.services.parametres import (
+            ResolveurEvaluationsNonFinalisees,
             ResolveurJoursExamen,
             ResolveurOccupationsEpreuves,
             ResolveurReinitialisationEvaluations,
@@ -21,6 +22,9 @@ class EvaluationsConfig(AppConfig):
         ResolveurSeancesDeControle.installer_fournisseur(selectors.seances_de_controle_parmi)
         ResolveurJoursExamen.installer_fournisseur(selectors.jours_d_examen)
         ResolveurOccupationsEpreuves.installer_fournisseur(selectors.occupations_epreuves)
+        ResolveurEvaluationsNonFinalisees.installer_fournisseur(
+            selectors.evaluations_non_finalisees
+        )
         ResolveurReinitialisationEvaluations.installer_fournisseur(
             vider_evaluations_demonstration_j2
         )

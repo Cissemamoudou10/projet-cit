@@ -31,6 +31,14 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-281 — US-SES-09, C6 : aucune réouverture d'une session clôturée — limite assumée
+**Date** 2026-10-18 · **Story** US-SES-09 (Prompt 47, Temps 4) · **Auteur** porteur non renseigné
+**Contexte** — C6 du prompt demande explicitement de consigner cette limite : l'interface n'offre aucun moyen de rouvrir une session clôturée par erreur. `ServiceClotureSession.cloturer` refuse d'ailleurs explicitement une seconde clôture (`« {session} » est déjà clôturée`), et aucune méthode `rouvrir`/`reouvrir` n'existe.
+**Décision** — Aucune réouverture offerte, ni à l'écran ni au service. Une clôture erronée se corrige HORS de l'interface — par une intervention directe en base (changement de `etat`/`date_cloture`), réservée à un administrateur technique, jamais à un geste de l'application elle-même. Cohérent avec C3 (rien n'est supprimé à la clôture : brigades, programmes, résultats restent intacts et consultables) — une réouverture ultérieure, si elle était un jour nécessaire, ne perdrait aucune donnée, seulement l'état.
+**Alternative écartée** — Offrir une réouverture symétrique à la clôture (un second bouton, un second service) : écartée, hors du périmètre demandé par le backlog (3 points, Should) et sans règle métier connue pour l'encadrer (qui peut rouvrir ? sous quelle condition ? remet-elle les sélections actives à jour sans effet de bord sur des décisions prises entre-temps ?) — autant de questions qu'aucun livrable ne tranche, qu'il vaut mieux laisser ouvertes plutôt que de les trancher seul dans le code.
+**Impact sur les livrables** — aucun sur le diagramme de classes ; à signaler si le backlog évolue un jour vers une story dédiée de réouverture.
+**Reporté au livrable** — non applicable.
+
 ## D-280 — US-VAL-05 : la liste des programmes se garde par `programme_lecture`, pas `programme_validation_lecture`
 **Date** 2026-10-18 · **Story** US-VAL-05 (Prompt 47, Temps 3 — trouvé en relecture) · **Auteur** porteur non renseigné
 **Contexte** — Le nouvel écran `vue_liste_programmes` (H2) avait d'abord repris `PERMISSION_PEDAGOGIQUE_LECTURE` (`noyau.programme_validation_lecture`), par imitation du voisin `attente_validation` dans le même fichier. Trouvé en relecture : cet écran liste TOUTES les semaines (brouillon compris), le circuit de validation n'en étant qu'une colonne — `attente_validation`, lui, porte spécifiquement sur le circuit (programmes soumis, à valider ou rejeter). Les deux permissions sont aujourd'hui détenues par exactement le même ensemble de trois profils dans `MATRICE` (`administration/constantes.py` : Cellule pédagogique, Cellule planification, Direction de formation) — vérifié, aucune divergence actuelle — donc le choix n'a aucun effet observable tant que `MATRICE` ne change pas.

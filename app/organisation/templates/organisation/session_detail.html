@@ -19,12 +19,22 @@
       <p class="text-sm text-gris-lecture">{{ session.formation }}</p>
     </div>
     {% if perms.noyau.organisation_ecriture %}
-      <a href="{{ url_modifier }}"
-         class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
-                text-sm font-semibold text-blanc no-underline transition-colors duration-survol
-                hover:bg-marine-700">
-        Modifier
-      </a>
+      <div class="flex shrink-0 gap-2">
+        <a href="{{ url_modifier }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Modifier
+        </a>
+        {% if session.etat != "cloturee" %}
+          <a href="{{ url_cloturer }}"
+             class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                    text-sm font-medium text-encre no-underline transition-colors duration-survol
+                    hover:border-marine-700">
+            Clôturer
+          </a>
+        {% endif %}
+      </div>
     {% endif %}
   </div>
 </div>
@@ -52,7 +62,10 @@
       </div>
       <div>
         <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">État</dt>
-        <dd>{{ session.get_etat_display }}</dd>
+        <dd>
+          {{ session.get_etat_display }}
+          {% if session.date_cloture %}— clôturée le {{ session.date_cloture|date:"d/m/Y" }}{% endif %}
+        </dd>
       </div>
     </dl>
   </section>

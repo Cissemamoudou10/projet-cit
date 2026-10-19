@@ -7,7 +7,7 @@ de requêtes constant, quel que soit le nombre de lieux et de surveillants.
 
 from evaluations.models import OrganisationEpreuve, Surveillance
 from noyau.intervalles import instant_de, se_recouvrent
-from planification.selectors import seances_occupant_instructeurs, seances_occupant_lieux
+from planification.selectors_occupation import seances_occupant_instructeurs, seances_occupant_lieux
 from ressources.selectors import indisponibilites_des_instructeurs, indisponibilites_des_lieux
 
 

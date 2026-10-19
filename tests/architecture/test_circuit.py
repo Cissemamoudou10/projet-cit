@@ -1,6 +1,13 @@
-"""Architecture du circuit du programme (US-VAL-03, V1 et V3).
+"""Architecture du circuit du programme (US-VAL-03, V1 et V3) et de la
+clôture d'une session (US-SES-09, prompt 47).
 
-H1 — une seule main écrit l'état du programme : `ServiceCircuitProgramme`.
+H1 — une seule main écrit l'état d'un modèle à machine à états :
+     `ServiceCircuitProgramme` pour `ProgrammeHebdomadaire.etat`,
+     `ServiceClotureSession` pour `Session.etat` (US-SES-09) — deux modèles
+     distincts, chacun sa propre énumération, chacun son seul service
+     autorisé à l'écrire ; le test ne distingue pas le modèle visé (il
+     repère le nom d'attribut `etat`, pas son type), d'où une liste
+     d'écrivains autorisés plutôt qu'un seul fichier.
 H2 — aucune suppression de séance ou de ligne de programme hors de la
      génération et des deux modules de support de la porte unique
      (modification, US-PLAN-05 ; regroupement, US-PLAN-06), et chacun de ces
@@ -13,6 +20,8 @@ import pathlib
 RACINE = pathlib.Path(__file__).resolve().parents[2]
 SRC = RACINE / "app"
 CIRCUIT = SRC / "planification" / "services" / "circuit.py"
+CLOTURE_SESSION = SRC / "organisation" / "services" / "cloture.py"
+ECRIVAINS_D_ETAT_AUTORISES = {CIRCUIT, CLOTURE_SESSION}
 GENERATION = SRC / "planification" / "services" / "generation.py"
 MODIFICATION = SRC / "planification" / "services" / "modification.py"
 REGROUPEMENT = SRC / "planification" / "services" / "regroupement.py"
@@ -91,12 +100,14 @@ def _affectations_par_appel(appel):
 def test_h1_aucune_affectation_de_l_etat_hors_du_service_du_circuit():
     fautifs = []
     for chemin in _fichiers_de_production():
-        if chemin == CIRCUIT:
+        if chemin in ECRIVAINS_D_ETAT_AUTORISES:
             continue
         for ligne in _affectations_de_l_etat(_arbre(chemin)):
             fautifs.append(f"{chemin.relative_to(RACINE)} ligne {ligne}")
-    assert not fautifs, "État du programme affecté hors de ServiceCircuitProgramme :\n" + "\n".join(
-        fautifs
+    assert not fautifs, (
+        "État affecté hors de son service propriétaire "
+        "(ServiceCircuitProgramme pour le programme, ServiceClotureSession pour "
+        "la session) :\n" + "\n".join(fautifs)
     )
 
 
@@ -117,7 +128,10 @@ def test_h2_seules_les_suppressions_de_seances_passent_par_la_generation():
             if not isinstance(noeud.func, ast.Attribute):
                 continue
             segment = (ast.get_source_segment(texte, noeud.func.value) or "").lower()
-            if any(marqueur in segment for marqueur in marqueurs) and chemin not in SUPPRESSEURS_AUTORISES:
+            if (
+                any(marqueur in segment for marqueur in marqueurs)
+                and chemin not in SUPPRESSEURS_AUTORISES
+            ):
                 fautifs.append(f"{chemin.relative_to(RACINE)} ligne {noeud.lineno}")
     assert not fautifs, (
         "Suppression de séance ou de ligne de programme hors de la génération et "

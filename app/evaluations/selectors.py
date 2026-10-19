@@ -4,12 +4,14 @@
 `noyau.services.parametres.ResolveurSeancesDeControle` au démarrage de
 l'application (`evaluations.apps.EvaluationsConfig.ready`) — A9, Prompt 35.
 `jours_d_examen` est installée de même pour `ResolveurJoursExamen` — A2,
-Prompt 36.
+Prompt 36. `evaluations_non_finalisees` l'est pour
+`ResolveurEvaluationsNonFinalisees` — C2, US-SES-09, prompt 47.
 """
 
 from django.db.models import Exists, OuterRef
 
 from evaluations.models import Evaluation, OrganisationEpreuve, Sujet, Surveillance, TypeEvaluation
+from evaluations.services.moyenne import evaluations_de_la_session
 from noyau.intervalles import instant_de, se_recouvrent
 from organisation.models import Brigade
 
@@ -104,6 +106,23 @@ def _occupation(evaluation, lieux, instructeurs):
         "instructeurs": frozenset(instructeurs.get(evaluation["pk"], ())),
         "libelle": f"Examen final — {evaluation['element_referentiel__matiere__intitule']}",
     }
+
+
+def evaluations_non_finalisees(session) -> list:
+    """C2, US-SES-09 (prompt 47) : évaluations du périmètre de la session
+    (réutilise `evaluations_de_la_session`, US-EVAL-07 — même résolution,
+    aucun second calcul) dont les notes ne sont pas verrouillées par un
+    procès-verbal (`proces_verbaux_verrouillants`, M2M, N7). Une seule
+    requête de plus, jamais une par évaluation."""
+    evaluations = evaluations_de_la_session(session)
+    if not evaluations:
+        return []
+    verrouillees = frozenset(
+        Evaluation.objects.filter(
+            pk__in=[e.pk for e in evaluations], proces_verbaux_verrouillants__isnull=False
+        ).values_list("pk", flat=True)
+    )
+    return [e for e in evaluations if e.pk not in verrouillees]
 
 
 def occupations_epreuves(debut, fin) -> list:

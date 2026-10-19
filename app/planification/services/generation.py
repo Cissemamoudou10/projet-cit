@@ -22,6 +22,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
+from organisation.models import EtatSession
 from planification.exceptions import AucuneGrilleActive, SemaineEntierementBloquee
 from planification.generation.candidats import construire_cases, projeter_creneaux
 from planification.generation.compte_rendu import Regeneration
@@ -51,6 +52,17 @@ STRATEGIES = {"gloutonne": StrategieGloutonne}
 def _valider_lundi(lundi_de_semaine):
     if lundi_de_semaine.isoweekday() != 1:
         raise ErreurValidation(f"{lundi_de_semaine:%d/%m/%Y} n'est pas un lundi.")
+
+
+def _verifier_sessions_ouvertes(brigades):
+    """US-SES-09, C3 : une session clôturée ne reçoit plus de programme
+    généré. Énumère les brigades en cause, pas seulement la première."""
+    closes = [brigade for brigade in brigades if brigade.session.etat == EtatSession.CLOTUREE]
+    if closes:
+        noms = ", ".join(str(brigade) for brigade in closes)
+        raise ErreurValidation(
+            f"Session clôturée pour : {noms} — retirez ces brigades de la sélection."
+        )
 
 
 def _grille_active_avec_creneaux():
@@ -155,9 +167,13 @@ class ServiceGeneration:
         """RG-31 : produit toujours un BROUILLON, aucun passage d'état.
         Complète le programme de la semaine s'il existe déjà (§ 2, RG-33
         bis — un seul programme par semaine, centre entier), le crée sinon.
-        """
+
+        US-SES-09, C3 : refuse toute brigade d'une session clôturée — le
+        filtre du formulaire de lancement (confort d'écran) ne protège pas
+        à lui seul un appel direct au service (`.claude/rules/vues.md`)."""
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
         _valider_lundi(lundi_de_semaine)
+        _verifier_sessions_ouvertes(brigades)
         creneaux = _grille_active_avec_creneaux()
         cases = _cases_ou_e1(brigades, creneaux, lundi_de_semaine)
         with transaction.atomic():

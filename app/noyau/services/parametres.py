@@ -175,6 +175,32 @@ class ResolveurVolumeRealiseBrigade:
         return 0.0
 
 
+class ResolveurEvaluationsNonFinalisees:
+    """C2, US-SES-09 (prompt 47, Temps 4) : `ServiceSession.cloturer`
+    (`organisation`) doit refuser la clôture d'une session portant des
+    évaluations dont les notes ne sont pas verrouillées par un procès-verbal,
+    sans qu'`organisation` importe `evaluations` (sens de dépendance
+    interdit — `evaluations` importe déjà `organisation`, même motif
+    qu'ailleurs dans ce module).
+
+    `resoudre(session)` rend la liste des évaluations non finalisées du
+    périmètre de la session, pour que le refus les énumère (C2 : « le refus
+    énumère ces évaluations »). Repli : aucun fournisseur ⇒ liste vide
+    (aucune évaluation connue, comportement antérieur à cette story)."""
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, session) -> list:
+        if cls._fournisseur is not None:
+            return cls._fournisseur(session)
+        return []
+
+
 class ResolveurOccupationsEpreuves:
     """A6, Prompt 38 : `planification` (RG-34, RG-37) ne peut pas importer
     `evaluations` — même motif que `ResolveurJoursExamen`. Un fournisseur, un

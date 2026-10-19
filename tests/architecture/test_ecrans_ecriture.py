@@ -191,6 +191,11 @@ ECRANS_ECRITURE = [
         "noyau.organisation_ecriture",
         lambda objets: [objets["session"].pk],
     ),
+    EcranEcriture(
+        "organisation:cloturer_session",
+        "noyau.organisation_ecriture",
+        lambda objets: [objets["session"].pk],
+    ),
     # --- organisation : brigades (US-SES-02) ---
     EcranEcriture(
         "organisation:creer_brigade",
@@ -680,7 +685,7 @@ ECRANS_ECRITURE = [
 # POST — à la différence des trois écrans précédents, consulter et
 # télécharger suivent `evaluations_lecture`, pas `evaluations_ecriture`,
 # hors de cette table réservée à l'écriture, V10).
-assert len(ECRANS_ECRITURE) == 129
+assert len(ECRANS_ECRITURE) == 130
 
 
 def _groupes_sans(permission):

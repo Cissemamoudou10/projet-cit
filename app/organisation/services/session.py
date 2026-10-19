@@ -12,7 +12,9 @@ from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.gestion import ServiceGestion, avertissement
-from noyau.services.parametres import ResolveurVolumeHoraireReference
+from noyau.services.parametres import (
+    ResolveurVolumeHoraireReference,
+)
 from organisation.models import EtatSession, Session
 from referentiel.services.referentiel import ServiceReferentiel
 
@@ -50,19 +52,20 @@ class ServiceSession(ServiceGestion):
         """La liste affiche le type de formation et signale une session sans
         aucune brigade (critère 2, US-SES-02) ; sans l'annotation, une
         requête par ligne pour compter les brigades."""
-        return cls.MODELE.objects.select_related(
-            "formation", "formation__type_formation"
-        ).annotate(nombre_brigades=Count("brigades"))
+        return cls.MODELE.objects.select_related("formation", "formation__type_formation").annotate(
+            nombre_brigades=Count("brigades")
+        )
 
     @classmethod
     def disponibles_pour_selection(cls):
         """`Session` n'a pas de mixin d'archivage (§ 2, Prompt 20) : le
         filtre `archive=False` du patron n'a pas de colonne à interroger.
-        Surchargé pour ne pas hériter d'un comportement qui suppose une
-        colonne absente de ce modèle — rien n'appelle encore cette méthode
-        pour `Session`, c'est une garde, pas un besoin de cette story.
-        """
-        return cls.MODELE.objects.all()
+        Surchargé pour exclure l'équivalent réel de cette story — une
+        session CLÔTURÉE (US-SES-09, C3, prompt 47) : elle disparaît des
+        sélections actives (génération, création d'évaluation, affectation
+        des stagiaires), sans rien supprimer ni masquer `lister()`/le détail
+        (brigades, programmes et résultats restent consultables)."""
+        return cls.MODELE.objects.exclude(etat=EtatSession.CLOTUREE)
 
     @classmethod
     def choix_etat(cls):

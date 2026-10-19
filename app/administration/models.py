@@ -124,6 +124,13 @@ class TypeAction(models.TextChoices):
     `TELECHARGEMENT_PROCES_VERBAL` (US-EVAL-07, V10) — même patron que
     `CONSULTATION_SUJETS`/`CONSULTATION_NOTES` : donnée sensible, chaque
     téléchargement journalisé (D-219 cas a), pas seulement la génération.
+
+    `CLOTURE_SESSION` (US-SES-09, prompt 47, Temps 4) — une extension de
+    plus : la clôture d'une session ne passe pas par le patron de gestion
+    (`MODIFICATION_ELEMENT_GESTION` ne convient pas, le formulaire générique
+    n'expose délibérément ni `etat` ni `date_cloture`, voir
+    `organisation/forms.py::FormulaireSession`) ; c'est un acte distinct,
+    daté, irréversible (C6, aucune réouverture offerte).
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -164,6 +171,7 @@ class TypeAction(models.TextChoices):
         "telechargement_proces_verbal",
         "Téléchargement d'un procès-verbal",
     )
+    CLOTURE_SESSION = "cloture_session", "Clôture d'une session"
 
 
 class EntreeJournal(ModeleHorodate):

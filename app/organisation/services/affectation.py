@@ -1,12 +1,12 @@
 """Affectation des stagiaires aux brigades — CU-P3-06, RG-19, RG-20, Prompt 25.
 
-Trois contrôles à l'affectation individuelle (§ 4), dans cet ordre — tous
-REFUS : stagiaire radié ; RG-20, déjà affecté dans la session (la brigade
-actuelle est nommée, le déplacement est l'enchaînement distinct qu'offre
-`deplacer`) ; RG-19, capacité de la salle atteinte (marge chiffrée, BNF-10).
-Deux AVERTISSEMENTS, jamais des refus : effectif déclaré dépassé (RG-65,
-comme RG-15 à US-SES-02) ; brigade sans salle attitrée, RG-19 alors
-invérifiable.
+Quatre contrôles à l'affectation individuelle (§ 4), dans cet ordre — tous
+REFUS : session clôturée (US-SES-09, C3, prompt 47) ; stagiaire radié ;
+RG-20, déjà affecté dans la session (la brigade actuelle est nommée, le
+déplacement est l'enchaînement distinct qu'offre `deplacer`) ; RG-19,
+capacité de la salle atteinte (marge chiffrée, BNF-10). Deux AVERTISSEMENTS,
+jamais des refus : effectif déclaré dépassé (RG-65, comme RG-15 à
+US-SES-02) ; brigade sans salle attitrée, RG-19 alors invérifiable.
 
 Sous-ressource composée depuis l'écran d'une session, comme `ServiceBrigade`
 et `ServiceStagiaire` : pas de patron `ServiceGestion`.
@@ -24,7 +24,7 @@ from noyau.exceptions import ErreurValidation
 from noyau.services.base import ServiceBase
 from noyau.services.gestion import avertissement
 from noyau.services.parametres import ResolveurVolumeRealiseBrigade
-from organisation.models import AffectationBrigade
+from organisation.models import AffectationBrigade, EtatSession
 from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import PERMISSION_ECRITURE, PERMISSION_LECTURE
 
@@ -151,6 +151,11 @@ class ServiceAffectation:
 
     @classmethod
     def verifier_controles(cls, stagiaire, brigade, exclut=None):
+        if brigade.session.etat == EtatSession.CLOTUREE:
+            raise ErreurValidation(
+                f"La session « {brigade.session} » est clôturée : aucune nouvelle affectation "
+                "n'y est possible."
+            )
         if stagiaire.radie:
             raise ErreurValidation(
                 f"{stagiaire} a été radié : impossible de l'affecter à une brigade."

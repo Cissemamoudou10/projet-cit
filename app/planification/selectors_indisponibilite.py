@@ -8,7 +8,7 @@ from django.utils import timezone
 from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurOccupationsEpreuves
 from planification.models import Seance
-from planification.selectors import seances_occupant_instructeurs
+from planification.selectors_occupation import seances_occupant_instructeurs
 from ressources.models import IndisponibiliteInstructeur, Instructeur
 
 

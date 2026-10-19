@@ -22,6 +22,11 @@ urlpatterns = [
         name="supprimer_session",
     ),
     path(
+        "sessions/<int:pk>/cloturer/",
+        session.vue_confirmer_cloture_session,
+        name="cloturer_session",
+    ),
+    path(
         "sessions/<int:session_pk>/brigades/",
         brigade.vue_brigades_session,
         name="brigades_session",

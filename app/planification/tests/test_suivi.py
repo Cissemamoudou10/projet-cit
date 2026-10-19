@@ -14,6 +14,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from noyau.exceptions import ErreurHabilitation, ErreurValidation
+from organisation.services.cloture import ServiceClotureSession
 from planification.models import EtatProgramme, NonExecution
 from planification.services.suivi import ServiceSuivi
 from planification.tests.aide_circuit import amener_a, seance_dans
@@ -120,6 +121,37 @@ def test_c4_annulation_sans_declaration_refusee(circuit):
 
     with pytest.raises(ErreurValidation, match="aucune non-exécution"):
         ServiceSuivi.annuler_non_execution(circuit.acteurs.planificateur, ligne)
+
+
+def test_c4_annulation_refusee_apres_cloture_de_la_session(circuit):
+    """C4, US-SES-09 (prompt 47, D-262 fermé) : la déclaration faite AVANT
+    la clôture devient irréversible dès que la session l'est."""
+    affiche = amener_a(EtatProgramme.AFFICHE, circuit)
+    ligne = _ligne_passee(affiche, circuit)
+    ServiceSuivi.declarer_non_execution(circuit.acteurs.planificateur, ligne, MOTIF)
+    ServiceClotureSession.cloturer(circuit.acteurs.pedagogique, circuit.brigade.session)
+    # Relue : `ligne.brigade.session` mettrait sinon en cache l'état OUVERT
+    # lu avant la clôture — artefact du test (deux objets Python pour la même
+    # ligne en base), pas de la vraie requête HTTP suivante.
+    ligne.refresh_from_db()
+
+    with pytest.raises(ErreurValidation, match="clôturée"):
+        ServiceSuivi.annuler_non_execution(circuit.acteurs.planificateur, ligne)
+
+    assert NonExecution.objects.filter(ligne=ligne).exists()
+
+
+def test_c4_declaration_refusee_sur_session_deja_cloturee(circuit):
+    """C4, US-SES-09 : aucune NOUVELLE déclaration sur une session déjà
+    clôturée, pas seulement l'annulation d'une déclaration existante."""
+    affiche = amener_a(EtatProgramme.AFFICHE, circuit)
+    ligne = _ligne_passee(affiche, circuit)
+    ServiceClotureSession.cloturer(circuit.acteurs.pedagogique, circuit.brigade.session)
+
+    with pytest.raises(ErreurValidation, match="clôturée"):
+        ServiceSuivi.declarer_non_execution(circuit.acteurs.planificateur, ligne, MOTIF)
+
+    assert not NonExecution.objects.filter(ligne=ligne).exists()
 
 
 def test_c5_journalisee_avec_auteur_et_horodatage(circuit):

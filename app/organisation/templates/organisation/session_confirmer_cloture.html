@@ -1,0 +1,51 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}{{ titre_dialogue }} — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[520px] animate-ouvrir border border-marine-900 bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <!-- arbitraire : w-[520px], même largeur que confirmer_archivage.html -->
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-marine-900 px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      {{ titre_dialogue }}
+    </p>
+    <div class="px-4 py-4 text-sm">
+      <p>{{ texte_explication }}</p>
+      <p class="mt-3 border border-gris-trait bg-sable px-3 py-2.5 text-xs text-gris-lecture">
+        Disparaît des sélections actives (génération, création d'évaluation, affectation
+        des stagiaires) ; brigades, programmes et résultats restent consultables.
+      </p>
+      <p class="mt-2 border border-etat-ecart bg-etat-ecart-fond px-3 py-2.5 text-xs text-etat-ecart">
+        Irréversible : l'interface n'offre aucune réouverture.
+      </p>
+      {% if non_finalisees %}
+        <div class="mt-3 border border-etat-attention bg-etat-attention-fond px-3 py-2.5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-etat-attention">
+            Clôture bloquée — notes non verrouillées
+          </p>
+          <ul class="mt-1.5 divide-y divide-gris-trait text-xs">
+            {% for evaluation in non_finalisees %}
+              <li class="py-1">{{ evaluation }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      {% if not non_finalisees %}
+        <button type="submit"
+                class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900
+                       px-3.5 py-1.5 text-sm font-semibold text-blanc
+                       transition-colors duration-survol hover:bg-marine-700">Clôturer</button>
+      {% endif %}
+    </div>
+  </form>
+</dialog>
+{% endblock %}
