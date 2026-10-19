@@ -124,6 +124,16 @@ livrées : 48 + 1 = **49** / 52. Sprint 4 : 12 / 14 stories, 47 / 55 points.
 Point de décision du 21 octobre non encore atteint : deux stories Should
 restent à statuer (US-PLAN-11, US-REF-09).
 
+**Recalcul daté (2026-10-19, prompt 48, Story 4).** US-PLAN-11 (duplication
+d'un programme hebdomadaire, 5 pts) livrée — la plus complexe des cinq
+stories du prompt. Aucune décision consignée (la garde de la cible
+réutilise l'événement `GENERER` existant, sans toucher `TRANSITIONS` ni
+`ETA-01_table_transitions.md`) ; P-50 consignée (écart de décompte
+préexistant, sans rapport avec cette story). Points livrés : 216 + 5 =
+**221** / 224. Stories livrées : 49 + 1 = **50** / 52. Sprint 4 :
+13 / 14 stories, 52 / 55 points. Point de décision du 21 octobre non
+encore atteint : une seule story Should reste à statuer (US-REF-09).
+
 ## Ce qu'il faut surveiller
 
 **Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des

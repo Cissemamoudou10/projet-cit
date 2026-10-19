@@ -1,0 +1,58 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Compte rendu de duplication — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Compte rendu de duplication</h1>
+  <p class="text-sm text-gris-lecture">
+    De la semaine du {{ compte_rendu.programme_source.lundi_de_semaine|date:"d/m/Y" }}
+    vers la semaine du {{ compte_rendu.programme_cible.lundi_de_semaine|date:"d/m/Y" }}.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait px-4 py-3 text-sm">
+    <span class="font-semibold text-etat-conforme">{{ compte_rendu.nombre_creees }}</span>
+    séance{{ compte_rendu.nombre_creees|pluralize }} créée{{ compte_rendu.nombre_creees|pluralize }}.
+  </p>
+  {% if compte_rendu.exclues %}
+    <section>
+      <p class="bg-fond-bande px-4 py-2 font-titre text-xs font-semibold uppercase tracking-wide
+                text-marine-900">Séances non reportables ({{ compte_rendu.exclues|length }})</p>
+      <ul class="divide-y divide-gris-trait">
+        {% for exclue in compte_rendu.exclues %}
+          <li class="px-4 py-2 text-sm">
+            {{ exclue.seance.element_referentiel.matiere }} — {{ exclue.seance.debut|date:"d/m H:i" }}
+            <span class="text-gris-lecture">— {{ exclue.motif }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {% if compte_rendu.refusees %}
+    <section>
+      <p class="bg-fond-bande px-4 py-2 font-titre text-xs font-semibold uppercase tracking-wide
+                text-marine-900">Candidates refusées sur la cible ({{ compte_rendu.refusees|length }})</p>
+      <ul class="divide-y divide-gris-trait">
+        {% for refusee in compte_rendu.refusees %}
+          <li class="border-l-2 border-l-etat-ecart px-4 py-2 text-sm">
+            {{ refusee.brigade }} — {{ refusee.element_referentiel.matiere }}
+            <ul class="mt-1 list-disc pl-5 text-xs text-etat-ecart">
+              {% for violation in refusee.violations %}
+                <li>{{ violation.code }} — {{ violation.message }}</li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+  {% if not compte_rendu.exclues and not compte_rendu.refusees %}
+    <p class="px-4 py-3 text-sm text-gris-lecture">Aucune exclusion, aucun refus.</p>
+  {% endif %}
+</div>
+{% endblock %}

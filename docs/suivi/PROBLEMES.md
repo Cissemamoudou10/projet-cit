@@ -23,6 +23,14 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-50 — `ECRANS_ECRITURE` : un passage 129 → 130 jamais consigné dans le commentaire de décompte
+**Date** 2026-10-19 · **Story** US-PLAN-11 (prompt 48, Story 4) · **État** : résolu
+**Symptôme** — en ajoutant l'écran de duplication à `tests/architecture/test_ecrans_ecriture.py::ECRANS_ECRITURE` et en portant le compte attendu à 131, `test_toute_vue_ecriture_figure_dans_la_table` échouait d'abord à la collecte (`assert len(ECRANS_ECRITURE) == 130`) : le fichier portait déjà 130 entrées avant ma propre addition, alors que le commentaire du décompte ne racontait l'historique que jusqu'à 129 (procès-verbaux, prompt 46).
+**Cause** — une entrée ajoutée entre le prompt 46 et le prompt 48 (vraisemblablement la clôture de session, US-SES-09, prompt 47) n'a pas mis à jour le commentaire narratif qui accompagne `assert len(ECRANS_ECRITURE) == N` — même défaut déjà consigné pour `MESURES-REFERENCE.md` (passage 45 → 47 jamais noté).
+**Résolution** — compte porté à 131 (duplication comprise) ; le passage 129 → 130 non documenté est signalé dans le commentaire plutôt que reconstitué avec un historique non vérifié.
+**Risque concerné** — aucun du registre.
+**Leçon** — ce décompte manuel est fragile à chaque nouvelle story qui ajoute un écran d'écriture : le vérifier (pas seulement l'incrémenter) avant de porter le nombre attendu.
+
 ## P-49 — `initialiser_habilitations` ne resynchronise jamais un groupe déjà peuplé : « Cellule pédagogique » avait dérivé de la matrice
 **Date** 2026-10-17 · **Story** aucune (usage réel sur la base de dev, signalé par Lt Cissé après P-45/correctif migration) · **État** : résolu
 **Symptôme** — `GET /planification/programme/?semaine=2026-10-12 403 (Forbidden)` en se connectant avec un compte de la Cellule planification, puis **le même 403** après déconnexion et reconnexion avec un compte de la Cellule pédagogique — alors que `MATRICE["Cellule planification"]` et `MATRICE["Cellule pédagogique"]` (`administration/constantes.py`) portent toutes deux `programme_lecture`, permission exigée par `vue_consultation_programme` (`@exige_habilitation("noyau.programme_lecture")`).

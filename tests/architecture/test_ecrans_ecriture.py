@@ -455,6 +455,8 @@ ECRANS_ECRITURE = [
     ),
     # --- planification : génération du programme hebdomadaire (US-PLAN-03) ---
     EcranEcriture("planification:lancement_generation", "noyau.programme_ecriture"),
+    # --- planification : duplication du programme hebdomadaire (US-PLAN-11, prompt 48) ---
+    EcranEcriture("planification:lancement_duplication", "noyau.programme_ecriture"),
     # --- planification : circuit du programme (prompt 40, US-VAL-01, 02, 04) ---
     EcranEcriture(
         "planification:soumettre",
@@ -685,7 +687,14 @@ ECRANS_ECRITURE = [
 # POST — à la différence des trois écrans précédents, consulter et
 # télécharger suivent `evaluations_lecture`, pas `evaluations_ecriture`,
 # hors de cette table réservée à l'écriture, V10).
-assert len(ECRANS_ECRITURE) == 130
+# Note (prompt 48, Temps 0) : la table comptait déjà 130 à l'ouverture de ce
+# prompt, sans trace de la dernière addition dans ce commentaire — écart
+# documentaire antérieur, signalé plutôt que reconstitué avec un historique
+# non vérifié (même défaut que celui déjà consigné pour MESURES-REFERENCE.md,
+# passage 45 → 47). 131 après la duplication du programme hebdomadaire
+# (prompt 48, US-PLAN-11 : un seul écran de lancement, même permission que
+# la génération, `programme_ecriture`).
+assert len(ECRANS_ECRITURE) == 131
 
 
 def _groupes_sans(permission):

@@ -44,6 +44,12 @@
         </a>
       {% endif %}
       {% if perms.noyau.programme_ecriture %}
+        <a href="{% url 'planification:lancement_duplication' %}"
+           class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+                  text-sm font-medium text-encre no-underline transition-colors duration-survol
+                  hover:border-marine-700">
+          Dupliquer
+        </a>
         <a href="{% url 'planification:lancement_generation' %}"
            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
                   px-3.5 text-sm font-semibold text-blanc no-underline transition-colors duration-survol

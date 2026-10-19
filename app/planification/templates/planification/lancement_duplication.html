@@ -1,0 +1,63 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Dupliquer un programme hebdomadaire — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Dupliquer un programme hebdomadaire</h1>
+  <p class="text-sm text-gris-lecture">
+    Reporte les séances d'une semaine source vers les créneaux équivalents d'une semaine
+    cible, pour les brigades sélectionnées.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<form method="post" class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
+  {% csrf_token %}
+  <div class="flex flex-wrap gap-4 border-b border-gris-trait px-4 py-3">
+    <div>
+      <label for="{{ formulaire.semaine_source.id_for_label }}"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ formulaire.semaine_source.label }}</label>
+      {{ formulaire.semaine_source }}
+      {% for erreur in formulaire.semaine_source.errors %}
+        <p class="mt-1 text-xs text-etat-ecart">{{ erreur }}</p>
+      {% endfor %}
+    </div>
+    <div>
+      <label for="{{ formulaire.semaine_cible.id_for_label }}"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ formulaire.semaine_cible.label }}</label>
+      {{ formulaire.semaine_cible }}
+      {% for erreur in formulaire.semaine_cible.errors %}
+        <p class="mt-1 text-xs text-etat-ecart">{{ erreur }}</p>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="px-4 py-3">
+    <p class="mb-2 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Brigades</p>
+    {% for erreur in formulaire.brigades.errors %}
+      <p class="mb-2 text-xs text-etat-ecart">{{ erreur }}</p>
+    {% endfor %}
+    <div class="divide-y divide-gris-trait border border-gris-trait">
+      {% for case in formulaire.brigades %}
+        <label class="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors
+                      duration-survol hover:bg-fond-survol">
+          {{ case.tag }}
+          <span>{{ case.choice_label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="border-t border-gris-trait px-4 py-3">
+    <button type="submit"
+            class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                   px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                   hover:bg-marine-700">
+      Dupliquer
+    </button>
+  </div>
+</form>
+{% endblock %}

@@ -4,6 +4,7 @@ from planification import (
     views,
     views_alerte_ecart,
     views_circuit,
+    views_duplication,
     views_indisponibilite,
     views_periode,
     views_progression,
@@ -17,6 +18,11 @@ app_name = "planification"
 
 urlpatterns = [
     path("planification/generer/", views.vue_lancement_generation, name="lancement_generation"),
+    path(
+        "planification/dupliquer/",
+        views_duplication.vue_lancement_duplication,
+        name="lancement_duplication",
+    ),
     path(
         "planification/programme/", views.vue_consultation_programme, name="consultation_programme"
     ),

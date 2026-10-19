@@ -43,15 +43,11 @@ from planification.services.contraintes import (
 )
 from planification.services.ecriture import ServiceEcritureSeance
 from planification.services.modification import supprimer_seances_regenerables
+from planification.services.temps import valider_lundi
 from ressources.models import CreneauType, GrilleHoraire
 
 PERMISSION_ECRITURE = ServiceEcritureSeance.PERMISSION_ECRITURE
 STRATEGIES = {"gloutonne": StrategieGloutonne}
-
-
-def _valider_lundi(lundi_de_semaine):
-    if lundi_de_semaine.isoweekday() != 1:
-        raise ErreurValidation(f"{lundi_de_semaine:%d/%m/%Y} n'est pas un lundi.")
 
 
 def _verifier_sessions_ouvertes(brigades):
@@ -172,7 +168,7 @@ class ServiceGeneration:
         filtre du formulaire de lancement (confort d'écran) ne protège pas
         à lui seul un appel direct au service (`.claude/rules/vues.md`)."""
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
-        _valider_lundi(lundi_de_semaine)
+        valider_lundi(lundi_de_semaine)
         _verifier_sessions_ouvertes(brigades)
         creneaux = _grille_active_avec_creneaux()
         cases = _cases_ou_e1(brigades, creneaux, lundi_de_semaine)

@@ -77,6 +77,21 @@ un programme complet. Le nombre exact de requêtes n'est volontairement pas
 gravé dans l'assertion, pour ne pas transformer un refactor sans régression
 en échec de test.
 
+## US-PLAN-11 — `ServiceDuplication.dupliquer`, nombre de requêtes (D7, prompt 48)
+
+`app/planification/tests/test_duplication.py::
+test_requetes_constantes_avec_deux_et_dix_brigades` — mesuré le 2026-10-19,
+vert.
+
+Même patron que US-PLAN-04 (ci-dessus), « mesurée comme la génération » (D7
+du prompt) : une séance regroupée à dix brigades, dupliquée pour 2 puis pour
+les 10 — **43 requêtes dans les deux cas** (chauffe préalable sur une
+semaine cible jetée, P-39). Deux chargements de `ServiceContraintes.
+contexte()` par duplication (un pour évaluer les candidates, un second à
+l'intérieur de `ServiceEcritureSeance.creer_seances`, qui ne fait jamais
+confiance à l'appelant) — même double chargement que `ServiceGeneration.
+generer`, pas une régression propre à la duplication.
+
 ## Suite de tests — progression depuis la clôture du sprint 1
 
 | | Valeur |
