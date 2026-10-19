@@ -12,6 +12,7 @@ from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
+from administration.services.journal import ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
@@ -138,6 +139,7 @@ def vue_detail_matiere(request, pk):
                 "referentiel:ajouter_objectif_pedagogique", args=[matiere.pk]
             ),
             "nombre_instructeurs_qualifies": matiere.qualifications.count(),
+            "historique": ServiceJournal.historique_de("matiere", matiere),
         },
     )
 

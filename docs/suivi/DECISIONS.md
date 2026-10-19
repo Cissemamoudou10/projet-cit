@@ -31,6 +31,26 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-286 — US-REF-09, E4 : aucune reprise rétroactive de l'historique — limite assumée
+**Date** 2026-10-19 · **Story** US-REF-09 (Prompt 48, Story 5, E4) · **Auteur** porteur non renseigné
+**Contexte** — E4 demande explicitement de consigner cette limite : l'historique du référentiel (formation, matière, élément de référentiel, prérequis) commence à la livraison de cette story. Toute création, modification ou archivage antérieure à ce prompt n'a laissé aucune trace exploitable par les nouveaux écrans d'historique (`ServiceJournal.historique_de`/`historique_plusieurs`).
+**Décision** — Aucune reprise rétroactive n'est tentée. L'historique affiché sur les trois fiches (formation, matière, référentiel d'une formation) ne montre que ce qui s'est produit à partir de ce prompt.
+**Alternative écartée** — Reconstituer un état antérieur à partir des données actuelles (ex. une entrée de création factice datée de la mise en service du système) : écartée, une donnée inventée dans un journal d'audit (RG-26/RG-27) en compromettrait la fiabilité — mieux vaut un historique incomplet mais exact qu'un historique complet mais partiellement fictif.
+**Impact sur les livrables** — aucun sur le diagramme de classes. À signaler dans le mémoire comme limite connue d'US-REF-09.
+**Reporté au livrable** — non applicable.
+
+---
+
+## D-285 — US-REF-09 : l'historique d'un objet se filtre par sa valeur lisible, jamais par sa clé primaire — limite au renommage
+**Date** 2026-10-19 · **Story** US-REF-09 (Prompt 48, Story 5) · **Auteur** porteur non renseigné
+**Contexte** — `EntreeJournal.objet_identifiant` n'est jamais une clé étrangère (D-15 : six applications journalisées, cinq n'existaient pas à l'écriture, une FK les rendrait toutes dépendantes d'`administration`) mais la valeur lisible posée par l'appelant au moment de l'écriture — `str(getattr(instance, CHAMP_UNICITE))` pour `ServiceGestion` (Formation, Matière), `str(instance)` pour `ElementReferentiel`. Découvert en écrivant `ServiceJournal.historique_de`/`historique_plusieurs` (nouvelles, cette story) : un filtre par clé primaire ne trouve aucune entrée, puisque rien dans le journal ne porte de clé primaire.
+**Décision** — `historique_de(objet_type, objet)`/`historique_plusieurs(objet_type, objets)` reçoivent l'INSTANCE, pas sa clé primaire, et filtrent par `str(objet)` — cohérent avec ce que chaque service a déjà écrit. Limite assumée : un renommage change cette valeur pour les écritures FUTURES, jamais pour les entrées déjà enregistrées sous l'ancien nom — l'historique affiché sur la fiche d'un objet renommé peut donc paraître incomplet (les entrées antérieures au renommage restent dans le journal, mais sous une clé que la fiche ne cherche plus). Même limite que celle que porte déjà tacitement `ServiceGestion`/le journal pour toutes les entités existantes (Formation, Matière, Instructeur, Lieu...), pas une régression propre à cette story.
+**Alternative écartée** — Ajouter une clé stable (type + pk applicatif) à `EntreeJournal` : écartée, hors du périmètre d'E1 (« aucune dépendance nouvelle », pas de nouvelle validation du paquet hors ligne) et, surtout, un changement de modèle bien plus large que ce que la story demande — à proposer séparément si le besoin se confirme.
+**Impact sur les livrables** — aucun sur le diagramme de classes. À signaler dans le mémoire comme limite connue du mécanisme de journal, pas seulement d'US-REF-09.
+**Reporté au livrable** — non applicable.
+
+---
+
 ## D-284 — US-SUI-03, B6 : le tableau de bord se garde par `suivi_lecture`, quatre profils, pas seulement les deux cités par le critère
 **Date** 2026-10-19 · **Story** US-SUI-03 (Prompt 48, Story 2, B6 — « consigne l'écart s'il en résulte un accès plus large ») · **Auteur** porteur non renseigné
 **Contexte** — Le critère du backlog v10 cite deux profils lecteurs (Direction de Formation, pédagogique). B6 fait foi à la matrice (§ 11.2) pour le domaine « suivi », qui accorde `suivi_lecture` à QUATRE profils : Cellule pédagogique, Cellule planification, Cellule examens et Direction de formation (`administration/constantes.py::MATRICE`) — même principe que D-265 (US-SUI-01, même domaine) et D-264/D-93/D-96 avant elle : un critère d'acceptation incomplet n'est pas une raison de restreindre un accès déjà accordé par § 11.2.

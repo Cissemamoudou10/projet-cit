@@ -11,6 +11,7 @@ from django.utils.html import format_html
 from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
+from administration.services.journal import ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurModificationConcurrente, ErreurValidation
 from noyau.forms import modifie_le_attendu_depuis_requete
 from noyau.habilitations import a_permission
@@ -172,6 +173,7 @@ def vue_detail_formation(request, pk):
             "url_referentiel": reverse("referentiel:referentiel_formation", args=[formation.pk]),
             "nombre_elements_referentiel": len(elements),
             "total_volume_referentiel": ServiceReferentiel.total_volume(formation),
+            "historique": ServiceJournal.historique_de("formation", formation),
         },
     )
 

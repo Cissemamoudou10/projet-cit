@@ -41,4 +41,5 @@
 {% else %}
   {% include "referentiel/_fragments/tableau_prerequis.html" with peut_ecrire=perms.noyau.referentiel_ecriture %}
 {% endif %}
+{% include "referentiel/_historique.html" %}
 {% endblock %}

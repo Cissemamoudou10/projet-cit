@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
+from administration.services.journal import ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from referentiel.forms import (
     FormulaireElementReferentiel,
@@ -42,9 +43,10 @@ def _rendre_page(request, formation, *, formulaire_rattachement=None):
             matieres_disponibles=disponibles,
             initial={"matiere": request.GET.get("matiere")},
         )
+    elements = list(ServiceReferentiel.lister(request.user, formation))
     contexte = {
         "formation": formation,
-        "elements": ServiceReferentiel.lister(request.user, formation),
+        "elements": elements,
         "ecart": ServiceReferentiel.ecart(formation),
         "formulaire_rattachement": formulaire_rattachement,
         "categories_lieu": ServiceReferentiel.categories_lieu(),
@@ -53,6 +55,7 @@ def _rendre_page(request, formation, *, formulaire_rattachement=None):
         "url_creer_matiere": reverse(
             "referentiel:creer_matiere_depuis_referentiel", args=[formation.pk]
         ),
+        "historique": ServiceJournal.historique_plusieurs("element_referentiel", elements),
     }
     return render(request, "referentiel/formation_referentiel.html", contexte)
 

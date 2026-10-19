@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
+from administration.services.journal import ServiceJournal
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
 from referentiel.forms import FormulairePrerequis
 from referentiel.services.formation import ServiceFormation
@@ -49,6 +50,7 @@ def preparer_donnees_prerequis(request, formation):
         "elements": elements,
         "elements_suffisants": suffisant,
         "ordre": ordre_topologique(formation) if suffisant else [],
+        "liens": liens,
     }
 
 
@@ -58,6 +60,7 @@ def _rendre_page(request, formation):
     contexte["url_composer_referentiel"] = reverse(
         "referentiel:referentiel_formation", args=[formation.pk]
     )
+    contexte["historique"] = ServiceJournal.historique_plusieurs("prerequis", contexte["liens"])
     return render(request, "referentiel/prerequis_formation.html", contexte)
 
 

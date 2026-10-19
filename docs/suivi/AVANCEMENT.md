@@ -134,6 +134,14 @@ préexistant, sans rapport avec cette story). Points livrés : 216 + 5 =
 13 / 14 stories, 52 / 55 points. Point de décision du 21 octobre non
 encore atteint : une seule story Should reste à statuer (US-REF-09).
 
+**Recalcul daté (2026-10-19/20, prompt 48, Story 5).** US-REF-09
+(historique des modifications du référentiel, 3 pts) livrée — dernière
+story du prompt 48. D-285 (limite au renommage) et D-286 (E4, aucune
+reprise rétroactive) consignées. Points livrés : 221 + 3 = **224** / 224.
+Stories livrées : 50 + 1 = **51** / 52. **Sprint 4 : 14 / 14 stories,
+55 / 55 points — périmètre complet livré avant le point de décision du
+21 octobre**, aucune story Should n'est passée en réserve.
+
 ## Ce qu'il faut surveiller
 
 **Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des

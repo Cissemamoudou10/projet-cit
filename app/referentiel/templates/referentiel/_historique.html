@@ -1,0 +1,42 @@
+{% if historique %}
+<section class="mt-4 border border-gris-trait bg-fond-bloc" aria-label="Historique des modifications">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold
+            uppercase tracking-wide text-marine-900">
+    Historique des modifications
+  </p>
+  <table class="w-full border-collapse text-sm">
+    <thead>
+      <tr>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Date</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Action</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Auteur</th>
+        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                               font-semibold uppercase tracking-wider text-blanc">Valeurs</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entree in historique %}
+        <tr class="border-t border-gris-trait">
+          <td class="px-3 py-2 tabular-nums">{{ entree.cree_le|date:"d/m/Y H:i" }}</td>
+          <td class="px-3 py-2">{{ entree.get_type_action_display }} — {{ entree.identifiant_saisi }}</td>
+          <td class="px-3 py-2">{{ entree.auteur|default:"—" }}</td>
+          <td class="px-3 py-2 text-xs text-gris-lecture">
+            {% if entree.valeur_avant %}
+              Avant :
+              {% for cle, valeur in entree.valeur_avant.items %}{{ cle }}={{ valeur }}{% if not forloop.last %}, {% endif %}{% endfor %}
+              <br>
+            {% endif %}
+            {% if entree.valeur_apres %}
+              Après :
+              {% for cle, valeur in entree.valeur_apres.items %}{{ cle }}={{ valeur }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}

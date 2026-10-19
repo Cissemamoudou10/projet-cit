@@ -108,7 +108,10 @@ class ServiceReferentiel:
         try:
             with transaction.atomic():
                 ServiceBase.creer(element, agissant)
-                _journaliser(agissant, TypeAction.CREATION_ELEMENT_GESTION, element)
+                _journaliser(
+                    agissant, TypeAction.CREATION_ELEMENT_GESTION, element,
+                    valeur_apres=_capturer(element),
+                )
         except IntegrityError as erreur:
             raise _erreur_doublon(formation, matiere) from erreur
         return element
@@ -116,12 +119,16 @@ class ServiceReferentiel:
     @staticmethod
     def modifier_volume(agissant, element, donnees):
         verifier_habilitation(agissant, PERMISSION_ECRITURE)
+        avant = _capturer(element)
         for champ, valeur in _donnees_coherentes(donnees).items():
             setattr(element, champ, valeur)
         valider_instance(element)
         with transaction.atomic():
             ServiceBase.modifier(element, agissant)
-            _journaliser(agissant, TypeAction.MODIFICATION_ELEMENT_GESTION, element)
+            _journaliser(
+                agissant, TypeAction.MODIFICATION_ELEMENT_GESTION, element,
+                valeur_avant=avant, valeur_apres=_capturer(element),
+            )
         return element
 
     @staticmethod
@@ -198,7 +205,22 @@ def _erreur_doublon(formation, matiere):
     )
 
 
-def _journaliser(agissant, nature, element):
+def _capturer(element):
+    """US-REF-09, E1/E2 : liste blanche de champs (BNF-03), les quatre
+    attributs cités par le critère — volume, coefficient, poids, catégorie
+    de lieu. `coefficient`/`poids_formatif`/`poids_certificatif` sont des
+    `Decimal` (`.claude/rules/modeles.md`) : convertis en `float`, le
+    `JSONField` du journal ne sait pas sérialiser un `Decimal` nativement."""
+    return {
+        "volume_horaire_prescrit": element.volume_horaire_prescrit,
+        "coefficient": float(element.coefficient),
+        "poids_formatif": float(element.poids_formatif),
+        "poids_certificatif": float(element.poids_certificatif),
+        "categorie_lieu": element.categorie_lieu,
+    }
+
+
+def _journaliser(agissant, nature, element, *, valeur_avant=None, valeur_apres=None):
     identifiant = str(element)
     ServiceJournal.enregistrer_detaillee(
         DonneesEntreeJournal(
@@ -207,5 +229,7 @@ def _journaliser(agissant, nature, element):
             auteur=agissant,
             objet_type="element_referentiel",
             objet_identifiant=identifiant,
+            valeur_avant=valeur_avant,
+            valeur_apres=valeur_apres,
         )
     )

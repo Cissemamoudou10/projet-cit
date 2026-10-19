@@ -17,6 +17,7 @@ LIBELLES_OBJET_TYPE = {
     "type_formation": "Type de formation",
     "formation": "Formation",
     "matiere": "Matière",
+    "element_referentiel": "Élément de référentiel",
     "objectif_pedagogique": "Objectif pédagogique",
     "prerequis": "Prérequis",
     "instructeur": "Instructeur",
@@ -124,6 +125,46 @@ class ServiceJournal:
             .distinct()
         )
         return [(valeur, LIBELLES_OBJET_TYPE.get(valeur, valeur)) for valeur in valeurs]
+
+    @staticmethod
+    def historique_de(objet_type, objet) -> list:
+        """US-REF-09 (prompt 48) : historique d'UN SEUL objet, depuis sa
+        propre fiche — pas la consultation administrateur de tout le
+        journal (RG-26, réservée à `consulter`). Aucune vérification
+        d'habilitation ici : l'appelant est déjà gardé par la permission
+        de lecture de son propre domaine (même patron que `planification.
+        selectors_circuit.historique_du_programme`).
+
+        `objet` : l'INSTANCE (pas sa clé primaire) — `objet_identifiant`
+        n'est jamais une FK (D-15, six applications, cinq inexistantes à
+        l'écriture) mais la valeur lisible (`str(instance)` ou le champ
+        d'unicité) posée par l'appelant au moment de l'écriture
+        (`ServiceGestion._journaliser`). Limite assumée (E4) : un
+        renommage change cette valeur pour les écritures FUTURES, pas pour
+        les entrées déjà enregistrées sous l'ancien nom — l'historique
+        affiché sur la fiche peut donc paraître incomplet après un
+        renommage, aucune reprise rétroactive ne le corrige."""
+        return list(
+            EntreeJournal.objects.filter(objet_type=objet_type, objet_identifiant=str(objet))
+            .select_related("auteur")
+            .order_by("-cree_le")
+        )
+
+    @staticmethod
+    def historique_plusieurs(objet_type, objets) -> list:
+        """Même usage que `historique_de`, pour plusieurs objets d'un
+        coup — la fiche du référentiel d'une formation affiche
+        l'historique de TOUS ses éléments, pas un seul."""
+        if not objets:
+            return []
+        return list(
+            EntreeJournal.objects.filter(
+                objet_type=objet_type,
+                objet_identifiant__in=[str(objet) for objet in objets],
+            )
+            .select_related("auteur")
+            .order_by("-cree_le")
+        )
 
     @staticmethod
     def consulter(agissant, filtres, page):

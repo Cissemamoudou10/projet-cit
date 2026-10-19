@@ -102,6 +102,8 @@ def test_service_journal_n_expose_aucune_ecriture_hors_insertion():
             "consulter",
             "natures_disponibles",
             "objet_types_disponibles",
+            "historique_de",
+            "historique_plusieurs",
         ):
             continue
         pytest.fail(f"Méthode inattendue sur ServiceJournal : {nom}")
