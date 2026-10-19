@@ -108,6 +108,14 @@ US-SUI-02 (alertes d'écart significatif, 3 pts) livrée. Points livrés :
 atteint à la livraison : quatre stories Should restent à statuer
 (US-SUI-03, US-INS-04, US-PLAN-11, US-REF-09).
 
+**Recalcul daté (2026-10-19, prompt 48, Story 2).** US-SUI-03 (tableau de
+bord des formations, 5 pts) livrée. D-284 consignée (B6 : accès à quatre
+profils, la matrice fait foi, le critère n'en citait que deux). Points
+livrés : 208 + 5 = **213** / 224. Stories livrées : 47 + 1 = **48** / 52.
+Sprint 4 : 11 / 14 stories, 44 / 55 points. Point de décision du 21 octobre
+non encore atteint : trois stories Should restent à statuer (US-INS-04,
+US-PLAN-11, US-REF-09).
+
 ## Ce qu'il faut surveiller
 
 **Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des

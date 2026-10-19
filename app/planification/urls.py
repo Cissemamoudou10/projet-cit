@@ -10,6 +10,7 @@ from planification import (
     views_rapprochement,
     views_seance,
     views_suivi,
+    views_tableau_bord,
 )
 
 app_name = "planification"
@@ -124,6 +125,11 @@ urlpatterns = [
         "planification/alertes/",
         views_alerte_ecart.vue_alertes,
         name="alertes_ecart",
+    ),
+    path(
+        "planification/tableau-de-bord/",
+        views_tableau_bord.vue_tableau_bord,
+        name="tableau_bord",
     ),
     path(
         "planification/programmes/<int:pk>/progression-realisee/",

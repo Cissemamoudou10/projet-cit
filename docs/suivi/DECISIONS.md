@@ -31,6 +31,16 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-284 — US-SUI-03, B6 : le tableau de bord se garde par `suivi_lecture`, quatre profils, pas seulement les deux cités par le critère
+**Date** 2026-10-19 · **Story** US-SUI-03 (Prompt 48, Story 2, B6 — « consigne l'écart s'il en résulte un accès plus large ») · **Auteur** porteur non renseigné
+**Contexte** — Le critère du backlog v10 cite deux profils lecteurs (Direction de Formation, pédagogique). B6 fait foi à la matrice (§ 11.2) pour le domaine « suivi », qui accorde `suivi_lecture` à QUATRE profils : Cellule pédagogique, Cellule planification, Cellule examens et Direction de formation (`administration/constantes.py::MATRICE`) — même principe que D-265 (US-SUI-01, même domaine) et D-264/D-93/D-96 avant elle : un critère d'acceptation incomplet n'est pas une raison de restreindre un accès déjà accordé par § 11.2.
+**Décision** — `vue_tableau_bord` se garde par `noyau.suivi_lecture` (`ServiceSuivi.PERMISSION_LECTURE`), exactement comme `vue_rapprochement` et `vue_alertes` du même domaine — Cellule planification et Cellule examens lisent donc aussi le tableau de bord, en plus des deux profils cités par le critère.
+**Alternative écartée** — Restreindre l'accès aux deux profils du critère par une permission dédiée : écartée pour la même raison que D-265 — introduire une permission qui ne recoupe MATRICE qu'en partie serait un couplage faux, risqué si MATRICE évolue (P-49, `docs/suivi/PROBLEMES.md`, en donne un exemple réel).
+**Impact sur les livrables** — aucun sur le diagramme de classes. À signaler si le critère du backlog v10 est révisé pour ce domaine.
+**Reporté au livrable** — non applicable.
+
+---
+
 ## D-283 — US-SUI-02, A2 : le dépassement reste signalé même quand les contraintes dures le rendent normalement impossible
 **Date** 2026-10-19 · **Story** US-SUI-02 (Prompt 48, Story 1, A2 — « consigne cet arbitrage : aucun livrable ne le tranche ») · **Auteur** porteur non renseigné
 **Contexte** — Le dépassement d'US-SUI-02 compare le réalisé au prescrit, seulement après la fin de session (D-282). RG-39 (volume prescrit non dépassé, l'une des six contraintes dures de `ServiceContraintes`) empêche normalement de programmer au-delà du prescrit : ce dépassement ne devrait donc jamais survenir. Le prompt relève un cas réel où il le peut malgré tout : le prescrit est réduit après coup (modification du référentiel, US-REF-09), alors que des séances déjà réalisées respectaient l'ancien prescrit mais pas le nouveau.
