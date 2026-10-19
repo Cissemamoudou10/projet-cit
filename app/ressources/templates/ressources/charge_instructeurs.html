@@ -1,0 +1,84 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Charge des instructeurs — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Charge des instructeurs</h1>
+  <p class="text-sm text-gris-lecture">
+    Heures d'enseignement sur la période, comparables entre instructeurs — la surveillance
+    d'épreuve s'affiche à part, hors charge.
+  </p>
+</div>
+{% include "noyau/composants/_onglets.html" %}
+{% endblock %}
+
+{% block contenu %}
+<form method="get"
+      class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
+  <div>
+    <label for="filtre-debut"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Du</label>
+    <input type="date" id="filtre-debut" name="debut" value="{{ periode_debut|date:'Y-m-d' }}"
+           class="h-controle rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                  outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+  </div>
+  <div>
+    <label for="filtre-fin"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Au</label>
+    <input type="date" id="filtre-fin" name="fin" value="{{ periode_fin|date:'Y-m-d' }}"
+           class="h-controle rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                  outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+  </div>
+  <button type="submit"
+          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol hover:bg-marine-700">
+    Filtrer
+  </button>
+  <a href="?tri=charge&debut={{ periode_debut|date:'Y-m-d' }}&fin={{ periode_fin|date:'Y-m-d' }}"
+     class="px-3 text-sm text-marine-700">Trier par charge</a>
+</form>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if lignes %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Instructeur</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Enseignement</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Moy./semaine</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Surveillance</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in lignes %}
+          <tr class="border-t border-gris-trait {% if ligne.seuil_franchi %}bg-etat-ecart-fond{% endif %}">
+            <td class="px-3 py-2">{{ ligne.instructeur.grade }} {{ ligne.instructeur.nom }} {{ ligne.instructeur.prenom }}</td>
+            <td class="px-3 py-2 text-right tabular-nums">{{ ligne.heures_enseignement|floatformat:2 }} h</td>
+            <td class="px-3 py-2 text-right tabular-nums
+                       {% if ligne.seuil_franchi %}font-semibold text-etat-ecart{% endif %}">
+              {{ ligne.moyenne_hebdomadaire|floatformat:1 }} h
+            </td>
+            <td class="px-3 py-2 text-right tabular-nums text-gris-lecture">{{ ligne.heures_surveillance|floatformat:2 }} h</td>
+            <td class="px-3 py-2 text-right">
+              <a href="{% url 'ressources:detail_charge_instructeur' ligne.instructeur.pk %}?debut={{ periode_debut|date:'Y-m-d' }}&fin={{ periode_fin|date:'Y-m-d' }}"
+                 class="text-sm text-marine-700 hover:underline">Détail par matière</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <p class="mb-1 font-titre text-lg font-semibold">Aucun instructeur non archivé</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

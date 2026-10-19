@@ -187,6 +187,15 @@ SEUIL_ECART_VOLUME_HORAIRE = os.environ.get("SEUIL_ECART_VOLUME_HORAIRE", "10")
 # indépendamment.
 SEUIL_ALERTE_ECART_REALISE = os.environ.get("SEUIL_ALERTE_ECART_REALISE", "10")
 
+# Charge d'enseignement d'un instructeur (US-INS-04, C2, prompt 48) : heures
+# par semaine, comparées à la moyenne hebdomadaire de la période consultée.
+# Aucun livrable ne fixe cette valeur — 24 h/semaine est une HYPOTHÈSE à
+# confirmer avec le terrain (consignée dans le rendu de la story, pas une
+# valeur arrêtée en conception).
+SEUIL_CHARGE_HEBDOMADAIRE_INSTRUCTEUR = os.environ.get(
+    "SEUIL_CHARGE_HEBDOMADAIRE_INSTRUCTEUR", "24"
+)
+
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"
 LOGOUT_REDIRECT_URL = "administration:connexion"

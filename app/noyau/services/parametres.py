@@ -201,6 +201,36 @@ class ResolveurEvaluationsNonFinalisees:
         return []
 
 
+class ResolveurHeuresEnseignementParInstructeur:
+    """C1, US-INS-04 (prompt 48) : `ressources.selectors_charge` (le
+    domaine Instructeurs) a besoin des heures d'enseignement d'une période,
+    par instructeur et par matière, sans que `ressources` importe
+    `planification` (sens de dépendance interdit — `planification` importe
+    déjà `ressources`, même motif qu'ailleurs dans ce module). Compte
+    toutes les séances dont le DÉBUT tombe dans `[debut, fin)`, quel que
+    soit l'état du programme (C1) ; une séance regroupée ne porte qu'UN
+    instructeur par construction (`Seance.instructeur`), jamais comptée
+    deux fois.
+
+    `resoudre(debut, fin)` rend `{instructeur_id: [{"matiere": intitulé,
+    "heures": total}, ...]}`, une seule requête. Repli : aucun fournisseur
+    ⇒ dict vide (aucune séance connue, `planification` non installée ou
+    tests isolés d'une seule application).
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, debut, fin) -> dict:
+        if cls._fournisseur is not None:
+            return cls._fournisseur(debut, fin)
+        return {}
+
+
 class ResolveurOccupationsEpreuves:
     """A6, Prompt 38 : `planification` (RG-34, RG-37) ne peut pas importer
     `evaluations` — même motif que `ResolveurJoursExamen`. Un fournisseur, un

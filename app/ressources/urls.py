@@ -2,6 +2,7 @@ from django.urls import path
 
 from ressources.views import (
     calendrier_lecture,
+    charge_instructeur,
     grille_horaire,
     indisponibilite_instructeur,
     indisponibilite_lieu,
@@ -79,6 +80,16 @@ urlpatterns = [
         name="supprimer_indisponibilite_instructeur",
     ),
     path("instructeurs/", instructeur.vue_liste_instructeurs, name="liste_instructeurs"),
+    path(
+        "instructeurs/charge/",
+        charge_instructeur.vue_charge_instructeurs,
+        name="charge_instructeurs",
+    ),
+    path(
+        "instructeurs/<int:pk>/charge/",
+        charge_instructeur.vue_detail_charge_instructeur,
+        name="detail_charge_instructeur",
+    ),
     path("instructeurs/creer/", instructeur.vue_creer_instructeur, name="creer_instructeur"),
     path("instructeurs/<int:pk>/", instructeur.vue_detail_instructeur, name="detail_instructeur"),
     path(

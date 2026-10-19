@@ -8,11 +8,18 @@ class PlanificationConfig(AppConfig):
 
     def ready(self):
         from noyau.services.parametres import (
+            ResolveurHeuresEnseignementParInstructeur,
             ResolveurSeancesFuturesQualification,
             ResolveurVolumeRealiseBrigade,
         )
         from planification.selectors import seances_futures_qualification
+        from planification.selectors_charge_instructeur import (
+            heures_enseignement_par_instructeur,
+        )
         from planification.selectors_suivi import volume_realise_total_brigade
 
         ResolveurSeancesFuturesQualification.installer_fournisseur(seances_futures_qualification)
         ResolveurVolumeRealiseBrigade.installer_fournisseur(volume_realise_total_brigade)
+        ResolveurHeuresEnseignementParInstructeur.installer_fournisseur(
+            heures_enseignement_par_instructeur
+        )

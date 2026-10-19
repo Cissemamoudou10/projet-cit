@@ -116,6 +116,14 @@ Sprint 4 : 11 / 14 stories, 44 / 55 points. Point de décision du 21 octobre
 non encore atteint : trois stories Should restent à statuer (US-INS-04,
 US-PLAN-11, US-REF-09).
 
+**Recalcul daté (2026-10-19, prompt 48, Story 3).** US-INS-04 (charge
+d'enseignement d'un instructeur, 3 pts) livrée. Hypothèse à confirmer avec
+le terrain : seuil de charge hebdomadaire par défaut à 24 h/semaine (C2),
+aucun livrable ne la fixe. Points livrés : 213 + 3 = **216** / 224. Stories
+livrées : 48 + 1 = **49** / 52. Sprint 4 : 12 / 14 stories, 47 / 55 points.
+Point de décision du 21 octobre non encore atteint : deux stories Should
+restent à statuer (US-PLAN-11, US-REF-09).
+
 ## Ce qu'il faut surveiller
 
 **Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des

@@ -1,0 +1,54 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Charge de {{ ligne.instructeur }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">
+    {{ ligne.instructeur.grade }} {{ ligne.instructeur.nom }} {{ ligne.instructeur.prenom }}
+  </h1>
+  <p class="text-sm text-gris-lecture">
+    Du {{ periode_debut|date:"d/m/Y" }} au {{ periode_fin|date:"d/m/Y" }} —
+    {{ ligne.heures_enseignement|floatformat:2 }} h d'enseignement,
+    {{ ligne.moyenne_hebdomadaire|floatformat:1 }} h en moyenne par semaine.
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if ligne.seuil_franchi %}
+    <p class="border-b border-gris-trait bg-etat-ecart-fond px-4 py-2 text-sm font-medium text-etat-ecart">
+      Seuil de charge hebdomadaire dépassé.
+    </p>
+  {% endif %}
+  {% if ligne.par_matiere %}
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Matière</th>
+          <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                 font-semibold uppercase tracking-wider text-blanc">Heures</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for detail in ligne.par_matiere %}
+          <tr class="border-t border-gris-trait">
+            <td class="px-3 py-2">{{ detail.matiere }}</td>
+            <td class="px-3 py-2 text-right tabular-nums">{{ detail.heures|floatformat:2 }} h</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <p class="mb-1 font-titre text-lg font-semibold">Aucune séance sur la période</p>
+    </div>
+  {% endif %}
+  <p class="border-t border-gris-trait px-4 py-2 text-sm text-gris-lecture">
+    Surveillance d'épreuve (hors charge d'enseignement) : {{ ligne.heures_surveillance|floatformat:2 }} h.
+  </p>
+</div>
+{% endblock %}

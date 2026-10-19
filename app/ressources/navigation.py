@@ -19,6 +19,7 @@ from ressources.services.periode_calendrier import ServicePeriodeCalendrier
 
 _DOMAINES = [
     (ServiceInstructeur, "instructeurs", "Instructeurs", "ressources:liste_instructeurs"),
+    (ServiceInstructeur, "charge-instructeurs", "Charge", "ressources:charge_instructeurs"),
     (ServiceLieu, "lieux", "Lieux", "ressources:liste_lieux"),
     (
         ServiceIndisponibiliteInstructeur,
