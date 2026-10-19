@@ -6,10 +6,20 @@
 
 {% block entete_page %}
 <div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
-  <h1 class="font-titre text-xl font-semibold leading-tight">Rapprochement prescrit / programmé / réalisé</h1>
-  <p class="text-sm text-gris-lecture">
-    Réalisé au {{ a_la_date|date:"d/m/Y H:i" }} — par brigade et par matière.
-  </p>
+  <div class="flex items-end justify-between gap-6">
+    <div>
+      <h1 class="font-titre text-xl font-semibold leading-tight">Rapprochement prescrit / programmé / réalisé</h1>
+      <p class="text-sm text-gris-lecture">
+        Réalisé au {{ a_la_date|date:"d/m/Y H:i" }} — par brigade et par matière.
+      </p>
+    </div>
+    <a href="{% url 'planification:alertes_ecart' %}"
+       class="inline-flex h-controle shrink-0 items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
+              text-sm font-medium text-encre no-underline transition-colors duration-survol
+              hover:border-marine-700">
+      Alertes
+    </a>
+  </div>
 </div>
 {% endblock %}
 

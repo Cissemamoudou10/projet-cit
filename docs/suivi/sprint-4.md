@@ -34,7 +34,7 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 | 12 | US-INS-04 — Consulter la charge d'un instructeur | 3 | Should | |
 | 13 | US-REF-09 — Historiser les modifications du référentiel | 3 | Should | |
 
-**Item 10 (US-SUI-02) — à arbitrer avant clôture du sprint.** L'implantation d'US-PLAN-07 (item 7, prompt 47 Temps 2) a, sur demande explicite de ce même prompt, décoré l'écran du rapprochement (`CU-P6-11`, US-SUI-01) du statut retard/dépassement que `CU-P6-12` (US-SUI-02, cette ligne) décrit à la lettre — voir D-279, `docs/suivi/DECISIONS.md`. US-SUI-02 reste non cochée ici tant que le chef de projet n'a pas arbitré : retirer la story, la fusionner formellement avec US-PLAN-07, ou la garder distincte.
+**Item 10 (US-SUI-02) — D-279 fermée par D-282 (prompt 48, Temps 0), livrée le 2026-10-19.** PLAN-07 (programmé, avant soumission) et SUI-02 (réalisé, en continu) mesurent deux volumes différents malgré le même vocabulaire RG-61 : la décoration du rapprochement d'US-SUI-01, ajoutée à tort sous PLAN-07, passe sous US-SUI-02, qui garde son périmètre propre au backlog — pas de fusion, pas de retrait. D-283 consigne un cas limite (A2) : le dépassement reste affiché même quand RG-39 le rend normalement impossible.
 | 14 | US-PLAN-11 — Dupliquer un programme hebdomadaire | 5 | Should | |
 
 Totaux : 14 stories, **55 points** — 25 Must, 30 Should.

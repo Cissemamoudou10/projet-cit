@@ -58,6 +58,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "noyau.context_processors.contexte_application",
                 "planification.context_processors.validation_en_attente",
+                "planification.context_processors.alertes_en_attente",
             ],
         },
     },
@@ -177,6 +178,14 @@ SEUIL_ADMISSION_PROCES_VERBAL = os.environ.get("SEUIL_ADMISSION_PROCES_VERBAL", 
 # (`LigneRapprochement`, US-SUI-01 — jamais de `Decimal` ici, réservé aux
 # notes et coefficients, `.claude/rules/modeles.md`).
 SEUIL_ECART_VOLUME_HORAIRE = os.environ.get("SEUIL_ECART_VOLUME_HORAIRE", "10")
+
+# Alerte sur écart de volume RÉALISÉ (US-SUI-02, RG-61, prompt 48, Temps 0,
+# point 3) : deux seuils distincts pour deux usages distincts — celui-ci ne
+# sert que l'alerte pédagogique sur le réalisé, jamais celui d'US-PLAN-07
+# ci-dessus (programmé, avant soumission), qui ne change pas. Même défaut
+# arbitraire que SEUIL_ECART_VOLUME_HORAIRE à l'ouverture (10 %), réglable
+# indépendamment.
+SEUIL_ALERTE_ECART_REALISE = os.environ.get("SEUIL_ALERTE_ECART_REALISE", "10")
 
 LOGIN_URL = "administration:connexion"
 LOGIN_REDIRECT_URL = "noyau:accueil"

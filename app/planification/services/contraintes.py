@@ -213,6 +213,23 @@ def volume_programme_de_la_semaine(programme) -> dict:
     return par_element_brigade
 
 
+def volumes_programme_echu_par_element_brigade(a_la_date, brigade_ids=None):
+    """US-SUI-02, A2 (prompt 48) : volume BRUT des séances déjà passées d'un
+    programme AFFICHÉ, AVANT exclusion des non-exécutions (à la différence
+    du réalisé, ci-dessous) — la référence du retard en cours de session,
+    tant que le prescrit ne l'est pas encore (RG-61). Même agrégation que
+    le programmé/réalisé, une seule requête."""
+    lignes = LigneProgramme.objects.filter(
+        seance__programme__etat=EtatProgramme.AFFICHE, seance__fin__lte=a_la_date
+    )
+    if brigade_ids is not None:
+        lignes = lignes.filter(brigade_id__in=brigade_ids)
+    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
+        _valeurs_des_lignes(lignes)
+    )
+    return par_element_brigade
+
+
 def volumes_realises_par_element_brigade(a_la_date, brigade_ids=None, programme_id=None):
     """R1 (US-SUI-01) : réalisé à la date `a_la_date` — séances des
     programmes AFFICHÉS, terminées avant cette date, moins celles qui

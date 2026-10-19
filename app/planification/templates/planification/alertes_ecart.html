@@ -1,0 +1,107 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+{% load pagination %}
+
+{% block titre %}Alertes d'écart significatif — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <h1 class="font-titre text-xl font-semibold leading-tight">Alertes d'écart significatif</h1>
+  <p class="text-sm text-gris-lecture">
+    Matières dont l'écart entre le réalisé et sa référence franchit le seuil paramétré (RG-61).
+  </p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<form method="get"
+      class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
+  <div>
+    <label for="filtre-session"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Session</label>
+    <select id="filtre-session" name="session"
+            class="h-controle w-56 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Toutes</option>
+      {% for session in sessions %}
+        <option value="{{ session.pk }}"
+                {% if request.GET.session == session.pk|stringformat:"s" %}selected{% endif %}>
+          {{ session.intitule }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="filtre-brigade"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">Brigade</label>
+    <select id="filtre-brigade" name="brigade"
+            class="h-controle w-56 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                   outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      <option value="">Toutes</option>
+      {% for brigade in brigades %}
+        <option value="{{ brigade.pk }}"
+                {% if request.GET.brigade == brigade.pk|stringformat:"s" %}selected{% endif %}>
+          {{ brigade }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit"
+          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol hover:bg-marine-700">
+    Filtrer
+  </button>
+  <a href="{% url 'planification:alertes_ecart' %}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
+</form>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if page %}
+    {% for groupe in page %}
+      <section class="border-t border-gris-trait first:border-t-0">
+        <p class="bg-fond-bande px-4 py-2 font-titre text-sm font-semibold text-marine-900">
+          {{ groupe.brigade }}
+        </p>
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr>
+              <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                     font-semibold uppercase tracking-wider text-blanc">Matière</th>
+              <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                     font-semibold uppercase tracking-wider text-blanc">Réalisé</th>
+              <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                                     font-semibold uppercase tracking-wider text-blanc">Statut</th>
+              <th scope="col" class="bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                                     font-semibold uppercase tracking-wider text-blanc"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for decoree in groupe.lignes %}
+              <tr class="border-t border-gris-trait">
+                <td class="px-3 py-2">{{ decoree.ligne.element_referentiel.matiere }}</td>
+                <td class="px-3 py-2 text-right tabular-nums">{{ decoree.ligne.realise|floatformat:2 }} h</td>
+                <td class="px-3 py-2">
+                  {% if decoree.statut == "retard" %}
+                    <span class="text-xs font-medium tabular-nums text-etat-ecart">retard {{ decoree.ecart_pourcent|floatformat:0 }} %</span>
+                  {% elif decoree.statut == "depassement" %}
+                    <span class="text-xs font-medium tabular-nums text-etat-attention">dépassement {{ decoree.ecart_pourcent|floatformat:0 }} %</span>
+                  {% endif %}
+                </td>
+                <td class="px-3 py-2 text-right">
+                  <a href="{% url 'planification:rapprochement' %}?brigade={{ groupe.brigade.pk }}"
+                     class="text-sm text-marine-700 hover:underline">Voir le rapprochement</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    {% endfor %}
+    {% pagination page %}
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <p class="mb-1 font-titre text-lg font-semibold">Aucune alerte</p>
+      <p class="max-w-lg text-sm text-gris-lecture">
+        Aucune matière ne dépasse actuellement le seuil d'écart entre le réalisé et sa référence.
+      </p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

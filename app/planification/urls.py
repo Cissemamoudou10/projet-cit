@@ -2,6 +2,7 @@ from django.urls import path
 
 from planification import (
     views,
+    views_alerte_ecart,
     views_circuit,
     views_indisponibilite,
     views_periode,
@@ -118,6 +119,11 @@ urlpatterns = [
         "planification/rapprochement/",
         views_rapprochement.vue_rapprochement,
         name="rapprochement",
+    ),
+    path(
+        "planification/alertes/",
+        views_alerte_ecart.vue_alertes,
+        name="alertes_ecart",
     ),
     path(
         "planification/programmes/<int:pk>/progression-realisee/",

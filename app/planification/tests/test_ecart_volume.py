@@ -9,27 +9,16 @@ from django.db import connection
 from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
-from django.utils import timezone
 
 from organisation.models import Brigade
 from organisation.services.brigade import ServiceBrigade
 from organisation.tests.conftest import donnees_brigade
 from planification.models import ProgrammeHebdomadaire
-from planification.selectors_ecart_volume import (
-    CONFORME,
-    DEPASSEMENT,
-    EN_COURS,
-    RETARD,
-    decorer_rapprochement,
-    ecarts_volume_horaire,
-)
-from planification.selectors_rapprochement import rapprochement
-from planification.services.circuit import ServiceCircuitProgramme
+from planification.selectors_ecart_volume import ecarts_volume_horaire
+from planification.statut_volume import DEPASSEMENT, RETARD
 from planification.tests.aide_circuit import seance_dans
 from planification.tests.conftest import Cours, creer_element, instant, qualifier
 from referentiel.models import Matiere
-
-SIGNATAIRE_ESSAI = "Signataire essai écart volume"
 
 
 def _programme_passe(decalage_semaines=4):
@@ -52,15 +41,6 @@ def _programmer(programme, cours, brigade, nombre_seances, lundi):
         seance_dans(programme, cours, brigade, instant(lundi, i % 5, 8))
 
 
-def _amener_a_affiche(programme, planificateur, redacteur):
-    ServiceCircuitProgramme.soumettre(planificateur, programme)
-    ServiceCircuitProgramme.valider(redacteur, programme)
-    ServiceCircuitProgramme.enregistrer_signature(
-        planificateur, programme, timezone.localdate(), SIGNATAIRE_ESSAI
-    )
-    ServiceCircuitProgramme.afficher(planificateur, programme)
-
-
 def _terminer_la_session(brigade):
     session = brigade.session
     session.date_debut = datetime.date.today() - datetime.timedelta(days=60)
@@ -78,12 +58,7 @@ def _ligne_de(groupes, element):
     celui du test n'est pas garanti."""
     for groupe in groupes:
         for ligne in groupe.lignes:
-            cle = (
-                ligne.element_referentiel
-                if hasattr(ligne, "element_referentiel")
-                else ligne.ligne.element_referentiel
-            )
-            if cle.pk == element.pk:
+            if ligne.element_referentiel.pk == element.pk:
                 return ligne
     return None
 
@@ -170,60 +145,6 @@ def test_seuil_modifie_par_parametre(instructeur, brigade_formation, programme, 
     assert _ligne_de(groupes, element) is None
 
 
-# --- E2, second volet — même mise en évidence sur le rapprochement (US-SUI-01) ---
-
-
-def test_decoration_du_rapprochement_porte_le_meme_statut(
-    planificateur, redacteur, instructeur, brigade_formation
-):
-    element = _element(brigade_formation.session.formation, volume=10, suffixe="P1")
-    qualifier(instructeur, element.matiere)
-    cours = Cours(element, instructeur)
-    passe = _programme_passe()
-    _programmer(passe, cours, brigade_formation, 8, passe.lundi_de_semaine)
-    _amener_a_affiche(passe, planificateur, redacteur)
-
-    groupes = rapprochement(brigade_id=brigade_formation.pk)
-    decores = decorer_rapprochement(groupes)
-
-    assert _ligne_de(decores, element).statut == DEPASSEMENT
-
-
-def test_decoration_signale_en_cours_avant_la_fin_de_session(
-    planificateur, redacteur, instructeur, brigade_formation
-):
-    """Le rapprochement complet (US-SUI-01) montre `en_cours`, à la
-    différence de la liste d'alerte de la consultation — qui le tait
-    (`test_sous_programmation_non_signalee_avant_la_fin_de_session`)."""
-    element = _element(brigade_formation.session.formation, volume=10, suffixe="P3")
-    qualifier(instructeur, element.matiere)
-    cours = Cours(element, instructeur)
-    passe = _programme_passe()
-    _programmer(passe, cours, brigade_formation, 1, passe.lundi_de_semaine)
-    _amener_a_affiche(passe, planificateur, redacteur)
-
-    groupes = rapprochement(brigade_id=brigade_formation.pk)
-    decores = decorer_rapprochement(groupes)
-
-    assert _ligne_de(decores, element).statut == EN_COURS
-
-
-def test_decoration_respecte_conforme_quand_rien_ne_depasse(
-    planificateur, redacteur, instructeur, brigade_formation
-):
-    element = _element(brigade_formation.session.formation, volume=10, suffixe="P2")
-    qualifier(instructeur, element.matiere)
-    cours = Cours(element, instructeur)
-    passe = _programme_passe()
-    _programmer(passe, cours, brigade_formation, 5, passe.lundi_de_semaine)
-    _amener_a_affiche(passe, planificateur, redacteur)
-
-    groupes = rapprochement(brigade_id=brigade_formation.pk)
-    decores = decorer_rapprochement(groupes)
-
-    assert _ligne_de(decores, element).statut == CONFORME
-
-
 # --- Requêtes constantes -----------------------------------------------------
 
 
@@ -276,23 +197,6 @@ def test_http_consultation_du_programme_affiche_le_depassement(
         reverse("planification:consultation_programme"),
         {"semaine": passe.lundi_de_semaine.isoformat()},
     )
-
-    assert reponse.status_code == 200
-    assert "dépassement" in reponse.content.decode("utf-8")
-
-
-def test_http_rapprochement_affiche_le_statut(
-    client, acteurs, direction_formation, instructeur, brigade_formation
-):
-    element = _element(brigade_formation.session.formation, volume=10, suffixe="H2")
-    qualifier(instructeur, element.matiere)
-    cours = Cours(element, instructeur)
-    passe = _programme_passe()
-    _programmer(passe, cours, brigade_formation, 8, passe.lundi_de_semaine)
-    _amener_a_affiche(passe, acteurs.planificateur, acteurs.pedagogique)
-    client.force_login(direction_formation)
-
-    reponse = client.get(reverse("planification:rapprochement"))
 
     assert reponse.status_code == 200
     assert "dépassement" in reponse.content.decode("utf-8")

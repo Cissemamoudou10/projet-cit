@@ -99,6 +99,15 @@ backlog non technique (chevauchement US-PLAN-07/US-SUI-02, à trancher par le
 chef de projet — US-SUI-02 non décomptée ici tant que l'arbitrage n'est pas
 rendu).
 
+**Recalcul daté (2026-10-19, prompt 48, Temps 0 + Story 1).** D-279 fermée
+par D-282 : US-SUI-02 reprend son périmètre propre (réalisé, en continu),
+distinct d'US-PLAN-07 (programmé, avant soumission) — ni fusion ni retrait.
+US-SUI-02 (alertes d'écart significatif, 3 pts) livrée. Points livrés :
+205 + 3 = **208** / 224. Stories livrées : 46 + 1 = **47** / 52. Sprint 4 :
+10 / 14 stories, 39 / 55 points. Point de décision du 21 octobre non encore
+atteint à la livraison : quatre stories Should restent à statuer
+(US-SUI-03, US-INS-04, US-PLAN-11, US-REF-09).
+
 ## Ce qu'il faut surveiller
 
 **Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des
