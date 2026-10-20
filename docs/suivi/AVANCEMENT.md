@@ -37,8 +37,8 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 |---|---|---|---|---|---|
 | 1 | 31/08 – 12/09 | 15 | 58 | 15 | C1 |
 | 2 | 14/09 – 26/09 | 12 | 61 | **12** | **C2 — prononcé le 30/09, en retard** |
-| 3 | 28/09 – 10/10 | 11 | 50 | 10 | J2 |
-| 4 | 12/10 – 24/10 | 14 | 55 | 6 | J3 |
+| 3 | 28/09 – 10/10 | 11 | 50 | **11** | J2 |
+| 4 | 12/10 – 24/10 | 14 | 55 | **14** | **J3 — atteint le 20/10, quatre jours à l'avance** |
 | Réserve | conditionnel | 9 | 39 | 0 | — |
 
 **Périmètre total (backlog v10, 10/10) :** 61 stories, 263 points. 61 besoins
@@ -53,8 +53,8 @@ points chiffrés).
 
 | Indicateur | Valeur | Cible |
 |---|---|---|
-| Stories livrées | 43 / 52 planifiées | — |
-| Points livrés | 194 / 224 planifiés | — |
+| Stories livrées | **52 / 52 planifiées** | — |
+| Points livrés | **224 / 224 planifiés** | — |
 | Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
 | Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
 | Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
@@ -141,6 +141,21 @@ reprise rétroactive) consignées. Points livrés : 221 + 3 = **224** / 224.
 Stories livrées : 50 + 1 = **51** / 52. **Sprint 4 : 14 / 14 stories,
 55 / 55 points — périmètre complet livré avant le point de décision du
 21 octobre**, aucune story Should n'est passée en réserve.
+
+**Recompte daté (2026-10-20, prompt 49, Temps 5.3) — correction d'un
+écart d'une story.** Le recalcul du 2026-10-13 (ci-dessus) portait le
+sprint 3 à « 10, ligne non revérifiée » sans jamais être recontrôlé
+depuis. Recompte par un second angle indépendant (`.claude/rules/
+tests.md`, « vérifier une absence ») : les onze cases du sprint 3
+(`docs/suivi/sprint-3.md`) sont cochées `[x]`, et les onze codes de
+story (US-PLAN-05, 06, 09 ; US-VAL-03, 01, 02, 04 ; US-EVAL-01 à 04)
+apparaissent chacun dans au moins un commit de `master` — sprint 3 est
+bien **11 / 11**, pas 10. L'écart n'était pas une story manquante mais un
+compte jamais revérifié après l'avoir signalé comme tel. Total général
+corrigé : 15 (sprint 1) + 12 (sprint 2) + 11 (sprint 3) + 14 (sprint 4) =
+**52 / 52 stories**, 224 / 224 points — périmètre v10 hors réserve
+intégralement livré. Confirmé indépendamment pour le sprint 4 par
+`git log` (les quatorze codes de story y figurent chacun).
 
 ## Ce qu'il faut surveiller
 
