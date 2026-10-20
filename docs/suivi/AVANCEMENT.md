@@ -281,7 +281,7 @@ majeures par rapport à la dernière version :
 | D-54 | 4, volet séance (lieu affecté à une séance) | US-PLAN-02 | séance programmée (sprint 2) | Fermé le 2026-09-15 |
 | **D-91** | R2-GEN-07 (salle attitrée reprise par défaut à la génération) | US-SES-03 | moteur de génération (sprint 2) | **Fermé — jamais ajouté à ce tableau avant le 2026-09-30**, découvert en relisant `DECISIONS.md` en entier. `test_d1_matiere_salle_attitree_reprend_la_salle_de_la_brigade` (`test_generation_lieux.py`) |
 | **D-83** | R2-NRG-04/05 (brigade au programme en cours non supprimable) | US-SES-02 | séance programmée (sprint 2) | **Fermé le 2026-09-30** — mécanisme posé depuis US-PLAN-04 mais jamais testé par le vrai chemin de service jusqu'à ce jour ; comblé (voir ci-dessus) |
-| **D-108** | A3 (volume horaire dispensé signalé à l'affectation) | US-SES-06 | US-SUI-01 (sprint 4) | **Ouvert — jamais ajouté à ce tableau avant le 2026-09-30** |
+| **D-108** | A3 (volume horaire dispensé signalé à l'affectation) | US-SES-06 | US-SUI-01 (sprint 4) | **Fermé le 2026-10-13, prompt 44 Temps 3 (R6), commit `987201c`** — `ResolveurVolumeRealiseBrigade`, avertissement non bloquant à l'affectation ; ligne jamais mise à jour depuis, corrigée au prompt 49, Temps 5.2 |
 | D-119 | 4, RG-25 (indisponibilité, contrainte dure) | US-INS-03 | US-PLAN-04 (sprint 2) | Fermé le 2026-09-15 |
 | D-119 | 5, pts 4-5 (séances impactées par une indisponibilité) | US-INS-03 | US-PLAN-09 (sprint 3) | **Fermé le 2026-10-07** — I2/C1 (D-257), `seances_impactees_par_indisponibilite` |
 | D-119 | A3, A4 (restriction extension, séances passées) | US-INS-03 | sprint 3 | **Fermé le 2026-10-07** — I6 (D-253) : une extension relit le même sélecteur, les séances passées en sont exclues par construction |
@@ -289,7 +289,7 @@ majeures par rapport à la dernière version :
 | D-121 | E2 (période bloquante recouvrant des séances programmées) | US-PLAN-01 | US-PLAN-05 (sprint 3) | **Fermé le 2026-10-07, prompt 42 partie 1, par D-245** — ligne jamais mise à jour depuis, corrigée en reparcourant le sprint au prompt 43 |
 | D-121 | A3 (séances redevenues programmables) | US-PLAN-01 | sprint 3 | **Fermé le 2026-10-07, prompt 42 partie 1, par D-246** — ligne jamais mise à jour depuis, corrigée en reparcourant le sprint au prompt 43 |
 | D-133 | 6 (changer de grille active ne touche pas les séances passées) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
-| D-133 | RG-64 (relation facultative séance↔créneau type) | US-PLAN-12 | *aucune story assignée* | **Ouvert, orpheline** — dette explicite, à surveiller (personne n'est chargé de la refermer) |
+| D-133 | RG-64 (relation facultative séance↔créneau type) | US-PLAN-12 | *aucune story assignée* | **Tranché le 2026-10-20, prompt 49 Temps 4c/5.1 (D-288, D-293)** — limite assumée et consignée, jamais implantée, sans échéance ; plus une orpheline silencieuse |
 | D-133 | refus de générer sans grille active (E6) | US-PLAN-12 | US-PLAN-03 (sprint 2) | Fermé le 2026-09-16 |
 | **D-171** | RG-39 a) révisée (volume programmé compte aussi REJETÉ) | US-PLAN-04 (D-140) | US-VAL-03 (sprint 3) | **Fermé le 2026-10-04, prompt 39, par V7 (D-225)** — créé le 2026-09-30, prompt 34 |
 | **D-172** | lecture du programme par la cellule pédagogique (`programme_validation_lecture`) | US-PLAN-03 (D-154) | US-VAL-02 (sprint 3) | **Fermé le 2026-10-04, prompt 40, par US-VAL-02 (D-231)** — créé le 2026-09-30, prompt 34 |
@@ -301,7 +301,7 @@ majeures par rapport à la dernière version :
 | **C9** (D-205) | aucune certificative organisée sans sujet retenu — garde `ServiceSujet.sujet_retenu`, à brancher au refus de l'organisation | US-EVAL-03 (c.7) | US-EVAL-04 | **Fermé le 2026-10-04 par A1 (D-208) : organiser sans sujet, prête seulement avec un sujet retenu (`est_prete`). Ouvert le 2026-10-02, prompt 37, absent de ce tableau jusqu'au 2026-10-03. Réinterprété par A1 du prompt 38 (D-208) : on organise sans sujet, l'épreuve n'est prête qu'avec un sujet retenu. ** |
 | **D-212** (badge « à vérifier ») | après changement de date, une épreuve porte « à vérifier » dans la liste (A9, lecture du journal) | US-EVAL-04 (A9) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : non livré (aucun code, aucun test E3) |
 | **D-215** (badge de liste sur la complétude) | le badge « non prête » de la liste doit porter la complétude (A4), en requête bornée pour toute la liste | US-EVAL-04 (A4) | *aucune story assignée* | **Ouvert, sans story — à arbitrer au backlog v10** : le badge porte encore sur le sujet seul (`evaluations_non_pretes`) |
-| **Présélection** (ECARTS 25) | la présélection de génération (`construire_cases`) ignore les épreuves : une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 | US-EVAL-04 (A6) | *aucune story assignée* | **Dette technique, sprint 4** : l'issue est juste (aucune séance dans le lieu), mais la case est engendrée puis refusée ; mesurer le coût avant de modifier la présélection |
+| **Présélection** (ECARTS 25) | la présélection de génération (`construire_cases`) ignore les épreuves : une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37 | US-EVAL-04 (A6) | *aucune story assignée* | **Mesuré le 2026-10-20, prompt 49 Temps 4a (D-290)** : 1 candidate perdue sur le jeu mesuré, aucune requête SQL supplémentaire — reste ouvert, dette sans échéance, plus un coût inconnu |
 | **Lecture sans garde** (ECARTS 26) | convention des lectures | US-EVAL-04 (F4) | — | **Fermé le 2026-10-04 par D-219** : convention écrite, exceptions corrigées, test d'architecture |
 
 ### Compte final, vérifié le 2026-10-02 (mis à jour, prompt 37)
@@ -390,6 +390,25 @@ Net : six reports ouverts avant US-SUI-05 (clôture du sprint 3), plus un nouvea
 ### Recompte à la clôture d'US-SES-09, le 2026-10-19 (prompt 47, Temps 4)
 
 Ferme : **D-262** — `ServiceSuivi._session_cloturee` lit désormais la vraie session via la brigade de la ligne et refuse l'annulation ET la déclaration d'une non-exécution sur une session clôturée (C4). Aucun report ne s'ouvre. Net : sept ouverts avant cette clôture, moins un fermé — **six ouverts**.
+
+### Recompte à la clôture du sprint 4, prompt 49, Temps 5.2 (2026-10-20)
+
+Vérification systématique des six reports ouverts à la clôture du sprint 3 (tableau ci-dessus), un par un, contre `DECISIONS.md` (D-259 à D-294) et `ECARTS-LIVRABLES-SPRINT-4.md` — pas une relecture de la seule tête de liste.
+
+- **D-108** : **fermé**, mais jamais marqué dans ce fichier — `ResolveurVolumeRealiseBrigade` livré le 2026-10-13 avec US-SUI-01 (commit `987201c`, `heures-sprint-4.md` R6), corrigé ci-dessus.
+- **D-133 / RG-64** : **fermé par décision, sans implantation** — D-288 (Temps 4c) puis D-293 (Temps 5.1) consignent la limite comme assumée, ligne corrigée ci-dessus.
+- **Présélection (ECARTS 25)** : **fermé par décision, sans implantation** — D-290 (Temps 4a) mesure le coût (1 candidate perdue, aucune requête de plus), ligne corrigée ci-dessus.
+- **D-182, D-212, D-215** : **toujours ouverts**, aucune mention dans `DECISIONS.md` ni `ECARTS-LIVRABLES-SPRINT-4.md` depuis la clôture du sprint 3 — confirmés orphelins, à arbitrer au backlog v10/v11 comme déjà noté.
+
+**Net : trois reports ouverts à la clôture du sprint 4** (D-182, D-212, D-215), tous hors périmètre d'une story livrée, aucun n'appartenant au sprint 4 lui-même.
+
+| Report | Objet | Destination |
+|---|---|---|
+| D-182 | mesure de l'écart de progression entre brigades | backlog v10, orphelin |
+| D-212 | badge « à vérifier » après changement de date | backlog v10, orphelin |
+| D-215 | badge de liste sur la complétude | backlog v10, orphelin |
+
+Aucun nouveau report ne s'est ouvert pendant le sprint 4 au sens de ce tableau (les quatre décisions hors backlog du Temps 4 — D-288 à D-291 — et les trois de Temps 5.1 — D-292 à D-294 — ferment ou consignent, elles n'ouvrent rien de nouveau faute de story qui en dépendrait).
 
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 

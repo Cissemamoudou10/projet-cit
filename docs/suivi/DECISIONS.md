@@ -31,6 +31,36 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-294 — `EditionProgression` n'enfreint pas l'interdit des attributs dérivés : c'est une trace de signature, pas un calcul stocké
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 5.1 — audit diagramme vs code) · **Auteur** porteur non renseigné
+**Contexte** — `docs/conception/13-diagramme-classes.md`, § 1.4 (ligne 66) pose que la progression réalisée est « un document calculé, aucune entité » — écrit en phase 4, avant que RG-58/C5 (US-SUI-06, prompt 45) n'exigent de tracer QUI a édité et signé une semaine donnée. `EditionProgression` (`app/planification/models.py`, lignes 362-400) existe depuis cette story sans que ce point n'ait jamais été reconcilié avec le diagramme, ni consigné.
+**Décision** — Pas un écart de conception à corriger dans le code : `EditionProgression` ne stocke JAMAIS le document ni aucune valeur calculée (le docstring du modèle le dit explicitement, « le document lui-même n'est jamais stocké : seule l'édition l'est ») — c'est une trace d'acte, du même type que la signature déjà portée par `ProgrammeHebdomadaire` ou que `Avenant` : l'acte d'avoir produit une édition, sa date, son signataire. `.claude/rules/modeles.md` ne l'interdit pas, ses neuf grandeurs dérivées n'incluent pas celle-ci. Le diagramme, lui, est à corriger : § 1.4 est devenu obsolète sur ce point précis depuis que la signature est exigée.
+**Alternative écartée** — Supprimer `EditionProgression` pour coller littéralement au diagramme : aurait perdu la traçabilité de signature exigée par RG-58/C5, sans alternative — aucune autre classe ne porte cette donnée.
+**Impact sur les livrables** — `docs/conception/13-diagramme-classes.md`, § 1.4, à corriger : la progression réalisée reste un document calculé, mais son ÉDITION (acte de production/signature) est désormais une entité à part entière, ajoutée après la rédaction initiale du diagramme.
+**Reporté au livrable** — oui, correction du diagramme de classes au prochain relevé du mémoire.
+
+---
+
+## D-293 — Écarts 6, 7, 8 (`Qualification.dateAcquisition`, `Lieu.code`, chef de module) : limites confirmées, diagramme à annoter
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 5.1 — audit diagramme vs code) · **Auteur** porteur non renseigné
+**Contexte** — `docs/suivi/ECARTS-LIVRABLES-SPRINT-4.md`, écarts 6, 7 et 8 (audit en lecture seule, prompt 47 § 1.4) laissaient chacun deux issues possibles : annoter le diagramme que l'élément reste hors périmètre, ou ouvrir une story. Aucune story ne les porte depuis leur consignation, et aucune n'est apparue au sprint 4. Reconfirmés absents du code à ce prompt (audit complet du diagramme, Temps 5.1) : aucun changement depuis le prompt 47.
+**Décision** — Les trois restent des limites de conception assumées, sans implantation : `Qualification.dateAcquisition` (aucun cas d'usage identifié pour une date de validité de qualification), `Lieu.code` (CU-P4-06 ne l'a jamais nommé dans ses critères), l'association chef de module `Matiere`↔`Instructeur` (relève d'US-SES-08, en réserve, jamais commencée). Le diagramme est à annoter sur les trois points plutôt que laissé muet — aucune des trois n'est un oubli, chacune est une fonctionnalité non commandée par un livrable qui fait foi.
+**Alternative écartée** — Ouvrir une story hors backlog pour l'un des trois : écartée, aucun besoin fonctionnel ne la justifie et ce prompt de clôture n'ouvre aucune story.
+**Impact sur les livrables** — `docs/conception/13-diagramme-classes.md` : trois annotations à porter (CLS-03 ×2, CLS-02 ×1) disant que ces éléments sont posés en conception mais non livrés, pas une divergence à corriger.
+**Reporté au livrable** — non — ces trois limites restent assumées sans échéance ; seule l'annotation du diagramme reste à faire au mémoire.
+
+---
+
+## D-292 — § 12 du diagramme de classes : l'objectif pédagogique se rattache à la matière du catalogue, pas à l'élément de référentiel
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 5.1 — audit diagramme vs code) · **Auteur** porteur non renseigné
+**Contexte** — `docs/conception/13-diagramme-classes.md`, § 12 (ligne 1223), posait ce point comme une « décision de conception à confirmer » dès la phase 4 : rattacher l'objectif à `ElementReferentiel` (un objectif différent par formation, au prix d'une duplication) ou à `Matiere` (un objectif unique du catalogue, réutilisé). US-REF-05 (sprint 1) a tranché en code sans jamais fermer ce point ouvert : `ObjectifPedagogique.matiere` (`app/referentiel/models.py`, lignes 262-267), sans aucune clé vers `Formation` ni `ElementReferentiel` — vérifié par un test de non-présence dédié (`referentiel/tests/test_objectif_pedagogique.py::test_ne_porte_aucune_cle_vers_formation_ni_element_referentiel`, qui cite explicitement « une compétence ne change pas selon la formation qui la dispense »).
+**Décision** — Le point ouvert du § 12 est fermé, dans le sens « rattachement à la matière du catalogue » : confirmé par le code et son test depuis le sprint 1, jamais contredit depuis par aucun livrable ni aucun retour de terrain. Le diagramme est à corriger pour refléter ce choix comme acquis, plus comme une question ouverte.
+**Alternative écartée** — Rouvrir la question et évaluer un rattachement à `ElementReferentiel` : écartée, reviendrait sur une story livrée et testée depuis le sprint 1 sans aucun fait nouveau qui le justifierait.
+**Impact sur les livrables** — `docs/conception/13-diagramme-classes.md`, § 12 : la phrase « décision de conception à confirmer » (objectifs pédagogiques) est à retirer, remplacée par le rattachement effectif à `Matiere`.
+**Reporté au livrable** — oui, correction du diagramme de classes au prochain relevé du mémoire.
+
+---
+
 ## D-291 — Programme hebdomadaire et convocation : exemplaires produits pour relecture, aucune implantation décidée
 **Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 4b — travail hors backlog) · **Auteur** porteur non renseigné
 **Contexte** — D-155 reportait au « lot d'impression du sprint 4 » la production d'un exemplaire imprimé du programme hebdomadaire et de la convocation d'épreuve, pour que le lecteur juge la lisibilité A4 ; aucune des cinq stories Should du sprint 4 n'a rouvert ce lot. Ni le programme hebdomadaire ni la convocation ne portent de `TypeDocument` WeasyPrint (seuls `PROGRESSION_REALISEE` et les deux `PROCES_VERBAL_*` en ont un) : ces deux écrans n'ont jamais eu qu'un mécanisme d'impression navigateur (`impression.css`, bouton « Imprimer »), jamais exercé jusqu'au bout en PDF.
