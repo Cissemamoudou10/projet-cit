@@ -31,6 +31,46 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-291 — Programme hebdomadaire et convocation : exemplaires produits pour relecture, aucune implantation décidée
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 4b — travail hors backlog) · **Auteur** porteur non renseigné
+**Contexte** — D-155 reportait au « lot d'impression du sprint 4 » la production d'un exemplaire imprimé du programme hebdomadaire et de la convocation d'épreuve, pour que le lecteur juge la lisibilité A4 ; aucune des cinq stories Should du sprint 4 n'a rouvert ce lot. Ni le programme hebdomadaire ni la convocation ne portent de `TypeDocument` WeasyPrint (seuls `PROGRESSION_REALISEE` et les deux `PROCES_VERBAL_*` en ont un) : ces deux écrans n'ont jamais eu qu'un mécanisme d'impression navigateur (`impression.css`, bouton « Imprimer »), jamais exercé jusqu'au bout en PDF.
+**Décision** — Exemplaires produits par impression navigateur réelle (Chrome headless, `--print-to-pdf`, qui applique les mêmes règles `@media print` qu'un Ctrl+P), sur le jeu de démonstration J2 porté à l'état utile (programme AFFICHÉ d'une semaine à deux brigades/quatre créneaux, épreuve certificative organisée avec sujet retenu et surveillant) : `docs/demonstration/exemplaires/programme_hebdomadaire.pdf` et `convocation_epreuve.pdf`. Constat de lecture, consigné sans trancher : la convocation tient sur une page, lisible ; le programme hebdomadaire déborde à droite dès le troisième créneau sur quatre (tableau plus large que la page A4 portrait) — confirme, sur un exemplaire réel plutôt qu'une mesure de largeur, la dette déjà chiffrée dans `docs/suivi/IMPRESSION-ANALYSE.md` (mode par journée nécessaire). Aucune implantation à ce prompt — le jugement de lisibilité revient au lecteur, pas à l'agent qui a produit l'exemplaire.
+**Alternative écartée** — Ajouter un `TypeDocument` WeasyPrint pour ces deux écrans : aurait engagé une nouvelle story de conception (gabarit, mise en page paginée) hors du périmètre de ce prompt de clôture, qui n'ouvre aucune story.
+**Impact sur les livrables** — aucun sur le diagramme de classes ni une règle métier ; `docs/suivi/IMPRESSION-ANALYSE.md` gagne une confirmation visuelle de la dette déjà consignée, pas un chiffre nouveau.
+**Reporté au livrable** — oui, décision d'implantation (mode par journée) au backlog v11 si le lecteur juge le débordement bloquant.
+
+---
+
+## D-290 — Présélection de la génération (écart 25) : coût mesuré, aucune modification
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 4a — travail hors backlog) · **Auteur** porteur non renseigné
+**Contexte** — `docs/suivi/ECARTS-LIVRABLES-SPRINT-3.md`, écart 25 : la présélection de la génération (`planification/generation/candidats.py`, `construire_cases`) ignore les épreuves organisées ; une case sur le lieu d'une épreuve est engendrée puis refusée par RG-37, consigné comme dette technique à mesurer avant modification, jamais fait depuis.
+**Décision** — Mesuré par un test ponctuel (écrit puis supprimé après exécution, jamais commité) sur un scénario reproduisant le cas : une épreuve certificative organisée sur un lieu, puis génération d'un programme pour une brigade candidate au même lieu/créneau. Résultat : **1 candidate engendrée puis refusée par RG-37** pour cette raison, sur **55 requêtes SQL au total** pour l'appel à `generer()`. Le coût n'est pas isolable en requêtes supplémentaires : `ServiceContraintes.verifier` traite RG-37 par un lot déjà chargé (`ResolveurOccupationsEpreuves`), pas une requête par candidate — la présélection inutile ne coûte donc aucune requête de plus qu'une présélection qui connaîtrait déjà les épreuves, seulement du travail en mémoire sur une candidate vouée au rejet. Aucune modification de la présélection à ce prompt, conformément à l'arbitrage du prompt.
+**Alternative écartée** — Modifier `construire_cases` pour exclure les lieux occupés par une épreuve dès la présélection : explicitement hors périmètre de ce prompt (« mesurer... avant de la modifier », pas « et la modifier »).
+**Impact sur les livrables** — aucun ; `ECARTS-LIVRABLES-SPRINT-3.md`, écart 25, reste ouvert avec sa mesure désormais disponible pour un arbitrage futur (le coût réel est un travail inutile en mémoire, pas une charge SQL).
+**Reporté au livrable** — oui, arbitrage de correction de la présélection, hors périmètre du sprint 4.
+
+---
+
+## D-289 — US-PLAN-08 (solveur CP-SAT) : réexamen tenu, déclassement maintenu
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 4 — travail hors backlog) · **Auteur** porteur non renseigné
+**Contexte** — D-164 (clôture du sprint 2) posait deux conditions au déclassement d'US-PLAN-08 : le périmètre *Must* restant sécurisé, et la marge de 14 jours ouvrés avant dépôt intacte. Le sprint 4 clos (14/14 stories, 55/55 points, J3 atteint quatre jours à l'avance), ce prompt réexamine explicitement la seconde condition avant de reconduire le déclassement sans le rejouer à l'aveugle.
+**Décision** — Déclassement MAINTENU : la condition de marge de 14 jours ouvrés avant dépôt n'est plus remplie à cette date. US-PLAN-08 reste en réserve (`docs/suivi/reserve.md`) ; l'étude du solveur (R6) reste consignée telle qu'arrêtée par D-162/D-164, sans réouverture.
+**Alternative écartée** — Rouvrir l'étude ou activer le solveur en phase 6 (tests et recette) : écartée, la phase 6 n'est pas une fenêtre pour une dépendance lourde non validée hors ligne (BNF-06) sur un gain marginal déjà jugé insuffisant par D-164.
+**Impact sur les livrables** — aucun sur le diagramme de classes. `docs/suivi/RISQUES-PROPOSITIONS-J3.md` (Temps 6) reprend R6 dans son état actuel plutôt que de le rouvrir.
+**Reporté au livrable** — oui, au relevé déjà prévu par D-164 (l'étude R6 au complet, dans le mémoire).
+
+---
+
+## D-288 — RG-64 (relation Séance ↔ Créneau type) : limite consignée, jamais portée par une story depuis le sprint 2
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 4 — travail hors backlog) · **Auteur** porteur non renseigné
+**Contexte** — D-133 (US-PLAN-12, sprint 2) consignait RG-64 (« la grille contraint ce que la génération PROPOSE, jamais ce que la saisie manuelle décide ») comme CONTRAINTE DE CONCEPTION pour US-PLAN-03 : `Seance.creneau_type`, FK facultative (`on_delete=SET_NULL`). Vérifié à ce prompt : le champ existe bien (`app/planification/models.py`), mais AUCUN code applicatif ne le renseigne jamais — ni `ServiceEcritureSeance._creer_une_seance`/`_construire_seances` (génération, saisie manuelle), ni aucun autre chemin d'écriture. `creneau_type` reste donc toujours `NULL` en pratique, et RG-64 — qui suppose justement qu'une séance générée PORTE une référence à son créneau d'origine pour qu'un futur changement de grille puisse être évalué contre elle — n'a jamais été exercée par aucun comportement observable depuis le sprint 2.
+**Décision** — Limite consignée, sans implantation à ce prompt (hors backlog, aucune story ne la porte). Le champ reste en base, facultatif, prêt à être renseigné le jour où une story le demande explicitement (par exemple une évolution de RG-64 qui compare une séance affichée à la grille active au moment de la consultation).
+**Alternative écartée** — Renseigner `creneau_type` dès maintenant dans `ServiceEcritureSeance`, par anticipation : écartée, aucun critère d'acceptation ne le demande et § 14 (« aucune anticipation ») s'applique de la même façon qu'à D-133 elle-même.
+**Impact sur les livrables** — à signaler dans le mémoire comme limite connue de RG-64 : la contrainte de conception existe en base, le comportement qu'elle devait permettre n'est pas exercé.
+**Reporté au livrable** — oui, si une story future renseigne `creneau_type`.
+
+---
+
 ## D-287 — D-285 révisée : identité technique stable dans le journal, la limite au renommage est levée
 **Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 1 — travail hors backlog, correctif) · **Auteur** porteur non renseigné
 **Contexte** — D-285 limitait l'historique d'un objet renommé (Formation, Matière) à ses entrées postérieures au renommage, puisque `historique_de`/`historique_plusieurs` filtraient sur la valeur lisible (`objet_identifiant`), changeante. Jugé inacceptable (prompt 49) : le renommage est précisément une modification qu'US-REF-09 doit retracer. D-15 interdit une clé ÉTRANGÈRE vers les objets journalisés (six applications, cinq inexistantes à l'écriture) — elle n'interdit pas une identité stable en champ texte.
