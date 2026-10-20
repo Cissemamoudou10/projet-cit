@@ -150,7 +150,9 @@ class ServiceObjectifPedagogique(ServiceGestion):
         avant = cls._capturer(objectif)
         try:
             with transaction.atomic():
-                objectif.delete()
+                # Journalise AVANT delete() (prompt 49) : Django vide
+                # objectif.pk une fois supprimé, objet_cle vaudrait sinon
+                # « None » dans un journal immuable (RG-27).
                 cls._journaliser(
                     agissant,
                     TypeAction.SUPPRESSION_ELEMENT_GESTION,
@@ -158,6 +160,7 @@ class ServiceObjectifPedagogique(ServiceGestion):
                     valeur_avant=avant,
                     valeur_apres=None,
                 )
+                objectif.delete()
         except ProtectedError as erreur:
             raise ErreurValidation(
                 decrire_opposants(objectif, erreur.protected_objects)

@@ -136,6 +136,7 @@ def _journaliser(agissant, nature, prerequis):
             auteur=agissant,
             objet_type=OBJET_TYPE,
             objet_identifiant=identifiant,
+            objet_cle=str(prerequis.pk),
         )
     )
 

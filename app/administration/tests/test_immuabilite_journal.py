@@ -64,8 +64,8 @@ def test_insert_et_select_restent_possibles_sous_pfe_cit_app(db):
             curseur.execute(
                 "INSERT INTO administration_entree_journal "
                 "(type_action, cible, identifiant_saisi, detail, objet_type, "
-                "objet_identifiant, cree_le, modifie_le) "
-                "VALUES ('echec_authentification', '', %s, '', '', '', now(), now())",
+                "objet_identifiant, objet_cle, cree_le, modifie_le) "
+                "VALUES ('echec_authentification', '', %s, '', '', '', '', now(), now())",
                 ["essai-immuabilite"],
             )
             curseur.execute(

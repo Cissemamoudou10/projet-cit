@@ -229,6 +229,7 @@ def _journaliser(agissant, nature, element, *, valeur_avant=None, valeur_apres=N
             auteur=agissant,
             objet_type="element_referentiel",
             objet_identifiant=identifiant,
+            objet_cle=str(element.pk),
             valeur_avant=valeur_avant,
             valeur_apres=valeur_apres,
         )

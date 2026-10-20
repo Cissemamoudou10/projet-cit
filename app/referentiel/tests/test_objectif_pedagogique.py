@@ -114,6 +114,24 @@ def test_creation_modification_suppression_sont_journalisees(redacteur, matiere)
     assert TypeAction.SUPPRESSION_ELEMENT_GESTION in natures
 
 
+def test_suppression_journalise_la_bonne_cle_technique(redacteur, matiere):
+    """Prompt 49, Temps 1 — relecture : `ServiceObjectifPedagogique.
+    supprimer` ne réutilise pas le patron `ServiceGestion` (§ 2.3, seule
+    entité qui supprime réellement) et journalisait après `delete()`, qui
+    vide `objectif.pk` — `objet_cle` valait la chaîne littérale « None »,
+    jamais la clé primaire réelle, dans un journal pourtant immuable
+    (RG-27)."""
+    objectif = ServiceObjectifPedagogique.ajouter(redacteur, matiere, "Objectif à supprimer")
+    pk_attendu = str(objectif.pk)
+
+    ServiceObjectifPedagogique.supprimer(redacteur, objectif.pk)
+
+    entree = EntreeJournal.objects.filter(
+        objet_type="objectif_pedagogique", type_action=TypeAction.SUPPRESSION_ELEMENT_GESTION
+    ).latest("cree_le")
+    assert entree.objet_cle == pk_attendu
+
+
 def test_cellule_pedagogique_ecrit(redacteur, matiere):
     ServiceObjectifPedagogique.ajouter(redacteur, matiere, "Premier objectif")  # ne lève pas
 

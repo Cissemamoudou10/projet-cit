@@ -6,6 +6,7 @@ Un service ne connaît pas la requête HTTP — voir .claude/rules/services.md.
 from dataclasses import dataclass
 
 from django.db import transaction
+from django.db.models import Q
 
 from administration.models import EntreeJournal, TypeAction
 from noyau.pagination import paginer
@@ -36,7 +37,10 @@ class DonneesEntreeJournal:
 
     `objet_type`/`objet_identifiant` : le couple qui désigne l'objet
     concerné (CU-P1-03), distinct de `cible` — voir la docstring
-    d'`EntreeJournal`. `valeur_avant`/`valeur_apres` : liste blanche de
+    d'`EntreeJournal`. `objet_cle` (prompt 49, révise D-285) : l'identité
+    technique stable (la clé primaire, en texte) — renseignée par tout
+    appelant qui connaît l'objet visé, pour que son historique survive à
+    un renommage. `valeur_avant`/`valeur_apres` : liste blanche de
     champs choisie par l'appelant, jamais une sérialisation complète — voir
     § 2.6 du Prompt 04, BNF-03.
     """
@@ -48,6 +52,7 @@ class DonneesEntreeJournal:
     cible: str = ""
     objet_type: str = ""
     objet_identifiant: str = ""
+    objet_cle: str = ""
     valeur_avant: dict | None = None
     valeur_apres: dict | None = None
 
@@ -94,6 +99,7 @@ class ServiceJournal:
             detail=donnees.detail,
             objet_type=donnees.objet_type,
             objet_identifiant=donnees.objet_identifiant,
+            objet_cle=donnees.objet_cle,
             valeur_avant=donnees.valeur_avant,
             valeur_apres=donnees.valeur_apres,
         )
@@ -128,24 +134,27 @@ class ServiceJournal:
 
     @staticmethod
     def historique_de(objet_type, objet) -> list:
-        """US-REF-09 (prompt 48) : historique d'UN SEUL objet, depuis sa
-        propre fiche — pas la consultation administrateur de tout le
-        journal (RG-26, réservée à `consulter`). Aucune vérification
-        d'habilitation ici : l'appelant est déjà gardé par la permission
-        de lecture de son propre domaine (même patron que `planification.
-        selectors_circuit.historique_du_programme`).
+        """US-REF-09 (prompt 48, prompt 49 révise D-285) : historique d'UN
+        SEUL objet, depuis sa propre fiche — pas la consultation
+        administrateur de tout le journal (RG-26, réservée à `consulter`).
+        Aucune vérification d'habilitation ici : l'appelant est déjà gardé
+        par la permission de lecture de son propre domaine (même patron
+        que `planification.selectors_circuit.historique_du_programme`).
 
-        `objet` : l'INSTANCE (pas sa clé primaire) — `objet_identifiant`
-        n'est jamais une FK (D-15, six applications, cinq inexistantes à
-        l'écriture) mais la valeur lisible (`str(instance)` ou le champ
-        d'unicité) posée par l'appelant au moment de l'écriture
-        (`ServiceGestion._journaliser`). Limite assumée (E4) : un
-        renommage change cette valeur pour les écritures FUTURES, pas pour
-        les entrées déjà enregistrées sous l'ancien nom — l'historique
-        affiché sur la fiche peut donc paraître incomplet après un
-        renommage, aucune reprise rétroactive ne le corrige."""
+        `objet` : l'INSTANCE — filtrée par son IDENTITÉ TECHNIQUE
+        (`objet_cle`, la clé primaire en texte, posée par l'appelant à
+        l'écriture, jamais une FK — D-15), stable au renommage, à la
+        différence d'`objet_identifiant` (la valeur lisible). Repli sur
+        `objet_identifiant` pour les entrées antérieures à cette révision,
+        qui ne portent pas encore `objet_cle` (D-286, aucune reprise
+        rétroactive — elles restent affichées tant que l'objet n'a pas
+        été renommé depuis)."""
         return list(
-            EntreeJournal.objects.filter(objet_type=objet_type, objet_identifiant=str(objet))
+            EntreeJournal.objects.filter(objet_type=objet_type)
+            .filter(
+                Q(objet_cle=str(objet.pk))
+                | Q(objet_cle="", objet_identifiant=str(objet))
+            )
             .select_related("auteur")
             .order_by("-cree_le")
         )
@@ -158,9 +167,10 @@ class ServiceJournal:
         if not objets:
             return []
         return list(
-            EntreeJournal.objects.filter(
-                objet_type=objet_type,
-                objet_identifiant__in=[str(objet) for objet in objets],
+            EntreeJournal.objects.filter(objet_type=objet_type)
+            .filter(
+                Q(objet_cle__in=[str(objet.pk) for objet in objets])
+                | Q(objet_cle="", objet_identifiant__in=[str(objet) for objet in objets])
             )
             .select_related("auteur")
             .order_by("-cree_le")

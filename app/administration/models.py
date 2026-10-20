@@ -197,6 +197,16 @@ class EntreeJournal(ModeleHorodate):
     d'origine (voir D-04) : `cible` reste inchangé pour ne pas casser les
     tests des stories précédentes qui le lisent directement.
 
+    `objet_cle` (US-REF-09, prompt 49, révise D-285) : identité TECHNIQUE de
+    l'objet — son type (`objet_type`, déjà stable) et sa clé primaire, en
+    texte, toujours sans clé étrangère (D-15 n'interdit que la FK, pas une
+    identité stable). `objet_identifiant` reste la valeur LISIBLE au moment
+    de l'écriture (US-ADM-04) — elle change avec un renommage, `objet_cle`
+    jamais : c'est elle que filtre l'historique d'un objet précis
+    (`ServiceJournal.historique_de`/`historique_plusieurs`), avec un repli
+    sur `objet_identifiant` pour les entrées antérieures à cette révision,
+    qui ne portent pas `objet_cle` (D-286, aucune reprise rétroactive).
+
     `valeur_avant`/`valeur_apres` reçoivent une **liste blanche de champs**
     déclarée par le service appelant, jamais une sérialisation complète d'un
     objet — sans quoi le condensat d'un mot de passe finirait dans une table
@@ -221,6 +231,7 @@ class EntreeJournal(ModeleHorodate):
     objet_identifiant = models.CharField(
         max_length=100, blank=True, verbose_name="identifiant de l'objet"
     )
+    objet_cle = models.CharField(max_length=50, blank=True, verbose_name="clé technique de l'objet")
     valeur_avant = models.JSONField(null=True, blank=True, verbose_name="valeur avant")
     valeur_apres = models.JSONField(null=True, blank=True, verbose_name="valeur après")
 
@@ -237,6 +248,7 @@ class EntreeJournal(ModeleHorodate):
         indexes = [
             models.Index(fields=["-cree_le"], name="idx_journal_horodatage"),
             models.Index(fields=["type_action", "auteur"], name="idx_journal_nature_auteur"),
+            models.Index(fields=["objet_type", "objet_cle"], name="idx_journal_objet_cle"),
         ]
 
     def __str__(self):

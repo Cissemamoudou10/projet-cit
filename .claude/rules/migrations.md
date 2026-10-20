@@ -111,7 +111,8 @@ d'une semaine : c'est la requête la plus lourde, et BNF-04 la borne à cinq min
 | `idx_note_evaluation` | note | evaluation |
 | `idx_note_stagiaire` | note | stagiaire |
 | `idx_journal_horodatage` | entree_journal | `cree_le` décroissant (colonne réelle, voir docs/suivi/DECISIONS.md, D-04) |
-| `idx_journal_nature_auteur` | entree_journal | type_action, auteur (posé en US-ADM-04, D-15 — pas `idx_journal_objet` : le filtre par objet ne porte pas d'index composé, `objet_type`/`objet_identifiant` existent mais sans index dédié) |
+| `idx_journal_nature_auteur` | entree_journal | type_action, auteur (posé en US-ADM-04) |
+| `idx_journal_objet_cle` | entree_journal | objet_type, objet_cle (posé au prompt 49, D-285 révisée — l'historique d'un objet filtre désormais sur une identité technique stable, pas sur `objet_identifiant`, lisible mais changeante au renommage) |
 
 Django indexe seul les clés étrangères : n'ajoute que les index composites.
 

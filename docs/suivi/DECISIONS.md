@@ -31,6 +31,16 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-287 — D-285 révisée : identité technique stable dans le journal, la limite au renommage est levée
+**Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 1 — travail hors backlog, correctif) · **Auteur** porteur non renseigné
+**Contexte** — D-285 limitait l'historique d'un objet renommé (Formation, Matière) à ses entrées postérieures au renommage, puisque `historique_de`/`historique_plusieurs` filtraient sur la valeur lisible (`objet_identifiant`), changeante. Jugé inacceptable (prompt 49) : le renommage est précisément une modification qu'US-REF-09 doit retracer. D-15 interdit une clé ÉTRANGÈRE vers les objets journalisés (six applications, cinq inexistantes à l'écriture) — elle n'interdit pas une identité stable en champ texte.
+**Décision** — Nouveau champ `EntreeJournal.objet_cle` (`CharField`, texte, sans FK — migration `0022_entree_journal_objet_cle`) : la clé primaire de l'objet visé, renseignée par tout appelant qui la connaît (`ServiceGestion._journaliser`, `ServiceReferentiel._journaliser`, `ServicePrerequis._journaliser`). `historique_de`/`historique_plusieurs` filtrent désormais sur `(objet_type, objet_cle)` — stable au renommage — avec un repli sur `(objet_type, objet_identifiant)` pour les entrées antérieures à cette révision, qui ne portent pas `objet_cle` (D-286 : aucune reprise rétroactive, ces entrées restent affichées tant que l'objet visé n'a pas été renommé depuis leur écriture). `objet_identifiant` ne change pas de sens : il reste la valeur lisible au moment de l'écriture, utilisée par la consultation administrateur (`ServiceJournal.consulter`, RG-26).
+**Alternative écartée** — Reprise rétroactive (recalculer `objet_cle` pour les entrées déjà écrites) : écartée, D-286 l'exclut explicitement et aucune donnée ne permettrait de relier de façon certaine une ancienne entrée à l'objet actuel quand plusieurs renommages se sont succédé.
+**Impact sur les livrables** — aucun sur le diagramme de classes (`EntreeJournal` n'y figure pas, c'est une table technique). `.claude/rules/migrations.md` mis à jour (nouvel index `idx_journal_objet_cle`).
+**Reporté au livrable** — non applicable.
+
+---
+
 ## D-286 — US-REF-09, E4 : aucune reprise rétroactive de l'historique — limite assumée
 **Date** 2026-10-19 · **Story** US-REF-09 (Prompt 48, Story 5, E4) · **Auteur** porteur non renseigné
 **Contexte** — E4 demande explicitement de consigner cette limite : l'historique du référentiel (formation, matière, élément de référentiel, prérequis) commence à la livraison de cette story. Toute création, modification ou archivage antérieure à ce prompt n'a laissé aucune trace exploitable par les nouveaux écrans d'historique (`ServiceJournal.historique_de`/`historique_plusieurs`).
@@ -41,7 +51,7 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
-## D-285 — US-REF-09 : l'historique d'un objet se filtre par sa valeur lisible, jamais par sa clé primaire — limite au renommage
+## D-285 — US-REF-09 : l'historique d'un objet se filtre par sa valeur lisible, jamais par sa clé primaire — limite au renommage — **révisée par D-287 (prompt 49, Temps 1 : identité technique stable, la limite est levée)**
 **Date** 2026-10-19 · **Story** US-REF-09 (Prompt 48, Story 5) · **Auteur** porteur non renseigné
 **Contexte** — `EntreeJournal.objet_identifiant` n'est jamais une clé étrangère (D-15 : six applications journalisées, cinq n'existaient pas à l'écriture, une FK les rendrait toutes dépendantes d'`administration`) mais la valeur lisible posée par l'appelant au moment de l'écriture — `str(getattr(instance, CHAMP_UNICITE))` pour `ServiceGestion` (Formation, Matière), `str(instance)` pour `ElementReferentiel`. Découvert en écrivant `ServiceJournal.historique_de`/`historique_plusieurs` (nouvelles, cette story) : un filtre par clé primaire ne trouve aucune entrée, puisque rien dans le journal ne porte de clé primaire.
 **Décision** — `historique_de(objet_type, objet)`/`historique_plusieurs(objet_type, objets)` reçoivent l'INSTANCE, pas sa clé primaire, et filtrent par `str(objet)` — cohérent avec ce que chaque service a déjà écrit. Limite assumée : un renommage change cette valeur pour les écritures FUTURES, jamais pour les entrées déjà enregistrées sous l'ancien nom — l'historique affiché sur la fiche d'un objet renommé peut donc paraître incomplet (les entrées antérieures au renommage restent dans le journal, mais sous une clé que la fiche ne cherche plus). Même limite que celle que porte déjà tacitement `ServiceGestion`/le journal pour toutes les entités existantes (Formation, Matière, Instructeur, Lieu...), pas une régression propre à cette story.

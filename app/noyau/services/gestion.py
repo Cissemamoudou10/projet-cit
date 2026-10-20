@@ -200,12 +200,14 @@ class ServiceGestion:
 
     @classmethod
     def supprimer(cls, agissant, pk):
+        """Journalise AVANT `delete()` : Django vide `instance.pk` une
+        fois supprimée, `objet_cle` vaudrait sinon « None » (prompt 49)."""
         cls._verifier(agissant, lecture=False)
         instance = cls.obtenir(pk)
         try:
             with transaction.atomic():
-                instance.delete()
                 cls._journaliser(agissant, cls.NATURE_SUPPRESSION, instance)
+                instance.delete()
         except ProtectedError as erreur:
             raise ErreurValidation(
                 decrire_opposants(instance, erreur.protected_objects)
@@ -243,13 +245,10 @@ class ServiceGestion:
 
     @classmethod
     def _avertissements(cls, instance):
-        """RG-65 (D-27, D-32) : liste de `{"code": ..., "message": ...}` posée
-        à côté de l'instance après `creer`/`modifier`, jamais avant — un
-        avertissement ne bloque jamais l'écriture, contrairement à
-        `_valider`. Vide par défaut ; une sous-classe le surcharge pour
-        signaler un écart entre un attribut déclaratif et une valeur
-        calculée (§ 5, Prompt 20).
-        """
+        """RG-65 (D-27, D-32) : `{"code", "message"}` posés après
+        `creer`/`modifier`, jamais avant — ne bloque jamais l'écriture,
+        à la différence de `_valider`. Vide par défaut ; surchargé pour
+        signaler un écart déclaratif/calculé (§ 5, Prompt 20)."""
         return []
 
     @classmethod
@@ -262,6 +261,7 @@ class ServiceGestion:
                 auteur=agissant,
                 objet_type=cls.OBJET_TYPE,
                 objet_identifiant=identifiant,
+                objet_cle=str(instance.pk),
                 valeur_avant=valeur_avant,
                 valeur_apres=valeur_apres,
             )
