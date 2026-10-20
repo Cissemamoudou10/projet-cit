@@ -123,7 +123,54 @@ paysage suffit ; Programme hebdomadaire — mode par journée nécessaire,
 ni le portrait ni le paysage ne suffisent pour la semaine entière), tous
 les autres écrans mesurés tiennent déjà en portrait.
 
+## Stabilité de la suite — clôture J3 (prompt 49, Temps 2 et 3)
+
+**Cause du blocage PostgreSQL (P-51), établie avant toute mesure** : deux
+exécutions **indépendantes** de la suite lancées en même temps sur la même
+base (`test_pfe_cit`) provoquent un interblocage lors de la création
+concurrente des groupes d'habilitation par les fixtures — un défaut de
+méthode d'exécution, jamais un défaut du code applicatif. Corrigé par un
+verrou de fichier, session-scoped (`conftest.py::_poser_verrou`), qui
+refuse de démarrer une seconde exécution plutôt que de laisser PostgreSQL
+trancher ; une exception explicite laisse passer un sous-processus pytest
+légitime (`test_jeu_recette_depot.py`), via une variable d'environnement
+héritée (`PFE_CIT_PYTEST_VERROU_POSE`).
+
+**Cinq exécutions complètes et consécutives**, mesurées le 2026-10-20 :
+
+| Exécution | Début | Fin | Durée | Résultat |
+|---|---|---|---|---|
+| 1 | 19:42:39 | 19:52:57 | 618 s (10 min 18) | 2251 passés, 10 ignorés, **0 échec** |
+| 2 | 19:52:57 | 20:01:07 | 490 s (8 min 10) | 2251 passés, 10 ignorés, **0 échec** |
+| 3 | 20:01:07 | 20:11:49 | 642 s (10 min 42) | 2251 passés, 10 ignorés, **0 échec** |
+| 4 | 20:11:49 | 20:23:09 | 680 s (11 min 20) | 2251 passés, 10 ignorés, **0 échec** |
+| 5 | 20:23:09 | 20:34:23 | 674 s (11 min 14) | 2251 passés, 10 ignorés, **0 échec** |
+
+**Zéro échec sur les cinq exécutions** — la cause corrigée (P-51) ne s'est
+pas reproduite, et aucune autre cause de non-déterminisme ne s'est
+manifestée. Même nombre de tests passés/ignorés à chaque exécution :
+déterministe sur ce point aussi.
+
+**Réserve honnête sur la durée, pas sur le résultat.** Ces cinq exécutions
+n'ont PAS tourné sur une machine strictement oisive comme l'exigeait la
+mesure : plusieurs agents de fond (recherche documentaire pour ce même
+prompt) partageaient la machine pendant la mesure — découvert après coup,
+voir `docs/suivi/RISQUES-PROPOSITIONS-J3.md`, « Point de méthode ». Durée
+mesurée 490 à 680 s, contre ~245 s pour une exécution isolée plus tôt dans
+la session (14:18-14:26, avant la contamination). Cette charge concurrente
+ralentit l'exécution mais n'affecte pas la justesse d'un test PostgreSQL
+(les contraintes et transactions restent correctes sous contention) : le
+résultat « zéro échec » reste valide, la métrique de durée ne l'est pas
+comme référence de performance.
+
+**`pytest -m pdf`, conteneur `python:3.14-slim-bookworm`** (réseau Docker
+`developpement_default`, hôte `base`), exécuté une fois après les cinq
+répétitions : **10 passés, 0 échec** (WeasyPrint, 36,5 s) — confirme que
+les dix tests marqués `pdf` (US-SUI-06 et US-EVAL-07) restent verts dans
+l'environnement cible, comme à chaque story qui en dépendait.
+
 ## Mesure non obtenue
 
-Aucune. Les quatre points demandés par le bloc G ont chacun une source
-vérifiée (test relancé ou fichier de suivi existant) — rien n'est estimé.
+Aucune. Les quatre points demandés par le bloc G, et les deux mesures de
+clôture J3 ci-dessus, ont chacun une source vérifiée (test relancé ou
+fichier de suivi existant) — rien n'est estimé.
