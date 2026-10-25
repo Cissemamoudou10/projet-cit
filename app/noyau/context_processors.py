@@ -35,6 +35,7 @@ PERMISSION_ORGANISATION = "noyau.organisation_lecture"
 PERMISSION_INSTRUCTEURS = "noyau.instructeurs_qualifications_lecture"
 PERMISSION_LIEUX = "noyau.lieux_calendrier_lecture"
 PERMISSION_PLANIFICATION = "noyau.programme_lecture"
+PERMISSION_SUIVI = "noyau.suivi_lecture"
 
 
 def contexte_application(request):
@@ -60,6 +61,13 @@ RUBRIQUES_SIMPLES = [
     ("referentiel", "Référentiel", PERMISSION_REFERENTIEL, "referentiel:liste_types_formation"),
     ("organisation", "Sessions", PERMISSION_ORGANISATION, "organisation:liste_sessions"),
     ("planification", "Planification", PERMISSION_PLANIFICATION, "planification:consultation_programme"),
+    # Dernière du menu de référence (docs/conception/16-maquettes.md,
+    # MAQ-01 à MAQ-05 : « … | Planification | Évaluations | Suivi »).
+    # Sans rubrique propre jusqu'ici : les quatre profils de suivi_lecture
+    # (pédagogique, planification, examens, Direction de Formation)
+    # n'avaient aucun lien cliquable vers le tableau de bord — seule la
+    # pédagogique y arrivait, via le badge « Alertes » (suivi_ecriture).
+    ("suivi", "Suivi", PERMISSION_SUIVI, "planification:tableau_bord"),
 ]
 
 
