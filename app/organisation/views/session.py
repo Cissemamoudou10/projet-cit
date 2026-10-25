@@ -221,6 +221,12 @@ def vue_detail_session(request, pk):
             "url_stagiaires": reverse("organisation:liste_stagiaires", args=[session.pk]),
             "url_repartition": reverse("organisation:repartition_session", args=[session.pk]),
             "url_cloturer": reverse("organisation:cloturer_session", args=[session.pk]),
+            # Nom de route en chaîne littérale, jamais un import d'`evaluations`
+            # (organisation ne peut en dépendre, tests/architecture/
+            # test_couches.py) — même patron que noyau/context_processors.py
+            # pour les rubriques d'autres applications.
+            "url_proces_verbaux": reverse("evaluations:proces_verbaux", args=[session.pk]),
+            "url_moyennes": reverse("evaluations:moyennes_session", args=[session.pk]),
             "nombre_matieres": resume["nombre_matieres"],
             "volume_total_referentiel": resume["volume_total"],
             "page_referentiel": paginer(resume["elements"], request.GET.get("page")),

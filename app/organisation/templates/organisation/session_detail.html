@@ -237,6 +237,33 @@
   </div>
 </section>
 
+{% if perms.noyau.evaluations_lecture or perms.noyau.evaluations_ecriture %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
+              font-semibold uppercase tracking-wide text-marine-900">
+      Évaluations
+    </p>
+    <div class="border-t border-gris-trait px-4 py-3 flex gap-2">
+      {% if perms.noyau.evaluations_lecture %}
+        <a href="{{ url_proces_verbaux }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900 px-3.5
+                  text-sm font-semibold text-blanc no-underline transition-colors duration-survol
+                  hover:bg-marine-700">
+          Procès-verbaux
+        </a>
+      {% endif %}
+      {% if perms.noyau.evaluations_ecriture %}
+        <a href="{{ url_moyennes }}"
+           class="inline-flex h-controle items-center gap-2 border border-marine-900 px-3.5
+                  text-sm font-semibold text-marine-900 no-underline transition-colors duration-survol
+                  hover:bg-fond-survol">
+          Moyennes et classement
+        </a>
+      {% endif %}
+    </div>
+  </section>
+{% endif %}
+
 <section class="mt-4 border border-gris-trait bg-fond-bloc">
   <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
             font-semibold uppercase tracking-wide text-marine-900">

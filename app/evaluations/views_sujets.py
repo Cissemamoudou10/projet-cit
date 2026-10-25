@@ -34,6 +34,18 @@ def _url_sujets(evaluation_pk):
     return reverse("evaluations:sujets", args=[evaluation_pk])
 
 
+def _lignes_avec_formulaire_correction(sujets):
+    """Un `FormulaireSujet` pré-rempli par sujet, pour le formulaire de
+    correction repliable de chaque ligne (`corriger_sujet`)."""
+    return [
+        (
+            sujet,
+            FormulaireSujet(initial={"reference": sujet.reference, "date_depot": sujet.date_depot}),
+        )
+        for sujet in sujets
+    ]
+
+
 @exige_habilitation(PERMISSION_ECRITURE)
 def vue_sujets(request, pk):
     """C7, A6 : seul écran qui affiche la référence et le rang du sujet
@@ -57,12 +69,14 @@ def vue_sujets(request, pk):
             messages.error(request, "Référence ou date de dépôt invalide.")
         return redirect(_url_sujets(pk))
     sujets = ServiceSujet.consulter(request.user, evaluation)
+    lignes = _lignes_avec_formulaire_correction(sujets)
     return render(
         request,
         "evaluations/sujets.html",
         {
             "evaluation": evaluation,
             "sujets": sujets,
+            "lignes": lignes,
             "form": FormulaireSujet(),
             "formulaire_retenir": FormulaireRetenirSujet(),
             "formulaire_changer": FormulaireChangerRetenu(),

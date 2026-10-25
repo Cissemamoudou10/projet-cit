@@ -1,8 +1,11 @@
-"""Rubrique « Suivi » du menu principal — correctif de navigation, prompt 49
-(hors backlog). `docs/conception/16-maquettes.md` (MAQ-01 à MAQ-05) fixe un
-menu à six rubriques se terminant par « … | Évaluations | Suivi » ; la
-rubrique « Suivi » n'avait aucune entrée de menu propre — seule la cellule
-pédagogique y accédait, via le badge « Alertes » (`suivi_ecriture`,
+"""Rubriques « Évaluations » et « Suivi » du menu principal — correctif de
+navigation, prompt 49 (hors backlog). `docs/conception/16-maquettes.md`
+(MAQ-01 à MAQ-05) fixe un menu à six rubriques se terminant par « … |
+Planification | Évaluations | Suivi » ; ni l'une ni l'autre n'avait
+d'entrée de menu propre. « Évaluations » n'était liée depuis AUCUN écran du
+site (ni le menu, ni la fiche session) — un domaine entier atteignable
+seulement en tapant l'URL à la main. « Suivi » n'était atteint que par la
+cellule pédagogique, via le badge « Alertes » (`suivi_ecriture`,
 `planification/context_processors.py`), jamais les trois autres profils de
 lecture (planification, examens, Direction de Formation)."""
 
@@ -32,6 +35,17 @@ def _requete_avec_permissions(rf, *codenames):
 
 def _contenu_rendu(rf, *codenames):
     return render_to_string("noyau/base.html", request=_requete_avec_permissions(rf, *codenames))
+
+
+def test_evaluations_lecture_rend_la_rubrique_evaluations_cliquable(rf, db):
+    contenu = _contenu_rendu(rf, "evaluations_lecture")
+    assert "Évaluations" in contenu
+    assert "/evaluations/" in contenu
+
+
+def test_sans_aucune_permission_la_rubrique_evaluations_est_absente(rf, db):
+    contenu = _contenu_rendu(rf)
+    assert "Évaluations" not in contenu
 
 
 def test_suivi_lecture_rend_la_rubrique_suivi_cliquable(rf, db):

@@ -40,7 +40,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for sujet in sujets %}
+        {% for sujet, formulaire_corriger in lignes %}
           <tr class="border-b border-gris-trait">
             <td class="px-4 py-2">Sujet n° {{ sujet.rang }}</td>
             <td class="px-4 py-2">{{ sujet.reference }}</td>
@@ -86,6 +86,35 @@
                   </form>
                 {% endif %}
               </div>
+              <details class="group mt-1.5">
+                <summary class="flex cursor-pointer list-none items-center gap-2 text-xs
+                                text-gris-lecture">
+                  <svg class="h-3 w-3 -rotate-90 text-gris-lecture transition-transform
+                              duration-notif group-open:rotate-0" aria-hidden="true">
+                    <use href="{% static 'icones/planche.svg' %}#chevron-bas"></use>
+                  </svg>
+                  Corriger
+                </summary>
+                <form method="post" action="{% url 'evaluations:corriger_sujet' sujet.pk %}"
+                      class="mt-2 flex flex-wrap items-end gap-2">
+                  {% csrf_token %}
+                  <div>
+                    <label class="mb-1 block text-2xs font-medium text-gris-lecture">
+                      {{ formulaire_corriger.reference.label }}
+                    </label>
+                    {{ formulaire_corriger.reference }}
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-2xs font-medium text-gris-lecture">
+                      {{ formulaire_corriger.date_depot.label }}
+                    </label>
+                    {{ formulaire_corriger.date_depot }}
+                  </div>
+                  <button type="submit" class="text-xs font-semibold text-marine-900 hover:underline">
+                    Enregistrer la correction
+                  </button>
+                </form>
+              </details>
             </td>
           </tr>
         {% endfor %}

@@ -143,3 +143,29 @@ def test_c7_bloc_referentiel_applique_affiche_les_valeurs_reelles(client, redact
 
     assert "<dd>1</dd>" in contenu
     assert "40 h" in contenu
+
+
+def test_bloc_evaluations_lie_les_proces_verbaux_pour_la_direction_de_formation(
+    client, direction_formation, session
+):
+    """Correctif de navigation, prompt 49 (hors backlog) : la fiche session
+    ne liait vers aucun écran d'`evaluations` — Direction de Formation
+    porte `evaluations_lecture`, jamais `evaluations_ecriture` (matrice
+    § 11.2), donc les procès-verbaux mais pas les moyennes."""
+    client.force_login(direction_formation)
+
+    reponse = client.get(reverse("organisation:detail_session", args=[session.pk]))
+    contenu = reponse.content.decode()
+
+    assert "Procès-verbaux" in contenu
+    assert "Moyennes et classement" not in contenu
+
+
+def test_bloc_evaluations_absent_sans_aucune_permission_du_domaine(client, redacteur, session):
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("organisation:detail_session", args=[session.pk]))
+    contenu = reponse.content.decode()
+
+    assert "Procès-verbaux" not in contenu
+    assert "Moyennes et classement" not in contenu

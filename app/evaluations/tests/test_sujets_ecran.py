@@ -108,6 +108,31 @@ def test_e1_deux_sujets_puis_retenue_par_la_cellule_examens(client, examens, cer
     assert EntreeJournal.objects.filter(type_action=TypeAction.SELECTION_SUJET).exists()
 
 
+def test_corriger_sujet_atteignable_depuis_l_ecran_et_ecrit_reellement(
+    client, examens, certificative
+):
+    """Correctif de navigation, prompt 49 (hors backlog) : `corriger_sujet`
+    existait en service et en route depuis US-EVAL-03, sans aucun bouton
+    ni formulaire sur `sujets.html` pour l'atteindre — même symptôme que
+    P-09/P-21/P-26 (route posée, chemin de clic absent)."""
+    client.force_login(examens)
+    sujet = _enregistrer(examens, certificative, "Pli à corriger")
+
+    reponse = client.get(reverse("evaluations:sujets", args=[certificative.pk]))
+    contenu = reponse.content.decode()
+    assert "Corriger" in contenu
+    assert reverse("evaluations:corriger_sujet", args=[sujet.pk]) in contenu
+
+    reponse = client.post(
+        reverse("evaluations:corriger_sujet", args=[sujet.pk]),
+        {"reference": "Pli corrigé", "date_depot": timezone.localdate().isoformat()},
+        follow=True,
+    )
+    assert reponse.status_code == 200
+    sujet.refresh_from_db()
+    assert sujet.reference == "Pli corrigé"
+
+
 def test_e2_retenue_sujet_unique_sans_confirmation_reaffiche_avertissement(
     client, examens, certificative
 ):
