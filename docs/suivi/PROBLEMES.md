@@ -31,6 +31,8 @@ Une entrée par problème, la plus récente en tête.
 **Risque concerné** — aucun du registre actuel ; proposition à ajouter si un audit de navigation doit devenir une étape systématique de la définition de fini plutôt qu'un contrôle ponctuel.
 **Leçon** — Un écran testé de bout en bout par son propre cycle HTTP ne prouve pas qu'on peut l'atteindre en cliquant depuis l'accueil. La définition de fini d'une story qui ajoute un écran devrait inclure explicitement : « depuis quel lien, dans quel écran existant, y accède-t-on ? » — pas seulement le test du nouvel écran lui-même.
 
+**Addendum (2026-10-25)** — Un quatrième cas de la même famille, trouvé par le même audit : `administration:changer_mot_de_passe` était déjà générique (toute personne authentifiée change son propre mot de passe) mais n'était atteint que par redirection forcée du drapeau `doit_changer_mot_de_passe` — aucun lien volontaire. Confirmé par le chef de projet (« hors contrainte ») : lien ajouté dans l'en-tête, texte du gabarit rendu conditionnel pour ne plus afficher « obligatoire » hors contrainte.
+
 ---
 
 ## P-51 — Blocage PostgreSQL (*deadlock*) sur `auth_group_name_key` : deux exécutions de la suite lancées en même temps sur la même base
