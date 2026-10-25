@@ -23,6 +23,16 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-52 — Le domaine Évaluations n'était lié depuis aucun écran du site
+**Date** 2026-10-25 · **Story** aucune (hors backlog, demande directe du chef de projet après constat sur le tableau de bord de Suivi) · **État** : résolu
+**Symptôme** — Le chef de projet, cherchant à ouvrir le tableau de bord des formations (US-SUI-03) depuis l'accueil, n'a trouvé aucun lien pour y accéder. Vérification demandée sur le reste du site : le domaine `evaluations` entier (procès-verbaux, moyennes, sujets, organisation d'épreuve) n'était atteignable que par URL tapée à la main — aucun des 184 noms de route du projet croisé contre les gabarits n'y menait depuis le menu ni depuis la fiche session. Deux défauts en plus trouvés en creusant : les écrans par-session `moyennes_session`/`proces_verbaux` n'étaient liés depuis nulle part (même en réparant le menu), et `corriger_sujet` (route et service complets) n'avait aucun bouton sur `sujets.html`.
+**Cause** — Même famille que P-09/P-21/P-23/P-26/P-30/P-31 : chaque story a testé son propre écran de bout en bout (cycle HTTP réel compris), mais aucune n'a eu pour périmètre de vérifier que l'écran PRÉCÉDENT (menu principal, fiche session) offre un chemin de clic vers le nouveau. La maquette de référence (`docs/conception/16-maquettes.md`) prévoyait pourtant un menu à six rubriques, « Évaluations » et « Suivi » comprises — jamais implanté pour ces deux-là.
+**Résolution** — Rubrique « Évaluations » ajoutée au menu principal (`noyau.context_processors.py`, gardée par `evaluations_lecture`) ; liens vers les procès-verbaux et les moyennes ajoutés à la fiche session (`organisation/session_detail.html`), chacun gardé par sa propre permission ; bouton « Corriger » ajouté à l'écran des sujets. Trois tests du vrai cycle HTTP ajoutés. Suite complète rejouée : 2260 passés, 0 échec.
+**Risque concerné** — aucun du registre actuel ; proposition à ajouter si un audit de navigation doit devenir une étape systématique de la définition de fini plutôt qu'un contrôle ponctuel.
+**Leçon** — Un écran testé de bout en bout par son propre cycle HTTP ne prouve pas qu'on peut l'atteindre en cliquant depuis l'accueil. La définition de fini d'une story qui ajoute un écran devrait inclure explicitement : « depuis quel lien, dans quel écran existant, y accède-t-on ? » — pas seulement le test du nouvel écran lui-même.
+
+---
+
 ## P-51 — Blocage PostgreSQL (*deadlock*) sur `auth_group_name_key` : deux exécutions de la suite lancées en même temps sur la même base
 **Date** 2026-10-19 (observé), 2026-10-20 (cause établie, prompt 49, Temps 2) · **Story** aucune (travail hors backlog) · **État** : résolu
 **Symptôme** — `psycopg.errors.DeadlockDetected: deadlock detected ... while inserting index tuple ... in relation "auth_group_name_key"`, rencontré une fois pendant le prompt 48, puis `django.db.utils.OperationalError` équivalente sur une autre commande lancée au même moment. Écarté à l'époque en relançant seul, sans établir la cause — exactement ce que ce temps du prompt interdit de laisser ainsi.
