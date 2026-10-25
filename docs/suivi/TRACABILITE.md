@@ -1,5 +1,16 @@
 # Traçabilité critères d'acceptation → tests
 
+**Note datée du 25/10/2026 (prompt 50).** Le backlog produit v11 est
+désormais déposé dans le dépôt (`docs/livrables/
+04_Backlog_produit_v11_2026-10-23.md`, § 12 : « copie dans le dépôt »,
+mesure ajoutée en version 11 précisément pour que cette traçabilité
+s'établisse sur le texte intégral des critères plutôt que sur une
+reconstitution par les noms de tests). La quinzaine de critères marqués
+« non identifié » ci-dessous sera revérifiée sur ce texte pendant la
+phase 6. **L'inventaire lui-même n'est pas modifié par cette note.**
+
+---
+
 Prompt 49, Temps 7. Pur inventaire — **aucun test nouveau écrit à ce
 stade**. Pour chacune des 52 stories livrées (sprints 1 à 4), ses critères
 d'acceptation identifiables et le ou les tests qui les couvrent.

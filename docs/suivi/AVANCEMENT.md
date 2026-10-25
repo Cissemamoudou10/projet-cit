@@ -2,21 +2,14 @@
 
 *Récapitulatif court. Le détail vit dans les fichiers de sprint.*
 
-**Dernière mise à jour :** 2 octobre 2026 (Prompt 37, US-EVAL-03) — C2 a
-été prononcé le 30 septembre, en retard de quatre jours sur l'échéance du 26
-septembre. Ne pas lire ce retard comme rétrodaté : le contenu technique du
-sprint 2 était acquis le 26, mais ses éléments de pilotage (heures, clé de
-conversion, reports vérifiés, risques) ne l'étaient pas — exactement le même
-défaut qui avait déjà retardé le prononcé de C1. Voir
-`docs/suivi/LECONS-SPRINT-2.md`, leçon 1. Sprint 3 engagé depuis le 28
-septembre ; ETA-01 (diagramme d'états, 5.3.17) produit le 30/09, voir « Ce
-qu'il faut surveiller » — R10. Cinq stories livrées (US-VAL-03 et US-EVAL-04 le 4 octobre, 5 pts chacune, machine à états du programme et organisation d'épreuve) : US-EVAL-01 (1er
-octobre, 5 pts), US-EVAL-02 (2 octobre, 2 pts — date d'un examen final
-imposée et projetée, jamais copiée) et US-EVAL-03 (2 octobre, 5 pts —
-sujets d'examen, confidentialité par construction). Entre ces deux
-dernières, un correctif de dette hors story (Temps 1, Prompt 37) a ajouté la
-garde réelle qui manquait à la mesure de P-38 (0 point, voir
-`docs/suivi/PROBLEMES.md`, P-39).
+**Dernière mise à jour : 25 octobre 2026 (prompt 50).** Le développement est
+clos depuis le 20 octobre (jalon J3, prompt 49, étiquette
+`j3-fin-developpement`) : 52 stories, 224 points, cent pour cent du
+périmètre planifié hors réserve, sur quatre sprints. La phase 6 (tests et
+recette) s'ouvre le 26 octobre et s'achève au jalon C3 du 2 novembre ; le
+déploiement s'achève au jalon C4 du 10 novembre. Le paragraphe du
+2 octobre qu'il remplaçait est désormais périmé — le détail des sprints 1
+à 4 reste dans les sections « Sprints » et les fichiers `sprint-N.md`.
 
 ## Où nous en sommes
 
@@ -26,9 +19,9 @@ garde réelle qui manquait à la mesure de P-38 (0 point, voir
 | 2 — Spécification | 03/08 – 14/08 | Close |
 | 3 — Planification détaillée | 17/08 – 20/08 | Close |
 | 4 — Analyse et conception | 20/08 – 30/08 | **Close** — 7 livrables, 23 figures, jalon J1 franchi |
-| 5 — Développement | 31/08 – 24/10 | **En cours** — sprint 2 clos (C2 prononcé le 30/09, en retard), sprint 3 démarré le 28/09, US-EVAL-01 (01/10), US-EVAL-02 et US-EVAL-03 (02/10) livrées |
-| 6 — Tests et recette | 26/10 – 02/11 | À venir |
-| 7 — Déploiement | 03/11 – 10/11 | À venir |
+| 5 — Développement | 31/08 – 24/10 | **Close** — J3 atteint le 20/10, quatre jours d'avance |
+| 6 — Tests et recette | 26/10 – 02/11 | **En cours à partir du 26/10**, jalon C3 le 02/11 |
+| 7 — Déploiement | 03/11 – 10/11 | Jalon C4 le 10/11 |
 | 8 — Mémoire et soutenance | 11/11 – 25/12 | À venir |
 
 ## Sprints
@@ -55,9 +48,9 @@ points chiffrés).
 |---|---|---|
 | Stories livrées | **52 / 52 planifiées** | — |
 | Points livrés | **224 / 224 planifiés** | — |
-| Vélocité mesurée | *toujours non mesurée de façon fiable* — une reconstitution existe (`docs/suivi/HEURES-SPRINT-2.md`), structurellement biaisée à la hausse (voir ce fichier) | à établir par un relevé contemporain, sprint 3 |
-| Clé de conversion | 1,3 h/point, **non révisée** — aucune mesure fiable ne le justifie, voir `docs/suivi/HEURES-SPRINT-2.md` | recontrôler dès qu'un relevé contemporain existe sur 5-6 stories du sprint 3 |
-| Marge avant dépôt | 14 jours ouvrés | ne pas entamer — intacte à ce jour, sprint 3 démarré à l'heure |
+| Vélocité mesurée | **Définitivement non mesurée** — aucune heure humaine n'a été relevée sur les 52 stories du projet (registre v8, R23). Quatre sprints livrés à 100 % de leur estimation en points est la seule mesure validée | aucune — un relevé rétrospectif déclaratif reste possible pour le mémoire, jamais une mesure contemporaine |
+| Clé de conversion | 1,3 h/point, **non révisée, ne le sera plus en cours de projet** — aucune mesure fiable ne l'a jamais justifiée (registre v8, R23) | à présenter au mémoire comme hypothèse jamais vérifiée, avec sa cause |
+| Marge avant dépôt | **9 jours ouvrés, plus l'avance gagnée au J3** (registre v8, O1) | La valeur « 14 jours ouvrés, intacte » affichée jusqu'ici était périmée depuis le 30/09, date à laquelle le registre v6 l'avait déjà ramenée à 9 — jamais répercutée ici. Trois jours d'avance supplémentaires gagnés au J3 (21 au 23 octobre), employés à la clôture et au démarrage de la recette. |
 
 **Recalcul daté (2026-10-13, prompt 45, Temps 1.4).** Points livrés : 169
 (avant le prompt 44) + 7 (US-SUI-05, 2 pts ; US-SUI-01, 5 pts) = **176**.
@@ -159,66 +152,53 @@ intégralement livré. Confirmé indépendamment pour le sprint 4 par
 
 ## Ce qu'il faut surveiller
 
-**Échéance du 16 octobre — retour des cellules sur ETA-01 (R1, registre des
-risques v7, prompt 44).** Numérotation du registre v7, distincte de « R10 »
-ci-dessous (registre antérieur) — même sujet (retour des cellules sur
-ETA-01) à rapprocher lors de la prochaine refonte du registre, pas assumé
-identique sans vérification.
+**État au 25 octobre 2026 (prompt 50), d'après le registre des risques v8
+du 23/10 (`docs/livrables/09_Registre_risques_v8_2026-10-23.md`), déposé
+dans le dépôt. Remplace entièrement les points échus de ce même
+paragraphe — rien d'autre dans ce fichier n'est réécrit.**
 
-**Point de décision — mercredi 21 octobre au soir (sprint 4, prompt 44).**
-Toute story *Should* du sprint 4 non commencée à cette date passe en
-réserve, pour préserver la phase de tests qui commence le 26 octobre.
+**Points de décision des 7 et 21 octobre — tous deux tenus.** Le 7 octobre :
+US-VAL-01, US-VAL-02 et US-VAL-04 livrées avant l'échéance (voir « État
+consolidé des reports » ci-dessous pour le détail). Le 21 octobre : aucune
+story *Should* du sprint 4 n'a dû passer en réserve, le périmètre entier
+étant déjà livré au prompt 48, avant l'échéance.
 
-**Point de décision — mercredi 7 octobre au soir.** Tenu le 4 octobre, avant son échéance : US-VAL-01, US-VAL-02 et US-VAL-04 sont livrées (commits `335d257`, `c51b353` et le commit de clôture de US-VAL-04 ; le code de US-VAL-04 est porté par `335d257`, voir P-41). US-PLAN-06 reste au sprint 3.
+**R1 et R10 — réponses par défaut retenues le 16/10 (D-268, relu dans
+`DECISIONS.md`).** Le circuit de validation ETA-01, construit sur les
+réponses par défaut aux quatre questions posées aux cellules, fait
+référence depuis cette date. Toute réponse tardive des cellules, si elle
+diverge, sera traitée comme une demande d'évolution (R11), arbitrée
+explicitement — jamais comme une correction due. Les deux risques
+s'éteindront à la fin de la phase 6 (registre v8, § 6), avec ou sans séance
+de recette.
 
-**R6 — reclassé, ne relève plus de la faisabilité.** L'étude
-(`etudes/solveur/RECOMMANDATION.md`, D-162) a levé la question de faisabilité
-technique (résolution en < 1 s médiane sur la taille réelle). Reste un
-arbitrage coût/bénéfice, tranché : heuristique gloutonne en production,
-US-PLAN-08 déclassée en perspective d'évolution pour le sprint 4, sous deux
-conditions cumulatives (périmètre *Must* entier livré, marge de 14 jours
-ouvrés intacte). Détail : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`.
+**R6 — éteint (D-289, relu dans `DECISIONS.md`).** Le réexamen d'US-PLAN-08
+tenu le 20 octobre maintient le déclassement du solveur ; le développement
+étant clos, la question de faisabilité n'a plus d'objet.
 
-**R9 — toujours éteint, une dette précisée.** Contenu technique acquis le
-7 septembre, `openpyxl` ajouté et vérifié dans le paquet hors ligne le
-12 septembre (D-99) sans rejeu complet du protocole VM depuis — dette
-explicite, à rejouer avant le dépôt réel, pas à chaque dépendance pure
-Python. `ortools` (étude du solveur) reste hors du paquet hors ligne (D-160),
-sans objet tant que R6 reste déclassé.
+**Risques actifs de la phase 6, d'après le registre v8 :**
+- **R16, critique (12)** — 35 des 36 décisions du sprint 4 portent la
+  mention « porteur non renseigné » : la trace de contribution individuelle
+  s'est dégradée au lieu de se corriger. Mesure demandée avant le
+  2 novembre : attribution rétrospective des porteurs — voir Temps 4 de ce
+  prompt, `docs/suivi/PORTEURS-RETROSPECTIF.md`.
+- **R29, nouveau (9)** — recette conduite sans les utilisateurs des
+  cellules : la conformité peut être vérifiée par le binôme, l'adéquation
+  au besoin ne peut l'être que par une séance avec les cellules, jamais
+  obtenue à échéance depuis le 30 septembre.
+- **R22, en hausse (6)** — impression du programme hebdomadaire, anomalie
+  n° 1 du cahier de recette : l'exemplaire réel produit à la clôture du
+  sprint 4 (D-291) déborde de la page A4 dès le troisième créneau, un
+  défaut qu'aucun test automatisé ne peut voir.
 
-**R19, cohérence documentaire — toujours actif, cause racine identifiée.**
-Deux reports de critères (D-91, D-83) sont restés absents du tableau de
-suivi pendant tout le sprint 2 malgré une demande explicite dans leur propre
-décision. Ce n'est plus une hypothèse : voir la proposition de risque
-« dispositif de pilotage non tenu » ci-dessous, qui en est la cause.
-
-**Risque proposé — dispositif de pilotage non tenu (nouveau, à statuer par
-le chef de projet).** Deux jalons consécutifs franchis sans leurs éléments
-de pilotage. Probabilité élevée (deux occurrences sur deux), impact sur la
-crédibilité du suivi en soutenance. Détail et mesure d'atténuation
-proposée : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`.
-
-**R10 — diagramme produit, en attente de validation.** Mesure préventive
-livrée le 30 septembre (`docs/diagrammes/ETA-01_etats_programme.puml`,
-`docs/conception/ETA-01_table_transitions.md`, `ETA-01_audit_code.md`,
-`ETA-01_note_cellules.md`) — retour demandé aux cellules pédagogique et
-planification pour le **5 octobre**. Tant que la validation n'est pas
-revenue, **US-VAL-01 et US-VAL-02 restent bloquées** (prescrit par le
-prompt 34, § 7) : le circuit qu'elles implantent dépend des quatre questions
-posées dans la note aux cellules (`ETA-01_note_cellules.md`, § « Quatre
-questions »). Nuance à surveiller : Q3 porte sur T7/T8 (signature,
-affichage), relevant d'US-VAL-04 plutôt que d'US-VAL-01/02 — un « non » sur
-Q3 rouvrirait D-169 et l'acteur de US-VAL-04, pas seulement le circuit de
-soumission/décision. Les arbitrages sans réponse conditionnelle (A1, A2, A6
-à A10 — D-165, D-166, D-170, D-171, D-172, D-173) ne dépendent pas de ce
-retour et peuvent être implantés sans attendre.
-
-**Risque proposé — saturation des salles attitrées (nouveau, constat de
-terrain).** 32 à 38 salles pour 30 à 35 brigades (`etudes/solveur/
-HYPOTHESES.md`) : RG-14 proche de la saturation en permanence dans la
-combinaison la plus défavorable. Pas un défaut logiciel — un constat que le
-système rend visible en appliquant correctement une règle qui restait
-implicite. Détail : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`.
+**Décision du chef de projet du 25/10 (D-295, relue dans `DECISIONS.md`) —
+déploiement sur machine virtuelle isolée.** Aucune installation sur un
+serveur du CIT n'est envisagée pour ce projet. Le déploiement de la
+phase 7 se fait sur une machine virtuelle isolée, hors ligne, reproduisant
+le serveur du réseau interne, avec le protocole déjà éprouvé le
+7 septembre (`INSTALLATION-HORS-LIGNE.md`). **R15 devient sans objet.** La
+procédure livrée doit rester applicable telle quelle à un serveur du
+centre.
 
 ## État consolidé des reports de critères — revue de clôture du sprint 2, prononcée le 30 septembre
 
@@ -410,6 +390,29 @@ Vérification systématique des six reports ouverts à la clôture du sprint 3 (
 
 Aucun nouveau report ne s'est ouvert pendant le sprint 4 au sens de ce tableau (les quatre décisions hors backlog du Temps 4 — D-288 à D-291 — et les trois de Temps 5.1 — D-292 à D-294 — ferment ou consignent, elles n'ouvrent rien de nouveau faute de story qui en dépendrait).
 
+### Recompte du 25/10/2026 (prompt 50), d'après le backlog v11
+
+Les trois reports comptés « orphelins » ci-dessus ne l'étaient pas : le
+backlog v10 n'était simplement pas dans le dépôt au moment de ce recompte
+(prompt 49) — exactement le défaut que corrige le Temps 1 du prompt 50
+(copie du backlog dans le dépôt à chaque version, mesure v11, § 12).
+Vérifié sur le texte intégral de `docs/livrables/
+04_Backlog_produit_v11_2026-10-23.md` :
+
+- **D-212** et **D-215** ne sont pas orphelins : ce sont les critères 2 et 1
+  d'**US-EVAL-11** (« Suivre les épreuves à venir », Should, 3 pts),
+  story nouvelle en version 10, en réserve — le backlog v11 le dit noir sur
+  blanc (§ 9, note v11 : « les reports D-215... et D-212... sont exactement
+  ses critères 1 et 2 »).
+- **D-182** est classé **Won't** depuis le backlog v10 (§ 11.2, « hors
+  périmètre de la version courante ») : « aucun livrable ne définit la
+  mesure ni le seuil [...] le report D-182 est fermé par ce classement. »
+
+**Net : aucun report orphelin.** La revue du sprint 4 (`REVUE-SPRINT-4.md`)
+et le recompte ci-dessus en comptaient trois parce que le backlog n'était
+pas dans le dépôt au moment où ils ont été écrits — voir l'addendum à
+`REVUE-SPRINT-4.md` (prompt 50, Temps 5).
+
 ### Écart de numérotation, table de correspondance (proposition, backlog non touché)
 
 | Code cité dans `DECISIONS.md` | Désigne réellement (`sprint-2.md`) |
@@ -450,3 +453,13 @@ troisième horaire, ci-dessous.
 - Le seuil `SEUIL_ECART_VOLUME_REFERENTIEL_POURCENT` (D-33) reste provisoire
   (10 %), terrain non consulté — seule la moitié de D-33 a été refermée par
   US-PLAN-12, voir ci-dessus.
+
+**(Ajoutées le 25/10/2026, prompt 50) Quatre valeurs par défaut, soumises
+au commanditaire par le rapport d'avancement N°3, réponse attendue au
+02/11 (registre v8, R1) :**
+- Seuil d'admission à 10/20 (US-EVAL-07, V6, `SEUIL_ADMISSION_PROCES_VERBAL`).
+- Note absente comptée zéro (US-EVAL-06, N6, `TRAITEMENT_ABSENCE_NOTE`).
+- Ex aequo classés au même rang (US-EVAL-06, M6/M7, classement de compétition).
+- Seuil de charge d'un instructeur à 24 h/semaine (US-INS-04, C2,
+  `SEUIL_CHARGE_HEBDOMADAIRE_INSTRUCTEUR`, hypothèse jamais confirmée par
+  le terrain depuis sa livraison).

@@ -31,6 +31,16 @@ reprendre. **Cette ligne n'est jamais vide.**
 
 ---
 
+## D-295 — Déploiement de la phase 7 sur machine virtuelle isolée, jamais sur un serveur du CIT
+**Date** 2026-10-25 · **Story** aucune (Prompt 50 — clôture documentaire du J3, hors backlog) · **Auteur** chef de projet
+**Contexte** — R15 (registre des risques v8, § 4) relevait que l'accès au poste de déploiement du CIT n'était pas obtenu à temps, la demande figurant seulement au rapport d'avancement de fin octobre alors que la phase 7 démarre le 3 novembre. Le chef de projet tranche directement, sans attendre cet accès.
+**Décision** — Aucune installation sur un serveur du CIT n'est envisagée pour ce projet. Le déploiement de la phase 7 se fait sur une **machine virtuelle isolée**, hors ligne, reproduisant le serveur du réseau interne, avec le protocole hors ligne déjà éprouvé le 7 septembre (`INSTALLATION-HORS-LIGNE.md`). La procédure livrée doit rester applicable telle quelle à un serveur du centre, si l'installation y était un jour reprise.
+**Alternative écartée** — Continuer à demander l'accès au poste réel du CIT et retarder la phase 7 jusqu'à son obtention : écartée, la marge avant le dépôt (O1, neuf jours ouvrés) ne permet pas d'attendre une ressource externe non maîtrisée pour une étape que la machine virtuelle peut couvrir intégralement.
+**Impact sur les livrables** — `docs/suivi/AVANCEMENT.md` (« Ce qu'il faut surveiller », prompt 50) ; R15 devient sans objet (registre des risques, hors dépôt) ; le dossier d'exploitation et la procédure d'installation restent écrits pour un serveur du centre, la machine virtuelle n'étant qu'un support de recette.
+**Reporté au livrable** — non applicable.
+
+---
+
 ## D-294 — `EditionProgression` n'enfreint pas l'interdit des attributs dérivés : c'est une trace de signature, pas un calcul stocké
 **Date** 2026-10-20 · **Story** aucune (Prompt 49, Temps 5.1 — audit diagramme vs code) · **Auteur** porteur non renseigné
 **Contexte** — `docs/conception/13-diagramme-classes.md`, § 1.4 (ligne 66) pose que la progression réalisée est « un document calculé, aucune entité » — écrit en phase 4, avant que RG-58/C5 (US-SUI-06, prompt 45) n'exigent de tracer QUI a édité et signé une semaine donnée. `EditionProgression` (`app/planification/models.py`, lignes 362-400) existe depuis cette story sans que ce point n'ait jamais été reconcilié avec le diagramme, ni consigné.

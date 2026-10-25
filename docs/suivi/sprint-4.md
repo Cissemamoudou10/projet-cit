@@ -49,18 +49,40 @@ préserver la phase de tests qui commence le 26 octobre (phase 6, cf.
 
 ## Tâches transverses
 
-- [ ] Gabarits des documents imprimables (procès-verbal, progression réalisée)
+**Vérifié dans le dépôt le 25/10/2026 (prompt 50) — coché seulement ce
+qu'un fichier prouve, cité à chaque fois.**
+
+- [x] Gabarits des documents imprimables (procès-verbal, progression
+      réalisée) — `GabaritDocument` (`app/administration/models.py:280`),
+      `app/planification/templates/planification/pdf/progression_realisee.html`,
+      `app/evaluations/templates/evaluations/pdf/proces_verbal.html`.
 - [ ] Wireframes des écrans du paquetage Évaluations, non produits en phase 4
-- [ ] Contrôle K3, point ouvert du sprint 1 (Prompt 19, bloc B) — les écrans
-      Instructeurs et Lieux débordent encore de la largeur imprimable en
-      portrait une fois la colonne Actions retirée (33 px et 74 px
-      respectivement, mesuré le 2026-09-08 ; Formations et Matières tiennent
-      déjà). À traiter avec les gabarits imprimables de ce sprint, voir
-      `docs/suivi/IMPRESSION-ANALYSE.md` pour l'analyse chiffrée complète.
+      — **toujours non faits**. `docs/conception/16-maquettes.md`, § 7, le
+      dit lui-même : « Un sixième wireframe aurait été utile... à produire au
+      sprint 4, avant la réalisation de ces écrans. » Les écrans Évaluations
+      ont été livrés au sprint 3 sans ce wireframe, qui n'existe toujours
+      nulle part dans `docs/`.
+- [ ] Contrôle K3, point ouvert du sprint 1 (Prompt 19, bloc B) — **toujours
+      en défaut, aggravé**. `docs/suivi/IMPRESSION-ANALYSE.md` (§ 7) mesure
+      Instructeurs à 168 px de débordement (871 px de large, contre 33 px au
+      sprint 1 — aggravé par US-INS-03) et Lieux à 74 px (777 px) ; le
+      correctif envisagé (paysage) n'a jamais été implanté —
+      `app/noyau/static/css/impression.css` ligne 16 fixe `size: A4
+      portrait`, aucune règle paysage. Part au cahier de recette comme
+      anomalie, non corrigé ici.
 
 ## Revue et rétrospective
 
 - [ ] Heures réelles saisies dans le classeur de pilotage
+
+  Non tenu — aucune heure humaine relevée (registre v8, R23, réalisé et
+  définitif).
 - [ ] Vélocité mesurée, clé de conversion révisée
-- [ ] Registre des risques mis à jour
-- [ ] `AVANCEMENT.md` mis à jour
+
+  Non tenu — aucune heure humaine relevée (registre v8, R23, réalisé et
+  définitif).
+- [x] Registre des risques mis à jour — registre v8 du 23/10/2026, tenu
+      hors dépôt (`docs/livrables/09_Registre_risques_v8_2026-10-23.md`).
+- [x] `AVANCEMENT.md` mis à jour — prompt 50, Temps 2.
+
+**(25/10/2026, prompt 50)** Attribution rétrospective des porteurs de ce sprint : `docs/suivi/PORTEURS-RETROSPECTIF.md`.

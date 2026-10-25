@@ -44,3 +44,5 @@ ligne ajoutée au tableau Sprints d'`AVANCEMENT.md`, ligne ajoutée à
 - [x] Vélocité mesurée (`REVUE-SPRINT-3.md`) ; clé de conversion **non révisée**, à dessein — heures humaines toujours absentes, échantillon de session trop hétérogène (un point pèse 61 % du temps mesuré)
 - [ ] Registre des risques mis à jour — propositions seulement (`RISQUES-PROPOSITIONS-J2.md`), le registre reste tenu par le chef de projet
 - [x] `AVANCEMENT.md` mis à jour
+
+**(25/10/2026, prompt 50)** Attribution rétrospective des porteurs de ce sprint : `docs/suivi/PORTEURS-RETROSPECTIF.md`.

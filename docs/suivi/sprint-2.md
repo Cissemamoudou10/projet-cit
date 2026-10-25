@@ -46,3 +46,5 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
   (réservé au chef de projet) : `docs/suivi/RISQUES-PROPOSITIONS-C2.md`
 - [x] `AVANCEMENT.md` mis à jour — 2026-09-30, en retard de quatre jours sur
   C2 (26 septembre), assumé explicitement, non rétrodaté
+
+**(25/10/2026, prompt 50)** Attribution rétrospective des porteurs de ce sprint : `docs/suivi/PORTEURS-RETROSPECTIF.md`.

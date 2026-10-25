@@ -45,3 +45,5 @@ Coche à la livraison : implantée, testée, relue par le sous-agent, commitée.
 - [ ] Vélocité mesurée, clé de conversion révisée
 - [ ] Registre des risques mis à jour
 - [ ] `AVANCEMENT.md` mis à jour
+
+**(25/10/2026, prompt 50)** Attribution rétrospective des porteurs de ce sprint : `docs/suivi/PORTEURS-RETROSPECTIF.md`.

@@ -199,3 +199,32 @@ La cause exacte des deux outliers de durée (US-VAL-05, US-SUI-03) et
 l'absence de mention de pause sur la ligne US-REF-09 n'ont pas pu être
 confirmées sans interroger l'étudiant — `heures-sprint-4.md` ne se
 reconstitue jamais après coup, ces trois lignes restent telles qu'écrites.
+
+## Addendum du 25/10/2026 (prompt 50)
+
+Le corps de cette revue n'est pas modifié — cet addendum le complète sans
+en réécrire une ligne.
+
+1. **Les trois reports « orphelins » sont rangés par le backlog v11.** Le
+   §  « Reports : fermés et restant ouverts » ci-dessus en comptait trois
+   (D-182, D-212, D-215) parce que le backlog v10 n'était pas dans le
+   dépôt au moment où cette revue a été écrite. Le backlog v11, déposé le
+   25/10 (`docs/livrables/04_Backlog_produit_v11_2026-10-23.md`), classe
+   D-182 Won't (§ 11.2) et range D-212/D-215 comme les critères 2 et 1
+   d'US-EVAL-11, en réserve (§ 9) — voir `AVANCEMENT.md`, « Recompte du
+   25/10/2026 ». **Il n'en reste aucun.**
+2. **Ligne US-REF-09 de `heures-sprint-4.md`.** L'étudiant ne peut pas
+   confirmer s'il y a eu une pause entre le 19/10 13:46 et le 20/10
+   23:30. La ligne est tenue pour **non fiable** et ne sera citée comme un
+   temps de travail continu nulle part. `heures-sprint-4.md` n'est pas
+   modifié par cette confirmation.
+3. **Jalon J3.** Le rapport d'avancement N°3, critère écrit du jalon, a
+   été émis le 26/10 — deux jours après l'échéance du 24/10. Le contenu
+   technique et les éléments de pilotage du dépôt (revue, écarts, risques,
+   traçabilité) étaient eux produits le 20/10, à l'échéance. Le classeur de
+   pilotage v1.4 consigne ce décalage de deux jours en réserve sur la tenue
+   du jalon, sans remettre en cause le contenu livré à la date.
+4. **Démonstration J2.** Tenue le 10/10 devant les cellules pédagogique et
+   planification (confirmé par l'étudiant le 25/10). Ses retours, s'il y
+   en a eu, n'ont jamais été consignés dans le dépôt (registre des risques
+   v8, R17) — à établir par l'étudiant à l'ouverture de la phase 6.
