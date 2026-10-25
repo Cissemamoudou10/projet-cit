@@ -27,6 +27,11 @@
         <span class="text-gris-trait">— {{ user.get_profil_display }}</span>
       </span>
       {% if user.is_authenticated %}
+        <a href="{% url 'administration:changer_mot_de_passe' %}"
+           class="text-gris-trait underline-offset-2 transition-colors duration-survol
+                  hover:text-blanc hover:underline">
+          Mot de passe
+        </a>
         <form method="post" action="{% url 'administration:deconnexion' %}">
           {% csrf_token %}
           <button type="submit"

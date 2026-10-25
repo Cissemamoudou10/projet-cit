@@ -56,6 +56,58 @@ def test_drapeau_leve_demandant_la_deconnexion_n_est_pas_redirige(client, admini
     assert reponse.url == reverse("administration:connexion")
 
 
+def test_lien_mot_de_passe_present_dans_l_en_tete_hors_contrainte(client, administrateur):
+    """Correctif de navigation, prompt 49 (hors backlog) : l'écran de
+    changement de mot de passe n'était atteint que par redirection forcée
+    (drapeau levé) — aucun lien volontaire pour un changement hors
+    contrainte, décision du chef de projet (2026-10-25)."""
+    client.force_login(administrateur)
+
+    reponse = client.get(reverse("noyau:accueil"))
+
+    assert reverse("administration:changer_mot_de_passe") in reponse.content.decode()
+
+
+def test_ecran_hors_contrainte_n_affiche_pas_le_texte_obligatoire(client, administrateur):
+    client.force_login(administrateur)
+
+    reponse = client.get(reverse("administration:changer_mot_de_passe"))
+    contenu = reponse.content.decode()
+
+    assert "Changer mon mot de passe" in contenu
+    assert "obligatoire" not in contenu
+    assert "Retour à l'accueil" in contenu
+
+
+def test_ecran_sous_contrainte_affiche_bien_le_texte_obligatoire(client, administrateur):
+    administrateur.doit_changer_mot_de_passe = True
+    administrateur.save()
+    client.force_login(administrateur)
+
+    reponse = client.get(reverse("administration:changer_mot_de_passe"))
+    contenu = reponse.content.decode()
+
+    assert "obligatoire" in contenu
+    assert "Retour à l'accueil" not in contenu
+
+
+def test_changement_volontaire_hors_contrainte_ecrit_reellement(client, administrateur, mot_de_passe):
+    client.force_login(administrateur)
+
+    reponse = client.post(
+        reverse("administration:changer_mot_de_passe"),
+        {
+            "ancien_mot_de_passe": mot_de_passe,
+            "nouveau_mot_de_passe": "un-nouveau-mot-de-passe-correct",
+            "confirmation": "un-nouveau-mot-de-passe-correct",
+        },
+    )
+
+    assert reponse.status_code == 302
+    client.logout()
+    assert client.login(username=administrateur.username, password="un-nouveau-mot-de-passe-correct")
+
+
 def test_apres_changement_reussi_acces_normal(client, administrateur, mot_de_passe):
     administrateur.doit_changer_mot_de_passe = True
     administrateur.save()
