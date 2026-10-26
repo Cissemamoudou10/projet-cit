@@ -60,7 +60,7 @@
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-gris-trait text-left text-2xs font-medium uppercase tracking-wide text-gris-lecture">
-          <th class="px-4 py-2">Brigade</th><th class="px-4 py-2">Lieu</th><th class="px-4 py-2">Effectif attendu</th><th class="px-4 py-2">Surveillants</th><th class="px-4 py-2"></th>
+          <th class="px-4 py-2">Brigade</th><th class="px-4 py-2">Lieu</th><th class="px-4 py-2">Effectif attendu</th><th class="px-4 py-2">Surveillants</th><th class="px-4 py-2">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -107,9 +107,27 @@
     <form method="post" action="{% url 'evaluations:ajouter_organisation' evaluation.pk %}" class="grid gap-3 border-t border-gris-trait px-4 py-3.5 text-sm">
       {% csrf_token %}
       <div class="flex flex-wrap items-end gap-3">
-        {{ formulaire_organisation.brigade }}
-        {{ formulaire_organisation.lieu }}
-        {{ formulaire_organisation.effectif_attendu }}
+        <div>
+          <label for="{{ formulaire_organisation.brigade.id_for_label }}"
+                 class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+            {{ formulaire_organisation.brigade.label }}
+          </label>
+          {{ formulaire_organisation.brigade }}
+        </div>
+        <div>
+          <label for="{{ formulaire_organisation.lieu.id_for_label }}"
+                 class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+            {{ formulaire_organisation.lieu.label }}
+          </label>
+          {{ formulaire_organisation.lieu }}
+        </div>
+        <div>
+          <label for="{{ formulaire_organisation.effectif_attendu.id_for_label }}"
+                 class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+            {{ formulaire_organisation.effectif_attendu.label }}
+          </label>
+          {{ formulaire_organisation.effectif_attendu }}
+        </div>
         <button type="submit" class="h-controle border border-marine-900 px-3.5 text-sm font-semibold text-marine-900">Ajouter une brigade</button>
       </div>
     </form>

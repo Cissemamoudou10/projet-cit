@@ -16,6 +16,14 @@ aux vues de `ressources` (voir `ressources.navigation`) : il ne regarde pas
 ce processeur de contexte, qui reste générique. Voir docs/suivi/DECISIONS.md,
 D-57.
 
+Cas inverse pour « Suivi » (prompt 50) : ses trois écrans
+(`tableau_bord`, `alertes_ecart`, `rapprochement`) vivent dans l'app
+Django `planification`, faute d'app `suivi` dédiée — `app_name` seul ne
+peut donc pas les distinguer des écrans de la rubrique « Planification »,
+contrairement au cas `referentiel:...`/`administration:...` du paragraphe
+précédent. `VUES_SUIVI_DANS_PLANIFICATION` porte la liste explicite des
+noms de vue à reclasser, vérifiée ici plutôt que dans chaque vue.
+
 `fil_ariane` retombe sur une liste vide : la navigation se remplira story
 par story. `rubriques` porte désormais *Administration* pour les
 utilisateurs habilités, filtrée par `a_permission` — silencieuse, aucune
@@ -52,9 +60,18 @@ def contexte_application(request):
     }
 
 
+VUES_SUIVI_DANS_PLANIFICATION = {"tableau_bord", "alertes_ecart", "rapprochement"}
+
+
 def _rubrique_active(request):
     correspondance = getattr(request, "resolver_match", None)
-    return correspondance.app_name if correspondance else None
+    if not correspondance:
+        return None
+    if correspondance.app_name == "planification" and correspondance.url_name in (
+        VUES_SUIVI_DANS_PLANIFICATION
+    ):
+        return "suivi"
+    return correspondance.app_name
 
 
 RUBRIQUES_SIMPLES = [

@@ -36,6 +36,7 @@
 {% endblock %}
 
 {% block contenu %}
+{% if champ_recherche_libelle or not masquer_filtre_archive or filtres_champs %}
 <form method="get"
       class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
   {% if champ_recherche_libelle %}
@@ -104,6 +105,7 @@
   </button>
   <a href="{{ url_liste }}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
 </form>
+{% endif %}
 
 {% if filtres_actifs %}
   <div class="mt-2 flex flex-wrap items-center gap-1.5">
