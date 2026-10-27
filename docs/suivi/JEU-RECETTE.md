@@ -6,8 +6,11 @@ chargement, ni les tests ne les réécrivent (P-40). Seule l'option explicite
 `python manage.py charger_jeu_recette --regenerer-fichiers-import` les régénère
 — avec un avertissement, et un diff à relire avant tout commit. Un test de
 cohérence compare le générateur à ces fichiers suivis : s'il change, il échoue,
-et l'on décide alors de régénérer. Code : `app/planification/jeu_recette/` et
-`app/planification/management/commands/charger_jeu_recette.py`.
+et l'on décide alors de régénérer. Code : `app/evaluations/jeu_recette/` et
+`app/evaluations/management/commands/charger_jeu_recette.py` — déplacé de
+`planification` lors du prompt 51, voir docs/suivi/DECISIONS.md, D-297.
+L'état `complet` (Prompt 51, Temps 2) ajoute une option `--etat complet`
+à cette même commande ; voir `docs/recette/JEUX-DE-DONNEES-PHASE-6.md`.
 
 ## Étiquette de recette du sprint 2
 
