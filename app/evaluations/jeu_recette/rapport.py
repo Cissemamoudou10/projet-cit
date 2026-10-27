@@ -14,12 +14,15 @@ class Chronometre:
         return time.monotonic() - self._debut
 
 
-def imprimer_compte_rendu(stdout, compteurs, chronometre):
+def imprimer_compte_rendu(stdout, compteurs, chronometre, nombre_comptes=5):
+    """`nombre_comptes` : cinq pour le jeu de recette (socle/complet),
+    sept pour le jeu volumineux (`comptes_volume.py`) — même mot de passe
+    commun, nombre de comptes différent."""
     stdout.write("")
     stdout.write("Compte rendu de chargement du jeu de recette")
     for entite, total in compteurs.items():
         stdout.write(f"  {entite} : {total}")
     stdout.write(f"  Temps d'exécution : {chronometre.ecoule():.2f} s")
     stdout.write("")
-    stdout.write(f"Mot de passe commun des cinq comptes : {MOT_DE_PASSE_COMMUN}")
+    stdout.write(f"Mot de passe commun des {nombre_comptes} comptes : {MOT_DE_PASSE_COMMUN}")
     stdout.write("Relancez avec --verifier pour un rapport d'état complet.")
