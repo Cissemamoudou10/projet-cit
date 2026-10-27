@@ -33,7 +33,7 @@ def charger_tout(stdout):
     # Par domaine (§ 11.2) : l'administrateur ne porte que l'administration
     # elle-même — référentiel, instructeurs/qualifications et organisation
     # reviennent à la pédagogique, lieux/calendrier à la planification
-    # (mêmes comptes agissants que `planification.jeu_recette`).
+    # (mêmes comptes agissants que `evaluations.jeu_recette`).
     pedagogique, planification = comptes["ped.j2"], comptes["plan.j2"]
 
     formation, element_programme, element_examens = charger_referentiel(pedagogique, stdout)

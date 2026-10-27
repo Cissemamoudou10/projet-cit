@@ -19,8 +19,7 @@ sont supprimées ici.
 from django.core.management.base import CommandError
 from django.db.models import ProtectedError
 
-from organisation.models import Session
-from planification.jeu_recette.donnees import (
+from evaluations.jeu_recette.donnees import (
     FORMATIONS,
     INSTRUCTEURS,
     LIBELLE_FORMATION_PAGINATION,
@@ -28,6 +27,7 @@ from planification.jeu_recette.donnees import (
     MATIERES,
     TYPES_FORMATION,
 )
+from organisation.models import Session
 from referentiel.models import ElementReferentiel, Formation, Matiere, Prerequis, TypeFormation
 from ressources.models import Instructeur, Lieu, Qualification
 

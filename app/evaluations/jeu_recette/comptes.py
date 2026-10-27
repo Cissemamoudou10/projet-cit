@@ -16,7 +16,7 @@ from django.contrib.auth import get_user_model
 
 from administration.models import Profil
 from administration.services.comptes import ServiceCompte
-from planification.jeu_recette.donnees import COMPTES, MOT_DE_PASSE_COMMUN
+from evaluations.jeu_recette.donnees import COMPTES, MOT_DE_PASSE_COMMUN
 
 IDENTIFIANT_BOOTSTRAP = "bootstrap.recette"
 

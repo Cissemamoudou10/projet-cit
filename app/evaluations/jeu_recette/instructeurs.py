@@ -1,6 +1,6 @@
 """Chargement des instructeurs et qualifications de recette — Prompt 34, § 2."""
 
-from planification.jeu_recette.donnees import (
+from evaluations.jeu_recette.donnees import (
     GRADE_INSTRUCTEUR_PAR_DEFAUT,
     INSTRUCTEURS,
     SPECIALITE_INSTRUCTEUR_PAR_DEFAUT,

@@ -1,7 +1,7 @@
 """Chargement des lieux de recette — Prompt 34, § 2. `L3` n'est pas chargé
 — voir `donnees.CODE_LIEU_IMPOSSIBLE`/`MOTIF_LIEU_IMPOSSIBLE`."""
 
-from planification.jeu_recette.donnees import LIEUX
+from evaluations.jeu_recette.donnees import LIEUX
 from ressources.services.lieu import ServiceLieu
 
 

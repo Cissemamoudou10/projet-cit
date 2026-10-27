@@ -9,7 +9,7 @@ import sys
 
 from django.conf import settings
 
-from planification.jeu_recette.fichiers_import.constructeur import DOSSIER
+from evaluations.jeu_recette.fichiers_import.constructeur import DOSSIER
 
 
 def _empreintes():
@@ -30,7 +30,7 @@ def test_suite_jeu_recette_ne_modifie_pas_le_depot():
             sys.executable,
             "-m",
             "pytest",
-            "app/planification/tests/test_jeu_recette.py",
+            "app/evaluations/tests/test_jeu_recette.py",
             "-q",
             "-p",
             "no:cacheprovider",

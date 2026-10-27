@@ -3,7 +3,7 @@
 
 import time
 
-from planification.jeu_recette.donnees import MOT_DE_PASSE_COMMUN
+from evaluations.jeu_recette.donnees import MOT_DE_PASSE_COMMUN
 
 
 class Chronometre:

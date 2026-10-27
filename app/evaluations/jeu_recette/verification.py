@@ -7,8 +7,7 @@ from dataclasses import dataclass
 from django.contrib.auth import get_user_model
 
 from administration.models import Profil
-from organisation.models import Brigade, Session, Stagiaire
-from planification.jeu_recette.donnees import (
+from evaluations.jeu_recette.donnees import (
     CODE_LIEU_IMPOSSIBLE,
     COMPTES,
     FORMATIONS,
@@ -20,10 +19,11 @@ from planification.jeu_recette.donnees import (
     PREREQUIS,
     TYPES_FORMATION,
 )
-from planification.jeu_recette.fichiers_import.constructeur import (
+from evaluations.jeu_recette.fichiers_import.constructeur import (
     DOSSIER as DOSSIER_FICHIERS_IMPORT,
 )
-from planification.jeu_recette.fichiers_import.constructeur import NOMS_FICHIERS
+from evaluations.jeu_recette.fichiers_import.constructeur import NOMS_FICHIERS
+from organisation.models import Brigade, Session, Stagiaire
 from planification.models import ProgrammeHebdomadaire
 from referentiel.models import Formation, Matiere, Prerequis, TypeFormation
 from ressources.management.commands.initialiser_grilles_horaires import (
@@ -40,14 +40,19 @@ class LigneRapport:
     libelle: str
 
 
-def verifier(stdout):
+def verifier(stdout, etat="socle"):
     lignes = (
         _verifier_objets_section2()
         + _verifier_grilles()
         + _verifier_comptes()
         + _verifier_fichiers_import()
     )
-    _imprimer(stdout, "État du jeu de recette (§ 2, § 4.2 du cahier)", lignes)
+    _imprimer(stdout, "État du jeu de recette, socle (§ 2, § 4.2 du cahier)", lignes)
+    if etat == "complet":
+        from evaluations.jeu_recette.verification_complet import verifier_complet
+
+        verifier_complet(stdout)
+        return
     _imprimer_objets_sprint2(stdout)
 
 

@@ -2,7 +2,7 @@
 
 Vit dans `planification`, pas `ressources` : contrairement au jeu de
 démonstration du sprint 1 (`ressources.jeu_demonstration`) et au jeu de
-recette du sprint 2 (`planification.jeu_recette`), ce jeu pose une SESSION
+recette du sprint 2 (`evaluations.jeu_recette`), ce jeu pose une SESSION
 et une BRIGADE (organisation) pour que l'étape 1 du scénario (générer le
 programme d'une semaine) ait quelque chose à programmer — `ressources` ne
 peut pas dépendre d'`organisation`, `planification` le peut déjà (DEPENDANCES_

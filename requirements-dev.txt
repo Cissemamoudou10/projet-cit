@@ -13,3 +13,14 @@ ruff==0.7.4
 # aucune compilation, aucune dépendance transitive — vérifié réellement le
 # 2026-10-16.
 pypdf==6.21.0
+
+# Dépendance de DÉVELOPPEMENT uniquement (prompt 51) : horloge simulée pour
+# les chargeurs de jeux de données de recette (`charger_jeu_recette --etat
+# complet`, `charger_jeu_volume`), qui doivent fabriquer des semaines de
+# programme passées plausibles sans contourner les gardes des services.
+# Jamais utilisée par le système livré — ni requirements.txt, ni le paquet
+# hors ligne (voir docs/suivi/DECISIONS.md, D-296). Importée à l'intérieur du
+# code des chargeurs, jamais en tête d'un module chargé au démarrage de
+# l'application — même leçon que pypdf/WeasyPrint ci-dessus (P-44).
+freezegun==1.5.1
+

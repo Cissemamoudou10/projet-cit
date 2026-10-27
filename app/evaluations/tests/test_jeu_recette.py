@@ -15,14 +15,14 @@ from organisation.import_stagiaires.analyse import analyser
 from organisation.import_stagiaires.confirmation import confirmer
 from organisation.models import Session
 from organisation.services.session import ServiceSession
-from planification.jeu_recette.donnees import (
+from evaluations.jeu_recette.donnees import (
     CODE_LIEU_IMPOSSIBLE,
     COMPTES,
     IDENTIFIANT_ADMINISTRATEUR,
     LIBELLE_FORMATION_PAGINATION,
     NOMBRE_SESSIONS_PAGINATION,
 )
-from planification.jeu_recette.fichiers_import import constructeur
+from evaluations.jeu_recette.fichiers_import import constructeur
 from referentiel.models import Formation
 from ressources.models import Instructeur, Lieu, ModePartage
 
@@ -95,7 +95,7 @@ def test_transaction_atomique_si_le_chargement_echoue_en_cours_de_route(monkeypa
         raise RuntimeError("échec simulé pour tester l'atomicité")
 
     monkeypatch.setattr(
-        "planification.management.commands.charger_jeu_recette.charger_lieux", _echoue
+        "evaluations.management.commands.charger_jeu_recette.charger_lieux", _echoue
     )
 
     with pytest.raises(RuntimeError):
@@ -276,7 +276,7 @@ def test_fichiers_suivis_correspondent_au_generateur(dossier_fichiers):
 
 def test_commande_ne_regenere_les_fichiers_que_sur_option_explicite(monkeypatch, tmp_path):
     cible = tmp_path / "fichiers-import"
-    monkeypatch.setattr("planification.management.commands.charger_jeu_recette.DOSSIER", cible)
+    monkeypatch.setattr("evaluations.management.commands.charger_jeu_recette.DOSSIER", cible)
     call_command("charger_jeu_recette", stdout=io.StringIO())
     assert not cible.exists()
 

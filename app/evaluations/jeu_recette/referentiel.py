@@ -3,7 +3,7 @@ EXPLICITES (20 h, 10 h…) : contrairement au jeu de démonstration, le § 2 du
 cahier les fixe lui-même, ils ne se calculent pas depuis un réglage.
 """
 
-from planification.jeu_recette.donnees import (
+from evaluations.jeu_recette.donnees import (
     DUREE_SEMAINES_PAR_DEFAUT,
     FORMATIONS,
     MATIERES,

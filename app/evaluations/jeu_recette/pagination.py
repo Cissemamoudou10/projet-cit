@@ -7,8 +7,7 @@ import datetime
 
 from django.utils import timezone
 
-from organisation.services.session import ServiceSession
-from planification.jeu_recette.donnees import (
+from evaluations.jeu_recette.donnees import (
     CODE_FORMATION_PAGINATION,
     LIBELLE_FORMATION_PAGINATION,
     MATIERE_FORMATION_PAGINATION,
@@ -16,6 +15,7 @@ from planification.jeu_recette.donnees import (
     SPECIALITE_PAR_DEFAUT,
     VOLUME_FORMATION_PAGINATION,
 )
+from organisation.services.session import ServiceSession
 from referentiel.models import CategorieLieu
 from referentiel.services.formation import ServiceFormation
 from referentiel.services.referentiel import ServiceReferentiel

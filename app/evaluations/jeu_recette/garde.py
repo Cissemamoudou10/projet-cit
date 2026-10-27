@@ -15,7 +15,7 @@ import os
 from django.contrib.auth import get_user_model
 from django.core.management.base import CommandError
 
-from planification.jeu_recette.donnees import COMPTES
+from evaluations.jeu_recette.donnees import COMPTES
 
 MARQUEUR_PRODUCTION = "production"
 IDENTIFIANT_BOOTSTRAP = "bootstrap.recette"
