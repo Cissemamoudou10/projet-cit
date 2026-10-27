@@ -170,6 +170,28 @@ def test_programmes_volume_sous_ensemble_reduit():
     assert etats[-1] == "brouillon"
 
 
+@pytest.mark.pdf
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="WeasyPrint exige ses bibliothèques natives (P-44).")
+def test_charger_etat_volume_orchestration_complete():
+    """`charger_etat_volume` dans son ENSEMBLE (pas les fonctions de bas
+    niveau comme les autres tests de ce fichier) — seul chemin qui aurait
+    révélé le défaut d'ordre réel trouvé par le chargement en conteneur :
+    `initialiser_grilles_horaires` appelé avant que les comptes n'existent
+    (RG-63). `semaines_passees=1` : assez pour exercer l'ordre complet,
+    sans la durée d'un chargement pleine échelle."""
+    from evaluations.jeu_recette.orchestration_volume import charger_etat_volume
+
+    generateur = nouveau_generateur(2026)
+    date_reference = datetime.date(2026, 10, 27)
+    stdout = io.StringIO()
+
+    compteurs, mesures = charger_etat_volume(generateur, date_reference, stdout, semaines_passees=1)
+
+    assert compteurs["Comptes"] == 7
+    assert compteurs["Brigades actives"] == 32
+    assert len(mesures) == 1 + 4  # semaines_passees + (W0, W+1, W+2, W+3)
+
+
 def test_commande_charger_jeu_volume_verifier_sur_base_vide():
     """Chemin `--verifier` de la vraie commande, lecture seule — ne crée
     rien, même sur une base vide (0/N conformes attendu, jamais une
