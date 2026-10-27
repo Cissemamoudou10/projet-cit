@@ -164,23 +164,65 @@ Aucun procès-verbal, aucune session clôturée, aucune indisponibilité sur
 W+1, aucune duplication — vérifié par lecture directe de la base, rien de
 plus que ce que le § 2.7 annonce.
 
-## Jeu volumineux — § 3, état d'avancement
+## Jeu volumineux — § 3, chargement pleine échelle
 
-Les chargeurs (`app/evaluations/jeu_recette/*_volume.py`,
-`orchestration_volume.py`, `verification_volume.py`, la commande
-`charger_jeu_volume`) sont **écrits et testés**, mais seulement à **échelle
-réduite** (3 brigades sur les 32, suite de tests dédiée
-`evaluations/tests/test_jeu_recette_volume.py` — 33 tests non-PDF, tous
-verts). Le chargement **pleine échelle** (32 brigades, 15 sessions actives,
-mesures BNF-04/BNF-05) n'a pas encore tourné : il requiert le conteneur
-`python:3.14-slim-bookworm` pour la génération des procès-verbaux
-(WeasyPrint, P-44, absent du poste de développement Windows).
+Chargé réellement le 2026-10-27, dans le conteneur
+`python:3.14-slim-bookworm` (réseau Docker `developpement_default`, hôte
+`base`, base `pfe_cit_volume`, module `config.settings.volume`) — requis
+pour la génération des procès-verbaux (WeasyPrint, P-44, absent du poste
+de développement Windows).
 
-Ce run et ses mesures (`MESURES-REFERENCE.md`, section « Jeu volumineux »,
-et la mise à jour de cette section) font l'objet d'un **commit séparé**,
-après l'étiquette `recette-phase-6` — ce sont des relevés, pas du code, et
-ils ne conditionnent pas la pose de l'étiquette (les chargeurs eux-mêmes y
-entrent déjà, validés à l'échelle réduite).
+### Volumes obtenus
+
+| Objet | Cible § 3.1 (recalée) | Obtenu |
+|---|---|---|
+| Types de formation | 4 | 4 |
+| Matières | ≈70 | 70 |
+| Formations | 10 (1 archivée) | 10 (1 archivée) |
+| Instructeurs | 80 (recalé, voir écarts) | 80 (8 archivés) |
+| Salles attitrées | 36 | 36 |
+| Lieux partagés | 8 | 8 |
+| Sessions actives | 15 (recalé) | 15 |
+| Sessions terminées | 3 | 3 |
+| Brigades actives | 32 | 32 |
+| Brigades sur sessions terminées | 6 (2/session) | 6 |
+| Stagiaires affectés | ≈900 | 787 (+ 15 non affectés + 20 radiés) |
+| Indisponibilités | ≈40 | 40 |
+| Procès-verbaux de fin de formation | 2 sur 3 | 2 (SV-T01, SV-T02) |
+| Évaluations formatives (sessions terminées) | — | 6 (123 notes) |
+| Évaluations formatives (brigades actives) | 32 | 32 (664 notes) |
+| Certificatives à venir | — | 5 |
+| Programmes | 12 (W-8 à W+3) | 12 |
+
+`--verifier` : **17/17 contrôles conformes.**
+
+### Mesures (BNF-04, BNF-05, durée totale)
+
+Détail complet dans `docs/suivi/MESURES-REFERENCE.md`, section « Jeu
+volumineux ». Résumé :
+
+- **Chargement complet : 64,51 s** — très en deçà des 30 minutes du § 3.2 ;
+  aucun repli `--semaines` nécessaire.
+- **BNF-04** : semaine la plus longue à générer, 9,01 s (W-8) — largement
+  sous les 5 minutes visées.
+- **BNF-05** : les six écrans mesurés tiennent tous sous les 2 secondes, le
+  plus lent (liste des stagiaires) à 0,563 s.
+- **Cases non pourvues** : de 14/640 (W-8) à 640/640 (plusieurs semaines à
+  partir de W-3) — voir l'écart « référentiel épuisé » ci-dessous, une
+  mesure attendue du calibrage choisi, pas un défaut.
+
+### Bug trouvé et corrigé avant ce chargement
+
+`orchestration_volume.py` appelait `initialiser_grilles_horaires` **avant**
+`charger_comptes_volume` — cette commande exige qu'un compte administrateur
+existe déjà (RG-63) et a fait échouer la première tentative de chargement
+réel (`CommandError: Aucun compte administrateur trouvé`). Les tests
+automatisés ne l'avaient pas révélé : ils appellent les fonctions de bas
+niveau directement, jamais `charger_etat_volume` dans son ensemble, et donc
+jamais dans cet ordre précis. Corrigé en reprenant l'ordre déjà documenté
+dans `outils/recette/reinitialiser_base_recette.ps1` (grilles horaires
+après le chargeur) — confirmation concrète que le chargement réel en
+conteneur reste nécessaire, un test unitaire seul ne l'aurait pas trouvé.
 
 ## Écarts avec le prompt
 
@@ -256,8 +298,7 @@ puisque § 3.1 ne demande pas la séance verrouillée pour ce jeu.
 
 ## Ce qui reste à faire
 
-- Chargement pleine échelle du jeu volumineux (32 brigades), dans le
-  conteneur `python:3.14-slim-bookworm`, mesures BNF-04/BNF-05 — commit
-  séparé, après l'étiquette `recette-phase-6`.
-- Mise à jour de `docs/suivi/MESURES-REFERENCE.md` (section « Jeu
-  volumineux ») à l'issue de ce chargement.
+- Répartition par motif des cases non pourvues (RG-37 vs RG-39, par
+  semaine) pour W-7/W-5/W-4 — voir « Mesure non obtenue »,
+  `docs/suivi/MESURES-REFERENCE.md`. Non bloquant pour RECETTE-05 sauf
+  besoin exprimé.

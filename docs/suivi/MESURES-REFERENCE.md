@@ -169,8 +169,87 @@ répétitions : **10 passés, 0 échec** (WeasyPrint, 36,5 s) — confirme que
 les dix tests marqués `pdf` (US-SUI-06 et US-EVAL-07) restent verts dans
 l'environnement cible, comme à chaque story qui en dépendait.
 
+## Jeu volumineux (Prompt 51, Temps 3) — pleine échelle
+
+Chargement réel de `charger_jeu_volume` (32 brigades actives, 15 sessions
+en cours, 3 terminées, 80 instructeurs, 787 stagiaires affectés), lancé le
+2026-10-27 dans le conteneur `python:3.14-slim-bookworm` (réseau Docker
+`developpement_default`, hôte `base`, base `pfe_cit_volume`) — les mêmes
+conditions que `pytest -m pdf` (P-44).
+
+### BNF-04 — génération hebdomadaire (< 5 minutes)
+
+| Semaine | Durée | État | Cases non pourvues |
+|---|---|---|---|
+| W-8 | 9,01 s | affiché | 14/640 |
+| W-7 | 6,72 s | affiché | 383/640 |
+| W-6 | 0,60 s | affiché | 104/640 |
+| W-5 | 2,28 s | affiché | 444/640 |
+| W-4 | 1,07 s | affiché | 628/640 |
+| W-3 | 0,67 s | **brouillon** (A9, aucune séance) | 640/640 |
+| W-2 | 0,52 s | **brouillon** (A9) | 512/640 |
+| W-1 | 0,57 s | **brouillon** (A9) | 640/640 |
+| W0 | 0,67 s | brouillon | 640/640 |
+| W+1 | 0,60 s | brouillon | 640/640 |
+| W+2 | 0,55 s | brouillon | 512/640 |
+| W+3 | 0,67 s | brouillon | 604/640 |
+
+**Large marge sur BNF-04** : la semaine la plus longue (W-8, 9,01 s) reste
+très en deçà des 300 s visées. **Chargement complet (32 brigades, référentiel,
+ressources, organisation, calendrier, évaluations, 12 programmes,
+procès-verbaux) : 64,51 s** — très en deçà des 30 minutes du § 3.2, aucun
+repli `--semaines` nécessaire.
+
+**Mesure, pas un défaut à masquer (§ 3.2)** : à partir de W-3, le
+référentiel (calibré sur 80 instructeurs, la borne la plus contraignante
+d'`HYPOTHESES.md`) est épuisé pour la plupart des brigades — les semaines
+W-3 à W+3 restent largement ou totalement vides (640/640 à sept reprises).
+C'est la conséquence directe et attendue du choix délibéré de mesurer le
+cas le plus contraint (§ écart « calibrage » de
+`docs/recette/JEUX-DE-DONNEES-PHASE-6.md`) : un référentiel de 150 à 400 h
+par formation, réparti sur 15 sessions actives, s'épuise vite à 80
+instructeurs quand 32 brigades sollicitent les mêmes ressources en
+parallèle. Rien n'a été corrigé : c'est un relevé pour RECETTE-05.
+
+### BNF-05 — rendu des six écrans (< 2 secondes)
+
+Mesuré par le client de test Django (authentifié `v_df`, lecture seule),
+sur la même base pleine échelle :
+
+| Écran | Requêtes SQL | Durée |
+|---|---|---|
+| Liste des stagiaires (session la plus chargée, SV-A02) | 12 | 0,563 s |
+| Consultation du programme W0 | 18 | 0,134 s |
+| Rapprochement prescrit/réalisé (SV-A02) | 16 | 0,081 s |
+| Tableau de bord | 16 | 0,123 s |
+| Liste des programmes | 9 | 0,038 s |
+| Charge d'un instructeur (IV001) | 10 | 0,035 s |
+
+**Les six écrans tiennent largement sous les 2 secondes** — le plus lent
+(liste des stagiaires, 787 au total) à 0,563 s.
+
+### `--verifier`
+
+```
+État du jeu volumineux (§ 3.1, § 3.2)
+  17/17 contrôles conformes.
+```
+
 ## Mesure non obtenue
 
-Aucune. Les quatre points demandés par le bloc G, et les deux mesures de
-clôture J3 ci-dessus, ont chacun une source vérifiée (test relancé ou
-fichier de suivi existant) — rien n'est estimé.
+**Motifs dominants des cases non pourvues, par semaine (§ 3.2).** Le taux
+global (tableau BNF-04 ci-dessus) est mesuré ; la répartition PAR MOTIF
+(lieu saturé, instructeur non qualifié, RG-38...) que
+`ServiceGeneration.generer` calcule bien (`CompteRendu.cases_non_pourvues
+[].motifs`) n'a pas été conservée pendant ce chargement — seul le compte
+agrégé l'a été. Pour W-3 à W+3 (640/640 ou proche), le motif dominant est
+déductible sans ambiguïté (volume prescrit épuisé, A9) ; pour W-7/W-5/W-4
+(taux intermédiaires, séances réellement placées), la répartition fine
+entre RG-37 (lieux partagés saturés) et RG-39 (volume déjà consommé par
+une autre brigade) n'est pas isolée — à obtenir par une relecture
+instrumentée, si RECETTE-05 en a besoin.
+
+Pour le reste : les quatre points demandés par le bloc G, les deux mesures
+de clôture J3, et les mesures du jeu volumineux ci-dessus ont chacun une
+source vérifiée (test relancé, chargement réel ou fichier de suivi
+existant) — rien d'autre n'est estimé.
