@@ -156,10 +156,13 @@ def charger_etat_volume(generateur, date_reference, stdout, semaines_passees=SEM
     et `imprimer_compte_rendu`."""
     call_command("initialiser_habilitations")
     call_command("initialiser_natures_evenement")
-    call_command("initialiser_grilles_horaires")
     call_command("initialiser_gabarits_documents")
     comptes = charger_comptes_volume(stdout)
     bootstrap = _BootstrapVolume(comptes, generateur, date_reference, stdout)
+    # APRÈS les comptes, jamais avant : `initialiser_grilles_horaires` exige
+    # qu'un compte administrateur existe déjà (RG-63) — même écart volontaire
+    # que celui documenté dans `reinitialiser_base_recette.ps1`.
+    call_command("initialiser_grilles_horaires")
 
     referentiel = _charger_referentiel(bootstrap)
     ressources = _charger_ressources(bootstrap, referentiel)
