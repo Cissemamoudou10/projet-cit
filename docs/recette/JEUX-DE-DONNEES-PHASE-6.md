@@ -59,6 +59,77 @@ complet` — voir § « Jeu volumineux » plus bas pour son état d'avancement.
 Aucun écart : le socle (inchangé depuis le prompt 34) et l'état `complet`
 sont tous deux intégralement conformes à ce que `--verifier` attend.
 
+### Lancer la recette dans le conteneur (contrôles `[PDF]`, Prompt 52)
+
+Les cahiers RECETTE-02, 03 et 05 portent des contrôles marqués **[PDF]**
+(procès-verbaux, PDF de la progression réalisée) : WeasyPrint ne
+s'exécute pas sous Windows (P-44), `runserver` sous Windows ne peut
+jamais les produire. `outils/recette/lancer_recette_conteneur.ps1` lance
+l'application dans la même image que `pytest -m pdf`
+(`python:3.14-slim-bookworm`, réseau Docker `developpement_default`,
+hôte `base`) — **sans rien recharger**, sur la base déjà chargée.
+
+```powershell
+.\outils\recette\lancer_recette_conteneur.ps1 -Base recette   # pfe_cit_recette, config.settings.recette
+.\outils\recette\lancer_recette_conteneur.ps1 -Base volume    # pfe_cit_volume, config.settings.volume
+```
+
+**Adresse : `http://localhost:8001/`** — jamais 8000, pour ne jamais être
+confondu avec un `runserver` Windows lancé en parallèle. Le script
+avertit (sans bloquer) si le port 8000 est déjà occupé : deux serveurs
+sur la **même base** pendant une recette sont deux sources de vérité, à
+éviter. **La base est partagée avec un `runserver` Windows éventuel** —
+écrire par l'un est visible par l'autre, immédiatement.
+
+**Arrêt** : Ctrl+C dans le terminal qui a lancé le script — le conteneur
+est supprimé automatiquement (`docker run --rm`), rien d'autre à nettoyer.
+
+Les fichiers statiques (CSS Tailwind précompilé,
+`noyau/static/css/application.css`) sont servis sans étape
+supplémentaire : `config.settings.recette`/`volume` héritent de
+`local.py` (`DEBUG = True`), et `django.contrib.staticfiles` les sert
+directement — vérifié réellement (`curl` depuis l'intérieur du
+conteneur : 200, CSS complet).
+
+**Vérification de bout en bout (point 4), par le client de test Django,
+sur `pfe_cit_recette` remis à zéro en `complet`** :
+
+| Contrôle | Résultat |
+|---|---|
+| Générer le procès-verbal d'évaluation de E1 (M1, EXP1) | **OK** — `ProcesVerbal` créé, PDF téléchargé : 200, `application/pdf`, 20 769 octets, en-tête `%PDF`. Texte extrait : « Procès-verbal — M1 — ... — EXP1 — S1 — F6 », notes et rangs présents (dont l'absence). |
+| Éditer la progression réalisée de W-1 et télécharger son PDF | **OK** — `EditionProgression` créée, PDF téléchargé : 200, `application/pdf`, 21 725 octets, en-tête `%PDF`. Texte extrait : « Progression réalisée — semaine du 19/10/2026 », M1/M2 programmé et dispensé pour EXP1. |
+
+Les deux PDF s'ouvrent et contiennent les données attendues — confirmé en
+lisant leur contenu (`pypdf`), pas seulement leur statut HTTP.
+
+**Mot de passe commun des comptes `v_*` du jeu volumineux** (RECETTE-05
+en a besoin) : **`Transmissions#2026`** — la même constante que les
+comptes `u_*` du jeu de recette (`evaluations/jeu_recette/donnees.py::
+MOT_DE_PASSE_COMMUN`, réutilisée sans changement par
+`comptes_volume.py`), déjà dans le dépôt mais jamais écrite dans ce
+document jusqu'ici.
+
+### Incohérence relevée, non corrigée dans le code (point 7)
+
+Ce document disait (§ 2.4, avant correction) : « W-2 ... grille ordinaire
+pleine sur les **six** jours ouvrables ». La grille Ordinaire n'a aucun
+créneau le samedi (`JOURS_OUVRES` dans
+`ressources/management/commands/initialiser_grilles_horaires.py` :
+lundi à vendredi seulement — confirme R2-P12-04). Vérifié directement sur
+un chargement `complet` frais : **aucune séance un samedi dans W-2, W-1
+ou W0** (jours de semaine présents : lundi à vendredi uniquement, sur les
+trois programmes affichés). Les trois occurrences de `SAMEDI_ISO` dans
+`programme_complet.py` ne posent aucune séance ce jour-là : elles datent
+la SIGNATURE/l'affichage du programme (§ 2.4, « signée et affichée samedi
+W-3 ») — un acte administratif, jamais un créneau de cours. La seule
+place où `SAMEDI_ISO` touche une séance est `avenants_complet.py`, en
+dernier repli de `_premier_jour_libre` (jamais atteint dans ce chargement,
+puisque le jeudi suffit).
+
+**Conclusion : le libellé était faux, corrigé (§ 2.4, « cinq jours
+ouvrables »).** Aucune séance du samedi n'existe réellement dans le jeu
+`complet` — rien d'autre à corriger.
+
 ## État `complet` — § 2, tel que chargé
 
 ### 2.1 Référentiel ajouté
@@ -101,7 +172,7 @@ anomalie.
 
 | Semaine (lundi) | État | Contenu réel |
 |---|---|---|
-| W-2 — 2026-10-12 | affiché | 44 séances (EXP1 : M7 ; EXP2 : M6 ; CDP1 : M4), grille ordinaire pleine sur les six jours ouvrables |
+| W-2 — 2026-10-12 | affiché | 44 séances (EXP1 : M7 ; EXP2 : M6 ; CDP1 : M4), grille ordinaire pleine sur les cinq jours ouvrables |
 | W-1 — 2026-10-19 | affiché | Séance M2 **regroupée** `EXP1`+`EXP2` (pk séance = 3) le 2026-10-20 08:00-09:45, instructeur `I1`, lieu `L9` (35 ≤ 60, RG-40 respectée) ; contrôles `E1`/`E5` insérés le jeudi 2026-10-22 08:00 (séances verrouillées) |
 | W0 — 2026-10-26 | affiché | Avenants posés lundi 2026-10-26 06:00 (horloge simulée) sur la séance M6 d'`EXP1` (pk séance = 95) — voir § Avenants ci-dessous |
 | W+1 — 2026-11-02 | brouillon | Une seule séance : le contrôle `E2` (M2, `EXP2`), verrouillée le mercredi 2026-11-04 08:00-09:45 |
