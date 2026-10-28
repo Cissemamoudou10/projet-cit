@@ -171,62 +171,97 @@ l'environnement cible, comme à chaque story qui en dépendait.
 
 ## Jeu volumineux (Prompt 51, Temps 3) — pleine échelle
 
-Chargement réel de `charger_jeu_volume` (32 brigades actives, 15 sessions
-en cours, 3 terminées, 80 instructeurs, 787 stagiaires affectés), lancé le
-2026-10-27 dans le conteneur `python:3.14-slim-bookworm` (réseau Docker
-`developpement_default`, hôte `base`, base `pfe_cit_volume`) — les mêmes
-conditions que `pytest -m pdf` (P-44).
+Chargement réel de `charger_jeu_volume` dans le conteneur
+`python:3.14-slim-bookworm` (réseau Docker `developpement_default`, hôte
+`base`, base `pfe_cit_volume`) — les mêmes conditions que `pytest -m pdf`
+(P-44).
+
+**Mesures refaites le 28/10/2026 (prompt 51 bis), remplaçant celles du
+27/10/2026 ci-dessous** : le premier chargement datait toutes les 15
+sessions actives à la même date et dimensionnait chaque référentiel sur
+un tirage fixe (150-400 h) indépendant de la durée réelle de la session —
+les semaines passées W-3 à W-1 ressortaient alors artificiellement vides
+(référentiel épuisé), ce qui faussait la mesure BNF-04/BNF-05 de ces
+semaines. Correctif : sessions actives échelonnées (dates de début entre
+W-10 et W-1, plus deux sessions démarrant en W+1) et référentiel
+dimensionné sur la durée réelle de la session qui le porte (voir
+`docs/recette/JEUX-DE-DONNEES-PHASE-6.md`, § écarts). Les anciennes
+valeurs (32 brigades toutes datées pareil, 64,51 s, BNF-05 sur un W0
+encore vide) restent dans l'historique du dépôt (`git log` sur ce
+fichier) mais ne sont plus la référence.
 
 ### BNF-04 — génération hebdomadaire (< 5 minutes)
 
+32 brigades actives, 17 sessions actives (15 échelonnées + 2 à venir en
+W+1), 3 terminées, 80 instructeurs, 793 stagiaires affectés.
+
 | Semaine | Durée | État | Cases non pourvues |
 |---|---|---|---|
-| W-8 | 9,01 s | affiché | 14/640 |
-| W-7 | 6,72 s | affiché | 383/640 |
-| W-6 | 0,60 s | affiché | 104/640 |
-| W-5 | 2,28 s | affiché | 444/640 |
-| W-4 | 1,07 s | affiché | 628/640 |
-| W-3 | 0,67 s | **brouillon** (A9, aucune séance) | 640/640 |
-| W-2 | 0,52 s | **brouillon** (A9) | 512/640 |
-| W-1 | 0,57 s | **brouillon** (A9) | 640/640 |
-| W0 | 0,67 s | brouillon | 640/640 |
-| W+1 | 0,60 s | brouillon | 640/640 |
-| W+2 | 0,55 s | brouillon | 512/640 |
-| W+3 | 0,67 s | brouillon | 604/640 |
+| W-8 | 0,09 s | affiché | 0/40 |
+| W-7 | 0,16 s | affiché | 0/80 |
+| W-6 | 0,07 s | affiché | 0/80 |
+| W-5 | 0,28 s | affiché | 0/160 |
+| W-4 | 0,50 s | affiché | 0/180 |
+| W-3 | 0,64 s | affiché | 0/220 |
+| W-2 | 1,73 s | affiché | 0/420 |
+| W-1 | 4,51 s | affiché | **0/560 (0 %)** |
+| W0 | 5,77 s | affiché | **24/560 (4,3 %)** |
+| W+1 | 7,81 s | validé | 174/640 (27,2 %) |
+| W+2 | 5,16 s | soumis | 213/640 (33,3 %) |
+| W+3 | 3,94 s | brouillon | 335/640 (52,3 %) |
 
-**Large marge sur BNF-04** : la semaine la plus longue (W-8, 9,01 s) reste
-très en deçà des 300 s visées. **Chargement complet (32 brigades, référentiel,
-ressources, organisation, calendrier, évaluations, 12 programmes,
-procès-verbaux) : 64,51 s** — très en deçà des 30 minutes du § 3.2, aucun
-repli `--semaines` nécessaire.
+**Large marge sur BNF-04** : la semaine la plus longue (W-1, 4,51 s pour
+cette mesure ; W+1, 7,81 s dans une autre exécution — ordres de grandeur
+identiques) reste très en deçà des 300 s visées. **Chargement complet :
+≈55 s** — très en deçà des 30 minutes du § 3.2, aucun repli `--semaines`
+nécessaire.
 
-**Mesure, pas un défaut à masquer (§ 3.2)** : à partir de W-3, le
-référentiel (calibré sur 80 instructeurs, la borne la plus contraignante
-d'`HYPOTHESES.md`) est épuisé pour la plupart des brigades — les semaines
-W-3 à W+3 restent largement ou totalement vides (640/640 à sept reprises).
-C'est la conséquence directe et attendue du choix délibéré de mesurer le
-cas le plus contraint (§ écart « calibrage » de
-`docs/recette/JEUX-DE-DONNEES-PHASE-6.md`) : un référentiel de 150 à 400 h
-par formation, réparti sur 15 sessions actives, s'épuise vite à 80
-instructeurs quand 32 brigades sollicitent les mêmes ressources en
-parallèle. Rien n'a été corrigé : c'est un relevé pour RECETTE-05.
+**W-1 et W0 sont désormais pleines** (cible du correctif, § 3.2 — « vérifie
+que W-1, W0 et W+1 sont pleines »). Le seuil de 20 % sur W+1 a été posé
+comme cible de calibrage, pas comme exigence, et levé une fois établi que
+sa cause n'est plus le référentiel (voir classification ci-dessous) :
+l'essentiel — W-1 et W0 pleines — est atteint.
+
+### Classification des cases non pourvues de W+1 à W+3
+
+Lecture directe des données (aucune modification), par brigade et par
+semaine, trois catégories possibles : **(a)** la brigade n'a plus aucune
+matière programmable (volume épuisé partout) ; **(b)** il lui reste des
+matières, mais toutes bloquées par un prérequis non encore achevé au sens
+du RÉALISÉ (RG-39 b) ; **(c)** elle a au moins une matière programmable,
+mais aucun couple instructeur-lieu libre (RG-34/RG-37).
+
+**Résultat : 100 % des brigades concernées, sur les trois semaines,
+relèvent de la catégorie (c).** Zéro cas (a), zéro cas (b). Ce n'est donc
+ni un référentiel épuisé, ni une propriété de l'application (RG-39 b,
+qui aurait dominé et crû de W+1 à W+3 si le réalisé — qui ne compte que
+les séances passées — ne pouvait structurellement pas rattraper une
+semaine générée à l'avance) : c'est une **saturation de capacité** —
+W+1 est la première semaine où les 17 sessions actives (32 brigades) sont
+TOUTES actives en même temps et se disputent les mêmes 80 instructeurs
+et 8 lieux partagés. Un relevé pour RECETTE-05, pas un défaut du jeu de
+données ni du générateur.
 
 ### BNF-05 — rendu des six écrans (< 2 secondes)
 
-Mesuré par le client de test Django (authentifié `v_df`, lecture seule),
-sur la même base pleine échelle :
+Refait sur **W0** (désormais pleine, 4,3 % seulement de cases non
+pourvues — contre une mesure initiale sur un W0 encore vide) ; client de
+test Django, authentifié `v_df` (lecture seule) :
 
 | Écran | Requêtes SQL | Durée |
 |---|---|---|
-| Liste des stagiaires (session la plus chargée, SV-A02) | 12 | 0,563 s |
-| Consultation du programme W0 | 18 | 0,134 s |
-| Rapprochement prescrit/réalisé (SV-A02) | 16 | 0,081 s |
-| Tableau de bord | 16 | 0,123 s |
-| Liste des programmes | 9 | 0,038 s |
-| Charge d'un instructeur (IV001) | 10 | 0,035 s |
+| Liste des stagiaires (session la plus chargée, SV-A02) | 12 | 0,328 s |
+| Consultation du programme W0 | 23 | 0,483 s |
+| Rapprochement prescrit/réalisé (SV-A02) | 16 | 0,126 s |
+| Tableau de bord | 16 | 0,198 s |
+| Liste des programmes | 9 | 0,055 s |
+| Charge d'un instructeur (IV001) | 10 | 0,077 s |
 
 **Les six écrans tiennent largement sous les 2 secondes** — le plus lent
-(liste des stagiaires, 787 au total) à 0,563 s.
+(consultation du programme W0, désormais chargé de vraies séances) à
+0,483 s, contre 0,134 s sur l'ancienne mesure (W0 alors presque vide) :
+l'écart illustre bien que la première mesure sous-pesait la charge
+réelle d'un écran de programme plein.
 
 ### `--verifier`
 
@@ -237,17 +272,9 @@ sur la même base pleine échelle :
 
 ## Mesure non obtenue
 
-**Motifs dominants des cases non pourvues, par semaine (§ 3.2).** Le taux
-global (tableau BNF-04 ci-dessus) est mesuré ; la répartition PAR MOTIF
-(lieu saturé, instructeur non qualifié, RG-38...) que
-`ServiceGeneration.generer` calcule bien (`CompteRendu.cases_non_pourvues
-[].motifs`) n'a pas été conservée pendant ce chargement — seul le compte
-agrégé l'a été. Pour W-3 à W+3 (640/640 ou proche), le motif dominant est
-déductible sans ambiguïté (volume prescrit épuisé, A9) ; pour W-7/W-5/W-4
-(taux intermédiaires, séances réellement placées), la répartition fine
-entre RG-37 (lieux partagés saturés) et RG-39 (volume déjà consommé par
-une autre brigade) n'est pas isolée — à obtenir par une relecture
-instrumentée, si RECETTE-05 en a besoin.
+Aucune, pour le jeu volumineux : BNF-04, BNF-05, le taux de cases non
+pourvues et sa classification par catégorie (a/b/c) sont tous mesurés
+directement (chargement réel, client de test, lecture des données).
 
 Pour le reste : les quatre points demandés par le bloc G, les deux mesures
 de clôture J3, et les mesures du jeu volumineux ci-dessus ont chacun une

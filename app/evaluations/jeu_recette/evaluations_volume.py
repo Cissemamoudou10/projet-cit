@@ -19,7 +19,7 @@ from evaluations.jeu_recette.donnees_volume import (
     NOMBRE_CERTIFICATIVES_A_VENIR,
     NOMBRE_SESSIONS_TERMINEES_AVEC_PV,
 )
-from evaluations.jeu_recette.semaines import jour_de_semaine
+from evaluations.jeu_recette.semaines import jour_de_semaine, semaine
 from organisation.selectors import stagiaires_actifs_des_brigades
 
 MOTIF_DATE_PASSEE = "Contrôle déclaré après coup (jeu volumineux, § 3.1)."
@@ -83,10 +83,25 @@ def _regrouper_par_formation(elements):
     return elements_par_formation
 
 
+def _decalage_formative(contexte, indice, brigade):
+    """Dates échelonnées des sessions (correctif du 27/10/2026) : une
+    brigade ne peut avoir de formative que sur une semaine où sa session
+    était déjà active — jamais uniformément sur les huit dernières
+    semaines, à la différence d'avant ce correctif. Rend `None` si la
+    session n'a pas encore commencé au début de W-1 (les deux sessions à
+    venir, notamment)."""
+    lundi_w0 = semaine(contexte.date_reference, 0)
+    semaines_ecoulees = (lundi_w0 - brigade.session.date_debut).days // 7
+    if semaines_ecoulees <= 0:
+        return None
+    bornes = min(8, semaines_ecoulees)
+    return -1 - (indice % bornes)
+
+
 def charger_formatives_actives_volume(contexte: ContexteEvaluationsVolume, brigades_actives, elements):
-    """Une formative par brigade active (§ 3.1), répartie sur les huit
-    semaines passées, notes complètes — jamais de séance (voir docstring
-    du module)."""
+    """Une formative par brigade active (§ 3.1) dont la session a déjà
+    commencé, notes complètes — jamais de séance (voir docstring du
+    module)."""
     elements_par_formation = _regrouper_par_formation(elements)
     total_notes = 0
     total_evaluations = 0
@@ -95,13 +110,15 @@ def charger_formatives_actives_volume(contexte: ContexteEvaluationsVolume, briga
         elements_formation = elements_par_formation.get(brigade.session.formation_id)
         if not elements_formation:
             continue
+        decalage = _decalage_formative(contexte, indice, brigade)
+        if decalage is None:
+            continue
         element = elements_formation[indice % len(elements_formation)]
-        decalage = -1 - (indice % 8)
         evaluation = _creer_une_formative(contexte, brigade, element, decalage)
         total_notes += _noter_completement(contexte, evaluation)
         total_evaluations += 1
     contexte.stdout.write(
-        f"  {total_evaluations} évaluations formatives créées (une par brigade active), "
+        f"  {total_evaluations} évaluations formatives créées (une par brigade active ayant déjà démarré), "
         f"{total_notes} notes enregistrées."
     )
 

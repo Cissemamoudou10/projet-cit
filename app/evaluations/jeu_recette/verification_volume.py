@@ -12,6 +12,7 @@ réimplémentation des règles elles-mêmes — jamais dupliquées ailleurs
 (`.claude/rules/services.md`, « duplication »)."""
 
 from django.db.models import Count
+from django.utils import timezone
 
 from evaluations.jeu_recette.donnees_volume import (
     NOMBRE_BRIGADES_ACTIVES,
@@ -21,6 +22,7 @@ from evaluations.jeu_recette.donnees_volume import (
     NOMBRE_INSTRUCTEURS,
     NOMBRE_MATIERES_CATALOGUE,
     NOMBRE_SALLES_ATTITREES,
+    NOMBRE_SESSIONS_A_VENIR,
     NOMBRE_SESSIONS_ACTIVES,
     NOMBRE_SESSIONS_TERMINEES,
     NOMBRE_SESSIONS_TERMINEES_AVEC_PV,
@@ -58,8 +60,9 @@ def _verifier_volumes_cibles():
     )
     lignes += _ligne(Lieu.objects.count() >= NOMBRE_SALLES_ATTITREES, f"{NOMBRE_SALLES_ATTITREES} salles attitrées")
     lignes += _ligne(
-        Session.objects.count() == NOMBRE_SESSIONS_ACTIVES + NOMBRE_SESSIONS_TERMINEES,
-        f"{NOMBRE_SESSIONS_ACTIVES} sessions actives + {NOMBRE_SESSIONS_TERMINEES} terminées",
+        Session.objects.count() == NOMBRE_SESSIONS_ACTIVES + NOMBRE_SESSIONS_A_VENIR + NOMBRE_SESSIONS_TERMINEES,
+        f"{NOMBRE_SESSIONS_ACTIVES} sessions actives échelonnées + {NOMBRE_SESSIONS_A_VENIR} à venir "
+        f"+ {NOMBRE_SESSIONS_TERMINEES} terminées",
     )
     lignes += _ligne(
         Brigade.objects.filter(session__intitule__startswith="SV-A").count() == NOMBRE_BRIGADES_ACTIVES,
@@ -87,11 +90,19 @@ def _verifier_programmes_volume():
 
 
 def _verifier_evaluations_volume():
+    """`brigades_demarrees` : une brigade dont la session démarre en W+1
+    (correctif du 27/10/2026) n'a droit à aucune formative encore — seule
+    une comparaison à `aujourd'hui`, pas à `NOMBRE_BRIGADES_ACTIVES`, est
+    juste (même réserve que `_verifier_programmes_complet` : valide si
+    `--verifier` tourne le jour même du chargement)."""
     lignes = []
+    brigades_demarrees = Brigade.objects.filter(
+        session__intitule__startswith="SV-A", session__date_debut__lte=timezone.localdate()
+    ).count()
     lignes += _ligne(
         Evaluation.objects.filter(type=TypeEvaluation.FORMATIVE, brigade__session__intitule__startswith="SV-A").count()
-        == NOMBRE_BRIGADES_ACTIVES,
-        "Une formative par brigade active",
+        == brigades_demarrees,
+        f"Une formative par brigade active déjà démarrée ({brigades_demarrees})",
     )
     lignes += _ligne(
         Evaluation.objects.filter(type=TypeEvaluation.CERTIFICATIVE, session__isnull=False).count()

@@ -13,17 +13,22 @@ from django.core.management import call_command
 from evaluations.jeu_recette.alea import nouveau_generateur
 from evaluations.jeu_recette.calendrier_volume import charger_calendrier_volume
 from evaluations.jeu_recette.comptes_volume import charger_comptes_volume
+from evaluations.jeu_recette.donnees_volume import codes_formations_ouvrables
 from evaluations.jeu_recette.organisation_volume import (
     AgissantsOrganisationVolume,
     charger_brigades_volume,
-    charger_sessions_volume,
+    charger_sessions_actives_volume,
+    charger_sessions_terminees_volume,
     charger_stagiaires_volume,
+    planifier_sessions_actives,
+    volumes_cibles_par_formation,
 )
 from evaluations.jeu_recette.referentiel_volume import (
     charger_composition_volume,
     charger_formations_volume,
     charger_matieres_volume,
     charger_types_formation_volume,
+    combiner_formations_et_cibles,
 )
 from evaluations.jeu_recette.ressources_volume import (
     charger_indisponibilites_volume,
@@ -51,10 +56,14 @@ def _construire_organisation_volume():
     date_reference = datetime.date(2026, 10, 27)
     stdout = io.StringIO()
 
+    plans_sessions_actives = planifier_sessions_actives(generateur, date_reference, codes_formations_ouvrables())
+
     types = charger_types_formation_volume(ped, stdout)
     matieres = charger_matieres_volume(ped, generateur, stdout)
     formations = charger_formations_volume(ped, generateur, types, stdout)
-    elements = charger_composition_volume(ped, generateur, formations, matieres, stdout)
+    volumes_cibles = volumes_cibles_par_formation(plans_sessions_actives)
+    formations_avec_cible = combiner_formations_et_cibles(formations, volumes_cibles)
+    elements = charger_composition_volume(ped, generateur, formations_avec_cible, matieres, stdout)
 
     instructeurs = charger_instructeurs_volume(ped, generateur, stdout)
     charger_qualifications_volume(ped, generateur, instructeurs, matieres, stdout)
@@ -62,9 +71,10 @@ def _construire_organisation_volume():
     lieux = charger_lieux_volume(plan, generateur, stdout)
     charger_indisponibilites_volume(plan, generateur, instructeurs, date_reference, stdout)
 
-    groupe_sessions_actives, groupe_sessions_terminees = charger_sessions_volume(
-        ped, generateur, formations, date_reference, stdout
+    groupe_sessions_actives = charger_sessions_actives_volume(
+        ped, generateur, plans_sessions_actives, formations, stdout
     )
+    groupe_sessions_terminees = charger_sessions_terminees_volume(ped, generateur, formations, date_reference, stdout)
     groupe_brigades = charger_brigades_volume(agissants, groupe_sessions_actives, groupe_sessions_terminees, lieux, stdout)
     charger_stagiaires_volume(ped, generateur, groupe_sessions_actives.sessions, groupe_brigades, stdout)
     charger_calendrier_volume(plan, generateur, date_reference, groupe_brigades.actives, stdout)
@@ -85,7 +95,7 @@ def test_referentiel_ressources_organisation_calendrier_volume():
     assert Formation.objects.filter(archive=True).count() == 1
     assert Instructeur.objects.count() == 80
     assert Lieu.objects.filter(categorie=CategorieLieu.SALLE_ATTITREE).count() == 36
-    assert Session.objects.count() == 18
+    assert Session.objects.count() == 20  # 15 échelonnées + 2 à venir + 3 terminées
     assert len(groupe_brigades.actives) == 32
     assert Brigade.objects.count() >= 32 + 6
     assert Stagiaire.objects.filter(radie=True).count() == 20
@@ -114,8 +124,14 @@ def test_evaluations_volume():
     charger_formatives_terminees_volume(contexte, groupe_brigades.terminees, elements)
     charger_certificatives_a_venir_volume(contexte, sessions_actives)
 
+    # Une brigade dont la session démarre en W+1 (correctif du 27/10/2026,
+    # les deux sessions « à venir ») n'a droit à aucune formative encore :
+    # le compte attendu est celui des brigades DÉJÀ démarrées, pas 32.
+    brigades_demarrees = [
+        b for b in groupe_brigades.actives.values() if b.session.date_debut <= date_reference
+    ]
     assert Evaluation.objects.filter(brigade__in=groupe_brigades.actives.values()).count() == len(
-        groupe_brigades.actives
+        brigades_demarrees
     )
     assert Evaluation.objects.filter(session__in=sessions_actives.values()).count() == 5
 
@@ -157,7 +173,13 @@ def test_programmes_volume_sous_ensemble_reduit():
         sessions_actives, sessions_terminees, elements, stdout,
     ) = _construire_organisation_volume()
     agissants = AgissantsProgrammeVolume(plan, ped)
-    sous_ensemble = dict(list(groupe_brigades.actives.items())[:3])
+    # Trois brigades dont la session a déjà démarré (dates échelonnées,
+    # correctif du 27/10/2026) — sinon les semaines passées les plus
+    # anciennes n'auraient aucune brigade éligible (`_brigades_eligibles`).
+    brigades_demarrees = {
+        code: b for code, b in groupe_brigades.actives.items() if b.session.date_debut <= date_reference
+    }
+    sous_ensemble = dict(list(brigades_demarrees.items())[:3])
     options = OptionsProgrammesVolume(sous_ensemble, date_reference)
     mesures = charger_programmes_volume(agissants, generateur, options, stdout)
     assert len(mesures) == 12

@@ -18,7 +18,7 @@ from django.core.management import call_command
 
 from evaluations.jeu_recette.calendrier_volume import charger_calendrier_volume
 from evaluations.jeu_recette.comptes_volume import charger_comptes_volume
-from evaluations.jeu_recette.donnees_volume import SEMAINES_PASSEES_AFFICHEES
+from evaluations.jeu_recette.donnees_volume import SEMAINES_PASSEES_AFFICHEES, codes_formations_ouvrables
 from evaluations.jeu_recette.evaluations_volume import (
     ContexteEvaluationsVolume,
     charger_certificatives_a_venir_volume,
@@ -29,8 +29,11 @@ from evaluations.jeu_recette.evaluations_volume import (
 from evaluations.jeu_recette.organisation_volume import (
     AgissantsOrganisationVolume,
     charger_brigades_volume,
-    charger_sessions_volume,
+    charger_sessions_actives_volume,
+    charger_sessions_terminees_volume,
     charger_stagiaires_volume,
+    planifier_sessions_actives,
+    volumes_cibles_par_formation,
 )
 from evaluations.jeu_recette.programme_volume import (
     AgissantsProgrammeVolume,
@@ -42,6 +45,7 @@ from evaluations.jeu_recette.referentiel_volume import (
     charger_formations_volume,
     charger_matieres_volume,
     charger_types_formation_volume,
+    combiner_formations_et_cibles,
 )
 from evaluations.jeu_recette.ressources_volume import (
     charger_indisponibilites_volume,
@@ -71,12 +75,14 @@ class _BootstrapVolume:
         return self.comptes["v_exa"]
 
 
-def _charger_referentiel(bootstrap):
+def _charger_referentiel(bootstrap, plans_sessions_actives):
     agissant_ped, stdout = bootstrap.agissant_ped, bootstrap.stdout
     types = charger_types_formation_volume(agissant_ped, stdout)
     matieres = charger_matieres_volume(agissant_ped, bootstrap.generateur, stdout)
     formations = charger_formations_volume(agissant_ped, bootstrap.generateur, types, stdout)
-    elements = charger_composition_volume(agissant_ped, bootstrap.generateur, formations, matieres, stdout)
+    volumes_cibles = volumes_cibles_par_formation(plans_sessions_actives)
+    formations_avec_cible = combiner_formations_et_cibles(formations, volumes_cibles)
+    elements = charger_composition_volume(agissant_ped, bootstrap.generateur, formations_avec_cible, matieres, stdout)
     return {"types": types, "matieres": matieres, "formations": formations, "elements": elements}
 
 
@@ -89,10 +95,13 @@ def _charger_ressources(bootstrap, referentiel):
     return {"instructeurs": instructeurs, "lieux": lieux}
 
 
-def _charger_organisation(bootstrap, referentiel, ressources):
+def _charger_organisation(bootstrap, referentiel, ressources, plans_sessions_actives):
     agissants = AgissantsOrganisationVolume(bootstrap.agissant_ped, bootstrap.agissant_plan)
     stdout = bootstrap.stdout
-    groupe_sessions_actives, groupe_sessions_terminees = charger_sessions_volume(
+    groupe_sessions_actives = charger_sessions_actives_volume(
+        bootstrap.agissant_ped, bootstrap.generateur, plans_sessions_actives, referentiel["formations"], stdout
+    )
+    groupe_sessions_terminees = charger_sessions_terminees_volume(
         bootstrap.agissant_ped, bootstrap.generateur, referentiel["formations"], bootstrap.date_reference, stdout
     )
     groupe_brigades = charger_brigades_volume(
@@ -164,9 +173,15 @@ def charger_etat_volume(generateur, date_reference, stdout, semaines_passees=SEM
     # que celui documenté dans `reinitialiser_base_recette.ps1`.
     call_command("initialiser_grilles_horaires")
 
-    referentiel = _charger_referentiel(bootstrap)
+    # Décidé avant même le référentiel (correctif du 27/10/2026) : chaque
+    # formation a besoin de connaître la durée de la session la plus
+    # longue qui la portera pour dimensionner son volume horaire — avant
+    # qu'aucune session, ni même aucune formation, n'existe en base.
+    plans_sessions_actives = planifier_sessions_actives(generateur, date_reference, codes_formations_ouvrables())
+
+    referentiel = _charger_referentiel(bootstrap, plans_sessions_actives)
     ressources = _charger_ressources(bootstrap, referentiel)
-    organisation = _charger_organisation(bootstrap, referentiel, ressources)
+    organisation = _charger_organisation(bootstrap, referentiel, ressources, plans_sessions_actives)
     _charger_evaluations_terminees(bootstrap, referentiel, organisation)
     mesures = _charger_programmes(bootstrap, organisation, semaines_passees)
     _charger_evaluations_actives(bootstrap, referentiel, organisation)

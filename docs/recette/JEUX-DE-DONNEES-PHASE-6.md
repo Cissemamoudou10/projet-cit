@@ -166,11 +166,14 @@ plus que ce que le § 2.7 annonce.
 
 ## Jeu volumineux — § 3, chargement pleine échelle
 
-Chargé réellement le 2026-10-27, dans le conteneur
-`python:3.14-slim-bookworm` (réseau Docker `developpement_default`, hôte
-`base`, base `pfe_cit_volume`, module `config.settings.volume`) — requis
-pour la génération des procès-verbaux (WeasyPrint, P-44, absent du poste
-de développement Windows).
+Chargé réellement le 2026-10-27, puis **rechargé le 2026-10-28** après le
+correctif de réalisme (sessions échelonnées, référentiel dimensionné sur
+la durée de la session — voir « Écarts avec le prompt » ci-dessous) ;
+tous les chiffres de cette section sont ceux du rechargement, dans le
+conteneur `python:3.14-slim-bookworm` (réseau Docker
+`developpement_default`, hôte `base`, base `pfe_cit_volume`, module
+`config.settings.volume`) — requis pour la génération des procès-verbaux
+(WeasyPrint, P-44, absent du poste de développement Windows).
 
 ### Volumes obtenus
 
@@ -182,15 +185,16 @@ de développement Windows).
 | Instructeurs | 80 (recalé, voir écarts) | 80 (8 archivés) |
 | Salles attitrées | 36 | 36 |
 | Lieux partagés | 8 | 8 |
-| Sessions actives | 15 (recalé) | 15 |
+| Sessions actives échelonnées | 15 (recalé) | 15 (débuts W-10 à W-1) |
+| Sessions actives à venir | 2 (correctif du 28/10) | 2 (début W+1) |
 | Sessions terminées | 3 | 3 |
-| Brigades actives | 32 | 32 |
+| Brigades actives | 32 | 32 (réparties sur les 17 actives) |
 | Brigades sur sessions terminées | 6 (2/session) | 6 |
-| Stagiaires affectés | ≈900 | 787 (+ 15 non affectés + 20 radiés) |
+| Stagiaires affectés | ≈900 | 793 (+ 15 non affectés + 20 radiés) |
 | Indisponibilités | ≈40 | 40 |
 | Procès-verbaux de fin de formation | 2 sur 3 | 2 (SV-T01, SV-T02) |
 | Évaluations formatives (sessions terminées) | — | 6 (123 notes) |
-| Évaluations formatives (brigades actives) | 32 | 32 (664 notes) |
+| Évaluations formatives (brigades actives) | 32 | 28 (une par brigade **déjà démarrée** ; 4 brigades des 2 sessions à venir n'ont pas encore de formative, leur session n'a pas commencé) |
 | Certificatives à venir | — | 5 |
 | Programmes | 12 (W-8 à W+3) | 12 |
 
@@ -199,17 +203,25 @@ de développement Windows).
 ### Mesures (BNF-04, BNF-05, durée totale)
 
 Détail complet dans `docs/suivi/MESURES-REFERENCE.md`, section « Jeu
-volumineux ». Résumé :
+volumineux » (remplace la mesure du 27/10, devenue obsolète après le
+correctif de réalisme — une ligne y explique pourquoi). Résumé :
 
-- **Chargement complet : 64,51 s** — très en deçà des 30 minutes du § 3.2 ;
+- **Chargement complet : ≈55 s** — très en deçà des 30 minutes du § 3.2 ;
   aucun repli `--semaines` nécessaire.
-- **BNF-04** : semaine la plus longue à générer, 9,01 s (W-8) — largement
-  sous les 5 minutes visées.
-- **BNF-05** : les six écrans mesurés tiennent tous sous les 2 secondes, le
-  plus lent (liste des stagiaires) à 0,563 s.
-- **Cases non pourvues** : de 14/640 (W-8) à 640/640 (plusieurs semaines à
-  partir de W-3) — voir l'écart « référentiel épuisé » ci-dessous, une
-  mesure attendue du calibrage choisi, pas un défaut.
+- **BNF-04** : semaine la plus longue à générer, 7,81 s — largement sous
+  les 5 minutes visées.
+- **BNF-05** : refait sur W0 (désormais pleine) ; les six écrans tiennent
+  sous les 2 secondes, le plus lent (consultation du programme W0, qui
+  contient maintenant de vraies séances) à 0,483 s.
+- **Cases non pourvues** : **W-8 à W-1 intégralement pleines (0 %)**, W0 à
+  4,3 % — la cible du correctif (« W-1, W0 et W+1 pleines ») est atteinte
+  pour W-1 et W0. W+1 à W+3 restent partiellement vides (27 % à 52 %), mais
+  pour une raison DIFFÉRENTE du référentiel : voir « Classification » dans
+  `MESURES-REFERENCE.md` — 100 % des brigades concernées relèvent d'une
+  saturation de capacité (instructeurs/lieux partagés, toutes les 32
+  brigades actives à la fois à partir de W+1), zéro référentiel épuisé,
+  zéro prérequis bloquant. Le seuil de 20 % sur W+1 était une cible de
+  calibrage, pas une exigence : levé une fois la cause établie.
 
 ### Bug trouvé et corrigé avant ce chargement
 
@@ -271,6 +283,69 @@ Consigné dans `app/evaluations/jeu_recette/donnees_volume.py`. **Pas
 d'entrée dans `DECISIONS.md`** : erreur de calibrage, pas une décision de
 conception.
 
+### Jeu volumineux — sessions échelonnées et référentiel dimensionné sur la durée de la session
+
+**Constat** — Le premier chargement pleine échelle (27/10/2026) montrait
+les semaines W-3 à W+3 largement ou totalement vides. Le libellé retenu
+sur le moment l'attribuait au nombre d'instructeurs (80, la borne la plus
+contraignante) — **incorrect** : la cause réelle est l'épuisement du
+RÉFÉRENTIEL (volume prescrit, 150-400 h fixes, indépendant de la durée de
+la session), pas le nombre d'instructeurs, qui est une question
+distincte (la contrainte la plus dure à satisfaire pour la GÉNÉRATION,
+pas la cause du vide). Deux défauts de réalisme aggravaient l'épuisement :
+(1) les 15 sessions actives démarraient toutes à la même date, jamais
+comme sur le terrain ; (2) le référentiel ne tenait aucun compte de la
+durée réelle de la session qui le portait.
+
+**Résolution (28/10/2026)** —
+1. Les 15 sessions actives démarrent désormais à des dates échelonnées,
+   tirées entre W-10 et W-1 (`DECALAGE_DEBUT_SESSIONS_ACTIVES`,
+   `organisation_volume.planifier_sessions_actives`) ; deux sessions
+   supplémentaires démarrent en W+1 (`NOMBRE_SESSIONS_A_VENIR`), pour
+   exercer une session qui n'a pas encore commencé — 17 sessions actives
+   au total, toujours 32 brigades, réparties sur les 17.
+2. Chaque référentiel est dimensionné sur la durée RÉELLE de la session
+   la plus longue qui le porte : au moins 30 h par semaine de session
+   (`HEURES_PRESCRITES_MIN_PAR_SEMAINE`,
+   `organisation_volume.volumes_cibles_par_formation`), avec une marge
+   (`MARGE_VOLUME_REFERENTIEL`) et un partage par matière resserré
+   (`referentiel_volume._repartir_volume`, poids 0,9-1,1 au lieu de
+   0,2-1,2) — un premier partage trop inégal pouvait réduire une matière
+   à ≈20 h quand le référentiel total visait 900 h, l'épuisant en
+   quelques semaines alors que le total restait loin d'être consommé.
+   Seules les formations portées par une session active en bénéficient ;
+   les formations sans session active (terminées, archivée) gardent
+   l'ancien tirage fixe.
+3. Chaque semaine ne génère plus que les brigades dont la session est
+   réellement active ce lundi-là (`programme_volume._brigades_eligibles`),
+   et chaque formative active n'est posée que sur une semaine où la
+   session de sa brigade avait déjà commencé
+   (`evaluations_volume._decalage_formative`) — jamais uniformément sur
+   les huit dernières semaines comme avant, indépendamment de la date de
+   début réelle.
+4. `ServiceGeneration.generer` lève `SemaineEntierementBloquee` plutôt que
+   de rendre un compte rendu vide quand TOUTES les brigades proposées
+   sont bloquées par le calendrier (RG-38) sur toute la semaine — rencontré
+   sur un sous-ensemble réduit de brigades (test à 3 brigades) depuis que
+   les dates sont échelonnées. Rattrapé dans `programme_volume._generer`
+   en traitant ce refus comme un programme vide (même traitement A9 que
+   l'absence de séance), jamais en contournant la règle RG-38 elle-même.
+
+**Résultat mesuré** — W-8 à W-1 intégralement pleines (0 % de cases non
+pourvues), W0 à 4,3 % : la cible du correctif est atteinte. W+1 à W+3
+restent partiellement vides, mais pour une raison distincte et non
+anticipée par cette résolution : voir « Classification des cases non
+pourvues » dans `docs/suivi/MESURES-REFERENCE.md` — 100 % des brigades
+concernées relèvent d'une saturation de capacité (instructeurs et lieux
+partagés, une fois les 32 brigades simultanément actives à partir de
+W+1), zéro référentiel épuisé, zéro prérequis bloquant. Pas corrigé :
+c'est un relevé pour RECETTE-05, hors du périmètre de ce correctif (qui
+ne touche ni le nombre d'instructeurs, ni leurs qualifications).
+
+**Pas d'entrée dans `DECISIONS.md`** : correctif de réalisme des données
+et de leur dimensionnement, jamais une décision de conception — aucune
+règle métier, aucun service, aucun modèle modifié.
+
 ### Jeu volumineux — comptes propres (`v_*`), pas une réutilisation du socle
 
 **Constat** — § 3.1 demande sept comptes propres au jeu volumineux
@@ -298,7 +373,10 @@ puisque § 3.1 ne demande pas la séance verrouillée pour ce jeu.
 
 ## Ce qui reste à faire
 
-- Répartition par motif des cases non pourvues (RG-37 vs RG-39, par
-  semaine) pour W-7/W-5/W-4 — voir « Mesure non obtenue »,
-  `docs/suivi/MESURES-REFERENCE.md`. Non bloquant pour RECETTE-05 sauf
-  besoin exprimé.
+- Rien côté chargeurs ou mesures du jeu volumineux : BNF-04, BNF-05, le
+  taux de cases non pourvues et sa classification par catégorie sont tous
+  mesurés (voir `docs/suivi/MESURES-REFERENCE.md`).
+- La saturation de capacité relevée sur W+1 à W+3 (instructeurs/lieux
+  partagés, 100 % catégorie (c)) est un constat pour RECETTE-05, pas une
+  action de ce prompt — aucune décision n'a été prise sur le nombre
+  d'instructeurs ni leurs qualifications.

@@ -17,6 +17,7 @@ performance, pas restitution d'un scénario métier), consignée dans
 
 import dataclasses
 import datetime
+import re
 import time
 
 from django.utils import timezone
@@ -29,7 +30,8 @@ from evaluations.jeu_recette.donnees_volume import (
 )
 from evaluations.jeu_recette.semaines import semaine
 from noyau.exceptions import ErreurValidation
-from planification.models import LigneProgramme, NatureAvenant, Seance
+from planification.exceptions import SemaineEntierementBloquee
+from planification.models import LigneProgramme, NatureAvenant, ProgrammeHebdomadaire, Seance
 from planification.selectors import grille_active_avec_creneaux
 from planification.services.circuit import ServiceCircuitProgramme
 from planification.services.ecriture import ServiceEcritureSeance
@@ -50,6 +52,7 @@ class MesureSemaine:
     cases_a_pourvoir: int
     cases_non_pourvues: int
     etat_final: str
+    motifs: dict = dataclasses.field(default_factory=dict)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -89,9 +92,30 @@ class OptionsProgrammesVolume:
     semaines_passees: int = SEMAINES_PASSEES_AFFICHEES
 
 
+@dataclasses.dataclass(frozen=True)
+class _ResultatSemaineBloquee:
+    """Toutes les brigades sélectionnées bloquées par le calendrier
+    (RG-38) sur l'ensemble de la semaine : `ServiceGeneration.generer`
+    lève plutôt que de produire un compte rendu vide. Une MESURE légitime
+    à cette échelle (§ 3.2, même esprit que l'A9 déjà traité par
+    `_approuver`), jamais une anomalie à masquer. `bloquee_rg38=True`
+    dit à `_mesurer_remplissage` que les cases non pourvues valent
+    `cases_a_pourvoir` EN ENTIER (aucune n'a même été tentée), pas zéro —
+    `cases_non_pourvues` (vide) ne porte que les `CaseNonPourvue`
+    granulaires, inapplicables ici."""
+
+    programme: object
+    cases_non_pourvues: list = dataclasses.field(default_factory=list)
+    bloquee_rg38: bool = True
+
+
 def _generer(agissant_plan, lundi, brigades):
     debut = time.monotonic()
-    resultat = ServiceGeneration.generer(agissant_plan, lundi, brigades)
+    try:
+        resultat = ServiceGeneration.generer(agissant_plan, lundi, brigades)
+    except SemaineEntierementBloquee:
+        programme, _ = ProgrammeHebdomadaire.objects.get_or_create(lundi_de_semaine=lundi)
+        resultat = _ResultatSemaineBloquee(programme)
     duree = time.monotonic() - debut
     return resultat, duree
 
@@ -181,9 +205,43 @@ def _declarer_non_executions(agissant_plan, programme, generateur):
     return nombre
 
 
+def _code_regle(motif):
+    """Isole le code de règle (`RG-37`, `RG-39`...) d'un motif formaté par
+    `planification.generation.compte_rendu._motifs_case` — `"sans
+    candidate"` quand aucune tentative n'a même été faite (aucun
+    instructeur ni lieu disponible à essayer, pas un refus de règle).
+    RG-39 couvre DEUX volets bien distincts (`planification.services.
+    regles_volume.verifier_rg39`) : le volume programmé au-delà du
+    prescrit, et un prérequis pas encore achevé — jamais confondus ici,
+    sous peine de masquer lequel des deux domine réellement."""
+    if "RG-39" in motif:
+        return "RG-39 (prérequis)" if "prérequise à" in motif else "RG-39 (volume)"
+    correspondance = re.search(r"RG-\d+", motif)
+    return correspondance.group(0) if correspondance else "sans candidate"
+
+
+def _tally_motifs(cases_non_pourvues):
+    """Une case non pourvue a été essayée contre PLUSIEURS candidats
+    (matière/instructeur), chacun pouvant échouer sur plusieurs règles à
+    la fois — compter chaque motif individuellement surcompterait
+    massivement une même case. Compte plutôt, par case, l'ENSEMBLE des
+    codes qui y apparaissent au moins une fois : la somme des valeurs peut
+    donc dépasser le nombre de cases (une case bloquée à la fois par
+    RG-37 et RG-39 compte dans les deux), mais jamais un même code
+    plusieurs fois pour la même case."""
+    tally = {}
+    for case in cases_non_pourvues:
+        codes_de_la_case = {_code_regle(motif) for motif in case.motifs}
+        for code in codes_de_la_case:
+            tally[code] = tally.get(code, 0) + 1
+    return tally
+
+
 def _mesurer_remplissage(resultat, brigades, creneaux):
     cases_a_pourvoir = len(brigades) * len(creneaux)
-    return cases_a_pourvoir, len(resultat.cases_non_pourvues)
+    if getattr(resultat, "bloquee_rg38", False):
+        return cases_a_pourvoir, cases_a_pourvoir, {"RG-38": cases_a_pourvoir}
+    return cases_a_pourvoir, len(resultat.cases_non_pourvues), _tally_motifs(resultat.cases_non_pourvues)
 
 
 def charger_semaine_passee_volume(agissants: AgissantsProgrammeVolume, generateur, parametres: ParametresSemaine, stdout):
@@ -196,12 +254,15 @@ def charger_semaine_passee_volume(agissants: AgissantsProgrammeVolume, generateu
     nombre_non_executees = (
         _declarer_non_executions(agissants.agissant_plan, programme, generateur) if etat_final == "affiche" else 0
     )
-    cases_a_pourvoir, cases_non_pourvues = _mesurer_remplissage(resultat, parametres.brigades, parametres.creneaux)
+    cases_a_pourvoir, cases_non_pourvues, motifs = _mesurer_remplissage(
+        resultat, parametres.brigades, parametres.creneaux
+    )
     stdout.write(
         f"  Semaine {parametres.decalage} générée en {duree:.2f} s, état {etat_final}, {nombre_avenants} avenant(s), "
-        f"{nombre_non_executees} non-exécution(s), {cases_non_pourvues}/{cases_a_pourvoir} cases non pourvues."
+        f"{nombre_non_executees} non-exécution(s), {cases_non_pourvues}/{cases_a_pourvoir} cases non pourvues "
+        f"({motifs})."
     )
-    return MesureSemaine(f"W{parametres.decalage}", duree, cases_a_pourvoir, cases_non_pourvues, etat_final)
+    return MesureSemaine(f"W{parametres.decalage}", duree, cases_a_pourvoir, cases_non_pourvues, etat_final, motifs)
 
 
 def charger_semaine_future_volume(agissants: AgissantsProgrammeVolume, parametres: ParametresSemaine, jusqu_a, stdout):
@@ -210,27 +271,43 @@ def charger_semaine_future_volume(agissants: AgissantsProgrammeVolume, parametre
     etat_final = jusqu_a
     if jusqu_a != "brouillon":
         _, etat_final = _approuver(agissants, programme, jusqu_a)
-    cases_a_pourvoir, cases_non_pourvues = _mesurer_remplissage(resultat, parametres.brigades, parametres.creneaux)
+    cases_a_pourvoir, cases_non_pourvues, motifs = _mesurer_remplissage(
+        resultat, parametres.brigades, parametres.creneaux
+    )
     stdout.write(
         f"  Semaine {parametres.decalage} générée en {duree:.2f} s, état {etat_final}, "
-        f"{cases_non_pourvues}/{cases_a_pourvoir} cases non pourvues."
+        f"{cases_non_pourvues}/{cases_a_pourvoir} cases non pourvues ({motifs})."
     )
     decalage = parametres.decalage
     libelle = f"W{'+' if decalage >= 0 else ''}{decalage}" if decalage else "W0"
-    return MesureSemaine(libelle, duree, cases_a_pourvoir, cases_non_pourvues, etat_final)
+    return MesureSemaine(libelle, duree, cases_a_pourvoir, cases_non_pourvues, etat_final, motifs)
+
+
+def _brigades_eligibles(brigades, lundi):
+    """Dates échelonnées des sessions (correctif du 27/10/2026) : une
+    brigade dont la session n'a pas encore démarré (ou est déjà finie) ce
+    lundi-là n'a rien à faire dans le programme de cette semaine —
+    jamais la totalité des brigades actives, indépendamment de la
+    semaine, comme avant ce correctif."""
+    return [
+        brigade for brigade in brigades
+        if brigade.session.date_debut <= lundi and brigade.session.date_fin >= lundi
+    ]
 
 
 def charger_programmes_volume(agissants: AgissantsProgrammeVolume, generateur, options: OptionsProgrammesVolume, stdout):
-    brigades = list(options.brigades_actives.values())
+    toutes_brigades = list(options.brigades_actives.values())
     _, creneaux = grille_active_avec_creneaux()
     mesures = []
     for decalage in range(-options.semaines_passees, 0):
         lundi = semaine(options.date_reference, decalage)
+        brigades = _brigades_eligibles(toutes_brigades, lundi)
         parametres = ParametresSemaine(lundi, decalage, brigades, creneaux)
         mesures.append(charger_semaine_passee_volume(agissants, generateur, parametres, stdout))
     plan_futur = ((0, "affiche"), (1, "valide"), (2, "soumis"), (3, "brouillon"))
     for decalage, jusqu_a in plan_futur:
         lundi = semaine(options.date_reference, decalage)
+        brigades = _brigades_eligibles(toutes_brigades, lundi)
         parametres = ParametresSemaine(lundi, decalage, brigades, creneaux)
         mesures.append(charger_semaine_future_volume(agissants, parametres, jusqu_a, stdout))
     return mesures

@@ -9,6 +9,7 @@ passe par un service, jamais par une création directe."""
 
 from evaluations.jeu_recette.alea import nom_fictif
 from evaluations.jeu_recette.donnees_volume import (
+    MARGE_VOLUME_REFERENTIEL,
     MATIERES_PAR_REFERENTIEL,
     NOMBRE_FORMATIONS,
     NOMBRE_FORMATIONS_ARCHIVEES,
@@ -83,8 +84,17 @@ def _categorie_et_type_lieu(generateur):
 
 def _repartir_volume(generateur, volume_total, nombre):
     """`nombre` parts entières positives, dont la somme vaut `volume_total` —
-    poids aléatoires normalisés, le dernier élément absorbe l'arrondi."""
-    poids = [generateur.random() + 0.2 for _ in range(nombre)]
+    poids aléatoires normalisés, le dernier élément absorbe l'arrondi.
+
+    Correctif du 27/10/2026 : poids resserrés (0,9 à 1,1, contre 0,2 à 1,2
+    avant) — un écart de ×6 entre la plus grande et la plus petite part
+    pouvait réduire une matière à ≈20 h quand le total visait 900-1000 h
+    (cible dimensionnée sur la durée de la session, voir
+    `organisation_volume.volumes_cibles_par_formation`), l'épuisant en
+    quelques semaines de génération alors que le référentiel ENTIER restait
+    loin d'être consommé — observé réellement sur un chargement pleine
+    échelle (RG-39 dominant les cases non pourvues de W+1)."""
+    poids = [generateur.random() * 0.2 + 0.9 for _ in range(nombre)]
     somme_poids = sum(poids)
     volumes = [max(1, round(volume_total * p / somme_poids)) for p in poids[:-1]]
     volumes.append(max(1, volume_total - sum(volumes)))
@@ -134,14 +144,32 @@ def _poser_prerequis_chaine(agissant, formation, elements_formation, generateur)
     return total
 
 
-def charger_composition_volume(agissant, generateur, formations, matieres, stdout):
+def combiner_formations_et_cibles(formations, volumes_cibles):
+    """Fusionne les deux dicts en un seul — `.claude/rules/python.md`, § 5
+    paramètres max : `charger_composition_volume` resterait à 6 sinon."""
+    return {code: (formation, volumes_cibles.get(code)) for code, formation in formations.items()}
+
+
+def _volume_total_referentiel(generateur, cible):
+    """Plancher par semaine de session active (`cible`, posé par
+    `organisation_volume.volumes_cibles_par_formation`, correctif du
+    27/10/2026) si une session active porte cette formation — sinon
+    l'ancien tirage fixe, pour les formations sans session active
+    (terminées seulement, ou archivée)."""
+    if cible is None:
+        return generateur.randint(*VOLUME_HORAIRE_REFERENTIEL)
+    return round(cible * generateur.uniform(*MARGE_VOLUME_REFERENTIEL))
+
+
+def charger_composition_volume(agissant, generateur, formations_avec_cible, matieres, stdout):
     codes_matieres = list(matieres.keys())
     elements = {}
     total_prerequis = 0
-    for code_formation, formation in formations.items():
+    for code_formation, (formation, cible) in formations_avec_cible.items():
         nombre = generateur.randint(*MATIERES_PAR_REFERENTIEL)
         codes_choisis = generateur.sample(codes_matieres, nombre)
-        volumes = _repartir_volume(generateur, generateur.randint(*VOLUME_HORAIRE_REFERENTIEL), nombre)
+        volume_total = _volume_total_referentiel(generateur, cible)
+        volumes = _repartir_volume(generateur, volume_total, nombre)
         elements_formation = [
             _rattacher_un_element(agissant, generateur, formation, matieres[code], volume)
             for code, volume in zip(codes_choisis, volumes)
