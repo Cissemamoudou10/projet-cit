@@ -55,6 +55,11 @@ urlpatterns = [
     path("planification/programmes/<int:pk>/valider/", views_circuit.valider, name="valider"),
     path("planification/programmes/<int:pk>/rejeter/", views_circuit.rejeter, name="rejeter"),
     path("planification/programmes/<int:pk>/reprendre/", views_circuit.reprendre, name="reprendre"),
+    path(
+        "planification/programmes/<int:pk>/supprimer-brouillon/",
+        views_circuit.supprimer_brouillon,
+        name="supprimer_brouillon",
+    ),
     path("planification/programmes/<int:pk>/signer/", views_circuit.signer, name="signer"),
     path("planification/programmes/<int:pk>/afficher/", views_circuit.afficher, name="afficher"),
     path(

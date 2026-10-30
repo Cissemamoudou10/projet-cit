@@ -168,6 +168,27 @@
         {% endif %}
       {% endfor %}
     </div>
+    {% if supprimable and perms.noyau.programme_ecriture %}
+      <form method="post" action="{% url 'planification:supprimer_brouillon' programme.pk %}"
+            class="flex w-full flex-col gap-2 border-t border-dotted border-gris-trait pt-3">
+        {% csrf_token %}
+        <label class="flex items-start gap-2 text-xs text-gris-lecture">
+          <input type="checkbox" name="confirmee" required class="mt-0.5">
+          <span>Je confirme la suppression du brouillon de la semaine du
+            {{ programme.lundi_de_semaine|date:"d/m/Y" }} — brigades :
+            {% for brigade in brigades_suppression %}{{ brigade }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            — {{ nombre_seances_suppression }} séance{{ nombre_seances_suppression|pluralize }}.</span>
+        </label>
+        <div>
+          <button type="submit"
+                  class="inline-flex h-controle items-center gap-2 border border-etat-ecart bg-fond-bloc
+                         px-3.5 text-sm font-semibold text-etat-ecart transition-colors duration-survol
+                         hover:bg-etat-ecart-fond">
+            Supprimer ce brouillon
+          </button>
+        </div>
+      </form>
+    {% endif %}
   </div>
 </section>
 {% endif %}

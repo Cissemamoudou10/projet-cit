@@ -213,6 +213,7 @@ def _journaliser(agissant, programme, transition, ancien, detail):
             auteur=agissant,
             objet_type=OBJET_TYPE,
             objet_identifiant=str(programme.pk),
+            objet_cle=str(programme.pk),
             valeur_avant={"etat": ancien},
             valeur_apres={"etat": programme.etat},
         )

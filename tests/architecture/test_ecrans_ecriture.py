@@ -483,6 +483,12 @@ ECRANS_ECRITURE = [
         "noyau.programme_ecriture",
         lambda objets: [objets["programme"].pk],
     ),
+    # --- planification : suppression d'un brouillon (évolution du prompt 53, Temps 2) ---
+    EcranEcriture(
+        "planification:supprimer_brouillon",
+        "noyau.programme_ecriture",
+        lambda objets: [objets["programme"].pk],
+    ),
     EcranEcriture(
         "planification:signer", "noyau.programme_ecriture", lambda objets: [objets["programme"].pk]
     ),
@@ -693,8 +699,9 @@ ECRANS_ECRITURE = [
 # non vérifié (même défaut que celui déjà consigné pour MESURES-REFERENCE.md,
 # passage 45 → 47). 131 après la duplication du programme hebdomadaire
 # (prompt 48, US-PLAN-11 : un seul écran de lancement, même permission que
-# la génération, `programme_ecriture`).
-assert len(ECRANS_ECRITURE) == 131
+# la génération, `programme_ecriture`). 132 après la suppression d'un
+# programme en brouillon (évolution du prompt 53, Temps 2).
+assert len(ECRANS_ECRITURE) == 132
 
 
 def _groupes_sans(permission):

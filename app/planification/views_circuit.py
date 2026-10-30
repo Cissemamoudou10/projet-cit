@@ -1,9 +1,12 @@
 """Écrans du circuit du programme (prompt 40, US-VAL-01, 02 et 04 ; prompt 47,
-US-VAL-05).
+US-VAL-05 ; prompt 53, Temps 2).
 
 Chaque écran d'écriture est une action POST : elle appelle le moteur
 `ServiceCircuitProgramme` et n'en reprend aucune règle. Un refus du moteur
-s'affiche par message, l'état reste celui du moteur.
+s'affiche par message, l'état reste celui du moteur. Exception :
+`supprimer_brouillon` (évolution du prompt 53) appelle `ServiceGeneration`,
+pas le moteur de circuit — la suppression n'est pas une transition d'état,
+elle efface le programme (voir S5, `services/generation.py`).
 """
 
 import datetime
@@ -15,7 +18,7 @@ from django.views.decorators.http import require_POST
 
 from administration.habilitations import exige_habilitation
 from noyau.pagination import paginer
-from planification.exceptions import TransitionProgrammeRefusee
+from planification.exceptions import SuppressionProgrammeRefusee, TransitionProgrammeRefusee
 from planification.forms_circuit import FormulaireSignature
 from planification.models import EtatProgramme, ProgrammeHebdomadaire
 from planification.selectors_circuit import (
@@ -24,6 +27,7 @@ from planification.selectors_circuit import (
     programmes_filtres,
 )
 from planification.services.circuit import ServiceCircuitProgramme
+from planification.services.generation import ServiceGeneration
 
 PERMISSION_PLANIFICATION = "noyau.programme_ecriture"
 PERMISSION_PEDAGOGIQUE = "noyau.programme_validation_ecriture"
@@ -102,6 +106,24 @@ def reprendre(request, pk):
         ServiceCircuitProgramme.reprendre,
         "Programme repris en correction.",
     )
+
+
+@require_POST
+@exige_habilitation(PERMISSION_PLANIFICATION)
+def supprimer_brouillon(request, pk):
+    """Évolution du prompt 53, Temps 2 (S1 à S7) : supprime un programme en
+    brouillon jamais soumis. `ServiceGeneration.supprimer_brouillon` refait
+    S1 à S4 lui-même (défense en profondeur, `.claude/rules/vues.md`) : ce
+    décorateur ne couvre que l'adresse directe (S1, R00B-SUP-06)."""
+    programme = _programme(pk)
+    confirmee = request.POST.get("confirmee") == "on"
+    try:
+        ServiceGeneration.supprimer_brouillon(request.user, programme, confirmee)
+    except SuppressionProgrammeRefusee as erreur:
+        messages.error(request, str(erreur))
+    else:
+        messages.success(request, "Brouillon supprimé — la semaine peut être générée à nouveau.")
+    return _retour_consultation(programme)
 
 
 @require_POST

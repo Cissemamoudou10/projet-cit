@@ -6,12 +6,24 @@ Le motif de rejet et l'auteur d'une soumission ne sont pas stockés sur le
 programme : ils se lisent dans le journal, où le moteur les écrit déjà.
 """
 
+from django.db.models import Q
+
 from administration.models import EntreeJournal, TypeAction
-from planification.models import EtatProgramme, ProgrammeHebdomadaire
+from organisation.models import Brigade
+from planification.models import EtatProgramme, ProgrammeHebdomadaire, Seance
 
 OBJET_TYPE = "programme"
 DETAIL_SOUMISSION = "T2"
 SEPARATEUR_DETAIL = " — "
+
+# Natures de journal qui, à elles seules, disent qu'un programme a une
+# histoire de circuit — jamais la génération (`GENERATION_PROGRAMME`),
+# qui n'est pas une transition d'état (évolution du prompt 53, Temps 2).
+NATURES_HISTOIRE_DE_CIRCUIT = (
+    TypeAction.TRANSITION_PROGRAMME,
+    TypeAction.VALIDATION_PROGRAMME,
+    TypeAction.REJET_PROGRAMME,
+)
 
 
 def programmes_en_attente():
@@ -47,6 +59,43 @@ def _entrees_du_programme(programme, **filtres):
     return EntreeJournal.objects.filter(
         objet_type=OBJET_TYPE, objet_identifiant=str(programme.pk), **filtres
     )
+
+
+def a_une_histoire_de_circuit(programme):
+    """Évolution du prompt 53, Temps 2, S2 : un brouillon a une histoire de
+    circuit (soumission, validation, rejet, reprise — jamais la seule
+    génération) dès qu'une transition a été journalisée pour lui, MÊME si
+    `date_soumission`/`date_validation`/`motif_rejet` sont aujourd'hui vides
+    (`services/circuit.py::_vider_circuit` les efface à chaque retour en
+    brouillon : ces champs ne peuvent donc jamais prouver une absence
+    d'histoire).
+
+    Filtre par `objet_cle` (D-287), l'identité technique du programme —
+    jamais par la semaine ni par un libellé : un brouillon supprimé puis
+    régénéré sur la même semaine est un AUTRE programme (nouvelle clé
+    primaire), qui ne doit hériter d'aucune histoire de l'ancien. Repli sur
+    `objet_identifiant` pour les entrées écrites avant que cette porte ne
+    pose `objet_cle` (même repli que `ServiceJournal.historique_de`)."""
+    return _entrees_du_programme(
+        programme,
+        type_action__in=NATURES_HISTOIRE_DE_CIRCUIT,
+    ).filter(Q(objet_cle=str(programme.pk)) | Q(objet_cle="")).exists()
+
+
+def peut_supprimer_brouillon(programme):
+    """§ écran, évolution du prompt 53, Temps 2 : visible seulement quand
+    S1 (permission, laissée à `perms.noyau.programme_ecriture` côté gabarit)
+    et S2 sont réunies. Jamais grisé sans explication — absent sinon."""
+    return programme.etat == EtatProgramme.BROUILLON and not a_une_histoire_de_circuit(programme)
+
+
+def brigades_et_nombre_seances(programme):
+    """§ S4 : les brigades touchées et le nombre de séances d'un programme —
+    pour nommer la confirmation de sa suppression. Lecture seule."""
+    brigades = list(
+        Brigade.objects.filter(lignes_programme__seance__programme=programme).distinct()
+    )
+    return brigades, Seance.objects.filter(programme=programme).count()
 
 
 def historique_du_programme(programme):

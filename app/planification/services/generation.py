@@ -15,6 +15,8 @@ nouveau lot (point 5, Prompt 31) : `creer_seances` ouvre la sienne, qui
 s'imbrique dans celle-ci (savepoint Django).
 """
 
+import dataclasses
+
 from django.conf import settings
 from django.db import transaction
 
@@ -23,13 +25,18 @@ from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from organisation.models import EtatSession
-from planification.exceptions import AucuneGrilleActive, SemaineEntierementBloquee
+from planification.exceptions import (
+    AucuneGrilleActive,
+    SemaineEntierementBloquee,
+    SuppressionProgrammeRefusee,
+)
 from planification.generation.candidats import construire_cases, projeter_creneaux
 from planification.generation.compte_rendu import Regeneration
 from planification.generation.compte_rendu import construire as construire_compte_rendu
 from planification.generation.gloutonne import StrategieGloutonne
 from planification.generation.preparation import preparer
-from planification.models import ProgrammeHebdomadaire, Seance
+from planification.models import EtatProgramme, ProgrammeHebdomadaire, Seance
+from planification.selectors_circuit import a_une_histoire_de_circuit, brigades_et_nombre_seances
 from planification.services.circuit import (
     DECLENCHEUR_GENERATION,
     GENERER,
@@ -139,6 +146,84 @@ def _journaliser_acte(agissant, programme, brigades, nb_creees, nb_supprimees):
             auteur=agissant,
             objet_type="programme",
             objet_identifiant=str(programme.pk),
+            objet_cle=str(programme.pk),
+            detail=detail,
+        )
+    )
+
+
+MESSAGE_CONFIRMATION_MANQUANTE = (
+    "La suppression exige une confirmation explicite (BNF-09) : cochez la case qui nomme la "
+    "semaine, les brigades et le nombre de séances concernées."
+)
+
+
+def _message_pas_brouillon(etat):
+    return (
+        f"Seul un programme en brouillon se supprime (actuellement {EtatProgramme(etat).label}) "
+        "— passez par le circuit du programme pour le ramener en brouillon."
+    )
+
+
+MESSAGE_HISTOIRE_DE_CIRCUIT = (
+    "Ce brouillon porte une histoire de circuit (déjà soumis, validé ou rejeté) : sa "
+    "suppression effacerait la trace du circuit. Modifiez-le ou régénérez-le plutôt que de "
+    "le supprimer."
+)
+
+
+def _message_seances_de_controle(seances_de_controle):
+    noms = ", ".join(str(seance.evaluation) for seance in seances_de_controle)
+    return (
+        f"Ce programme porte une séance de contrôle : {noms}. Supprimez l'évaluation "
+        "concernée (D-240) pour libérer sa séance, puis réessayez."
+    )
+
+
+def _verifier_supprimable(verrouille, confirmee):
+    if verrouille.etat != EtatProgramme.BROUILLON:
+        raise SuppressionProgrammeRefusee(_message_pas_brouillon(verrouille.etat))
+    if a_une_histoire_de_circuit(verrouille):
+        raise SuppressionProgrammeRefusee(MESSAGE_HISTOIRE_DE_CIRCUIT)
+    seances_de_controle = list(
+        Seance.objects.filter(programme=verrouille, evaluation__isnull=False).select_related(
+            "evaluation"
+        )
+    )
+    if seances_de_controle:
+        raise SuppressionProgrammeRefusee(_message_seances_de_controle(seances_de_controle))
+    if not confirmee:
+        raise SuppressionProgrammeRefusee(MESSAGE_CONFIRMATION_MANQUANTE)
+
+
+@dataclasses.dataclass(frozen=True)
+class _TraceSuppression:
+    """`.claude/rules/python.md`, § 5 paramètres max : ce que la suppression
+    doit encore savoir du programme une fois celui-ci effacé (`pk`,
+    `identifiant`, `lundi`), plus ce qu'elle a constaté avant de l'effacer
+    (`brigades`, `nombre_seances`)."""
+
+    pk: str
+    identifiant: str
+    lundi: object
+    brigades: list
+    nombre_seances: int
+
+
+def _journaliser_suppression(agissant, trace):
+    noms_brigades = ", ".join(str(brigade) for brigade in trace.brigades)
+    detail = (
+        f"Semaine du {trace.lundi:%d/%m/%Y} — brigades : {noms_brigades} — "
+        f"{trace.nombre_seances} séance(s) supprimée(s)."
+    )
+    ServiceJournal.enregistrer_detaillee(
+        DonneesEntreeJournal(
+            type_action=TypeAction.SUPPRESSION_PROGRAMME,
+            identifiant_saisi=trace.identifiant,
+            auteur=agissant,
+            objet_type="programme",
+            objet_identifiant=trace.pk,
+            objet_cle=trace.pk,
             detail=detail,
         )
     )
@@ -200,3 +285,29 @@ class ServiceGeneration:
             nombre_supprimees=len(supprimees),
         )
         return construire_compte_rendu(programme, resultat, contexte, brigades, regeneration)
+
+    @staticmethod
+    def supprimer_brouillon(agissant, programme, confirmee):
+        """Évolution du prompt 53, Temps 2 (S1 à S7) : supprime un programme
+        en brouillon jamais soumis, ses séances et ses lignes, d'un coup —
+        `ProgrammeHebdomadaire.delete()` cascade sur `Seance`/`LigneProgramme`
+        (`on_delete=CASCADE`, § modèles). Portée par CE service, pas par
+        `ServiceEcritureSeance` : c'est lui qui `get_or_create` le programme
+        (`generer`), donc lui qui porte déjà son écriture — S5. Verrouille
+        le programme puis REFAIT S2/S3 sous ce verrou (pas seulement avant) :
+        sans quoi une soumission concurrente pourrait s'intercaler entre le
+        contrôle et la suppression."""
+        verifier_habilitation(agissant, PERMISSION_ECRITURE)
+        with transaction.atomic():
+            verrouille = ProgrammeHebdomadaire.objects.select_for_update().get(pk=programme.pk)
+            _verifier_supprimable(verrouille, confirmee)
+            brigades, nombre_seances = brigades_et_nombre_seances(verrouille)
+            trace = _TraceSuppression(
+                pk=str(verrouille.pk),
+                identifiant=str(verrouille),
+                lundi=verrouille.lundi_de_semaine,
+                brigades=brigades,
+                nombre_seances=nombre_seances,
+            )
+            verrouille.delete()
+            _journaliser_suppression(agissant, trace)

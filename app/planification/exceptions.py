@@ -25,3 +25,10 @@ class AucuneGrilleActive(ErreurPlanification):
 class SemaineEntierementBloquee(ErreurPlanification):
     """E1 — aucun créneau ouvert pour les brigades sélectionnées sur cette
     semaine, toutes périodes bloquantes confondues."""
+
+
+class SuppressionProgrammeRefusee(ErreurPlanification):
+    """Évolution du prompt 53, Temps 2 (S1 à S3) : suppression d'un
+    programme en brouillon refusée — permission manquante, histoire de
+    circuit (soumission, validation, rejet) ou séance de contrôle portée.
+    Le message nomme la cause et, quand il existe, le geste de rattrapage."""

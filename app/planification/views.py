@@ -30,7 +30,11 @@ from planification.selectors import (
     jours_disponibles,
     programme_de_la_semaine,
 )
-from planification.selectors_circuit import historique_du_programme
+from planification.selectors_circuit import (
+    brigades_et_nombre_seances,
+    historique_du_programme,
+    peut_supprimer_brouillon,
+)
 from planification.selectors_ecart_volume import ecarts_volume_horaire
 from planification.services.generation import PERMISSION_ECRITURE, ServiceGeneration
 
@@ -138,6 +142,20 @@ def _onglets_jours(jours, jour_actif, lundi):
     return onglets
 
 
+def _contexte_suppression(programme):
+    """Évolution du prompt 53, Temps 2 (S4) : bouton absent si non
+    supprimable (jamais grisé sans explication) ; sinon, les éléments à
+    nommer dans la confirmation (semaine déjà dans le contexte)."""
+    if not programme or not peut_supprimer_brouillon(programme):
+        return {"supprimable": False}
+    brigades, nombre_seances = brigades_et_nombre_seances(programme)
+    return {
+        "supprimable": True,
+        "brigades_suppression": brigades,
+        "nombre_seances_suppression": nombre_seances,
+    }
+
+
 @exige_habilitation(PERMISSION_LECTURE)
 def vue_consultation_programme(request):
     grille, creneaux_semaine = grille_active_avec_creneaux()
@@ -175,5 +193,6 @@ def vue_consultation_programme(request):
             "ecarts_volume_horaire": ecarts_volume_horaire(brigades),
             # US-VAL-05, H1 : lu dans le journal, aucune table nouvelle.
             "historique": historique_du_programme(programme) if programme else [],
+            **_contexte_suppression(programme),
         },
     )

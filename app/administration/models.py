@@ -131,6 +131,13 @@ class TypeAction(models.TextChoices):
     n'expose délibérément ni `etat` ni `date_cloture`, voir
     `organisation/forms.py::FormulaireSession`) ; c'est un acte distinct,
     daté, irréversible (C6, aucune réouverture offerte).
+
+    `SUPPRESSION_PROGRAMME` (évolution du prompt 53, Temps 2) — une
+    extension de plus : `SUPPRESSION_ELEMENT_GESTION` ne convient pas, le
+    programme hebdomadaire ne passe pas par le patron de gestion
+    (`noyau.services.gestion`) ; c'est un acte distinct, réservé au
+    brouillon jamais soumis (S2), qui efface le programme, ses séances et
+    ses lignes sans toucher au journal lui-même (RG-27).
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -172,6 +179,7 @@ class TypeAction(models.TextChoices):
         "Téléchargement d'un procès-verbal",
     )
     CLOTURE_SESSION = "cloture_session", "Clôture d'une session"
+    SUPPRESSION_PROGRAMME = "suppression_programme", "Suppression d'un programme"
 
 
 class EntreeJournal(ModeleHorodate):
