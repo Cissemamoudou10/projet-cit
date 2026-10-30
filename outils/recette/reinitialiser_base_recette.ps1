@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Remet à zéro la base de recette ou la base volumineuse (Prompt 51, Temps 1).
 
@@ -28,7 +28,7 @@
     DoesNotExist`.
 
 .PARAMETER Etat
-    socle | complet | volume
+    socle | complet | socle-planif | volume
 
 .EXAMPLE
     .\outils\recette\reinitialiser_base_recette.ps1 -Etat socle
@@ -36,7 +36,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("socle", "complet", "volume")]
+    [ValidateSet("socle", "complet", "socle-planif", "volume")]
     [string]$Etat
 )
 
@@ -54,9 +54,10 @@ $MotDePasseApplication = if ($env:BASE_MOT_DE_PASSE) { $env:BASE_MOT_DE_PASSE } 
 # Les deux seules bases autorisées (§ garde-fou commun, docs/suivi/JEU-RECETTE.md).
 # Dérivées de -Etat, jamais saisies : ce dictionnaire est la SEULE source de vérité.
 $BasesParEtat = @{
-    "socle"   = @{ Base = "pfe_cit_recette"; Parametres = "config.settings.recette" }
-    "complet" = @{ Base = "pfe_cit_recette"; Parametres = "config.settings.recette" }
-    "volume"  = @{ Base = "pfe_cit_volume"; Parametres = "config.settings.volume" }
+    "socle"        = @{ Base = "pfe_cit_recette"; Parametres = "config.settings.recette" }
+    "complet"      = @{ Base = "pfe_cit_recette"; Parametres = "config.settings.recette" }
+    "socle-planif" = @{ Base = "pfe_cit_recette"; Parametres = "config.settings.recette" }
+    "volume"       = @{ Base = "pfe_cit_volume"; Parametres = "config.settings.volume" }
 }
 $BasesAutorisees = @("pfe_cit_recette", "pfe_cit_volume")
 
@@ -88,6 +89,32 @@ function Invoke-Psql {
     }
 }
 
+function Invoke-PsqlScalaire {
+    param(
+        [Parameter(Mandatory = $true)][string]$BaseCible,
+        [Parameter(Mandatory = $true)][string]$Commande
+    )
+    $sortie = & docker exec -e "PGPASSWORD=$MotDePasseMigration" $Conteneur `
+        psql -v ON_ERROR_STOP=1 -U $RoleMigration -d $BaseCible -t -A -c $Commande
+    if ($LASTEXITCODE -ne 0) {
+        throw "psql a échoué sur « $BaseCible » : $Commande"
+    }
+    return ($sortie | Select-Object -Last 1).Trim()
+}
+
+function Invoke-PsqlLignes {
+    param(
+        [Parameter(Mandatory = $true)][string]$BaseCible,
+        [Parameter(Mandatory = $true)][string]$Commande
+    )
+    $sortie = & docker exec -e "PGPASSWORD=$MotDePasseMigration" $Conteneur `
+        psql -v ON_ERROR_STOP=1 -U $RoleMigration -d $BaseCible -t -A -F "|" -c $Commande
+    if ($LASTEXITCODE -ne 0) {
+        throw "psql a échoué sur « $BaseCible » : $Commande"
+    }
+    return @($sortie | Where-Object { $_.Trim() -ne "" })
+}
+
 function Invoke-Manage {
     param([Parameter(Mandatory = $true)][string[]]$Arguments)
     Push-Location $DossierApplication
@@ -102,7 +129,50 @@ function Invoke-Manage {
     }
 }
 
-Write-Host "== 1. Suppression puis recréation de « $Base » =="
+Write-Host "== 1. Coupure des connexions ouvertes, suppression puis recréation de « $Base » =="
+# Jamais de processus tué sur le poste, et jamais de droit élargi pour y
+# arriver : le rôle $RoleMigration n'est PAS superutilisateur, donc
+# `pg_terminate_backend` lui est refusé sur une connexion superutilisateur
+# (ex. un outil d'exploration de base resté ouvert dessus) — ce refus est
+# attrapé par connexion (bloc PL/pgSQL), jamais élargi. Un `runserver`
+# encore ouvert sur « $Base » affichera une erreur à sa prochaine requête
+# après ce script : attendu, la base vient d'être recréée.
+$RequeteCompte = (
+    "SELECT count(*) FROM pg_stat_activity WHERE datname = '" + $Base + "' " +
+    "AND pid <> pg_backend_pid();"
+)
+$NombreAvant = [int](Invoke-PsqlScalaire -BaseCible "postgres" -Commande $RequeteCompte)
+
+$RequeteCoupure = (
+    'DO $corps$ DECLARE r RECORD; BEGIN ' +
+    "FOR r IN SELECT pid FROM pg_stat_activity WHERE datname = '" + $Base + "' " +
+    'AND pid <> pg_backend_pid() LOOP ' +
+    'BEGIN PERFORM pg_terminate_backend(r.pid); ' +
+    'EXCEPTION WHEN insufficient_privilege THEN NULL; END; ' +
+    'END LOOP; END $corps$;'
+)
+Invoke-Psql -BaseCible "postgres" -Commande $RequeteCoupure
+
+$NombreApres = [int](Invoke-PsqlScalaire -BaseCible "postgres" -Commande $RequeteCompte)
+Write-Host " Connexions coupées sur « $Base » : $($NombreAvant - $NombreApres)"
+
+if ($NombreApres -gt 0) {
+    $RequeteRestantes = (
+        "SELECT usename, COALESCE(application_name, '(sans nom)'), backend_start::text " +
+        "FROM pg_stat_activity WHERE datname = '" + $Base + "' AND pid <> pg_backend_pid();"
+    )
+    $LignesRestantes = Invoke-PsqlLignes -BaseCible "postgres" -Commande $RequeteRestantes
+    Write-Host " Connexions restantes (droits insuffisants pour les couper) sur « $Base » :"
+    foreach ($ligne in $LignesRestantes) {
+        $champs = $ligne -split '\|'
+        Write-Host "   - utilisateur $($champs[0]), application « $($champs[1]) », connectée depuis $($champs[2])"
+    }
+    throw (
+        "$NombreApres connexion(s) n'ont pas pu être coupées (droits insuffisants, volontairement " +
+        "non élargis) — fermez l'outil listé ci-dessus puis relancez ce script."
+    )
+}
+
 Invoke-Psql -BaseCible "postgres" -Commande "DROP DATABASE IF EXISTS $Base;"
 Invoke-Psql -BaseCible "postgres" -Commande "CREATE DATABASE $Base OWNER $RoleMigration;"
 Invoke-Psql -BaseCible $Base -Commande "GRANT USAGE ON SCHEMA public TO $RoleApplication;"
@@ -136,9 +206,10 @@ Invoke-Manage -Arguments @("initialiser_natures_evenement")
 
 Write-Host "== 4. Chargeur de l'état « $Etat » =="
 switch ($Etat) {
-    "socle"   { Invoke-Manage -Arguments @("charger_jeu_recette") }
-    "complet" { Invoke-Manage -Arguments @("charger_jeu_recette", "--etat", "complet") }
-    "volume"  { Invoke-Manage -Arguments @("charger_jeu_volume") }
+    "socle"        { Invoke-Manage -Arguments @("charger_jeu_recette") }
+    "complet"      { Invoke-Manage -Arguments @("charger_jeu_recette", "--etat", "complet") }
+    "socle-planif" { Invoke-Manage -Arguments @("charger_jeu_recette", "--etat", "socle-planif") }
+    "volume"       { Invoke-Manage -Arguments @("charger_jeu_volume") }
 }
 
 Write-Host "== 5. Grilles horaires (après le chargeur : exige un compte administrateur) =="
@@ -148,9 +219,13 @@ Write-Host "== 6. Vérification =="
 switch ($Etat) {
     "socle"   { Invoke-Manage -Arguments @("charger_jeu_recette", "--verifier") }
     "complet" { Invoke-Manage -Arguments @("charger_jeu_recette", "--etat", "complet", "--verifier") }
+    "socle-planif" {
+        Invoke-Manage -Arguments @("charger_jeu_recette", "--etat", "socle-planif", "--verifier")
+    }
     "volume"  { Invoke-Manage -Arguments @("charger_jeu_volume", "--verifier") }
 }
 
 Write-Host "=============================================================="
 Write-Host " Terminé — base « $Base », état « $Etat »."
 Write-Host "=============================================================="
+

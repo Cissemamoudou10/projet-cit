@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Lance l'application dans le conteneur python:3.14-slim-bookworm, pour
     les contrôles marqués [PDF] des cahiers de recette (Prompt 52).
@@ -107,3 +107,4 @@ $ArgumentsDocker = @(
 )
 
 & docker @ArgumentsDocker
+

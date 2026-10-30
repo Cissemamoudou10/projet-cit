@@ -8,7 +8,15 @@ chacun sur sa propre base :
 |---|---|---|---|
 | Recette, état `socle` | `pfe_cit_recette` | `config.settings.recette` | `charger_jeu_recette` |
 | Recette, état `complet` | `pfe_cit_recette` | `config.settings.recette` | `charger_jeu_recette --etat complet` |
+| Recette, état `socle-planif` | `pfe_cit_recette` | `config.settings.recette` | `charger_jeu_recette --etat socle-planif` |
 | Volumineux | `pfe_cit_volume` | `config.settings.volume` | `charger_jeu_volume` |
+
+L'état `socle-planif` (Prompt 53, Temps 1) est ajouté pour RECETTE-00 bis : le
+socle inchangé, plus ce que les sections 3 à 7 de RECETTE-00 construisent par
+l'interface (session, brigades, import de stagiaires, calendrier,
+indisponibilités, objectifs pédagogiques), et **aucun programme**. `complet`
+et `socle-planif` sont deux ajouts INDÉPENDANTS sur le même socle — jamais
+cumulés dans une même base (chacun repart d'une remise à zéro).
 
 Les dates ci-dessous viennent d'un chargement de contrôle réel, lancé le
 **27/10/2026** (`D` = ce jour) — elles **glissent avec `D`** : relancer le
@@ -234,6 +242,56 @@ signée — conforme, sans écart.
 Aucun procès-verbal, aucune session clôturée, aucune indisponibilité sur
 W+1, aucune duplication — vérifié par lecture directe de la base, rien de
 plus que ce que le § 2.7 annonce.
+
+## État `socle-planif` — Prompt 53, Temps 1, tel que chargé
+
+Remise à zéro réelle, sous `powershell.exe` (PowerShell 5.1.26100.9711,
+jamais `pwsh`), le 30/10/2026 :
+
+```
+État du jeu de recette, socle (§ 2, § 4.2 du cahier)
+  73/73 contrôles conformes.
+
+État du jeu de recette, ajouts de l'état socle-planif (Prompt 53)
+  14/14 contrôles conformes.
+```
+
+Aucun écart. Détail de l'ajout :
+
+| Objet | Contenu réel |
+|---|---|
+| Session `S0` | Formation F1, du lundi de W-1 au vendredi de W+10, effectif attendu 40 |
+| Brigades | `EXP1` (20, salle attitrée L1), `EXP2` (15, salle attitrée L2) |
+| Stagiaires | 55 importés par le SERVICE D'IMPORT réel (`01-valide-10.csv` + `03-valide-45-colonnes-permutees.csv`, régénérés dans un dossier temporaire, jamais le dépôt suivi) : 20 → EXP1, 15 → EXP2, 1 radié, 19 non affectés |
+| Date des affectations | Lundi de W-1, par horloge simulée (`freezegun`) — R00-SES-14/15 ne doit pas hériter d'une affectation datée du jour du chargement |
+| Calendrier | Conférence centre entier, mardi de W+1, 08:00–09:45 (nature « Conférence », bloquante par défaut) · Congé centre entier, vendredi de W+3 |
+| Indisponibilités | `I1` du jeudi de W+1 au lundi de W+2 inclus (motif « mission ») · `L5` lundi et mardi de W+2 inclus |
+| Objectifs | Deux objectifs pédagogiques sur M3, ordres 1 et 2 |
+| Programmes | Aucun — vérifié explicitement (`Aucun programme hebdomadaire (Temps 1)`) |
+
+**Preuve d'exécution sous PowerShell 5.1, pour les quatre états.** Le script
+`reinitialiser_base_recette.ps1` a été rejoué réellement (`powershell.exe`,
+jamais `pwsh`) pour `socle`, `complet` et `socle-planif` : les trois
+aboutissent (73/73, puis 47/47 ou 14/14 selon l'état). Pour `volume`, le
+script lui-même tourne jusqu'au chargeur (migrations, catalogues, confirmation
+interactive, coupure de connexions), qui échoue ensuite sur l'import de
+`weasyprint` — P-44, déjà documenté : WeasyPrint est absent du poste Windows,
+le chargement du jeu volumineux PRODUIT réellement un procès-verbal (PDF), et
+n'a jamais été exécuté nativement sous Windows (toujours en conteneur,
+§ « Jeu volumineux » plus bas). Aucune régression : `administration/services/
+document.py` n'importe `weasyprint` qu'à l'intérieur de `produire()`, jamais
+en tête de module — le défaut est dans l'ABSENCE des bibliothèques natives
+sous Windows, pas dans le code.
+
+**Amélioration du script, trouvée en la jouant réellement** : la remise à
+zéro échouait sur `DROP DATABASE ... is being accessed by other users` dès
+qu'un outil d'exploration de base (ou un `runserver` resté ouvert) tenait une
+connexion sur la base cible. Le script coupe désormais ces connexions avant
+le `DROP` (`pg_terminate_backend`, filtré sur `datname = $Base`, jamais un
+processus tué sur le poste) ; celles qu'il ne PEUT pas couper — une connexion
+superutilisateur, hors de la portée du rôle de migration, volontairement non
+élargie — sont listées (utilisateur, application cliente, heure de connexion)
+avec une invite claire à fermer l'outil concerné.
 
 ## Jeu volumineux — § 3, chargement pleine échelle
 

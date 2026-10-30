@@ -1,5 +1,6 @@
 """Commande d'administration : charge le jeu de données de recette —
-état `socle` (sprint 2, Prompt 34) ou état `complet` (Prompt 51, Temps 2).
+état `socle` (sprint 2, Prompt 34), `complet` (Prompt 51, Temps 2) ou
+`socle-planif` (Prompt 53, Temps 1).
 
 Vit dans `evaluations`, pas `planification` ni `ressources` : voir
 `evaluations.jeu_recette.__init__` pour la raison (dépendance
@@ -14,6 +15,11 @@ transaction. `--etat complet` n'est PAS idempotent et ne supporte PAS
 programmes, évaluations datés par rapport à `--date-reference`) — repartir
 d'une base vidée par `outils/recette/reinitialiser_base_recette.ps1` est le
 chemin prévu (Prompt 51, Temps 1), pas une réinitialisation partielle.
+
+`--etat socle-planif` = le socle inchangé, plus ce que les sections 3 à 7
+de RECETTE-00 construisent par l'interface, et AUCUN programme (Prompt 53,
+Temps 1) — mêmes règles que `complet` : pas de `--reinitialiser`, repartir
+d'une base vidée.
 
 `--verifier` ne crée rien (rapport de lecture seule, § 5 / § 2.8).
 `--pagination` ajoute vingt-cinq sessions sur une formation dédiée `F5`
@@ -48,6 +54,7 @@ from evaluations.jeu_recette.garde import verifier_environnement_sur
 from evaluations.jeu_recette.instructeurs import charger_instructeurs, charger_qualifications
 from evaluations.jeu_recette.lieux import charger_lieux
 from evaluations.jeu_recette.orchestration_complet import charger_etat_complet
+from evaluations.jeu_recette.orchestration_socle_planif import charger_etat_socle_planif
 from evaluations.jeu_recette.pagination import charger_pagination
 from evaluations.jeu_recette.rapport import Chronometre, imprimer_compte_rendu
 from evaluations.jeu_recette.referentiel import (
@@ -150,7 +157,7 @@ def _objets_socle(stdout):
 
 
 class Command(BaseCommand):
-    help = "Charge le jeu de données de recette (état socle ou complet)."
+    help = "Charge le jeu de données de recette (état socle, complet ou socle-planif)."
 
     def add_arguments(self, parser):
         self._arguments_communes(parser)
@@ -160,9 +167,12 @@ class Command(BaseCommand):
     def _arguments_communes(parser):
         parser.add_argument(
             "--etat",
-            choices=("socle", "complet"),
+            choices=("socle", "complet", "socle-planif"),
             default="socle",
-            help="socle (défaut, Prompt 34) ou complet (Prompt 51, Temps 2).",
+            help=(
+                "socle (défaut, Prompt 34), complet (Prompt 51, Temps 2) ou "
+                "socle-planif (Prompt 53, Temps 1)."
+            ),
         )
         parser.add_argument(
             "--reinitialiser",
@@ -193,7 +203,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--date-reference",
             default=None,
-            help="État complet seulement : AAAA-MM-JJ, défaut le jour du chargement (§ 3).",
+            help=(
+                "États complet et socle-planif seulement : AAAA-MM-JJ, défaut le jour du "
+                "chargement (§ 3)."
+            ),
         )
         parser.add_argument(
             "--graine",
@@ -208,6 +221,9 @@ class Command(BaseCommand):
             return
         if options["etat"] == "complet":
             self._charger_complet(options)
+            return
+        if options["etat"] == "socle-planif":
+            self._charger_socle_planif(options)
             return
         self._charger_socle(options)
 
@@ -238,21 +254,28 @@ class Command(BaseCommand):
             generer_fichiers(DOSSIER, self.stdout)
         imprimer_compte_rendu(self.stdout, compteurs, chronometre)
 
-    def _charger_complet(self, options):
-        if options["reinitialiser"]:
-            raise CommandError(
-                "--reinitialiser ne s'applique pas à --etat complet (voir le docstring de "
-                "cette commande) : repartez d'une base vidée par "
-                "outils/recette/reinitialiser_base_recette.ps1."
-            )
-        verifier_environnement_sur()
-        call_command("initialiser_natures_evenement")
-        comptes_existent = Utilisateur.objects.filter(username=IDENTIFIANT_ADMINISTRATEUR).exists()
-        date_reference = (
+    @staticmethod
+    def _date_reference(options):
+        return (
             datetime.date.fromisoformat(options["date_reference"])
             if options["date_reference"]
             else timezone.localdate()
         )
+
+    def _refuser_reinitialiser(self, options, etat):
+        if options["reinitialiser"]:
+            raise CommandError(
+                f"--reinitialiser ne s'applique pas à --etat {etat} (voir le docstring de "
+                "cette commande) : repartez d'une base vidée par "
+                "outils/recette/reinitialiser_base_recette.ps1."
+            )
+
+    def _charger_complet(self, options):
+        self._refuser_reinitialiser(options, "complet")
+        verifier_environnement_sur()
+        call_command("initialiser_natures_evenement")
+        comptes_existent = Utilisateur.objects.filter(username=IDENTIFIANT_ADMINISTRATEUR).exists()
+        date_reference = self._date_reference(options)
         chronometre = Chronometre()
         with transaction.atomic():
             if comptes_existent:
@@ -268,3 +291,21 @@ class Command(BaseCommand):
                 objets_socle, date_reference, options["graine"], self.stdout
             )
         imprimer_compte_rendu(self.stdout, {**compteurs_socle, **compteurs_complet}, chronometre)
+
+    def _charger_socle_planif(self, options):
+        self._refuser_reinitialiser(options, "socle-planif")
+        verifier_environnement_sur()
+        call_command("initialiser_natures_evenement")
+        comptes_existent = Utilisateur.objects.filter(username=IDENTIFIANT_ADMINISTRATEUR).exists()
+        date_reference = self._date_reference(options)
+        chronometre = Chronometre()
+        with transaction.atomic():
+            if comptes_existent:
+                self.stdout.write("Jeu socle déjà chargé — récupéré depuis la base.")
+                compteurs_socle, objets_socle = {}, _objets_socle(self.stdout)
+            else:
+                compteurs_socle, objets_socle = _charger(self.stdout, comptes_existent=False)
+            compteurs_planif = charger_etat_socle_planif(
+                objets_socle, date_reference, self.stdout
+            )
+        imprimer_compte_rendu(self.stdout, {**compteurs_socle, **compteurs_planif}, chronometre)

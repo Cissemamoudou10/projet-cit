@@ -53,6 +53,11 @@ def verifier(stdout, etat="socle"):
 
         verifier_complet(stdout)
         return
+    if etat == "socle-planif":
+        from evaluations.jeu_recette.verification_socle_planif import verifier_socle_planif
+
+        verifier_socle_planif(stdout)
+        return
     _imprimer_objets_sprint2(stdout)
 
 
