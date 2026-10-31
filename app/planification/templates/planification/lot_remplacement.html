@@ -23,14 +23,17 @@
   </ul>
   <form method="post" class="flex flex-col gap-4 px-4 py-4 text-sm">
     {% csrf_token %}
-    {% for champ in formulaire %}
-      <div>
-        <label for="{{ champ.id_for_label }}" class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">{{ champ.label }}</label>
-        {{ champ }}
-        {% for erreur in champ.errors %}<p class="mt-1 text-xs text-etat-ecart">{{ erreur }}</p>{% endfor %}
-      </div>
-    {% endfor %}
-    {% for erreur in formulaire.non_field_errors %}<p class="text-xs text-etat-ecart">{{ erreur }}</p>{% endfor %}
+    {% if formulaire.non_field_errors %}
+      <p class="text-xs text-etat-ecart">{{ formulaire.non_field_errors|first }}</p>
+    {% endif %}
+    {% include "referentiel/_champ_formulaire.html" with champ=formulaire.seances %}
+    {% include "referentiel/_champ_formulaire.html" with champ=formulaire.instructeur %}
+    <label class="flex cursor-pointer items-center gap-2.5 text-sm">
+      {{ formulaire.confirmee }}
+      {{ formulaire.confirmee.label }}
+    </label>
+    {% include "referentiel/_champ_formulaire.html" with champ=formulaire.nature_avenant %}
+    {% include "referentiel/_champ_formulaire.html" with champ=formulaire.motif_avenant %}
     <p class="text-xs text-gris-lecture">
       Même remplaçant pour toutes les séances choisies (C5) : si une seule est refusée, rien
       n'est écrit (I5).

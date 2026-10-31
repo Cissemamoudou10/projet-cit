@@ -1,0 +1,27 @@
+{% load static %}
+{% include "referentiel/_champ_formulaire.html" with champ=formulaire.element_referentiel %}
+{% include "referentiel/_champ_formulaire.html" with champ=formulaire.instructeur %}
+{% include "referentiel/_champ_formulaire.html" with champ=formulaire.lieu %}
+{% include "referentiel/_champ_formulaire.html" with champ=formulaire.date_seance %}
+
+<div>
+  <label class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">
+    Créneau <span class="text-etat-ecart">— obligatoire</span>
+  </label>
+  <div class="flex items-center gap-2">
+    {{ formulaire.heure_debut }}
+    <span class="text-sm text-gris-lecture" aria-hidden="true">→</span>
+    {{ formulaire.heure_fin }}
+  </div>
+  {% if formulaire.heure_debut.errors or formulaire.heure_fin.errors %}
+    <p class="mt-1 flex items-start gap-1.5 text-2xs text-etat-ecart">
+      <svg class="mt-px h-3 w-3 shrink-0 text-etat-ecart" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+      </svg>
+      {{ formulaire.heure_debut.errors|first|default:formulaire.heure_fin.errors.0 }}
+    </p>
+  {% endif %}
+</div>
+
+{% include "referentiel/_champ_formulaire.html" with champ=formulaire.nature_avenant %}
+{% include "referentiel/_champ_formulaire.html" with champ=formulaire.motif_avenant %}

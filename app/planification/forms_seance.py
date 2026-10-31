@@ -17,6 +17,28 @@ from ressources.models import Instructeur, Lieu
 
 CHOIX_NATURE = [("", "— choisir une nature —")] + list(NatureAvenant.choices)
 
+# `.claude/rules/gabarits.md` : classes Tailwind reprises à l'identique de la
+# charte (§ 3.17/3.20/3.22/3.23) — posées ici sur les widgets pour que
+# `{{ champ }}` les porte sans reconstruction manuelle du HTML en gabarit
+# (qui perdrait le format ISO que Django applique déjà à `type="date"`).
+CLASSE_CHAMP = (
+    "h-controle w-full rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm "
+    "outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+CLASSE_CHAMP_HEURE = (
+    "h-controle w-28 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm tabular-nums "
+    "outline-none hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+CLASSE_ZONE_TEXTE = (
+    "w-full resize-y rounded border border-gris-trait bg-fond-bloc px-2.5 py-2 text-sm "
+    "leading-normal outline-none focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+CLASSE_CASE = "h-3.5 w-3.5 accent-marine-900"
+CLASSE_CHAMP_MULTIPLE = (
+    "w-full rounded border border-gris-trait bg-fond-bloc px-2.5 py-2 text-sm outline-none "
+    "hover:border-marine-700 focus:border-marine-700 focus:ring-2 focus:ring-focus"
+)
+
 
 class ChampsAvenantMixin(forms.Form):
     """Les deux champs de l'avenant et leur validation croisée (motif exige
@@ -24,10 +46,15 @@ class ChampsAvenantMixin(forms.Form):
     peut porter un avenant — modification, ajout, association (M3, M9)."""
 
     nature_avenant = forms.ChoiceField(
-        choices=CHOIX_NATURE, required=False, label="Nature de l'avenant"
+        choices=CHOIX_NATURE,
+        required=False,
+        label="Nature de l'avenant",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
     motif_avenant = forms.CharField(
-        required=False, widget=forms.Textarea(attrs={"rows": 2}), label="Motif de l'avenant"
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2, "class": CLASSE_ZONE_TEXTE}),
+        label="Motif de l'avenant",
     )
 
     def clean(self):
@@ -48,16 +75,43 @@ class ChampsAvenantMixin(forms.Form):
 
 class FormulaireSeance(ChampsAvenantMixin, forms.Form):
     element_referentiel = forms.ModelChoiceField(
-        queryset=ElementReferentiel.objects.select_related("matiere"), label="Matière"
+        queryset=ElementReferentiel.objects.select_related("matiere"),
+        label="Matière",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
-    instructeur = forms.ModelChoiceField(queryset=Instructeur.objects.all(), label="Instructeur")
+    instructeur = forms.ModelChoiceField(
+        queryset=Instructeur.objects.all(),
+        label="Instructeur",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
+    )
     lieu = forms.ModelChoiceField(
-        queryset=Lieu.objects.all(), required=False, empty_label="Sans lieu", label="Lieu"
+        queryset=Lieu.objects.all(),
+        required=False,
+        empty_label="Sans lieu",
+        label="Lieu",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
-    date_seance = forms.DateField(label="Date", widget=forms.DateInput(attrs={"type": "date"}))
-    heure_debut = forms.TimeField(label="Début", widget=forms.TimeInput(attrs={"type": "time"}))
-    heure_fin = forms.TimeField(label="Fin", widget=forms.TimeInput(attrs={"type": "time"}))
-    confirmee = forms.BooleanField(required=False, label="Je confirme la modification")
+    date_seance = forms.DateField(
+        label="Date",
+        # `format="%Y-%m-%d"` explicite : `type="date"` exige l'ISO quel que
+        # soit le format local (`fr-fr` affiche jj/mm/aaaa), sans quoi le
+        # navigateur rejette la valeur pré-remplie en silence (champ vide à
+        # l'édition, trouvé en relecture visuelle de cet écran).
+        widget=forms.DateInput(
+            attrs={"type": "date", "class": CLASSE_CHAMP}, format="%Y-%m-%d"
+        ),
+    )
+    heure_debut = forms.TimeField(
+        label="Début", widget=forms.TimeInput(attrs={"type": "time", "class": CLASSE_CHAMP_HEURE})
+    )
+    heure_fin = forms.TimeField(
+        label="Fin", widget=forms.TimeInput(attrs={"type": "time", "class": CLASSE_CHAMP_HEURE})
+    )
+    confirmee = forms.BooleanField(
+        required=False,
+        label="Je confirme la modification",
+        widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
+    )
 
     def clean(self):
         donnees = super().clean()
@@ -90,7 +144,11 @@ class FormulaireAjoutSeance(FormulaireSeance):
     """Ajout manuel (C4, prompt 42) : la brigade se choisit ici, elle n'a
     pas encore de ligne sur le programme."""
 
-    brigade = forms.ModelChoiceField(queryset=Brigade.objects.all(), label="Brigade")
+    brigade = forms.ModelChoiceField(
+        queryset=Brigade.objects.all(),
+        label="Brigade",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
+    )
 
 
 class FormulaireAssociationBrigades(ChampsAvenantMixin, forms.Form):
@@ -99,9 +157,15 @@ class FormulaireAssociationBrigades(ChampsAvenantMixin, forms.Form):
     au créneau), jamais fixé sur la classe."""
 
     brigades = forms.ModelMultipleChoiceField(
-        queryset=Brigade.objects.none(), label="Brigades à associer"
+        queryset=Brigade.objects.none(),
+        label="Brigades à associer",
+        widget=forms.SelectMultiple(attrs={"class": CLASSE_CHAMP_MULTIPLE, "size": 6}),
     )
-    confirmee = forms.BooleanField(required=False, label="Je confirme l'association")
+    confirmee = forms.BooleanField(
+        required=False,
+        label="Je confirme l'association",
+        widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
+    )
 
     def __init__(self, *args, brigades_candidates=None, **kwargs):
         super().__init__(*args, **kwargs)

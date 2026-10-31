@@ -10,7 +10,12 @@ classe (même principe que `FormulaireAssociationBrigades`).
 
 from django import forms
 
-from planification.forms_seance import ChampsAvenantMixin
+from planification.forms_seance import (
+    CLASSE_CASE,
+    CLASSE_CHAMP,
+    CLASSE_CHAMP_MULTIPLE,
+    ChampsAvenantMixin,
+)
 from planification.models import Seance
 from referentiel.models import ElementReferentiel
 from ressources.models import Instructeur
@@ -21,9 +26,15 @@ class FormulaireRemplacementInstructeur(ChampsAvenantMixin, forms.Form):
     borné à la liste des remplaçants (I4), posée à l'instanciation."""
 
     instructeur = forms.ModelChoiceField(
-        queryset=Instructeur.objects.none(), label="Nouvel instructeur"
+        queryset=Instructeur.objects.none(),
+        label="Nouvel instructeur",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
-    confirmee = forms.BooleanField(required=False, label="Je confirme le remplacement")
+    confirmee = forms.BooleanField(
+        required=False,
+        label="Je confirme le remplacement",
+        widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
+    )
 
     def __init__(self, *args, remplacants=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,14 +48,21 @@ class FormulaireSubstitutionSeance(ChampsAvenantMixin, forms.Form):
     de la qualification et de la disponibilité, via `ServiceContraintes`)."""
 
     element_referentiel = forms.ModelChoiceField(
-        queryset=ElementReferentiel.objects.select_related("matiere"), label="Nouvelle matière"
+        queryset=ElementReferentiel.objects.select_related("matiere"),
+        label="Nouvelle matière",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
     instructeur = forms.ModelChoiceField(
         queryset=Instructeur.objects.filter(archive=False),
         required=False,
         label="Nouvel instructeur (si besoin)",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
-    confirmee = forms.BooleanField(required=False, label="Je confirme la substitution")
+    confirmee = forms.BooleanField(
+        required=False,
+        label="Je confirme la substitution",
+        widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
+    )
 
     def changements(self):
         changements = {"element_referentiel": self.cleaned_data["element_referentiel"]}
@@ -58,11 +76,21 @@ class FormulaireLotRemplacement(ChampsAvenantMixin, forms.Form):
     l'écran (de la même matière) — confirmation globale, distincte de la
     confirmation par séance."""
 
-    seances = forms.ModelMultipleChoiceField(queryset=Seance.objects.none(), label="Séances")
-    instructeur = forms.ModelChoiceField(
-        queryset=Instructeur.objects.none(), label="Nouvel instructeur"
+    seances = forms.ModelMultipleChoiceField(
+        queryset=Seance.objects.none(),
+        label="Séances",
+        widget=forms.SelectMultiple(attrs={"class": CLASSE_CHAMP_MULTIPLE, "size": 6}),
     )
-    confirmee = forms.BooleanField(required=False, label="Je confirme le remplacement en lot")
+    instructeur = forms.ModelChoiceField(
+        queryset=Instructeur.objects.none(),
+        label="Nouvel instructeur",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
+    )
+    confirmee = forms.BooleanField(
+        required=False,
+        label="Je confirme le remplacement en lot",
+        widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
+    )
 
     def __init__(self, *args, seances_candidates=None, remplacants=None, **kwargs):
         super().__init__(*args, **kwargs)

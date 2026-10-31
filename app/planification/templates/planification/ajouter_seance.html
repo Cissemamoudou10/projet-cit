@@ -1,4 +1,5 @@
 {% extends "noyau/base.html" %}
+{% load static %}
 
 {% block titre %}Ajouter une séance — {{ block.super }}{% endblock %}
 
@@ -12,25 +13,49 @@
 {% endblock %}
 
 {% block contenu %}
-<section class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
-  <form method="post" class="flex flex-col gap-4 px-4 py-4 text-sm">
-    {% csrf_token %}
-    {% for champ in formulaire %}
-      <div>
-        <label for="{{ champ.id_for_label }}" class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">{{ champ.label }}</label>
-        {{ champ }}
-        {% for erreur in champ.errors %}<p class="mt-1 text-xs text-etat-ecart">{{ erreur }}</p>{% endfor %}
-      </div>
-    {% endfor %}
-    {% for erreur in formulaire.non_field_errors %}<p class="text-xs text-etat-ecart">{{ erreur }}</p>{% endfor %}
+<form method="post" class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
+  {% csrf_token %}
+
+  {% if formulaire.non_field_errors %}
+    <div class="mx-5 mt-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+                border-l-etat-ecart bg-etat-ecart-fond px-4 py-3">
+      <svg class="mt-px h-4 w-4 shrink-0 stroke-etat-ecart" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#avertissement"></use>
+      </svg>
+      <p class="text-xs text-gris-lecture">{{ formulaire.non_field_errors|first }}</p>
+    </div>
+  {% endif %}
+
+  <div class="grid gap-3 px-5 py-4">
+    {% include "referentiel/_champ_formulaire.html" with champ=formulaire.brigade %}
+    {% include "planification/_fragments/champs_seance.html" %}
+  </div>
+
+  <div class="mx-5 mb-4 flex items-start gap-3 border border-l-[3px] border-gris-trait
+              border-l-marine-900 bg-sable px-4 py-3">
+    <svg class="mt-px h-4 w-4 shrink-0 stroke-marine-900" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#information"></use>
+    </svg>
     <p class="text-xs text-gris-lecture">
       La séance ajoutée est verrouillée. Sur un programme affiché, un avenant est obligatoire
       (nature « ajout ») ; sa nature n'est jamais présélectionnée.
     </p>
-    <div>
-      <button type="submit" class="inline-flex h-controle items-center border border-marine-900 bg-marine-900 px-3.5 text-sm font-semibold text-blanc hover:bg-marine-700">Ajouter</button>
-      <a href="{% url 'planification:consultation_programme' %}?semaine={{ programme.lundi_de_semaine|date:'Y-m-d' }}" class="ml-3 text-sm text-marine-700 no-underline hover:underline">Retour au programme</a>
+  </div>
+
+  <div class="flex items-center justify-between border-t border-gris-trait bg-fond-bande px-5 py-2.5">
+    <p class="text-xs text-gris-lecture">Les champs sans mention sont facultatifs.</p>
+    <div class="flex gap-2">
+      <a href="{% url 'planification:consultation_programme' %}?semaine={{ programme.lundi_de_semaine|date:'Y-m-d' }}"
+         class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700 no-underline hover:underline">
+        Annuler
+      </a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-marine-900 bg-marine-900 px-3.5 py-1.5
+                     text-sm font-semibold text-blanc transition-colors duration-survol
+                     hover:bg-marine-700">
+        Ajouter
+      </button>
     </div>
-  </form>
-</section>
+  </div>
+</form>
 {% endblock %}
