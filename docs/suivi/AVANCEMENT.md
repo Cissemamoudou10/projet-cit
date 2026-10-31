@@ -51,6 +51,7 @@ points chiffrés).
 | Vélocité mesurée | **Définitivement non mesurée** — aucune heure humaine n'a été relevée sur les 52 stories du projet (registre v8, R23). Quatre sprints livrés à 100 % de leur estimation en points est la seule mesure validée | aucune — un relevé rétrospectif déclaratif reste possible pour le mémoire, jamais une mesure contemporaine |
 | Clé de conversion | 1,3 h/point, **non révisée, ne le sera plus en cours de projet** — aucune mesure fiable ne l'a jamais justifiée (registre v8, R23) | à présenter au mémoire comme hypothèse jamais vérifiée, avec sa cause |
 | Marge avant dépôt | **9 jours ouvrés, plus l'avance gagnée au J3** (registre v8, O1) | La valeur « 14 jours ouvrés, intacte » affichée jusqu'ici était périmée depuis le 30/09, date à laquelle le registre v6 l'avait déjà ramenée à 9 — jamais répercutée ici. Trois jours d'avance supplémentaires gagnés au J3 (21 au 23 octobre), employés à la clôture et au démarrage de la recette. |
+| Suite de tests | **2303 passés, 12 ignorés** (`pytest`, 30/10/2026, prompt 53) | Verte en continu depuis le J3 ; les 12 ignorés sont les tests marqués `pdf` (WeasyPrint, absent du poste Windows, P-44) — vérifiés séparément dans le conteneur `python:3.14-slim-bookworm` |
 
 **Recalcul daté (2026-10-13, prompt 45, Temps 1.4).** Points livrés : 169
 (avant le prompt 44) + 7 (US-SUI-05, 2 pts ; US-SUI-01, 5 pts) = **176**.
