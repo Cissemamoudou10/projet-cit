@@ -302,7 +302,7 @@ def test_seule_la_porte_d_ecriture_instancie_seance_ou_ligne_programme():
         services / "modification.py",
         services / "regroupement.py",
     }
-    modeles = SRC / "planification" / "models.py"
+    modeles = SRC / "planification" / "models" / "programme.py"
     motifs = (
         "Seance(",
         "LigneProgramme(",

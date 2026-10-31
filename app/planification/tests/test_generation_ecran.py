@@ -11,6 +11,9 @@ from planification.tests.conftest import qualifier
 
 
 def test_g1_chemin_nominal_profil_planification(client, scenario, cours, brigade_formation):
+    """C1 (correction de NC R00-GEN-03, prompt 53, Temps 3) : la génération
+    atterrit sur la consultation du programme, résumé en tête — jamais une
+    page de compte rendu à part."""
     qualifier(cours.instructeur, cours.element.matiere)
     client.force_login(scenario.planificateur)
 
@@ -19,10 +22,14 @@ def test_g1_chemin_nominal_profil_planification(client, scenario, cours, brigade
     reponse = client.post(
         reverse("planification:lancement_generation"),
         {"semaine": scenario.lundi.isoformat(), "brigades": [brigade_formation.pk]},
+        follow=True,
     )
 
     assert reponse.status_code == 200
-    assert "Compte rendu" in reponse.content.decode("utf-8")
+    assert reponse.redirect_chain[-1][0].startswith(
+        reverse("planification:consultation_programme")
+    )
+    assert "placée" in reponse.content.decode("utf-8")
     programme = ProgrammeHebdomadaire.objects.get(lundi_de_semaine=scenario.lundi)
     assert Seance.objects.filter(programme=programme).exists()
 
@@ -95,9 +102,13 @@ def test_g2_regeneration_avec_confirmation_nommant_les_brigades(
             "brigades": [brigade_formation.pk],
             "confirme": "on",
         },
+        follow=True,
     )
     assert confirmation.status_code == 200
-    assert "Compte rendu" in confirmation.content.decode("utf-8")
+    assert confirmation.redirect_chain[-1][0].startswith(
+        reverse("planification:consultation_programme")
+    )
+    assert "placée" in confirmation.content.decode("utf-8")
 
 
 def test_g3_consultation_une_ligne_par_brigade_avec_ad_groupement(

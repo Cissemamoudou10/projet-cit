@@ -33,9 +33,10 @@ from planification.exceptions import (
 from planification.generation.candidats import construire_cases, projeter_creneaux
 from planification.generation.compte_rendu import Regeneration
 from planification.generation.compte_rendu import construire as construire_compte_rendu
+from planification.generation.condensation import condenser
 from planification.generation.gloutonne import StrategieGloutonne
 from planification.generation.preparation import preparer
-from planification.models import EtatProgramme, ProgrammeHebdomadaire, Seance
+from planification.models import CompteRenduGeneration, EtatProgramme, ProgrammeHebdomadaire, Seance
 from planification.selectors_circuit import a_une_histoire_de_circuit, brigades_et_nombre_seances
 from planification.services.circuit import (
     DECLENCHEUR_GENERATION,
@@ -229,6 +230,28 @@ def _journaliser_suppression(agissant, trace):
     )
 
 
+def _enregistrer_compte_rendu(programme, resultat, brigades, agissant):
+    """Correction de NC R00-GEN-03 (évolution du prompt 53, Temps 3) : la
+    DERNIÈRE génération seulement, écrasée à chaque appel — voir
+    `planification.models.compte_rendu.CompteRenduGeneration` pour la
+    justification de cette persistance.
+
+    `UPDATE` puis `create()` seulement si rien à mettre à jour (I3, BNF-04) :
+    DEUX requêtes au plus, jamais `update_or_create` — son `SAVEPOINT`
+    imbriqué (la transaction de la génération l'enveloppe déjà) coûtait
+    quatre requêtes de plus, mesuré réellement en faisant échouer
+    `test_generation_performance.py` (prompt 53, Temps 3, voir
+    docs/suivi/MESURES-REFERENCE.md)."""
+    resume = condenser(resultat, brigades, agissant)
+    mis_a_jour = CompteRenduGeneration.objects.filter(programme=programme).update(
+        resume=resume, modifie_par=agissant
+    )
+    if not mis_a_jour:
+        CompteRenduGeneration.objects.create(
+            programme=programme, resume=resume, cree_par=agissant, modifie_par=agissant
+        )
+
+
 class ServiceGeneration:
     DOMAINE = "programme"
     PERMISSION_ECRITURE = PERMISSION_ECRITURE
@@ -279,6 +302,7 @@ class ServiceGeneration:
         groupes = [placement.candidates for placement in resultat.placements]
         ServiceEcritureSeance.creer_seances(agissant, programme, groupes)
         _journaliser_acte(agissant, programme, brigades, len(groupes), len(supprimees))
+        _enregistrer_compte_rendu(programme, resultat, brigades, agissant)
         regeneration = Regeneration(
             verrouillees_preservees=verrouillees,
             a_cheval_preservees=a_cheval,

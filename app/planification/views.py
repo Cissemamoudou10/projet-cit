@@ -35,6 +35,7 @@ from planification.selectors_circuit import (
     historique_du_programme,
     peut_supprimer_brouillon,
 )
+from planification.selectors_compte_rendu import derniere_generation
 from planification.selectors_ecart_volume import ecarts_volume_horaire
 from planification.services.generation import PERMISSION_ECRITURE, ServiceGeneration
 
@@ -104,8 +105,12 @@ def _traiter_lancement(request, grille):
 
 
 def _generer_et_afficher(request, lundi, brigades):
+    """C1 (correction de NC R00-GEN-03, prompt 53, Temps 3) : atterrit sur
+    la consultation du programme, jamais sur une page de compte rendu à
+    part — le résumé y figure en tête, le détail y reste consultable (C2),
+    `ServiceGeneration.generer` a déjà persisté le condensé."""
     try:
-        compte_rendu = ServiceGeneration.generer(request.user, lundi, brigades)
+        ServiceGeneration.generer(request.user, lundi, brigades)
     except (
         AucuneGrilleActive,
         SemaineEntierementBloquee,
@@ -115,9 +120,8 @@ def _generer_et_afficher(request, lundi, brigades):
     ) as erreur:
         messages.error(request, str(erreur))
         return _redirection_lancement(lundi)
-    return render(
-        request, "planification/compte_rendu_generation.html", {"compte_rendu": compte_rendu}
-    )
+    url = reverse("planification:consultation_programme")
+    return redirect(f"{url}?semaine={lundi.isoformat()}")
 
 
 JOURS_OFFSET = {
@@ -140,6 +144,19 @@ def _onglets_jours(jours, jour_actif, lundi):
         date_jour = lundi + datetime.timedelta(days=JOURS_OFFSET[jour])
         onglets.append({"jour": jour, "date": date_jour, "actif": jour == jour_actif})
     return onglets
+
+
+def _contexte_lecture(programme):
+    """US-VAL-05, H1, et C1/C2 (correction de NC R00-GEN-03, prompt 53,
+    Temps 3) : deux lectures qui n'existent que si le programme existe,
+    aucune règle, regroupées pour tenir `vue_consultation_programme` sous
+    40 lignes (`.claude/rules/python.md`)."""
+    if not programme:
+        return {"historique": [], "derniere_generation": None}
+    return {
+        "historique": historique_du_programme(programme),
+        "derniere_generation": derniere_generation(programme),
+    }
 
 
 def _contexte_suppression(programme):
@@ -191,8 +208,7 @@ def vue_consultation_programme(request):
             # US-PLAN-07, E2 : visible avant soumission, mêmes brigades que
             # la grille consultée — aucun calcul nouveau (E1).
             "ecarts_volume_horaire": ecarts_volume_horaire(brigades),
-            # US-VAL-05, H1 : lu dans le journal, aucune table nouvelle.
-            "historique": historique_du_programme(programme) if programme else [],
+            **_contexte_lecture(programme),
             **_contexte_suppression(programme),
         },
     )

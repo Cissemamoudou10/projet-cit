@@ -60,7 +60,16 @@ INSTRUCTEURS_PAR_MATIERE = 2  # assez pour ne pas buter systématiquement sur un
 # du prompt 36 (A8) — on ne laisse pas la marge s'épuiser en silence — exige
 # cette relève, pas seulement une tolérance ; série complète 41→43→45→47→49
 # dans `docs/suivi/MESURES-REFERENCE.md`.
-REQUETES_REFERENCE_US_PLAN_03 = 49
+# Note datée 2026-10-30 (évolution du prompt 53, Temps 3, correction de
+# NC R00-GEN-03) : 49 → 51 — le compte rendu condensé se persiste désormais
+# à chaque génération (`ServiceGeneration._enregistrer_compte_rendu`), deux
+# requêtes de plus (un `UPDATE`, puis un `INSERT` seulement si rien à mettre
+# à jour) — PAS `update_or_create`, dont le `SAVEPOINT` imbriqué en coûtait
+# quatre de plus (55 mesuré), corrigé avant d'arriver ici. Coût FIXE par
+# génération, indépendant du nombre de brigades ou de cases (I3 tenu).
+# Marge repart à zéro : prochaine dérive à surveiller sans délai
+# supplémentaire, même règle que les relèves précédentes.
+REQUETES_REFERENCE_US_PLAN_03 = 51
 MARGE_REQUETES = 2
 
 journal = logging.getLogger(__name__)

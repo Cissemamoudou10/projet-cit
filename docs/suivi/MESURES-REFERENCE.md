@@ -17,7 +17,7 @@ test_mesures_de_reference_us_plan_03_paragraphe_10` — relancé le
 
 Bien en deçà des cinq minutes de BNF-04.
 
-### Série complète des requêtes, 41 → 49 (prompt 45, Temps 1.2)
+### Série complète des requêtes, 41 → 51 (prompt 53, Temps 3)
 
 Chaque pas est constant (même mesure rejouée, jamais une dérive silencieuse)
 et expliqué — c'est ce tableau qui le prouve, pas seulement le commentaire du
@@ -30,6 +30,19 @@ code.
 | 43 → 45 | 2026-10-03 (prompt 38, A6, D-211) | US-EVAL-04 : occupations d'épreuves (`ResolveurOccupationsEpreuves`), une requête de plus par chargement, deux chargements par génération |
 | 45 → 47 | 2026-10-04 (US-VAL-03, D-222) | Garde de modification : deux verrous `select_for_update` — passage jamais consigné ici avant le prompt 45, seulement dans le commentaire du code (gap documentaire comblé a posteriori) |
 | 47 → 49 | 2026-10-13 (prompt 44, Temps 3, US-SUI-01, R2) | Prérequis (RG-39 b) vérifié sur le réalisé plutôt que le programmé (`volumes_realises_par_element_brigade`), une requête de plus par chargement, deux chargements par génération — marge (2) intégralement consommée, référence relevée à 49 (prompt 45, Temps 1.2) pour ne pas la laisser s'épuiser en silence (règle du prompt 36, A8) |
+| 49 → 51 | 2026-10-30 (évolution du prompt 53, Temps 3, correction de NC R00-GEN-03) | Le compte rendu condensé de la génération se persiste désormais (`ServiceGeneration._enregistrer_compte_rendu`, `CompteRenduGeneration`) : un `UPDATE`, puis un `INSERT` seulement si rien à mettre à jour — deux requêtes, coût FIXE par génération, pas `update_or_create` (son `SAVEPOINT` imbriqué en coûtait quatre de plus, 55 mesuré avant correction). Marge (2) intégralement consommée de nouveau, référence relevée à 51 |
+
+**Mise à jour datée (2026-10-30, évolution du prompt 53, Temps 3, correction de NC R00-GEN-03).**
+Le compte rendu de génération se persiste désormais à chaque appel, condensé
+dans un seul `JSONField` (`CompteRenduGeneration.resume`) — jamais recalculé
+après coup (voir docs/suivi/DECISIONS.md). Première version mesurée avec
+`update_or_create` : **55 requêtes** (contre 49), quatre de plus que prévu —
+son `transaction.atomic()` imbriqué pose un `SAVEPOINT` propre alors que la
+génération tourne déjà dans sa propre transaction. Corrigé par une écriture
+directe (`UPDATE` puis `INSERT` conditionnel, deux requêtes) avant que cette
+mesure ne soit consignée : **51 requêtes** (contre 49). Constante
+`REQUETES_REFERENCE_US_PLAN_03` mise à jour, marge (2) intégralement
+consommée par ce changement — à surveiller sans délai au prochain ajout.
 
 **Mise à jour datée (2026-10-13, prompt 44, Temps 3, US-SUI-01, R2).** Le
 prérequis (RG-39 b) se vérifie désormais sur le réalisé
