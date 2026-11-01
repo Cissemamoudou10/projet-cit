@@ -23,6 +23,32 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-57 — Stash non lié, trouvé pendant le prompt 54, non appliqué
+**Date** 2026-11-01 · **Story** aucune (ménage, prompt 54, Temps 2) · **État** : ouvert
+**Symptôme** — `git stash list` portait une entrée antérieure au prompt 54 (`stash@{0}: WIP on master: 6d7f5ec`), jamais appliquée ni supprimée.
+**Cause** — Trois fichiers modifiés sans rapport avec le prompt 54 : (1) `app/referentiel/templates/referentiel/_fragments/statistique_volume.html` — ajoute `|floatformat:2` sur `ecart.total`/`ecart.attendu` (deux occurrences chacun) ; (2, 3) `outils/recette/lancer_recette_conteneur.ps1` et `reinitialiser_base_recette.ps1` — ajoutent un BOM UTF-8 et une ligne vide finale, probablement un effet de bord d'un éditeur, aucun changement de contenu utile.
+**Résolution** — Aucune, sur instruction explicite du chef de projet : gardé de côté (`git stash`, non appliqué). La partie PowerShell est sans objet (ces deux fichiers ont été réédités depuis par le prompt 53 et par le présent prompt 54, le stash ne s'appliquerait plus proprement). `floatformat:2` sur `statistique_volume.html` reste hors périmètre de ce prompt — à trancher séparément : le fragment affiche actuellement les volumes sans décimales forcées (`{{ ecart.total }}`), ce correctif les afficherait systématiquement à deux décimales (« 40,00 h » plutôt que « 40 h »).
+**Risque concerné** — aucun.
+**Leçon** — aucune ; consigné pour trace, à trancher par le chef de projet.
+
+## P-56 — Origine de `statistique_volume.html` — pas orphelin, aucune suppression à proposer
+**Date** 2026-11-01 · **Story** aucune (ménage, prompt 54, Temps 2) · **État** : résolu
+**Symptôme** — Le prompt 54 demandait de vérifier si `app/referentiel/templates/referentiel/_fragments/statistique_volume.html` sert encore à quelque chose.
+**Cause** — Vérifié par deux angles indépendants (`.claude/rules/tests.md`, « vérifier une absence ») : `git log` le trouve introduit par le commit `5e28140` (« Add consultation view and related templates for formation details ») ; une recherche de `{% include %}` le trouve réellement inclus par DEUX gabarits, `referentiel/formation_consultation.html` et `referentiel/formation_referentiel.html` — l'écart de volume (RG-xx, seuil de tolérance) y est affiché aux deux écrans qui montrent le total prescrit d'un référentiel.
+**Résolution** — Aucune suppression à proposer : le fragment est utilisé par deux écrans réels, pas un résidu. Rien à corriger.
+**Risque concerné** — aucun.
+**Leçon** — aucune.
+
+## P-55 — R00B-SUP-08 : message de confirmation après retrait de soumission, non reproduit
+**Date** 2026-11-01 · **Story** aucune (prompt 54, K7) · **État** : résolu
+**Symptôme** — Le recetteur a constaté qu'aucun message ne confirmait le retrait d'une soumission (RECETTE-00 bis, R00B-SUP-08, NC mineur retenu « à traiter à la séance de corrections »).
+**Cause** — Recherchée avant toute correction (règle de conduite du prompt 54) : lecture de `planification/views_circuit.py` — `retirer_soumission` appelle `_executer`, qui pose `messages.success(request, "Soumission retirée : le programme est de nouveau modifiable.")` exactement comme les huit autres transitions du circuit (`soumettre`, `valider`, `rejeter`, `reprendre`, `signer`, `afficher`, `annuler_validation`, `supprimer_brouillon`) — aucune n'en manque. Le gabarit de bouton (`consultation_programme.html`) et `noyau/ossature/messages.html` sont génériques et corrects. **Non reproduit** par un test qui rejoue exactement le parcours du recetteur : depuis la consultation, retirer la soumission en suivant la redirection (`follow=True`), lire le message dans le HTML de la page d'arrivée, vérifier que cette page inclut bien `messages.html` (`role="status"`) — `test_r00b_sup_08_retirer_la_soumission_affiche_un_message_de_confirmation`, `planification/tests/test_circuit_ecran.py` : passe.
+**Résolution** — Aucune correction de code : non reproduit, conforme par le code et par le test. Le contrôle sera rejoué par le recetteur (recommandation du chef de projet) — si le défaut persiste en conditions réelles, la cause est hors du code HTTP lui-même (navigateur, extension, session) et devra être décrite plus précisément.
+**Risque concerné** — aucun.
+**Leçon** — Un constat de recette peut rester vrai pour le recetteur sans qu'aucune cause ne soit trouvée dans le code ; consigner « non reproduit » avec la preuve (le test) vaut mieux que d'inventer une correction.
+
+---
+
 ## P-54 — `reinitialiser_base_recette.ps1` bloqué par une connexion ouverte sur la base cible (`DROP DATABASE ... is being accessed by other users`)
 **Date** 2026-10-30 · **Story** aucune (découvert en jouant réellement le script, Prompt 53, Temps 1) · **État** : résolu
 **Symptôme** — La remise à zéro de `pfe_cit_recette` (état `socle-planif`) échouait sur `ERROR: database "pfe_cit_recette" is being accessed by other users`, alors que le script venait de demander et d'obtenir la confirmation du nom de la base.

@@ -68,6 +68,18 @@ if ($BasesAutorisees -notcontains $Base) {
     throw "Base « $Base » non autorisée — seules $($BasesAutorisees -join ', ') le sont. Rien n'a été touché."
 }
 
+# Ménage du prompt 54 : refus explicite, avant toute action (migrations,
+# catalogues, confirmation interactive), plutôt qu'un échec en cours de
+# route. Le chargeur de l'état « volume » produit réellement un procès-
+# verbal (PDF, WeasyPrint) — bibliothèques natives absentes de Windows
+# (P-44, docs/suivi/PROBLEMES.md). `$PSVersionTable.PSEdition -eq "Desktop"`
+# couvre PowerShell 5.1 (toujours Windows, `$IsWindows` n'y existe pas) ;
+# `$IsWindows` couvre PowerShell 7+ (Core, multiplateforme).
+$SousWindows = ($PSVersionTable.PSEdition -eq "Desktop") -or $IsWindows
+if ($Etat -eq "volume" -and $SousWindows) {
+    throw "État « volume » indisponible sous Windows : son chargeur produit un procès-verbal (PDF, WeasyPrint), dont les bibliothèques natives sont absentes du poste de développement (P-44, docs/suivi/PROBLEMES.md). Chargez-le depuis le conteneur python:3.14-slim-bookworm — commande exacte dans docs/recette/JEUX-DE-DONNEES-PHASE-6.md. Rien n'a été touché."
+}
+
 Write-Host "=============================================================="
 Write-Host " Remise à zéro — état « $Etat », base « $Base »"
 Write-Host " Cette opération SUPPRIME DÉFINITIVEMENT le contenu actuel."

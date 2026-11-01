@@ -283,6 +283,38 @@ document.py` n'importe `weasyprint` qu'à l'intérieur de `produire()`, jamais
 en tête de module — le défaut est dans l'ABSENCE des bibliothèques natives
 sous Windows, pas dans le code.
 
+**Correction du script (prompt 54, ménage) : refus explicite, avant toute
+action, plutôt qu'un échec en cours de route.** `reinitialiser_base_recette.ps1
+-Etat volume` sous Windows s'arrête désormais dès la validation des
+paramètres, avant la confirmation interactive et avant tout `DROP DATABASE`
+— rien n'est touché. **Commande exacte pour charger l'état `volume`**, dans
+le même conteneur que `pytest -m pdf` et `lancer_recette_conteneur.ps1`
+(réseau Docker `developpement_default`, hôte `base`) :
+
+```powershell
+docker run --rm --network developpement_default `
+  -v "${PWD}:/workspace" -w /workspace -e BASE_HOTE=base `
+  python:3.14-slim-bookworm bash -c "
+    apt-get update -qq &&
+    apt-get install --no-install-recommends -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 >/dev/null 2>&1 &&
+    rm -rf /var/lib/apt/lists/* &&
+    pip install --no-cache-dir -q -r requirements.txt &&
+    cd app &&
+    python manage.py migrate --settings=config.settings.volume &&
+    python manage.py initialiser_habilitations --settings=config.settings.volume &&
+    python manage.py initialiser_gabarits_documents --settings=config.settings.volume &&
+    python manage.py initialiser_natures_evenement --settings=config.settings.volume &&
+    python manage.py charger_jeu_volume --settings=config.settings.volume &&
+    python manage.py initialiser_grilles_horaires --settings=config.settings.volume &&
+    python manage.py charger_jeu_volume --verifier --settings=config.settings.volume
+  "
+```
+
+La base cible (`pfe_cit_volume`) doit déjà exister, créée au préalable par
+les commandes `psql` du § « Remise à zéro, chargement, vérification »
+ci-dessus (même principe que pour `pfe_cit_recette`, base et rôle adaptés) —
+ce bloc ne recrée pas la base, il ne fait que migrer et charger.
+
 **Amélioration du script, trouvée en la jouant réellement** : la remise à
 zéro échouait sur `DROP DATABASE ... is being accessed by other users` dès
 qu'un outil d'exploration de base (ou un `runserver` resté ouvert) tenait une

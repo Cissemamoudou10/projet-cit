@@ -44,12 +44,12 @@ Profil : `u_plan`. Cette section vient **en premier** : une fois qu'elle est con
 
 | Code | Contrôle | Résultat attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R00B-SUP-01 | Écran de génération : sélectionner **volontairement la semaine W0**, brigades EXP1 et EXP2 ; générer | Un brouillon est créé pour W0 : c'est l'erreur que vous aviez faite. On va la réparer | US-PLAN-03 c.1 | ☐ | |
-| R00B-SUP-02 | Sur la consultation du programme W0, chercher le bouton « Supprimer ce brouillon » ; cliquer | Une confirmation qui nomme **la semaine, les brigades et le nombre de séances** | évolution S4, BNF-09 | ☐ | |
-| R00B-SUP-03 | Confirmer | Le programme W0 n'existe plus ; la liste des programmes ne le montre plus | S5 | ☐ | |
-| R00B-SUP-04 | `u_adm` : journal | Une entrée « suppression d'un programme » : semaine, brigades, nombre de séances, auteur `u_plan` | S6, RG-26 | ☐ | |
-| R00B-SUP-05 | Générer de nouveau W0 pour EXP1, puis le supprimer | Génération normale, comme si rien n'avait existé ; suppression acceptée | S7 | ☐ | Il ne doit rester **aucun programme** à la fin de cette section |
-| R00B-SUP-06 | Avec `u_ped`, ouvrir un programme en brouillon (en générer un avec `u_plan` au besoin) | Aucun bouton de suppression ; une adresse directe est refusée | S1 | ☐ | Supprimer ce brouillon ensuite avec `u_plan` |
+| R00B-SUP-01 | Écran de génération : sélectionner **volontairement la semaine W0**, brigades EXP1 et EXP2 ; générer | Un brouillon est créé pour W0 : c'est l'erreur que vous aviez faite. On va la réparer | US-PLAN-03 c.1 | C | |
+| R00B-SUP-02 | Sur la consultation du programme W0, chercher le bouton « Supprimer ce brouillon » ; cliquer | Une confirmation qui nomme **la semaine, les brigades et le nombre de séances** | évolution S4, BNF-09 | C | |
+| R00B-SUP-03 | Confirmer | Le programme W0 n'existe plus ; la liste des programmes ne le montre plus | S5 | C | |
+| R00B-SUP-04 | `u_adm` : journal | Une entrée « suppression d'un programme » : semaine, brigades, nombre de séances, auteur `u_plan` | S6, RG-26 | C | |
+| R00B-SUP-05 | Générer de nouveau W0 pour EXP1, puis le supprimer | Génération normale, comme si rien n'avait existé ; suppression acceptée | S7 | C | Il ne doit rester **aucun programme** à la fin de cette section |
+| R00B-SUP-06 | Avec `u_ped`, ouvrir un programme en brouillon (en générer un avec `u_plan` au besoin) | Aucun bouton de suppression ; une adresse directe est refusée | S1 | C | Supprimer ce brouillon ensuite avec `u_plan` |
 
 Les refus sur un programme soumis, validé, rejeté ou affiché se contrôlent en fin de cahier (section 6), quand ces états existent.
 
@@ -59,29 +59,29 @@ Profil : `u_plan`. **Toujours la semaine W+1**, celle que vous avez notée en t�
 
 | Code | Contrôle | Résultat attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R00B-GEN-01 | Écran de génération : semaine **W+1**, brigades **EXP1 et EXP2** ; lancer | La grille active (Ordinaire) est indiquée ; un programme **brouillon** est créé pour W+1 | US-PLAN-03 c.1, RG-31 | ☐ | |
-| R00B-GEN-02 | Juste après la génération : où arrivez-vous ? | Sur la **consultation du programme W+1**, avec un **résumé** en tête : séances placées, non placées, brigades traitées | correction R00-GEN-03 (C1) | ☐ | |
-| R00B-GEN-03 | Ouvrir le compte rendu détaillé depuis la page du programme | Les séances non placées sont **regroupées par motif**, avec un décompte ; le détail est replié et se déplie. La page se lit en une minute | US-PLAN-03 c.9, C3, C4 | ☐ | |
-| R00B-GEN-04 | Aller sur une autre page (liste des sessions), puis revenir au programme W+1 et rouvrir le compte rendu | Toujours là, inchangé | C2 | ☐ | |
-| R00B-GEN-05 | Consulter le programme W+1 | Une ligne par brigade ; M1 dans la salle attitrée de la brigade (L1 ou L2) ; M3 sans lieu ; M2 dans un lieu partagé (L4 ou L5) | US-PLAN-03 c.4 à c.6, RG-32 | ☐ | |
-| R00B-GEN-06 | Regarder le **mardi de W+1 de 08:00 à 09:45** | **Aucune séance** pour EXP1 ni EXP2 : la conférence bloque ce créneau | US-PLAN-04 c.5, RG-38 | ☐ | |
-| R00B-GEN-07 | Regarder le **jeudi et le vendredi de W+1** | **Aucune séance confiée à I1** (indisponible). D'autres instructeurs peuvent y avoir des séances | US-PLAN-04 c.5, RG-36 | ☐ | |
-| R00B-GEN-08 | Pour chaque créneau de W+1, comparer les instructeurs de EXP1 et de EXP2 | Jamais le même instructeur sur deux séances au même moment | US-PLAN-04 c.1, RG-34 | ☐ | |
-| R00B-GEN-09 | Relancer la génération de W+1 pour **EXP1 seule** | Le programme de la semaine est **complété** : les lignes de EXP2 sont intactes ; le compte rendu affiché est celui de cette dernière génération | US-PLAN-03 c.1, C2 | ☐ | |
-| R00B-GEN-10 | Générer **W+2** pour EXP1 et EXP2 ; comparer, matière par matière, le volume programmé cumulé de W+1 et W+2 au prescrit (M1 20 h, M2 10 h, M3 10 h) | Aucune matière ne dépasse son prescrit. Une matière épuisée est **écartée**, avec le motif « volume épuisé » dans le compte rendu | US-PLAN-03 c.3, US-PLAN-04 c.6 | ☐ | F1 ne compte que 40 h : l'épuisement est attendu dès W+2 |
-| R00B-GEN-11 | Chronométrer une génération (W+1, deux brigades) | Bien en deçà de 5 minutes | BNF-04 | ☐ | Temps : ______ |
+| R00B-GEN-01 | Écran de génération : semaine **W+1**, brigades **EXP1 et EXP2** ; lancer | La grille active (Ordinaire) est indiquée ; un programme **brouillon** est créé pour W+1 | US-PLAN-03 c.1, RG-31 | C | |
+| R00B-GEN-02 | Juste après la génération : où arrivez-vous ? | Sur la **consultation du programme W+1**, avec un **résumé** en tête : séances placées, non placées, brigades traitées | correction R00-GEN-03 (C1) | C | |
+| R00B-GEN-03 | Ouvrir le compte rendu détaillé depuis la page du programme | Les séances non placées sont **regroupées par motif**, avec un décompte ; le détail est replié et se déplie. La page se lit en une minute | US-PLAN-03 c.9, C3, C4 | C | |
+| R00B-GEN-04 | Aller sur une autre page (liste des sessions), puis revenir au programme W+1 et rouvrir le compte rendu | Toujours là, inchangé | C2 | C | |
+| R00B-GEN-05 | Consulter le programme W+1 | Une ligne par brigade ; M1 dans la salle attitrée de la brigade (L1 ou L2) ; M3 sans lieu ; M2 dans un lieu partagé (L4 ou L5) | US-PLAN-03 c.4 à c.6, RG-32 | C | |
+| R00B-GEN-06 | Regarder le **mardi de W+1 de 08:00 à 09:45** | **Aucune séance** pour EXP1 ni EXP2 : la conférence bloque ce créneau | US-PLAN-04 c.5, RG-38 | C | Créneau bien libre. **Mais le programme n'indique pas qu'il y a une conférence** : la case est vide, sans titre, lieu ni responsable. Observation à trancher à la séance de corrections |
+| R00B-GEN-07 | Regarder le **jeudi et le vendredi de W+1** | **Aucune séance confiée à I1** (indisponible). D'autres instructeurs peuvent y avoir des séances | US-PLAN-04 c.5, RG-36 | C | |
+| R00B-GEN-08 | Pour chaque créneau de W+1, comparer les instructeurs de EXP1 et de EXP2 | Jamais le même instructeur sur deux séances au même moment | US-PLAN-04 c.1, RG-34 | C | |
+| R00B-GEN-09 | Relancer la génération de W+1 pour **EXP1 seule** | Le programme de la semaine est **complété** : les lignes de EXP2 sont intactes ; le compte rendu affiché est celui de cette dernière génération | US-PLAN-03 c.1, C2 | C | |
+| R00B-GEN-10 | Générer **W+2** pour EXP1 et EXP2 ; comparer, matière par matière, le volume programmé cumulé de W+1 et W+2 au prescrit (M1 20 h, M2 10 h, M3 10 h) | Aucune matière ne dépasse son prescrit. Une matière épuisée est **écartée**, avec le motif « volume épuisé » dans le compte rendu | US-PLAN-03 c.3, US-PLAN-04 c.6 | C | F1 ne compte que 40 h : l'épuisement est attendu dès W+2 |
+| R00B-GEN-11 | Chronométrer une génération (W+1, deux brigades) | Bien en deçà de 5 minutes | BNF-04 | C | Temps : ______ |
 
 ## 5. Contrôles transverses du socle
 
 | Code | Contrôle | Résultat attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R00B-TRV-01 | Avec `u_df`, parcourir les écrans du socle (référentiel, instructeurs, lieux, sessions, stagiaires, calendrier, programme W+1) | Lecture là où la matrice l'accorde ; **aucune commande d'écriture**, pas même grisée | US-ADM-03 c.2 | ☐ | |
-| R00B-TRV-02 | Avec `u_plan`, saisir l'adresse de la liste des évaluations | Refus : la planification n'accède à aucune note | US-ADM-03 c.4 | ☐ | |
-| R00B-TRV-03 | Se déconnecter, puis saisir directement l'adresse de création d'une session | Redirection vers l'authentification ; rien n'est créé | US-ADM-03 c.6 | ☐ | |
-| R00B-TRV-04 | `u_adm` : journal | La génération apparaît avec la semaine, les brigades, les comptes et l'auteur, sans le détail des séances. Les suppressions de la section 3 sont là | RG-26, BNF-14 | ☐ | |
-| R00B-TRV-05 | Liste des stagiaires de S0 (55) | Paginée au-delà de vingt, avec recherche | BNF-15 | ☐ | |
-| R00B-TRV-06 | Relire trois messages de refus rencontrés dans ce cahier | Chacun dit la cause **et** l'action corrective | BNF-10 | ☐ | |
-| R00B-TRV-07 | Aperçu avant impression de la fiche de composition de S0 et de la liste des instructeurs | Colonne Actions masquée ; noter le débordement en pixels | D-63, K3 | ☐ | Connu : Instructeurs 168 px. À consigner, pas à corriger ici |
+| R00B-TRV-01 | Avec `u_df`, parcourir les écrans du socle (référentiel, instructeurs, lieux, sessions, stagiaires, calendrier, programme W+1) | Lecture là où la matrice l'accorde ; **aucune commande d'écriture**, pas même grisée | US-ADM-03 c.2 | C | |
+| R00B-TRV-02 | Avec `u_plan`, saisir l'adresse de la liste des évaluations | Refus : la planification n'accède à aucune note | US-ADM-03 c.4 | C | |
+| R00B-TRV-03 | Se déconnecter, puis saisir directement l'adresse de création d'une session | Redirection vers l'authentification ; rien n'est créé | US-ADM-03 c.6 | C | |
+| R00B-TRV-04 | `u_adm` : journal | La génération apparaît avec la semaine, les brigades, les comptes et l'auteur, sans le détail des séances. Les suppressions de la section 3 sont là | RG-26, BNF-14 | C | |
+| R00B-TRV-05 | Liste des stagiaires de S0 (55) | Paginée au-delà de vingt, avec recherche | BNF-15 | C | |
+| R00B-TRV-06 | Relire les messages d'erreur obtenus à trois contrôles : **R00B-SUP-06** (`u_ped` tente de supprimer), **R00B-TRV-02** (`u_plan` ouvre les évaluations) et **R00B-SUP-08** (suppression d'un brouillon déjà passé par le circuit, à jouer d'abord). Pour chacun, se poser deux questions : *le message dit-il **pourquoi** c'est refusé ?* et *dit-il **quoi faire** à la place ?* | Les trois messages répondent aux deux questions. Exemple conforme : « Ce brouillon a déjà été soumis : il ne peut plus être supprimé. Modifiez-le ou régénérez-le. » Exemple non conforme : « Action impossible. » | BNF-10 | C | Recopier les messages dans Obs. Un message qui ne dit que « refusé » est un NC mineur — SUP-08 ne produit pas de message (bouton absent) : jugé sur SUP-06 et TRV-02 |
+| R00B-TRV-07 | Vérifier ce que donnent deux pages **sur papier**. (1) Ouvrir la fiche de composition de S0 (Sessions → S0), faire **Ctrl+P** et regarder l'aperçu sans imprimer. (2) Même chose sur la liste des instructeurs (Ressources → Instructeurs) | Sur les deux aperçus : **aucun bouton** (Modifier, Supprimer…) ni colonne « Actions » ne figure sur le papier, et **le tableau tient dans la largeur de la page** (aucune colonne coupée à droite) | D-63, K3 | NC mineur | Défaut déjà connu : la liste des instructeurs déborde à droite. Si c'est le cas, noter quelles colonnes sont coupées. À consigner, pas à corriger ici — Les boutons (Modifier, etc.) apparaissent sur l'aperçu d'impression |
 
 ## 6. Refus de suppression hors brouillon (évolution du prompt 53)
 
@@ -89,12 +89,12 @@ Profils : `u_plan` et `u_ped`. On fait passer W+1 par le circuit pour obtenir ch
 
 | Code | Contrôle | Résultat attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R00B-SUP-07 | `u_plan` soumet W+1 ; chercher la suppression | Absente ou refusée : programme soumis | S2 | ☐ | |
-| R00B-SUP-08 | `u_plan` retire la soumission : W+1 redevient brouillon ; chercher la suppression | **Refusée** : ce brouillon a une histoire de circuit. Le message propose de le modifier ou de le régénérer | S2 | ☐ | |
-| R00B-SUP-09 | `u_plan` resoumet ; `u_ped` rejette (motif) ; `u_plan` cherche la suppression | Refusée : programme rejeté | S2 | ☐ | |
-| R00B-SUP-10 | `u_plan` modifie et resoumet ; `u_ped` valide ; `u_plan` cherche la suppression | Refusée : programme validé | S2 | ☐ | |
-| R00B-SUP-11 | `u_plan` enregistre la signature et affiche ; cherche la suppression | Refusée : programme affiché | S2 | ☐ | |
-| R00B-SUP-12 | W+2 (généré en R00B-GEN-10, jamais soumis) : le supprimer | Acceptée : brouillon sans histoire de circuit | S2, S5 | ☐ | |
+| R00B-SUP-07 | `u_plan` soumet W+1 ; chercher la suppression | Absente ou refusée : programme soumis | S2 | C | |
+| R00B-SUP-08 | `u_plan` retire la soumission : W+1 redevient brouillon ; chercher la suppression | **Refusée** : ce brouillon a une histoire de circuit. Le message propose de le modifier ou de le régénérer | S2 | C | Bouton de suppression absent après le retrait, ce qui est conforme (jamais de bouton grisé). **Mais aucun message ne confirme que la soumission a été retirée.** NC mineur à traiter à la séance de corrections |
+| R00B-SUP-09 | `u_plan` resoumet ; `u_ped` rejette (motif) ; `u_plan` cherche la suppression | Refusée : programme rejeté | S2 | C | |
+| R00B-SUP-10 | `u_plan` modifie et resoumet ; `u_ped` valide ; `u_plan` cherche la suppression | Refusée : programme validé | S2 | C | |
+| R00B-SUP-11 | `u_plan` enregistre la signature et affiche ; cherche la suppression | Refusée : programme affiché | S2 | C | |
+| R00B-SUP-12 | W+2 (généré en R00B-GEN-10, jamais soumis) : le supprimer | Acceptée : brouillon sans histoire de circuit | S2, S5 | C | |
 
 ---
 
@@ -102,17 +102,17 @@ Profils : `u_plan` et `u_ped`. On fait passer W+1 par le circuit pour obtenir ch
 
 | Section | Contrôles | C | NC majeur | NC mineur | B | SO |
 |---|---|---|---|---|---|---|
-| 3. Supprimer un brouillon | 6 | | | | | |
-| 4. Génération | 11 | | | | | |
-| 5. Transverses | 7 | | | | | |
-| 6. Refus de suppression | 6 | | | | | |
-| **Total** | **30** | | | | | |
+| 3. Supprimer un brouillon | 6 | 6 | 0 | 0 | 0 | 0 |
+| 4. Génération | 11 | 11 | 0 | 0 | 0 | 0 |
+| 5. Transverses | 7 | 6 | 0 | 1 | 0 | 0 |
+| 6. Refus de suppression | 6 | 6 | 0 | 0 | 0 | 0 |
+| **Total** | **30** | **29** | **0** | **1** | **0** | **0** |
 
-☐ Prononcée ☐ Prononcée sous réserve (rejeu le ______) ☐ Refusée
+☒ Prononcée ☐ Prononcée sous réserve (rejeu le ______) ☐ Refusée
 
 Avec les sections 3 à 7 de RECETTE-00, ce cahier forme la recette du socle. Les deux se prononcent ensemble, après la séance de corrections.
 
-**Observations :**
+**Observations :** joué le 31/10/2026. Aucun NC majeur. Les deux évolutions du prompt 53 sont conformes : suppression d'un brouillon (12 contrôles sur 12) et compte rendu de génération (correction de R00-GEN-03). À traiter à la séance de corrections : TRV-07 (boutons visibles à l'impression), SUP-08 (aucun message après le retrait de la soumission), GEN-06 (la conférence n'apparaît pas sur le programme).
 
 ## 8. Correspondance avec l'ancienne numérotation
 

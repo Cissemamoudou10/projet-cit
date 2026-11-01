@@ -84,21 +84,21 @@ Profil : `u_ped` sauf indication contraire.
 | R00-REF-05 | Ouvrir la fiche de `M1` | Les formations qui l'utilisent sont indiquées : F1 et F3 | US-REF-02 c.3 | C | |
 | R00-REF-06 | Supprimer `M1`, puis créer une matière dont l'intitulé est celui de `M1` | Les deux refus ; la suppression énumère les référentiels qui l'utilisent | US-REF-02 c.2, c.5 | C | |
 | R00-REF-07 | Référentiel de F1 : vérifier le total, puis rattacher `M4` avec un volume de 0 h | Total affiché : 40 h. Le rattachement à 0 h est refusé | US-REF-03 c.4, c.5 | C | Le champ lui-même refuse 0 au moment de rattacher |
-| R00-REF-08 | Rattacher `M4` à F1 avec 10 h, puis porter son coefficient à 0, puis ses deux poids à 0 | 10 h acceptées ; coefficient nul refusé ; deux poids nuls refusés | US-REF-03 c.7 | C | Les champs refusent 0 à la validation. **Mais le coefficient et les poids ne s'affichent pas dans la liste des matières rattachées** : il faut les ressaisir à chaque modification. Candidat NC, à qualifier à la séance de corrections |
+| R00-REF-08 | Rattacher `M4` à F1 avec 10 h, puis porter son coefficient à 0, puis ses deux poids à 0 | 10 h acceptées ; coefficient nul refusé ; deux poids nuls refusés | US-REF-03 c.7 | NC mineur | Les champs refusent 0 à la validation. **Mais le coefficient et les poids ne s'affichent pas dans la liste des matières rattachées** : il faut les ressaisir à chaque modification. Candidat NC, à qualifier à la séance de corrections |
 | R00-REF-09 | Retirer `M4` du référentiel de F1 | Accepté après confirmation : rien ne la référence | US-REF-03 c.6, BNF-09 | C | |
 | R00-REF-10 | Ouvrir `M2` dans le référentiel de F1 | Catégorie « lieu partagé » avec son type attendu (amphithéâtre, laboratoire ou salle spécialisée) | US-REF-04 c.1, c.2 | C | Déjà visible dans la liste des matières rattachées |
 | R00-REF-11 | Ajouter deux objectifs pédagogiques à `M3`, ordres 1 et 2, puis consulter le référentiel de F1 | Objectifs visibles sur la fiche de M3 **et** depuis le référentiel de F1, dans l'ordre | US-REF-05 c.1 à c.3 | C | |
 | R00-REF-12 | Référentiel de F2 : déclarer `M5` prérequis de `M4` | Refus : cycle, avec la **chaîne de matières** qui le forme | US-REF-06 c.2, CU-P2-07 E1 | C | |
 | R00-REF-13 | Avec `u_plan`, ouvrir le référentiel de F1 | Formations, matières, volumes et prérequis consultables ; aucun bouton d'écriture | US-REF-07 c.1, c.2 | C | |
 | R00-REF-14 | Avec `u_plan`, saisir directement l'adresse de modification du référentiel de F1 | Refus côté serveur, journalisé une fois, sans révéler de donnée | US-REF-07 c.3 | C | |
-| R00-REF-15 | Avec `u_ped`, porter M1 de F1 à 25 h ; avec `u_plan`, recharger le référentiel ; avec `u_ped`, remettre 20 h | La valeur de 25 h est visible immédiatement côté planification ; 20 h rétablies | US-REF-07 c.4 | C | Même défaut qu'en REF-08 : coefficient et poids non affichés dans la liste, à ressaisir à chaque modification |
+| R00-REF-15 | Avec `u_ped`, porter M1 de F1 à 25 h ; avec `u_plan`, recharger le référentiel ; avec `u_ped`, remettre 20 h | La valeur de 25 h est visible immédiatement côté planification ; 20 h rétablies | US-REF-07 c.4 | NC mineur | Même défaut qu'en REF-08 : coefficient et poids non affichés dans la liste, à ressaisir à chaque modification |
 
 ## 5. Paquetage Ressources — US-INS-01 à 03, US-PLAN-02
 
 | Code | Contrôle | Profil | Résultat attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|---|
 | R00-RES-01 | Liste des instructeurs : rechercher par nom, puis filtrer par statut | `u_ped` | Recherche et filtre opérants, liste paginée | US-INS-01 c.3 | C | |
-| R00-RES-02 | Créer un instructeur « militaire du centre » sans matricule, puis un « vacataire » sans matricule | `u_ped` | Le premier est refusé, matricule obligatoire ; le second est accepté | US-INS-01 c.1 | C | Refus correct, mais le message n'est pas assez précis : NC mineur probable (BNF-10) |
+| R00-RES-02 | Créer un instructeur « militaire du centre » sans matricule, puis un « vacataire » sans matricule | `u_ped` | Le premier est refusé, matricule obligatoire ; le second est accepté | US-INS-01 c.1 | NC mineur | Refus correct, mais le message n'est pas assez précis : NC mineur probable (BNF-10) |
 | R00-RES-03 | Archiver le vacataire créé au contrôle 02 | `u_ped` | Archivé, toujours consultable, marqué comme tel | US-INS-01 c.2 | C | |
 | R00-RES-04 | Matrice de qualification : consulter par matière `M2`, puis créer une matière `M10` sans aucune qualification | `u_ped` | M2 : I1 et I3. M10 signalée visuellement comme sans instructeur qualifié | US-INS-02 c.3, c.4 | C | Supprimer M10 ensuite |
 | R00-RES-05 | Ouvrir la **matrice de qualification** des instructeurs (celle du contrôle 04 : quels instructeurs sont habilités à enseigner quelles matières) | `u_plan` | Consultable, aucune commande de modification | US-INS-02 c.5 | C | |
@@ -139,8 +139,8 @@ Profil : `u_ped` sauf indication contraire.
 | R00-SES-11 | Importer `03-valide-45-colonnes-permutees.csv` | 45 lignes reconnues malgré les colonnes permutées ; total de la session : 55 | US-SES-05 c.3, c.4 | C | |
 | R00-SES-12 | Radier un stagiaire (motif et date) ; comparer les commandes Radier et Supprimer | Stagiaire conservé, marqué radié ; libellés et confirmations distincts | US-SES-05 c.7, BNF-09 | C | |
 | R00-SES-13 | Lancer la proposition de répartition | 20 dans EXP1, 15 dans EXP2, remplissage successif ; les non-affectés listés à part ; le radié absent ; **rien n'est enregistré** avant validation | US-SES-06 c.1, c.5 | C | Valider ensuite |
-| R00-SES-14 | (a) Affecter un 16ᵉ stagiaire à EXP2 (salle L2, capacité 15). (b) Porter l'effectif déclaré de EXP1 à 18, désaffecter un de ses stagiaires (19 réels), puis en affecter un autre (20 réels) | (a) **Refus**, avec la marge restante : la capacité de la salle est un fait physique. (b) **Accepté avec avertissement** : l'effectif déclaré est prévisionnel | US-SES-06 c.3 | a : C · b : NC | Remettre l'effectif déclaré de EXP1 à 20 — b : réduire l'effectif déclaré d'une brigade pleine ne donne aucune alerte (un avertissement est attendu) ; et un retrait d'affectation exige d'attendre un jour |
-| R00-SES-15 | Affecter à EXP2 un stagiaire déjà affecté à EXP1 | Refus ; la brigade actuelle est nommée, un déplacement est proposé | US-SES-06 c.4 | NC | Déplacer ou retirer un stagiaire affecté le jour même est refusé : il faut attendre un jour. Candidat NC majeur (historisation RG-20) |
+| R00-SES-14 | (a) Affecter un 16ᵉ stagiaire à EXP2 (salle L2, capacité 15). (b) Porter l'effectif déclaré de EXP1 à 18, désaffecter un de ses stagiaires (19 réels), puis en affecter un autre (20 réels) | (a) **Refus**, avec la marge restante : la capacité de la salle est un fait physique. (b) **Accepté avec avertissement** : l'effectif déclaré est prévisionnel | US-SES-06 c.3 | a : C · b : NC mineur | Remettre l'effectif déclaré de EXP1 à 20 — b : réduire l'effectif déclaré d'une brigade pleine ne donne aucune alerte (un avertissement est attendu) ; et un retrait d'affectation exige d'attendre un jour |
+| R00-SES-15 | Affecter à EXP2 un stagiaire déjà affecté à EXP1 | Refus ; la brigade actuelle est nommée, un déplacement est proposé | US-SES-06 c.4 | NC majeur | Déplacer ou retirer un stagiaire affecté le jour même est refusé : il faut attendre un jour. Candidat NC majeur (historisation RG-20) |
 | R00-SES-16 | Liste des stagiaires : filtrer sur EXP1, rechercher un nom accentué sans les accents, exporter en CSV | Filtre et recherche opérants ; l'export respecte le filtre, accents corrects | US-SES-07 c.1 à c.3 | C | |
 | R00-SES-17 | Avec `u_exa`, ouvrir la liste des stagiaires de EXP1 | Accès en lecture | US-SES-07 c.4 | C | |
 | R00-SES-18 | Supprimer F1, puis supprimer L1 | Les deux refus : F1 porte S0 ; L1 est attitrée à EXP1. Les opposants sont énumérés | US-REF-01 c.4, US-PLAN-02 c.4 | C | |
@@ -158,12 +158,12 @@ R00-GEN-01 et R00-GEN-02 avaient été notés C, et R00-GEN-03 NC (compte rendu 
 
 | Section | Contrôles | C | NC majeur | NC mineur | B | SO |
 |---|---|---|---|---|---|---|
-| 3. Administration | 10 | | | | | |
-| 4. Référentiel | 15 | | | | | |
-| 5. Ressources | 8 | | | | | |
-| 6. Calendrier et grilles | 7 | | | | | |
-| 7. Organisation | 19 | | | | | |
-| **Total** | **59** | | | | | |
+| 3. Administration | 10 | 10 | 0 | 0 | 0 | 0 |
+| 4. Référentiel | 15 | 13 | 0 | 2 | 0 | 0 |
+| 5. Ressources | 8 | 7 | 0 | 1 | 0 | 0 |
+| 6. Calendrier et grilles | 7 | 7 | 0 | 0 | 0 | 0 |
+| 7. Organisation | 19 | 16 | 1 | 2 | 0 | 0 |
+| **Total** | **59** | **53** | **1** | **5** | **0** | **0** |
 
 Les sections 8 et 9 (16 contrôles) sont dans RECETTE-00 bis. Les deux cahiers se prononcent ensemble, après la séance de corrections.
 
@@ -171,13 +171,13 @@ Les sections 8 et 9 (16 contrôles) sont dans RECETTE-00 bis. Les deux cahiers s
 
 ☐ **Prononcée** — aucun NC majeur
 
-☐ **Prononcée sous réserve** — NC majeur corrigé, rejeu prévu le ________
+☒ **Prononcée sous réserve** — NC majeur corrigé, rejeu prévu le ________ (après le prompt 54)
 
 ☐ **Refusée** — NC majeur ouvert : RECETTE-01 à 05 ne commencent pas avant correction
 
 *Exécution des sections 3 à 7 : 30/10/2026, sur l'étiquette `recette-phase-6`.*
 
-**Observations :**
+**Observations :** qualification arrêtée le 31/10/2026. NC majeur : SES-15 (un stagiaire affecté le jour même ne peut être déplacé ou retiré que le lendemain). NC mineurs : REF-08 et REF-15 (coefficient et poids non affichés, à ressaisir), RES-02 (message de refus imprécis), SES-10 (écart documentaire, à porter au backlog v12), SES-14 b (aucun avertissement). Tous corrigés par le prompt 54, puis rejoués. RECETTE-00 bis est prononcée (31/10).
 
 ## 11. Matrice story → contrôles
 
