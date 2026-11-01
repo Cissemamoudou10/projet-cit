@@ -46,6 +46,29 @@ def test_g2_generation_sur_semaine_soumise_refusee_a_l_ecran_sans_seance_creee(
     assert _pks_seances(programme) == avant
 
 
+def test_r00b_sup_08_retirer_la_soumission_affiche_un_message_de_confirmation(
+    client, scenario, circuit
+):
+    """R00B-SUP-08 (recette) : le recetteur a constaté, en conditions réelles,
+    l'absence de message après avoir retiré une soumission. Reproduit son
+    parcours exact — depuis la consultation, retirer la soumission en
+    suivant la redirection (`follow=True`), puis lire le message dans le
+    HTML de la page d'arrivée — pour établir si le défaut est dans le code
+    ou ailleurs avant toute correction (règle de conduite du prompt)."""
+    amener_a(EtatProgramme.SOUMIS, circuit)
+    client.force_login(circuit.acteurs.planificateur)
+
+    reponse = client.post(
+        reverse("planification:retirer_soumission", args=[circuit.programme.pk]),
+        follow=True,
+    )
+
+    contenu = reponse.content.decode("utf-8")
+    assert reponse.status_code == 200
+    assert 'role="status"' in contenu  # noyau/ossature/messages.html bien inclus
+    assert "Soumission retirée" in contenu
+
+
 def test_g3_lancement_sur_semaine_validee_affiche_le_motif_et_desactive_le_bouton(
     client, scenario, circuit
 ):
