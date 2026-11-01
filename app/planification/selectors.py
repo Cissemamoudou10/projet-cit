@@ -6,9 +6,11 @@ démarrage de l'application (`planification.apps.PlanificationConfig.ready`)
 — c'est ce câblage qui referme réellement D-51 (RG-22), voir
 docs/suivi/DECISIONS.md.
 
-`apercu_regeneration`/`grille_consultation` servent les écrans de l'US-PLAN-03
-(Prompt 31, § 9) — lecture seule, aucune règle métier : la vue les appelle
-pour construire un contexte déjà prêt à afficher.
+`apercu_regeneration` sert les écrans de l'US-PLAN-03 (Prompt 31, § 9) —
+lecture seule, aucune règle métier : la vue les appelle pour construire un
+contexte déjà prêt à afficher. `grille_consultation` (même écran) vit dans
+`selectors_consultation.py`, scindé d'ici pour tenir sous 400 lignes
+(.claude/rules/python.md) après R00B-GEN-06 (prompt 54).
 """
 
 import dataclasses
@@ -17,12 +19,9 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from noyau.intervalles import filtre_recouvrement
-from noyau.services.parametres import ResolveurSeancesDeControle
 from organisation.models import Brigade
 from organisation.services.session import ServiceSession
 from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
-from planification.selectors_suivi import non_executions_des_lignes
-from planification.services.temps import duree_heures
 from ressources.models import CreneauType, GrilleHoraire, Instructeur, Lieu
 
 JOUR_SEMAINE_PAR_ISO = {
@@ -160,117 +159,6 @@ def apercu_regeneration(lundi_de_semaine, brigades) -> dict:
     return {
         etat.brigade: etat.non_verrouillees for etat in etats.values() if etat.non_verrouillees > 0
     }
-
-
-@dataclasses.dataclass(frozen=True)
-class CelluleProgramme:
-    ligne: object = None
-    volume_cumule: float = 0.0
-    autres_brigades: str = ""
-    est_controle: bool = False
-    creneau: object = None
-    non_execution: object = None
-
-    @property
-    def seance(self):
-        return self.ligne.seance if self.ligne else None
-
-    @property
-    def libelle_vide(self):
-        return "AD/GROUPEMENT"
-
-    @property
-    def est_passee(self):
-        """US-SUI-05, S2 : séance passée = fin antérieure à maintenant."""
-        return self.seance is not None and self.seance.fin <= timezone.now()
-
-
-def _lignes_du_programme(programme, brigades):
-    return (
-        LigneProgramme.objects.filter(seance__programme=programme, brigade__in=brigades)
-        .select_related(
-            "brigade", "seance__element_referentiel__matiere", "seance__instructeur", "seance__lieu"
-        )
-        .prefetch_related("seance__lignes__brigade")
-    )
-
-
-def _volumes_cumules(lignes_cibles):
-    """Volume cumulé (`.claude/rules/modeles.md`, LigneProgramme) de chaque
-    ligne affichée, calculé EN BLOC — `LigneProgramme.volume_cumule`
-    interroge la base à chaque accès, une requête par cellule affichée
-    violerait « aucune requête dans une boucle » (.claude/rules/python.md)
-    sur une grille qui en compte plusieurs dizaines."""
-    cibles_pk = {ligne.pk for ligne in lignes_cibles}
-    paires = {(ligne.brigade_id, ligne.seance.element_referentiel_id) for ligne in lignes_cibles}
-    if not paires:
-        return {}
-    filtre = Q()
-    for brigade_id, element_id in paires:
-        filtre |= Q(brigade_id=brigade_id, seance__element_referentiel_id=element_id)
-    historique = (
-        LigneProgramme.objects.filter(filtre).select_related("seance").order_by("seance__debut")
-    )
-    cumul, resultat = {}, {}
-    for ligne in historique:
-        cle = (ligne.brigade_id, ligne.seance.element_referentiel_id)
-        cumul[cle] = cumul.get(cle, 0) + duree_heures(ligne.seance.debut, ligne.seance.fin)
-        if ligne.pk in cibles_pk:
-            resultat[ligne.pk] = cumul[cle]
-    return resultat
-
-
-def _autres_brigades(ligne):
-    autres = [
-        str(autre.brigade)
-        for autre in ligne.seance.lignes.all()
-        if autre.brigade_id != ligne.brigade_id
-    ]
-    if not autres:
-        return ""
-    return "regroupée — " + " + ".join([str(ligne.brigade)] + autres)
-
-
-def grille_consultation(programme, creneaux, brigades):
-    """Groupée par type de formation, une ligne par brigade, une colonne
-    par créneau (§ 9) — `creneaux` porte déjà UN SEUL JOUR, sélectionné par
-    la vue (onglets), pour tenir en largeur (retour utilisateur, jamais les
-    sept jours à la fois)."""
-    lignes_qs = list(_lignes_du_programme(programme, brigades))
-    volumes = _volumes_cumules(lignes_qs)
-    controles = ResolveurSeancesDeControle.resoudre({ligne.seance_id for ligne in lignes_qs})
-    non_executions = non_executions_des_lignes([ligne.pk for ligne in lignes_qs])
-    par_brigade_horaire = {}
-    for ligne in lignes_qs:
-        debut_local = timezone.localtime(ligne.seance.debut)
-        cle = (ligne.brigade_id, debut_local.isoweekday(), debut_local.time())
-        par_brigade_horaire[cle] = ligne
-
-    groupes, brigades_par_type = [], {}
-    for brigade in brigades:
-        type_formation = brigade.session.formation.type_formation
-        brigades_par_type.setdefault(type_formation, []).append(brigade)
-
-    for type_formation, brigades_du_type in brigades_par_type.items():
-        lignes_affichees = []
-        for brigade in brigades_du_type:
-            cellules = []
-            for creneau in creneaux:
-                cle = (brigade.pk, JOUR_SEMAINE_PAR_ISO[creneau.jour_semaine], creneau.heure_debut)
-                ligne = par_brigade_horaire.get(cle)
-                cellules.append(
-                    CelluleProgramme(
-                        ligne=ligne,
-                        volume_cumule=volumes.get(ligne.pk, 0) if ligne else 0,
-                        autres_brigades=_autres_brigades(ligne) if ligne else "",
-                        est_controle=ligne.seance_id in controles if ligne else False,
-                        creneau=creneau,
-                        non_execution=non_executions.get(ligne.pk) if ligne else None,
-                    )
-                )
-            lignes_affichees.append({"brigade": brigade, "cellules": cellules})
-        groupes.append({"type_formation": type_formation, "lignes": lignes_affichees})
-    return groupes
 
 
 def seances_futures_qualification(instructeur, matiere) -> list[str]:

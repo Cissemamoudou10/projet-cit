@@ -128,7 +128,10 @@ def _charger_indisponibilites(modele, champ_cible, debut, fin):
     return resultat
 
 
-def _charger_periodes_bloquantes(debut, fin):
+def charger_periodes_bloquantes(debut, fin):
+    """Publique (pas `_`) : reprise par `planification.selectors.
+    grille_consultation` (US-PLAN-04, R00B-GEN-06) — la même requête,
+    jamais une seconde implantation (.claude/rules/python.md)."""
     periodes = (
         PeriodeCalendrier.objects.filter(
             filtre_recouvrement("debut", "fin", debut, fin), effet="bloquant"
@@ -322,7 +325,7 @@ class ServiceContraintes:
             indisponibilites_lieu=_charger_indisponibilites(
                 IndisponibiliteLieu, "lieu_id", debut, fin
             ),
-            periodes_bloquantes=_charger_periodes_bloquantes(debut, fin),
+            periodes_bloquantes=charger_periodes_bloquantes(debut, fin),
             jours_examen=ResolveurJoursExamen.resoudre(debut.date(), fin.date()),
             occupations_epreuves=ResolveurOccupationsEpreuves.resoudre(debut, fin),
             salles_attitrees=salles_attitrees,

@@ -46,18 +46,27 @@ def projeter_creneaux(creneaux, lundi_de_semaine):
     return projections
 
 
-def creneau_bloque(brigade, debut, fin, periodes_bloquantes):
-    """Étape 2 : un créneau dont la portée d'une période bloquante couvre
-    cette brigade n'engendre aucune case pour elle. `periodes_bloquantes` :
-    même forme que `Contexte.periodes_bloquantes` — appelable AVANT qu'un
-    `ProgrammeHebdomadaire` existe (E1, § 6), ou après via le contexte."""
+def periode_bloquante(brigade, debut, fin, periodes_bloquantes):
+    """La période bloquante dont la portée couvre `brigade` sur ce créneau,
+    ou `None` — `periodes_bloquantes` : même forme que `Contexte.
+    periodes_bloquantes`, appelable AVANT qu'un `ProgrammeHebdomadaire`
+    existe (E1, § 6), ou après via le contexte. Repris par la consultation
+    du programme (US-PLAN-04, R00B-GEN-06) : le même calcul désigne le
+    créneau bloqué à la génération et à l'affichage, jamais une seconde
+    implantation (.claude/rules/python.md)."""
     for entree in periodes_bloquantes:
         periode = entree["periode"]
         if se_recouvrent(debut, fin, periode.debut, periode.fin) and _portee_couvre(
             entree, brigade
         ):
-            return True
-    return False
+            return periode
+    return None
+
+
+def creneau_bloque(brigade, debut, fin, periodes_bloquantes):
+    """Étape 2 : un créneau dont la portée d'une période bloquante couvre
+    cette brigade n'engendre aucune case pour elle."""
+    return periode_bloquante(brigade, debut, fin, periodes_bloquantes) is not None
 
 
 def construire_cases(brigades, creneaux_projetes, periodes_bloquantes):
@@ -152,7 +161,9 @@ def candidates_pour_case(case, matieres, contexte, preparation):
     candidates = []
     for element in matieres:
         for instructeur in preparation.instructeurs_qualifies.get(element.matiere.pk, []):
-            candidates += _candidates_pour_matiere(case, element, instructeur, contexte, preparation)
+            candidates += _candidates_pour_matiere(
+                case, element, instructeur, contexte, preparation
+            )
     return candidates
 
 

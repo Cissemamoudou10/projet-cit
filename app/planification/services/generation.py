@@ -46,8 +46,8 @@ from planification.services.circuit import (
 )
 from planification.services.contraintes import (
     ServiceContraintes,
-    _charger_periodes_bloquantes,
     _semaine,
+    charger_periodes_bloquantes,
 )
 from planification.services.ecriture import ServiceEcritureSeance
 from planification.services.modification import supprimer_seances_regenerables
@@ -80,7 +80,7 @@ def _grille_active_avec_creneaux():
 
 def _cases_ou_e1(brigades, creneaux, lundi_de_semaine):
     debut, fin = _semaine(lundi_de_semaine)
-    periodes_bloquantes = _charger_periodes_bloquantes(debut, fin)
+    periodes_bloquantes = charger_periodes_bloquantes(debut, fin)
     creneaux_projetes = projeter_creneaux(creneaux, lundi_de_semaine)
     cases = construire_cases(brigades, creneaux_projetes, periodes_bloquantes)
     if not cases:

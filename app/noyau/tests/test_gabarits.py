@@ -39,6 +39,17 @@ def test_base_masque_le_cartouche_sans_grille_active(rf, db):
     assert "Grille active" not in contenu
 
 
+def test_base_masque_l_entete_de_page_a_l_impression(rf, db):
+    """R00B-TRV-07 (recette, NC mineur) : `entete_page` rend un `<div>` nu,
+    jamais un `<header>` — la règle d'impression de la charte (§ 4.2) ne
+    masque que `body > header/nav/footer`, jamais ce bloc. Chaque fiche
+    qui y pose ses boutons (Modifier, Clôturer…) les imprimait donc. Une
+    seule correction, ici, couvre tous les écrans qui héritent de ce
+    gabarit — jamais une correction écran par écran (règle du prompt 54)."""
+    contenu = render_to_string("noyau/base.html", request=_requete(rf))
+    assert '<div data-impression="masquer">' in contenu
+
+
 def test_base_affiche_l_intitule_de_la_grille_active(rf, db):
     """Correction du 2026-09-17 : le cartouche lisait `grille_active.libelle`,
     un nom deviné avant que `GrilleHoraire` existe — le champ réel est

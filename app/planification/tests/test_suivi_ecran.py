@@ -42,6 +42,27 @@ def _url_consultation(programme):
     )
 
 
+def test_k9_la_consultation_imprime_un_seul_jour_jamais_la_semaine(client, circuit, grille_active):
+    """K9 (recette, prompt 54) : la fiche renvoyait à une « anomalie n°1 »
+    introuvable (erreur du chef de projet, écartée) — seule D-155 fait
+    référence. D-155 mesure que la semaine entière (21 colonnes, 2319 px)
+    déborde des deux orientations, et que seule une décomposition « par
+    journée » (504 px) tient. D-157 (le lendemain) a précisément recomposé
+    cet écran ainsi, pour l'affichage ET pour l'impression navigateur
+    (aucun gabarit PDF dédié à cet écran, D-291) : `grille_consultation`
+    ne reçoit jamais que les créneaux du jour actif. Trouvé DÉJÀ résolu,
+    sans contradiction entre la fiche et D-155 — ce test fige la garantie
+    plutôt que de réimplanter ce que D-157 a déjà fait."""
+    amener_a(EtatProgramme.AFFICHE, circuit)
+    client.force_login(circuit.acteurs.planificateur)
+
+    contenu = client.get(_url_consultation(circuit.programme)).content.decode("utf-8")
+
+    # grille_active (conftest) pose deux créneaux par jour : jamais 10
+    # (2 × 5 jours ouvrés) sur une seule page, quel que soit l'onglet actif.
+    assert "2 créneaux" in contenu
+
+
 def test_declaration_puis_affichage_de_la_mention(client, circuit, grille_active):
     affiche = amener_a(EtatProgramme.AFFICHE, circuit)
     ligne = _ligne_passee(affiche, circuit)

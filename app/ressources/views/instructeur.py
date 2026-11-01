@@ -205,6 +205,11 @@ def vue_liste_instructeurs(request):
         "libelle_vide": "Aucun instructeur ne correspond aux filtres",
         "texte_vide": "Ajustez la recherche ou réinitialisez les filtres.",
         "page": page,
+        # R00B-TRV-07 (recette, NC mineur) : neuf colonnes ne tiennent pas en
+        # portrait sans descendre sous 8 pt (plancher de lisibilité imposé) —
+        # paysage plutôt qu'une police illisible, même mécanisme que la
+        # progression hebdomadaire (impression.css, § 1).
+        "impression_paysage": True,
     }
     return render(request, "noyau/gestion/liste.html", contexte)
 

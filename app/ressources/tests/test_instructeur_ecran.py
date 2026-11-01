@@ -56,6 +56,19 @@ def test_le_nom_dans_la_liste_lie_vers_la_fiche(client, redacteur):
     assert reverse("ressources:detail_instructeur", args=[instructeur.pk]) in contenu
 
 
+def test_r00b_trv_07_la_liste_s_imprime_en_paysage(client, redacteur):
+    """R00B-TRV-07 (recette, NC mineur, « K3 de la revue ») : neuf colonnes
+    ne tiennent pas en portrait sans descendre sous 8 pt (plancher jamais
+    franchi, même arbitrage que D-155) — paysage, pas une police plus
+    petite. `data-impression="paysage"` réutilise la règle `@page paysage`
+    déjà écrite pour la progression hebdomadaire."""
+    client.force_login(redacteur)
+
+    contenu = client.get(reverse("ressources:liste_instructeurs")).content.decode()
+
+    assert 'data-impression="paysage"' in contenu
+
+
 def test_planification_ne_peut_pas_creer_par_appel_direct(client, planificateur):
     client.force_login(planificateur)
 

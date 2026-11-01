@@ -56,7 +56,9 @@ def _comptes_alertes_par_brigade(brigades):
     du tableau de bord — jamais un appel par brigade."""
     ids_affiches = {brigade.pk for brigade in brigades}
     return {
-        groupe.brigade.pk: len(groupe.lignes) for groupe in alertes() if groupe.brigade.pk in ids_affiches
+        groupe.brigade.pk: len(groupe.lignes)
+        for groupe in alertes()
+        if groupe.brigade.pk in ids_affiches
     }
 
 
@@ -86,7 +88,7 @@ def _ligne_de_brigade(brigade, elements, realise_par_cle, nombre_alertes):
 
 def tableau_de_bord(a_la_date=None) -> list:
     """B5 : groupé par session, puis par type de formation — comme au
-    programme (`selectors.grille_consultation`) ; une session ne porte
+    programme (`selectors_consultation.grille_consultation`) ; une session ne porte
     qu'une seule formation, donc un seul type, c'est le même regroupement
     que la session elle-même."""
     a_la_date = a_la_date or timezone.localdate()

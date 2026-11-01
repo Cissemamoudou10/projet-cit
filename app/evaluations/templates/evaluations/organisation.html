@@ -60,7 +60,7 @@
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-gris-trait text-left text-2xs font-medium uppercase tracking-wide text-gris-lecture">
-          <th class="px-4 py-2">Brigade</th><th class="px-4 py-2">Lieu</th><th class="px-4 py-2">Effectif attendu</th><th class="px-4 py-2">Surveillants</th><th class="px-4 py-2">Actions</th>
+          <th class="px-4 py-2">Brigade</th><th class="px-4 py-2">Lieu</th><th class="px-4 py-2">Effectif attendu</th><th class="px-4 py-2">Surveillants</th><th data-impression="masquer" class="px-4 py-2">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -75,7 +75,7 @@
                   <li class="flex items-center gap-2">
                     {% if surveillance.instructeur %}{{ surveillance.instructeur }}{% else %}{{ surveillance.nom_libre }} (extérieur){% endif %}
                     {% if peut_ecrire %}
-                      <form method="post" action="{% url 'evaluations:retirer_surveillant' surveillance.pk %}">{% csrf_token %}
+                      <form data-impression="masquer" method="post" action="{% url 'evaluations:retirer_surveillant' surveillance.pk %}">{% csrf_token %}
                         <button type="submit" class="text-xs text-etat-ecart hover:underline">Retirer</button></form>
                     {% endif %}
                   </li>
@@ -84,7 +84,7 @@
                 {% endfor %}
               </ul>
               {% if peut_ecrire %}
-                <form method="post" action="{% url 'evaluations:ajouter_surveillant' organisation.pk %}" class="mt-2 flex flex-wrap items-center gap-2">
+                <form data-impression="masquer" method="post" action="{% url 'evaluations:ajouter_surveillant' organisation.pk %}" class="mt-2 flex flex-wrap items-center gap-2">
                   {% csrf_token %}
                   {{ formulaire_surveillant.instructeur }}
                   {{ formulaire_surveillant.nom_libre }}
@@ -92,7 +92,7 @@
                 </form>
               {% endif %}
             </td>
-            <td class="px-4 py-2">
+            <td data-impression="masquer" class="px-4 py-2">
               {% if peut_ecrire %}
                 <form method="post" action="{% url 'evaluations:retirer_organisation' organisation.pk %}">{% csrf_token %}
                   <button type="submit" class="text-xs text-etat-ecart hover:underline">Retirer</button></form>

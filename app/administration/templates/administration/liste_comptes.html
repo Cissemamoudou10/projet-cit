@@ -135,8 +135,9 @@
                 {% endif %}
               </a>
             </th>
-            <th scope="col" class="sticky top-0 z-10 w-20 bg-marine-900 px-3 py-2 text-right
-                                   font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+            <th scope="col" data-impression="masquer"
+                class="sticky top-0 z-10 w-20 bg-marine-900 px-3 py-2 text-right
+                       font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
               Actions</th>
           </tr>
         </thead>
@@ -160,7 +161,7 @@
               </td>
               <td class="px-3 text-left tabular-nums text-xs text-gris-lecture">
                 {{ compte.last_login|date:"d/m/Y H:i"|default:"—" }}</td>
-              <td class="px-3 text-right">
+              <td data-impression="masquer" class="px-3 text-right">
                 <a href="{% url 'administration:modifier_compte' compte.pk %}"
                    title="Modifier le compte" aria-label="Modifier le compte de {{ compte.username }}"
                    class="inline-flex border border-transparent p-1 transition-colors duration-survol

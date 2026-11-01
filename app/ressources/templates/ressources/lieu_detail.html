@@ -88,8 +88,9 @@
                                    font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
               Motif</th>
             {% if perms.noyau.lieux_calendrier_ecriture %}
-              <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
-                                     font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+              <th scope="col" data-impression="masquer"
+                  class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                         font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
                 <span class="sr-only">Actions</span></th>
             {% endif %}
           </tr>
@@ -102,7 +103,7 @@
               <td class="px-3 text-left tabular-nums">{{ indisponibilite.fin|date:"d/m/Y H:i" }}</td>
               <td class="px-3 text-left">{{ indisponibilite.motif }}</td>
               {% if perms.noyau.lieux_calendrier_ecriture %}
-                <td class="px-3 text-left">
+                <td data-impression="masquer" class="px-3 text-left">
                   <a href="{% url 'ressources:modifier_indisponibilite_lieu' indisponibilite.pk %}"
                      title="Modifier" aria-label="Modifier cette indisponibilité"
                      class="inline-flex border border-transparent p-1 transition-colors duration-survol

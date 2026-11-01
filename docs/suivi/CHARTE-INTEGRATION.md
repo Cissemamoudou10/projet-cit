@@ -334,3 +334,50 @@ Rien à corriger là.
 Le texte de la charte devra être repris pour refléter ce nouveau patron —
 non fait ici : cette entrée en tient lieu jusqu'à la prochaine reprise du
 document source.
+
+## Amendement daté — § 4, impression : le bloc `entete_page` n'était couvert par aucune règle
+
+**2026-10-31, Prompt 54 (recette RECETTE-00 bis, R00B-TRV-07).** La règle
+d'impression (§ 4.2) masque `body > header`, `body > nav` et `body > footer`
+— respectivement l'entête, le fil d'Ariane et le pied de `noyau/base.html`,
+qui portent bien ces balises. Mais `{% block entete_page %}` (titre de
+l'écran, bouton Modifier, Clôturer, Créer…) rend un `<div>` nu dans chaque
+gabarit qui l'emploie : aucune des trois règles ne le couvre. Chaque fiche
+qui y pose ses boutons les imprimait, un défaut que corriger écran par
+écran aurait fallu refaire sur une cinquantaine de gabarits.
+
+**Correction : une seule ligne, dans `noyau/base.html`** — le bloc est
+désormais enveloppé par `<div data-impression="masquer">{% block
+entete_page %}{% endblock %}</div>`, qui réutilise la règle déjà écrite pour
+cet attribut (aucune nouvelle règle CSS). Les deux documents imprimés par
+WeasyPrint (`evaluations/pdf/`, `planification/pdf/`) ne passent jamais par
+`noyau/base.html` : non concernés. Les colonnes « Actions » de tableaux
+construits à la main (hors du patron `noyau/gestion/liste.html`, qui portait
+déjà l'attribut) ont été corrigées une à une là où elles manquaient
+(`referentiel/formation_referentiel.html`, `matiere_detail.html`,
+`evaluations/organisation.html`, `evaluations/sujets.html`,
+`administration/liste_comptes.html`, `ressources/lieu_detail.html`).
+
+**Écran non couvert par cette correction, volontairement** : la liste des
+instructeurs déborde encore en portrait une fois les boutons masqués (neuf
+colonnes) — K6 de la même recette, défaut distinct (densité des données,
+pas des actions), traité à part : voir l'amendement suivant.
+
+## Amendement daté — § 1, impression : la liste des instructeurs passe en paysage
+
+**2026-10-31, Prompt 54 (recette RECETTE-00 bis, R00B-TRV-07, « K3 de la
+revue »).** Neuf colonnes de données (matricule, grade, nom, spécialité,
+statut, qualifications, disponibilité, indisponibilités à venir, état) ne
+tiennent pas dans la largeur imprimable d'un A4 portrait (703 px, même
+budget que D-155) sans descendre la police sous 8 pt — plancher de
+lisibilité, jamais franchi (même arbitrage que D-155 pour le programme
+hebdomadaire).
+
+**Correction : paysage, pas une police plus petite** — `noyau/gestion/
+liste.html` porte désormais `data-impression="paysage"` sur son conteneur
+de tableau, seulement quand le contexte fournit `impression_paysage: True`
+(réutilise la règle `@page paysage` de § 1, déjà écrite pour la progression
+hebdomadaire, jamais une seconde définition). Seule `ressources.views.
+instructeur.vue_liste_instructeurs` le pose : les autres écrans qui
+partagent ce même gabarit générique (brigades, lieux, matières, comptes…)
+restent en portrait, leur nombre de colonnes le permettant.

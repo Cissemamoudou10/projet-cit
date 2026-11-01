@@ -26,7 +26,6 @@ from planification.selectors import (
     brigades_groupees_par_session,
     brigades_pour_filtre,
     grille_active_avec_creneaux,
-    grille_consultation,
     jours_disponibles,
     programme_de_la_semaine,
 )
@@ -36,6 +35,7 @@ from planification.selectors_circuit import (
     peut_supprimer_brouillon,
 )
 from planification.selectors_compte_rendu import derniere_generation
+from planification.selectors_consultation import grille_consultation
 from planification.selectors_ecart_volume import ecarts_volume_horaire
 from planification.services.generation import PERMISSION_ECRITURE, ServiceGeneration
 
