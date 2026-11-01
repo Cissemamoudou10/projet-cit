@@ -1,5 +1,5 @@
 {% extends "noyau/base.html" %}
-{% load static %}
+{% load l10n static %}
 
 {% block titre %}Référentiel — {{ formation.intitule }} — {{ block.super }}{% endblock %}
 
@@ -65,8 +65,9 @@
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Type de lieu partagé</th>
           {% if perms.noyau.referentiel_ecriture %}
-            <th scope="col" class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
-                                   font-semibold uppercase tracking-wider text-blanc">Actions</th>
+            <th scope="col" data-impression="masquer"
+                class="w-24 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                       font-semibold uppercase tracking-wider text-blanc">Actions</th>
           {% endif %}
         </tr>
       </thead>
@@ -94,21 +95,21 @@
               </td>
               <td class="px-3 py-1.5">
                 <input type="number" min="0.01" step="0.01" name="coefficient"
-                       form="ligne-{{ element.pk }}" value="{{ element.coefficient }}"
+                       form="ligne-{{ element.pk }}" value="{{ element.coefficient|unlocalize }}"
                        aria-label="Coefficient — {{ element.matiere }}"
                        class="h-ligne w-20 border border-gris-trait bg-fond-bloc px-2 text-right
                               text-xs tabular-nums outline-none">
               </td>
               <td class="px-3 py-1.5">
                 <input type="number" min="0" step="0.01" name="poids_formatif"
-                       form="ligne-{{ element.pk }}" value="{{ element.poids_formatif }}"
+                       form="ligne-{{ element.pk }}" value="{{ element.poids_formatif|unlocalize }}"
                        aria-label="Poids formatif — {{ element.matiere }}"
                        class="h-ligne w-20 border border-gris-trait bg-fond-bloc px-2 text-right
                               text-xs tabular-nums outline-none">
               </td>
               <td class="px-3 py-1.5">
                 <input type="number" min="0" step="0.01" name="poids_certificatif"
-                       form="ligne-{{ element.pk }}" value="{{ element.poids_certificatif }}"
+                       form="ligne-{{ element.pk }}" value="{{ element.poids_certificatif|unlocalize }}"
                        aria-label="Poids certificatif — {{ element.matiere }}"
                        class="h-ligne w-20 border border-gris-trait bg-fond-bloc px-2 text-right
                               text-xs tabular-nums outline-none">
@@ -139,7 +140,7 @@
                 </select>
                 <p class="mt-1 text-2xs text-gris-lecture">Utilisé seulement si lieu partagé.</p>
               </td>
-              <td class="px-3 py-1.5 text-right">
+              <td data-impression="masquer" class="px-3 py-1.5 text-right">
                 <button type="submit" form="ligne-{{ element.pk }}"
                         title="Enregistrer" aria-label="Enregistrer {{ element.matiere }}"
                         class="inline-flex border border-transparent p-1 transition-colors duration-survol

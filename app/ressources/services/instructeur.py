@@ -18,7 +18,7 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
-from noyau.services.gestion import ServiceGestion
+from noyau.services.gestion import ServiceGestion, valider_instance
 from ressources.models import IndisponibiliteInstructeur, Instructeur, Statut
 
 
@@ -76,6 +76,23 @@ class ServiceInstructeur(ServiceGestion):
     @staticmethod
     def libelle_statut(valeur):
         return Statut(valeur).label
+
+    @staticmethod
+    def _valider(instance):
+        """R00-RES-02 (recette, NC mineur) : `ck_instructeur_matricule_
+        militaire` n'existe qu'en contrainte base, jamais vérifiée par
+        `valider_instance` (`validate_constraints=False`, voir `noyau.
+        services.gestion`) — sans ce contrôle explicite, sa violation
+        remonte comme une `IntegrityError` générique, attrapée par
+        `ServiceGestion.creer`/`modifier` et réinterprétée par
+        `_erreur_unicite` (recherche d'un doublon de matricule nul), un
+        message sans rapport avec la cause réelle."""
+        if instance.statut == Statut.MILITAIRE_DU_CENTRE and not instance.matricule:
+            raise ErreurValidation(
+                "Le matricule est obligatoire pour un militaire du centre. Saisissez-le, "
+                "ou choisissez le statut vacataire."
+            )
+        valider_instance(instance)
 
     @classmethod
     def _erreur_unicite(cls, instance):

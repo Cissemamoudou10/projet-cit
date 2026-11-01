@@ -73,11 +73,13 @@ def vue_modifier_brigade(request, session_pk, brigade_pk):
     formulaire = FormulaireBrigade(request.POST)
     if formulaire.is_valid():
         try:
-            ServiceBrigade.modifier(request.user, brigade, formulaire.cleaned_data)
+            brigade = ServiceBrigade.modifier(request.user, brigade, formulaire.cleaned_data)
         except ErreurValidation as erreur:
             messages.error(request, str(erreur))
         else:
             messages.success(request, f"« {brigade.designation} » modifiée.")
+            for item in brigade.avertissements:
+                messages.warning(request, item["message"])
     else:
         messages.error(request, "Désignation ou effectif non valide.")
     return redirect("organisation:brigades_session", session.pk)

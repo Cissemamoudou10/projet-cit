@@ -154,6 +154,7 @@ class ServiceBrigade:
                 _journaliser(agissant, TypeAction.MODIFICATION_ELEMENT_GESTION, brigade)
         except IntegrityError as erreur:
             raise _erreur_doublon(brigade) from erreur
+        brigade.avertissements = _avertissements_effectif_declare(brigade)
         return brigade
 
     @staticmethod
@@ -206,6 +207,24 @@ def _avertissements_a3(brigade):
             "brigade_ouverte_en_decalage",
             f"La session a débuté le {session.date_debut:%d/%m/%Y} : la progression de "
             f"« {brigade.designation} » démarrera en décalage (RG-16).",
+        )
+    ]
+
+
+def _avertissements_effectif_declare(brigade):
+    """R00-SES-14 b (recette, NC mineur) : baisser l'effectif déclaré en
+    dessous du nombre de stagiaires déjà affectés n'est jamais refusé — RG-19
+    (capacité de la salle) reste le seul refus, l'effectif déclaré demeure
+    prévisionnel (backlog) — mais c'est désormais signalé, avec les deux
+    nombres, plutôt que silencieux."""
+    effectif_reel = ServiceBrigade.effectif_reel(brigade)
+    if brigade.effectif_previsionnel >= effectif_reel:
+        return []
+    return [
+        avertissement(
+            "effectif_declare_sous_le_reel",
+            f"« {brigade.designation} » : l'effectif déclaré ({brigade.effectif_previsionnel}) "
+            f"est désormais inférieur à l'effectif réellement affecté ({effectif_reel}).",
         )
     ]
 

@@ -64,6 +64,41 @@ def test_matricule_obligatoire_pour_un_militaire_du_centre_impose_en_base(db):
         Instructeur.objects.create(**_donnees(matricule=None, statut=Statut.MILITAIRE_DU_CENTRE))
 
 
+def test_matricule_obligatoire_pour_un_militaire_du_centre_refuse_par_le_service(redacteur):
+    """R00-RES-02 (recette, NC mineur) : sans ce contrôle explicite dans
+    `ServiceInstructeur._valider`, le refus remontait comme une
+    `IntegrityError` générique, réinterprétée par `_erreur_unicite` (qui
+    cherche un doublon de matricule nul) — message sans rapport avec la
+    cause réelle. Message attendu : cause et action corrective."""
+    with pytest.raises(ErreurValidation, match="matricule est obligatoire") as info:
+        ServiceInstructeur.creer(
+            redacteur, _donnees(matricule=None, statut=Statut.MILITAIRE_DU_CENTRE)
+        )
+
+    assert "vacataire" in str(info.value).lower()
+    assert not Instructeur.objects.exists()
+
+
+def test_passage_vacataire_a_militaire_sans_matricule_refuse_par_le_service(redacteur):
+    """Même contrôle sur le second chemin d'écriture (`modifier`), pas
+    seulement `creer` — la règle n'est dupliquée qu'une fois, dans
+    `_valider`, empruntée par les deux."""
+    instructeur = ServiceInstructeur.creer(
+        redacteur, _donnees(matricule=None, statut=Statut.VACATAIRE)
+    )
+
+    with pytest.raises(ErreurValidation, match="matricule est obligatoire"):
+        ServiceInstructeur.modifier(
+            redacteur,
+            instructeur.pk,
+            _donnees(matricule=None, statut=Statut.MILITAIRE_DU_CENTRE),
+            instructeur.modifie_le,
+        )
+
+    instructeur.refresh_from_db()
+    assert instructeur.statut == Statut.VACATAIRE
+
+
 def test_matricule_facultatif_pour_un_vacataire(db):
     Instructeur.objects.create(  # ne lève pas
         **_donnees(matricule=None, statut=Statut.VACATAIRE, nom="Alaoui")

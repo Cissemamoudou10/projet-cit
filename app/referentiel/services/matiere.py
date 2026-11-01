@@ -15,7 +15,7 @@ from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
 from noyau.services.gestion import ServiceGestion
-from referentiel.models import Formation, Matiere
+from referentiel.models import ElementReferentiel, Matiere
 
 
 class ServiceMatiere(ServiceGestion):
@@ -56,9 +56,17 @@ class ServiceMatiere(ServiceGestion):
         recopie jamais la matière (D-29) : `ElementReferentiel` est l'unique
         lien, et sa contrainte d'unicité (formation, matiere) garantit
         qu'aucune formation n'apparaît deux fois ici.
-        """
+
+        Retourne les `ElementReferentiel`, pas les `Formation` : volume,
+        coefficient et poids vivent sur l'association, jamais sur la
+        formation elle-même (recette RECETTE-00, R00-REF-08 — un `Formation`
+        nu ne peut structurellement pas les porter)."""
         cls._verifier(agissant, lecture=True)
-        return Formation.objects.filter(elements_referentiel__matiere=matiere).order_by("intitule")
+        return (
+            ElementReferentiel.objects.filter(matiere=matiere)
+            .select_related("formation")
+            .order_by("formation__intitule")
+        )
 
     @classmethod
     def _erreur_unicite(cls, instance):

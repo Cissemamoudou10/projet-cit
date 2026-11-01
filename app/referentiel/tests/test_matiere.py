@@ -8,7 +8,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from administration.models import EntreeJournal, TypeAction
-from noyau.exceptions import ErreurHabilitation, ErreurModificationConcurrente, ErreurValidation
+from noyau.exceptions import ErreurHabilitation, ErreurValidation
 from referentiel.models import ElementReferentiel, Formation, Matiere, ObjectifPedagogique
 from referentiel.services.matiere import ServiceMatiere
 from referentiel.tests.conftest import donnees_element_referentiel
@@ -136,6 +136,17 @@ def test_nombre_de_requetes_de_la_liste_ne_depend_pas_du_nombre_de_lignes(client
     assert len(capture_vingt) == len(capture_cinq)
 
 
+def test_la_liste_des_matieres_reste_en_portrait_a_l_impression(client, redacteur):
+    """K6 (recette, prompt 54) : seule la liste des instructeurs passe en
+    paysage (`impression_paysage`, posé par sa seule vue) — les autres
+    écrans qui partagent `noyau/gestion/liste.html` restent en portrait."""
+    client.force_login(redacteur)
+
+    contenu = client.get(reverse("referentiel:liste_matieres")).content.decode()
+
+    assert 'data-impression="paysage"' not in contenu
+
+
 def test_liste_paginee_au_dela_de_vingt_matieres(redacteur):
     for i in range(21):
         ServiceMatiere.creer(redacteur, {"intitule": f"Matière {i:02d}", "code": ""})
@@ -167,26 +178,37 @@ def test_methode_d_enumeration_des_bloquants_existe_et_ne_trouve_rien(redacteur)
 # formations qui l'utilisent, critère 3 d'US-REF-02.
 
 
-def test_formations_utilisatrices_liste_les_formations_reellement_rattachees(
+def test_formations_utilisatrices_liste_les_elements_referentiel_rattaches(
     redacteur, formation, matiere
 ):
+    """Retourne des `ElementReferentiel`, pas des `Formation` nues (recette
+    RECETTE-00, R00-REF-08) : `Formation` ne peut structurellement pas
+    porter volume/coefficient/poids, qui vivent sur l'association."""
     assert list(ServiceMatiere.formations_utilisatrices(redacteur, matiere)) == []
 
-    ElementReferentiel.objects.create(
+    element = ElementReferentiel.objects.create(
         formation=formation, matiere=matiere, **donnees_element_referentiel()
     )
 
-    assert list(ServiceMatiere.formations_utilisatrices(redacteur, matiere)) == [formation]
+    resultat = list(ServiceMatiere.formations_utilisatrices(redacteur, matiere))
+    assert resultat == [element]
+    assert resultat[0].formation == formation
 
 
-def test_la_fiche_affiche_reellement_la_formation_qui_utilise_la_matiere(
+def test_la_fiche_affiche_reellement_la_formation_et_ses_volume_coefficient_poids(
     client, redacteur, formation, matiere
 ):
     """P-25 : la section affichait toujours l'état vide statique, quelle
     que soit la matière — vérifié par le vrai cycle HTTP, pas par le
-    service seul (leçon du bloc C, Prompt 19)."""
+    service seul (leçon du bloc C, Prompt 19). R00-REF-08 (recette) : le
+    coefficient et les poids doivent être VISIBLES ici, pas seulement
+    enregistrés."""
     ElementReferentiel.objects.create(
-        formation=formation, matiere=matiere, **donnees_element_referentiel()
+        formation=formation,
+        matiere=matiere,
+        **donnees_element_referentiel(
+            coefficient="1.50", poids_formatif="2.00", poids_certificatif="0.50"
+        ),
     )
     client.force_login(redacteur)
 
@@ -194,6 +216,9 @@ def test_la_fiche_affiche_reellement_la_formation_qui_utilise_la_matiere(
 
     assert formation.intitule in contenu
     assert "Aucun référentiel ne la cite encore" not in contenu
+    assert "40 h" in contenu
+    assert "coefficient 1,50" in contenu
+    assert "poids 2,00/0,50" in contenu
 
 
 def test_la_fiche_garde_l_etat_vide_quand_aucune_formation_ne_l_utilise(client, redacteur, matiere):
@@ -336,65 +361,6 @@ def test_suppression_est_journalisee(redacteur):
     ).exists()
 
 
-def test_les_trois_ecrans_du_referentiel_sont_croises(client, redacteur):
-    client.force_login(redacteur)
-
-    reponse_matieres = client.get(reverse("referentiel:liste_matieres"))
-    reponse_types = client.get(reverse("referentiel:liste_types_formation"))
-    reponse_formations = client.get(reverse("referentiel:liste_formations"))
-
-    assert reverse("referentiel:liste_types_formation").encode() in reponse_matieres.content
-    assert reverse("referentiel:liste_formations").encode() in reponse_matieres.content
-    assert reverse("referentiel:liste_matieres").encode() in reponse_types.content
-    assert reverse("referentiel:liste_matieres").encode() in reponse_formations.content
-
-
-def test_le_bouton_modifier_de_la_liste_n_est_pas_casse_par_le_lien_de_l_intitule(
-    client, redacteur
-):
-    """Voir referentiel/tests/test_formation.py — même correctif, même
-    gabarit générique, exercé ici pour le catalogue des matières.
-    """
-    ServiceMatiere.creer(redacteur, _donnees())
-    client.force_login(redacteur)
-
-    reponse = client.get(reverse("referentiel:liste_matieres"))
-    contenu = reponse.content.decode()
-
-    assert 'aria-label="Modifier Électronique numérique"' in contenu
-    assert "<a" not in contenu.split('aria-label="Modifier')[1].split('"')[0]
-
-
-def test_modifier_par_le_vrai_formulaire_html_ne_declenche_pas_a_tort_e5(client, redacteur):
-    """Voir referentiel/tests/test_type_formation.py et test_formation.py —
-    même bug, même correctif, exercé ici pour le catalogue des matières.
-    """
-    matiere = ServiceMatiere.creer(redacteur, _donnees())
-    client.force_login(redacteur)
-
-    reponse_get = client.get(reverse("referentiel:modifier_matiere", args=[matiere.pk]))
-    modifie_le_attendu = reponse_get.context["modifie_le_attendu"]
-
-    reponse_post = client.post(
-        reverse("referentiel:modifier_matiere", args=[matiere.pk]),
-        {
-            "intitule": matiere.intitule,
-            "code": "ELN02",
-            "modifie_le_attendu": modifie_le_attendu.isoformat(),
-        },
-    )
-
-    assert reponse_post.status_code == 302
-    matiere.refresh_from_db()
-    assert matiere.code == "ELN02"
-
-
-def test_modification_concurrente_est_detectee(redacteur):
-    matiere = ServiceMatiere.creer(redacteur, _donnees())
-    modifie_le_initial = matiere.modifie_le
-
-    ServiceMatiere.modifier(redacteur, matiere.pk, _donnees(code="ELN02"), modifie_le_initial)
-
-    with pytest.raises(ErreurModificationConcurrente) as info:
-        ServiceMatiere.modifier(redacteur, matiere.pk, _donnees(code="ELN03"), modifie_le_initial)
-    assert redacteur.username in str(info.value)
+"""Les tests de cycle HTTP croisés, de modification concurrente et de
+non-régression E5 vivent dans test_matiere_ecran.py (scission § 400 lignes,
+.claude/rules/python.md, prompt 54)."""

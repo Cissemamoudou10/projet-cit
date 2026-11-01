@@ -58,11 +58,17 @@
   </p>
   {% if formations_utilisatrices %}
     <ul class="divide-y divide-gris-trait px-4">
-      {% for formation in formations_utilisatrices %}
-        <li class="py-2 text-sm">
-          <a href="{% url 'referentiel:detail_formation' formation.pk %}"
-             class="text-marine-900 no-underline hover:underline">{{ formation.intitule }}</a>
-          <span class="text-gris-lecture">— {{ formation.type_formation }}</span>
+      {% for element in formations_utilisatrices %}
+        <li class="flex items-baseline justify-between gap-3 py-2 text-sm">
+          <span>
+            <a href="{% url 'referentiel:detail_formation' element.formation.pk %}"
+               class="text-marine-900 no-underline hover:underline">{{ element.formation.intitule }}</a>
+            <span class="text-gris-lecture">— {{ element.formation.type_formation }}</span>
+          </span>
+          <span class="shrink-0 tabular-nums text-xs text-gris-lecture">
+            {{ element.volume_horaire_prescrit }} h — coefficient {{ element.coefficient }} —
+            poids {{ element.poids_formatif }}/{{ element.poids_certificatif }}
+          </span>
         </li>
       {% endfor %}
     </ul>
@@ -128,8 +134,9 @@
                                  font-semibold uppercase tracking-wider text-blanc">Ordre</th>
           <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
                                  font-semibold uppercase tracking-wider text-blanc">Libellé</th>
-          <th scope="col" class="w-36 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
-                                 font-semibold uppercase tracking-wider text-blanc">Actions</th>
+          <th scope="col" data-impression="masquer"
+              class="w-36 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
+                     font-semibold uppercase tracking-wider text-blanc">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -143,7 +150,7 @@
                                text-sm leading-normal outline-none
                                focus:border-marine-700 focus:ring-2 focus:ring-focus">{{ objectif.libelle }}</textarea>
             </td>
-            <td class="px-3 py-1.5 text-right align-top">
+            <td data-impression="masquer" class="px-3 py-1.5 text-right align-top">
               <form method="post"
                     action="{% url 'referentiel:monter_objectif_pedagogique' matiere.pk objectif.pk %}"
                     class="inline">

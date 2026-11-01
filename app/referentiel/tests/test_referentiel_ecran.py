@@ -159,6 +159,35 @@ def test_modifier_par_l_ecran_change_reellement_le_coefficient_et_les_poids(
     assert str(element.poids_certificatif) == "0.40"
 
 
+def test_le_referentiel_preremplit_coefficient_et_poids_en_virgule_valide_html(
+    client, redacteur, formation, matiere
+):
+    """R00-REF-08/R00-REF-15 (recette, NC mineur) : coefficient/poids_formatif/
+    poids_certificatif sont des `DecimalField` — `{{ element.coefficient }}`
+    seul se localise (séparateur décimal « , » en fr-fr, LANGUAGE_CODE) et
+    produit un `value="1,50"` que `<input type="number">` rejette comme
+    invalide (le champ s'affiche vide dans le navigateur, sans erreur
+    visible). `|unlocalize` doit produire un point, le seul séparateur que
+    l'attribut HTML5 `value` d'un input numérique accepte."""
+    ServiceReferentiel.rattacher(
+        redacteur,
+        formation,
+        matiere,
+        _donnees(coefficient="1.50", poids_formatif="0.60", poids_certificatif="2.00"),
+    )
+    client.force_login(redacteur)
+
+    contenu = client.get(
+        reverse("referentiel:referentiel_formation", args=[formation.pk])
+    ).content.decode()
+
+    assert 'value="1.50"' in contenu
+    assert 'value="0.60"' in contenu
+    assert 'value="2.00"' in contenu
+    assert "1,50" not in contenu
+    assert "0,60" not in contenu
+
+
 def test_modifier_avec_les_deux_poids_nuls_est_refuse_par_l_ecran(
     client, redacteur, formation, matiere
 ):

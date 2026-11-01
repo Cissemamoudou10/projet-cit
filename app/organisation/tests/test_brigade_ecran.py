@@ -10,9 +10,11 @@ import pytest
 from django.urls import reverse
 
 from organisation.models import Brigade
+from organisation.services.affectation import ServiceAffectation
 from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import ServiceSession
-from organisation.tests.conftest import donnees_brigade, donnees_session
+from organisation.services.stagiaire import ServiceStagiaire
+from organisation.tests.conftest import donnees_brigade, donnees_session, donnees_stagiaire
 
 
 @pytest.fixture
@@ -23,7 +25,9 @@ def brigade(redacteur, session):
 def test_c1_creer_par_l_ecran_cree_reellement_la_brigade(client, redacteur, session):
     client.force_login(redacteur)
 
-    assert client.get(reverse("organisation:brigades_session", args=[session.pk])).status_code == 200
+    assert (
+        client.get(reverse("organisation:brigades_session", args=[session.pk])).status_code == 200
+    )
 
     reponse = client.post(
         reverse("organisation:creer_brigade", args=[session.pk]),
@@ -48,6 +52,33 @@ def test_c1_modifier_par_l_ecran_modifie_reellement_la_brigade(client, redacteur
     assert brigade.effectif_previsionnel == 22
 
 
+def test_r00_ses_14_b_baisser_l_effectif_declare_sous_le_reel_avertit(
+    client, redacteur, session, brigade
+):
+    """Recette RECETTE-00 (R00-SES-14 b), NC mineur : accepté, avec un
+    avertissement donnant les deux nombres — RG-19 (capacité de salle)
+    reste le seul refus, inchangé."""
+    for i in range(3):
+        stagiaire = ServiceStagiaire.creer(
+            redacteur, session, donnees_stagiaire(matricule=f"M{i:03d}", nom=f"Nom{i:03d}")
+        )
+        ServiceAffectation.affecter(redacteur, stagiaire, brigade)
+    client.force_login(redacteur)
+
+    reponse = client.post(
+        reverse("organisation:modifier_brigade", args=[session.pk, brigade.pk]),
+        {"designation": brigade.designation, "effectif_previsionnel": 2},
+        follow=True,
+    )
+
+    assert reponse.status_code == 200
+    brigade.refresh_from_db()
+    assert brigade.effectif_previsionnel == 2
+    contenu = reponse.content.decode()
+    assert "effectif déclaré (2)" in contenu
+    assert "effectif réellement affecté (3)" in contenu
+
+
 def test_c1_supprimer_par_l_ecran_supprime_reellement_la_brigade(client, redacteur, session):
     """Deux brigades : la suppression de la dernière est un refus distinct
     (C8), testé séparément."""
@@ -55,9 +86,7 @@ def test_c1_supprimer_par_l_ecran_supprime_reellement_la_brigade(client, redacte
     ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP2"))
     client.force_login(redacteur)
 
-    reponse = client.post(
-        reverse("organisation:supprimer_brigade", args=[session.pk, premiere.pk])
-    )
+    reponse = client.post(reverse("organisation:supprimer_brigade", args=[session.pk, premiere.pk]))
 
     assert reponse.status_code == 302
     assert not Brigade.objects.filter(pk=premiere.pk).exists()
@@ -92,9 +121,7 @@ def test_c5_lien_atteignable_depuis_la_fiche_de_session(client, redacteur, sessi
     assert reverse("organisation:brigades_session", args=[session.pk]) in reponse.content.decode()
 
 
-def test_c6_indicateur_d_ecart_visible_avec_les_deux_nombres_et_le_mot(
-    client, redacteur, session
-):
+def test_c6_indicateur_d_ecart_visible_avec_les_deux_nombres_et_le_mot(client, redacteur, session):
     ServiceBrigade.creer(
         redacteur, session, donnees_brigade(effectif_previsionnel=session.effectif_attendu + 7)
     )
