@@ -1,7 +1,9 @@
-"""US-PLAN-04/US-PLAN-11, Groupes G9, G11, G12 — correction du prompt 55
+"""US-PLAN-04/US-PLAN-11, Groupes G9 à G12 — correction du prompt 55
 (R01-VAL03-03, `docs/suivi/DECISIONS.md`, `docs/suivi/PROBLEMES.md`) :
 RG-39 a) plafonne le volume programmé par (ÉLÉMENT, BRIGADE), jamais par
-élément seul. Scindé de `test_contraintes_volume.py` (G1 à G8, inchangés)
+élément seul, et compte les séances VERROUILLÉES du programme évalué
+(contrôle ou saisie manuelle), jamais seulement celles d'un autre
+programme. Scindé de `test_contraintes_volume.py` (G1 à G8, inchangés)
 qui dépassait 400 lignes (`.claude/rules/python.md`). Données entièrement
 fictives.
 """
@@ -42,6 +44,20 @@ def _seance_dans(prog, cours, brigade, debut, duree_min=120):
     return seance
 
 
+def _seance_verrouillee_dans(prog, cours, brigade, debut, duree_min=120):
+    fin = debut + datetime.timedelta(minutes=duree_min)
+    seance = Seance.objects.create(
+        programme=prog,
+        element_referentiel=cours.element,
+        instructeur=cours.instructeur,
+        debut=debut,
+        fin=fin,
+        verrouillee=True,
+    )
+    LigneProgramme.objects.create(seance=seance, brigade=brigade)
+    return seance
+
+
 # --- G9 — le plafond doit s'isoler par brigade ------------------------------
 
 
@@ -71,6 +87,52 @@ def test_g9_volume_programme_isole_par_brigade_meme_session(
         "la brigade vierge ne devrait jamais être bloquée par le volume déjà "
         "consommé d'une AUTRE brigade de la même session"
     )
+
+
+# --- G10 — les séances verrouillées DU PROGRAMME ÉVALUÉ comptent -----------
+
+
+def test_g10_controle_verrouille_du_programme_evalue_compte_au_volume(
+    programme, formation, matiere, instructeur, brigade
+):
+    """US-EVAL-01 : un contrôle (E1/E2/E5 du chargeur de recette `complet`,
+    par exemple) est TOUJOURS verrouillé d'office
+    (`ServiceEcritureSeance.inserer_seance_de_controle`, `ecriture.py`).
+    Posé dans le MÊME programme que celui qui sera généré ensuite — le cas
+    réel du chargeur `complet` (E5 réservée avant la génération de W-1,
+    prompt 51/55) — il doit compter contre le plafond : l'exclusion
+    « programme évalué » ne vise que ce que CETTE génération va recomposer,
+    jamais une séance déjà écrite et verrouillée par un appel antérieur."""
+    lundi = programme.lundi_de_semaine
+    cours = Cours(creer_element(formation, matiere, volume=2), instructeur)
+    qualifier(instructeur, matiere)
+    _seance_verrouillee_dans(programme, cours, brigade, instant(lundi, 0, 8), duree_min=105)
+    candidate = _candidate(brigade, cours, instant(lundi, 10, 0), duree_min=30)
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
+    violation = next(v for v in verdict.violations if v["code"] == "RG-39")
+    assert "2" in violation["message"]
+
+
+def test_g10_bis_seance_saisie_a_la_main_verrouillee_compte_au_volume(
+    programme, formation, matiere, instructeur, brigade
+):
+    """US-PLAN-05 : une séance saisie à la main est ELLE AUSSI TOUJOURS
+    verrouillée d'office (`ServiceEcritureSeance.creer_seance`) — jamais
+    régénérée (US-PLAN-03 c.7). Même garantie que le test précédent, pour
+    l'autre origine possible d'une séance verrouillée du programme évalué
+    (saisie manuelle, pas un contrôle)."""
+    lundi = programme.lundi_de_semaine
+    cours = Cours(creer_element(formation, matiere, volume=2), instructeur)
+    qualifier(instructeur, matiere)
+    _seance_verrouillee_dans(programme, cours, brigade, instant(lundi, 0, 8), duree_min=105)
+    candidate = _candidate(brigade, cours, instant(lundi, 10, 0), duree_min=30)
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
 
 
 # --- G11 — une séance regroupée compte UNE FOIS par brigade ----------------

@@ -185,10 +185,20 @@ def _valeurs_des_lignes(lignes):
 
 def _charger_volumes(programme):
     """RG-39 a) : TOUS les programmes, quel que soit leur état — rejeté
-    compris (V7, US-VAL-03, arbitrage A7 : aucun état n'exprime l'abandon) —
-    à l'EXCLUSION du programme évalué, sans quoi une régénération verrait
-    ses propres séances comme un dépassement."""
-    lignes = _valeurs_des_lignes(LigneProgramme.objects.exclude(seance__programme=programme))
+    compris (V7, US-VAL-03, arbitrage A7 : aucun état n'exprime l'abandon).
+
+    Exclut seulement les lignes NON VERROUILLÉES du programme évalué : une
+    régénération ne doit pas voir ses propres séances — pas encore écrites,
+    destinées à être recomposées — comme un dépassement d'elle-même. Mais
+    une séance VERROUILLÉE de ce même programme (contrôle, US-EVAL-01, ou
+    séance saisie à la main, US-PLAN-05) ne sera jamais régénérée (US-
+    PLAN-03 c.7) : elle compte, comme n'importe quelle autre séance déjà
+    écrite — sans quoi une réservation posée juste avant la génération de
+    la même semaine voit son volume ignoré par le plafond qui la suit
+    (prompt 55, correction R01-VAL03-03, voir docs/suivi/DECISIONS.md)."""
+    lignes = _valeurs_des_lignes(
+        LigneProgramme.objects.exclude(seance__programme=programme, seance__verrouillee=False)
+    )
     return _agreger_par_element_brigade(lignes)
 
 

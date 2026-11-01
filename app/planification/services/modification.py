@@ -130,13 +130,19 @@ def _candidates_de(seance, changements):
 
 def _contexte_sans_la_seance(programme, seance):
     """Le contexte des contraintes, sans la séance elle-même (sinon elle se
-    heurterait à sa propre position d'origine). Les AUTRES séances du même
-    programme comptent au volume (RG-39 a), `_charger_volumes` ne les prend
-    pas, il est fait pour la régénération."""
+    heurterait à sa propre position d'origine). Les AUTRES séances NON
+    VERROUILLÉES du même programme comptent au volume (RG-39 a) et doivent
+    être ajoutées ici : `_charger_volumes` les exclut, pensé pour la
+    régénération (prompt 55, docs/suivi/DECISIONS.md). Les autres séances
+    VERROUILLÉES du programme comptent déjà, directement par
+    `ServiceContraintes.contexte` — ne pas les rajouter ici, sous peine de
+    les compter deux fois."""
     contexte = ServiceContraintes.contexte(programme)
     autres = [s for s in contexte.seances_existantes if s.pk != seance.pk]
     par_element_brigade = dict(contexte.volume_programme_par_element_brigade)
     for autre in autres:
+        if autre.verrouillee:
+            continue
         heures = duree_heures(autre.debut, autre.fin)
         for ligne in autre.lignes.all():
             cle = (autre.element_referentiel_id, ligne.brigade_id)
