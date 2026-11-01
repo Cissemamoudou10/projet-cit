@@ -363,6 +363,16 @@ instructeurs déborde encore en portrait une fois les boutons masqués (neuf
 colonnes) — K6 de la même recette, défaut distinct (densité des données,
 pas des actions), traité à part : voir l'amendement suivant.
 
+**Écran manqué, non volontairement — 2026-11-01, prompt 54 bis.**
+`organisation/session_detail.html` (fiche de composition de session, R00-
+SES-08) porte quatre boutons en dehors de `entete_page` (référentiel,
+constitution des brigades, stagiaires, évaluations), jamais une colonne
+« Actions » de tableau non plus : ni l'un ni l'autre des deux mécanismes
+listés ci-dessus ne le couvrait. Trouvé au rejeu réel en navigateur, jamais
+par les tests du prompt 54 (HTML seul, voir `docs/suivi/PROBLEMES.md`,
+P-58/P-61). Corrigé par `data-impression="masquer"` sur chacun des quatre
+conteneurs.
+
 ## Amendement daté — § 1, impression : la liste des instructeurs passe en paysage
 
 **2026-10-31, Prompt 54 (recette RECETTE-00 bis, R00B-TRV-07, « K3 de la
@@ -381,3 +391,21 @@ hebdomadaire, jamais une seconde définition). Seule `ressources.views.
 instructeur.vue_liste_instructeurs` le pose : les autres écrans qui
 partagent ce même gabarit générique (brigades, lieux, matières, comptes…)
 restent en portrait, leur nombre de colonnes le permettant.
+
+**Correction datée — 2026-11-01, prompt 54 bis (R00B-TRV-07 toujours non
+conforme au rejeu).** Le paragraphe ci-dessus était faux sur un point,
+jamais vérifié avant de l'écrire : la règle `@page paysage` n'existait
+QUE dans `document_pdf.css` (WeasyPrint, PDF produit par
+`ServiceDocument`), jamais dans `impression.css` (seule feuille chargée
+par `noyau/base.html` en `media="print"`, impression navigateur) — rien
+n'était donc réutilisé, et la liste des instructeurs restait en portrait
+au rejeu réel. `impression.css` porte maintenant sa propre règle `@page
+paysage` (même mécanisme CSS, deux définitions séparées car les deux
+feuilles ne sont jamais chargées ensemble — voir le commentaire de
+`impression.css` § 1 et `docs/suivi/PROBLEMES.md`, P-59). Un filet
+décoratif nu sous `<body>` (`noyau/ossature/entete.html`), jamais couvert
+par les règles de masquage, cassait en plus la pagination (P-59) : corrigé
+par `data-impression="masquer"`, comme l'amendement précédent l'avait fait
+pour `entete_page`. Vérifié cette fois par un vrai navigateur (`tests/
+navigateur/test_impression_trv07.py`, marqueur `navigateur`), pas
+seulement par une chaîne de caractères dans le HTML rendu.

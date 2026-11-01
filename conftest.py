@@ -82,6 +82,21 @@ def _poser_verrou():
     return verrou
 
 
+def pytest_collection_modifyitems(config, items):
+    """Marqueur `navigateur` (prompt 54 bis, R00B-TRV-07) : jamais lancé par
+    défaut, à la différence de `pdf` qui s'auto-exclut sous Windows par
+    `skipif` — Playwright/Chromium tournent sur toute plateforme, rien ne
+    l'exclurait donc autrement. Sélection explicite : `pytest -m
+    navigateur`. Un `markexpr` qui le cite (même `not navigateur`) laisse
+    la sélection habituelle de pytest décider à sa place."""
+    if "navigateur" in (config.option.markexpr or ""):
+        return
+    ignore = pytest.mark.skip(reason="test navigateur : lancé seulement par `pytest -m navigateur`")
+    for item in items:
+        if "navigateur" in item.keywords:
+            item.add_marker(ignore)
+
+
 @pytest.fixture(scope="session")
 def django_db_setup(django_db_setup, django_db_blocker):  # noqa: ARG001 — patron pytest-django : surcharge par redéclaration du même nom
     verrou = _poser_verrou()

@@ -9,12 +9,31 @@
    constructions vivent dans document_pdf.css, non chargé ici.
    -------------------------------------------------------------------------- */
 
-/* 1. Format. Un seul gabarit de page : portrait. Aucune page nommée
-      (« paysage ») possible en impression navigateur — un document qui a
-      besoin du paysage l'obtient par réglage d'imprimante, pas par CSS. */
+/* 1. Format. Portrait par défaut. Les pages nommées (CSS Paged Media
+      Level 3, propriété `page`) SONT interprétées par le moteur
+      d'impression des navigateurs visés (Chrome, Edge — vérifié réellement
+      à la reproduction de R00B-TRV-07, prompt 54 bis : le commentaire
+      précédent l'excluait à tort, jamais vérifié, voir PROBLEMES.md). Même
+      mécanisme que `document_pdf.css` § « paysage nommée », deux
+      définitions séparées car les deux feuilles ne sont jamais chargées
+      ensemble (l'une pour l'aperçu navigateur, l'autre pour le PDF produit
+      par WeasyPrint) — ni l'une n'importe l'autre, la duplication est le
+      coût de deux moteurs de rendu distincts, pas une négligence. */
 @page {
   size: A4 portrait;
   margin: 14mm 12mm 16mm;
+}
+
+/* Page paysage nommée, posée explicitement par data-impression="paysage"
+   (liste des instructeurs, R00B-TRV-07 K6) — jamais le gabarit de page par
+   défaut : les autres écrans qui partagent noyau/gestion/liste.html restent
+   en portrait. */
+@page paysage {
+  size: A4 landscape;
+  margin: 12mm 14mm 14mm;
+}
+[data-impression="paysage"] {
+  page: paysage;
 }
 
 /* 2. Masquer tout ce qui n'est pas le document.

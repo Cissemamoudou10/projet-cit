@@ -24,3 +24,15 @@ pypdf==6.21.0
 # l'application — même leçon que pypdf/WeasyPrint ci-dessus (P-44).
 freezegun==1.5.1
 
+# Dépendance de TEST uniquement (prompt 54 bis, R00B-TRV-07) : ouvre un vrai
+# navigateur (Chromium) pour les tests marqués `navigateur`, qui vérifient
+# l'impression telle que le recetteur la voit réellement — un gabarit rendu
+# sans navigateur (prompt 54) ne peut pas détecter une classe Tailwind
+# absente du CSS précompilé ni une règle @page ignorée. Jamais utilisée par
+# le système livré — ni requirements.txt, ni le paquet hors ligne, même
+# statut que freezegun ci-dessus, voir docs/suivi/DECISIONS.md. Le binaire
+# Chromium s'installe à part (`playwright install chromium`), jamais via pip
+# ni via requirements-dev.txt — absent de tout poste hors de celui du
+# développeur.
+playwright==1.64.1
+

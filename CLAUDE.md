@@ -21,6 +21,10 @@ pytest -m pdf                              # tests qui produisent un vrai PDF �
                                             # Windows (WeasyPrint y exige des bibliothèques
                                             # natives absentes, P-44) : à lancer dans le
                                             # conteneur python:3.14-slim-bookworm
+pytest -m navigateur                       # tests qui ouvrent un vrai Chromium (Playwright,
+                                            # prompt 54 bis) — jamais lancés par défaut ;
+                                            # `playwright install chromium` d'abord (une fois,
+                                            # poste de développement seulement)
 ```
 
 ## Cinq règles non négociables
