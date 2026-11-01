@@ -3,12 +3,11 @@ historique (CU-P3-06). Orchestrent, ne décident rien : toute la logique
 métier vit dans organisation.services.affectation.ServiceAffectation.
 """
 
-import datetime
-
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurValidation
@@ -31,29 +30,6 @@ def _stagiaire_ou_404(pk):
         return ServiceStagiaire.obtenir(pk)
     except ErreurIntrouvable as erreur:
         raise Http404 from erreur
-
-
-def _premiere_date_valide(actuelle):
-    """Plus petite date acceptable pour fermer `actuelle` (déplacement ou
-    retrait) : le lendemain de sa date d'effet — `ck_affectation_dates`
-    exige une durée strictement positive (§ 3, Prompt 25), donc jamais le
-    jour même, y compris si `actuelle` a été ouverte aujourd'hui. Peut
-    tomber dans le futur : dans ce cas, l'appelant refuse l'action plutôt
-    que de présenter un formulaire voué à l'échec."""
-    return actuelle.date_effet + datetime.timedelta(days=1)
-
-
-def _refuser_si_trop_tot(request, session, stagiaire, actuelle, verbe):
-    date_minimale = _premiere_date_valide(actuelle)
-    if date_minimale <= datetime.date.today():
-        return None
-    messages.error(
-        request,
-        f"« {stagiaire} » a été affecté à « {actuelle.brigade} » le "
-        f"{actuelle.date_effet:%d/%m/%Y} : un {verbe} ne peut prendre effet avant le "
-        f"{date_minimale:%d/%m/%Y} (une affectation dure au moins un jour).",
-    )
-    return redirect("organisation:repartition_session", session.pk)
 
 
 @exige_habilitation(ServiceStagiaire.PERMISSION_LECTURE)
@@ -100,9 +76,6 @@ def vue_deplacer_stagiaire(request, session_pk, pk):
     if actuelle is None:
         messages.error(request, f"« {stagiaire} » n'a aucune affectation ouverte à déplacer.")
         return redirect("organisation:liste_stagiaires", session.pk)
-    refus = _refuser_si_trop_tot(request, session, stagiaire, actuelle, "déplacement")
-    if refus is not None:
-        return refus
     brigades = [
         b for b in ServiceBrigade.lister(request.user, session) if b.pk != actuelle.brigade_id
     ]
@@ -112,7 +85,7 @@ def vue_deplacer_stagiaire(request, session_pk, pk):
             return reponse
     else:
         formulaire = FormulaireDeplacementStagiaire(
-            brigades=brigades, initial={"date_effet": _premiere_date_valide(actuelle)}
+            brigades=brigades, initial={"date_effet": timezone.localdate()}
         )
     return render(
         request,
@@ -135,9 +108,6 @@ def vue_retirer_affectation(request, session_pk, pk):
     if actuelle is None:
         messages.error(request, f"« {stagiaire} » n'a aucune affectation ouverte à retirer.")
         return redirect("organisation:liste_stagiaires", session.pk)
-    refus = _refuser_si_trop_tot(request, session, stagiaire, actuelle, "retrait")
-    if refus is not None:
-        return refus
     if request.method == "POST":
         formulaire = FormulaireRetraitAffectation(request.POST)
         if formulaire.is_valid():
@@ -151,9 +121,7 @@ def vue_retirer_affectation(request, session_pk, pk):
                 messages.success(request, f"« {stagiaire} » retiré de « {actuelle.brigade} ».")
                 return redirect("organisation:repartition_session", session.pk)
     else:
-        formulaire = FormulaireRetraitAffectation(
-            initial={"date_fin": _premiere_date_valide(actuelle)}
-        )
+        formulaire = FormulaireRetraitAffectation(initial={"date_fin": timezone.localdate()})
     return render(
         request,
         "organisation/stagiaire_retirer.html",

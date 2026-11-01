@@ -68,9 +68,15 @@ class ServiceAffectation:
     @staticmethod
     def historique(agissant, stagiaire):
         """RG-20 : consultable, dates d'effet et de fin — le conserver sans
-        pouvoir le lire ne servirait à rien (§ 7, Prompt 25)."""
+        pouvoir le lire ne servirait à rien (§ 7, Prompt 25).
+
+        `-cree_le, -pk` départagent deux lignes de même `date_effet` (un
+        stagiaire déplacé plusieurs fois le même jour, recette NC majeur) :
+        `date_effet` seule ne garantit aucun ordre stable entre elles."""
         verifier_habilitation(agissant, PERMISSION_LECTURE)
-        return stagiaire.affectations.select_related("brigade").order_by("-date_effet")
+        return stagiaire.affectations.select_related("brigade").order_by(
+            "-date_effet", "-cree_le", "-pk"
+        )
 
     @classmethod
     def affecter(cls, agissant, stagiaire, brigade, date_effet=None):
@@ -102,9 +108,9 @@ class ServiceAffectation:
         if actuelle is None:
             raise ErreurValidation(f"{stagiaire} n'a aucune affectation ouverte à déplacer.")
         cls._verifier_date_effet(date_effet)
-        if date_effet <= actuelle.date_effet:
+        if date_effet < actuelle.date_effet:
             raise ErreurValidation(
-                "La date d'effet du déplacement doit être postérieure à celle de "
+                "La date d'effet du déplacement ne peut pas être antérieure à celle de "
                 f"l'affectation en cours ({actuelle.date_effet:%d/%m/%Y})."
             )
         avertissements = cls.verifier_controles(stagiaire, nouvelle_brigade, exclut=actuelle)
@@ -138,9 +144,9 @@ class ServiceAffectation:
             raise ErreurValidation(f"{stagiaire} n'a aucune affectation ouverte à retirer.")
         date_fin = date_fin or timezone.localdate()
         ServiceAffectation._verifier_date_effet(date_fin)
-        if date_fin <= actuelle.date_effet:
+        if date_fin < actuelle.date_effet:
             raise ErreurValidation(
-                "La date de fin doit être postérieure à la date d'effet "
+                "La date de fin ne peut pas être antérieure à la date d'effet "
                 f"({actuelle.date_effet:%d/%m/%Y})."
             )
         with transaction.atomic():

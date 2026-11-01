@@ -58,7 +58,7 @@ def test_c2_deux_lignes_historiques_dont_les_periodes_se_recouvrent_non_rejetees
     assert stagiaire.affectations.count() == 2
 
 
-def test_c3_ck_affectation_dates_date_fin_anterieure_ou_egale_refusee(db, stagiaire, brigade):
+def test_c3_ck_affectation_dates_date_fin_anterieure_refusee(db, stagiaire, brigade):
     with (
         pytest.raises(IntegrityError, match="ck_affectation_dates"),
         transaction.atomic(),
@@ -67,8 +67,26 @@ def test_c3_ck_affectation_dates_date_fin_anterieure_ou_egale_refusee(db, stagia
             stagiaire=stagiaire,
             brigade=brigade,
             date_effet=datetime.date(2026, 6, 1),
-            date_fin=datetime.date(2026, 6, 1),
+            date_fin=datetime.date(2026, 5, 31),
         )
+
+
+def test_c3_bis_ck_affectation_dates_date_fin_egale_a_la_date_d_effet_acceptee(
+    db, stagiaire, brigade
+):
+    """Recette RECETTE-00 (R00-SES-15), NC majeur : `date_fin == date_effet`
+    est un intervalle vide (demi-ouvert, comme les autres plages du
+    projet), pas une durée négative — désormais acceptée en base. Remplace
+    l'ancien `test_c3_ck_affectation_dates_date_fin_anterieure_ou_egale_
+    refusee`, qui affirmait le refus."""
+    affectation = AffectationBrigade.objects.create(
+        stagiaire=stagiaire,
+        brigade=brigade,
+        date_effet=datetime.date(2026, 6, 1),
+        date_fin=datetime.date(2026, 6, 1),
+    )
+
+    assert affectation.date_fin == affectation.date_effet
 
 
 def test_c4_une_affectation_fermee_et_une_ouverte_meme_stagiaire_periodes_disjointes_acceptees(

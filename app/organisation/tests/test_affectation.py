@@ -160,13 +160,79 @@ def test_retirer_refuse_une_date_de_fin_future(redacteur, session, stagiaire, br
         ServiceAffectation.retirer(redacteur, stagiaire, demain)
 
 
-def test_deplacement_le_jour_meme_de_l_ouverture_est_impossible(
+def test_retrait_le_jour_meme_de_l_ouverture_est_desormais_accepte(
     redacteur, session, stagiaire, brigade_sans_salle
 ):
-    """Conséquence assumée de `ck_affectation_dates` (durée strictement
-    positive) combinée à la date d'effet jamais future (D-106) : une
-    affectation ouverte aujourd'hui ne peut être fermée ou déplacée avant
-    demain — consignée en DECISIONS.md."""
+    """Recette RECETTE-00 (R00-SES-15), NC majeur — symétrique au test de
+    déplacement ci-dessous : un retrait le jour même de l'ouverture est
+    un intervalle vide (`date_fin == date_effet`), pas une durée négative."""
+    ServiceAffectation.affecter(redacteur, stagiaire, brigade_sans_salle)
+
+    actuelle = ServiceAffectation.retirer(redacteur, stagiaire, datetime.date.today())
+
+    assert actuelle.date_fin == datetime.date.today()
+    assert ServiceAffectation.affectation_ouverte(stagiaire) is None
+
+
+def test_historique_departage_deux_deplacements_du_meme_jour_dans_l_ordre_reel(
+    redacteur, session, stagiaire, brigade_sans_salle
+):
+    """`date_effet` seule ne départage pas deux lignes ouvertes/fermées le
+    même jour (trois déplacements le même jour) : `historique()` doit lire
+    dans l'ordre réel des déplacements, du plus récent au plus ancien —
+    recette RECETTE-00 (R00-SES-15)."""
+    brigade_2 = ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP3"))
+    brigade_3 = ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP4"))
+    aujourd_hui = datetime.date.today()
+    ServiceAffectation.affecter(redacteur, stagiaire, brigade_sans_salle, date_effet=aujourd_hui)
+    ServiceAffectation.deplacer(redacteur, stagiaire, brigade_2, aujourd_hui)
+    ServiceAffectation.deplacer(redacteur, stagiaire, brigade_3, aujourd_hui)
+
+    historique = list(ServiceAffectation.historique(redacteur, stagiaire))
+
+    assert [a.brigade for a in historique] == [brigade_3, brigade_2, brigade_sans_salle]
+    assert historique[0].date_fin is None
+
+
+def test_historique_dit_la_bonne_brigade_a_la_date_du_deplacement_le_jour_meme(
+    redacteur, session, stagiaire, brigade_sans_salle
+):
+    """RG-20 : « dire à quelle brigade appartenait le stagiaire à toute
+    date passée » doit rester vrai le jour même d'un déplacement — demi-
+    ouvert comme les autres plages du projet (`[date_effet, date_fin)`) :
+    à la date de bascule, c'est la NOUVELLE brigade qui s'applique, jamais
+    les deux à la fois."""
+    autre_brigade = ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP3"))
+    jour_bascule = datetime.date.today()
+    ServiceAffectation.affecter(
+        redacteur,
+        stagiaire,
+        brigade_sans_salle,
+        date_effet=jour_bascule - datetime.timedelta(days=5),
+    )
+    ServiceAffectation.deplacer(redacteur, stagiaire, autre_brigade, jour_bascule)
+
+    historique = list(ServiceAffectation.historique(redacteur, stagiaire))
+    for affectation in historique:
+        appartient = affectation.date_effet <= jour_bascule and (
+            affectation.date_fin is None or jour_bascule < affectation.date_fin
+        )
+        if appartient:
+            assert affectation.brigade == autre_brigade
+            break
+    else:
+        pytest.fail("Aucune affectation de l'historique ne couvre le jour de bascule.")
+
+
+def test_deplacement_le_jour_meme_de_l_ouverture_est_desormais_accepte(
+    redacteur, session, stagiaire, brigade_sans_salle
+):
+    """Recette RECETTE-00 (R00-SES-15), NC majeur : le jour même reste
+    refusé seulement pour une date ANTÉRIEURE à l'ouverture, plus pour une
+    date égale — `ck_affectation_dates` accepte maintenant `date_fin ==
+    date_effet` (voir DECISIONS.md, supersède D-110). Remplace l'ancien
+    `test_deplacement_le_jour_meme_de_l_ouverture_est_impossible`, qui
+    affirmait le refus."""
     autre_brigade = ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP3"))
     ServiceAffectation.affecter(redacteur, stagiaire, brigade_sans_salle)
 
@@ -174,5 +240,11 @@ def test_deplacement_le_jour_meme_de_l_ouverture_est_impossible(
         ServiceAffectation.deplacer(
             redacteur, stagiaire, autre_brigade, datetime.date.today() + datetime.timedelta(days=1)
         )
-    with pytest.raises(ErreurValidation, match="postérieure"):
-        ServiceAffectation.deplacer(redacteur, stagiaire, autre_brigade, datetime.date.today())
+
+    nouvelle = ServiceAffectation.deplacer(
+        redacteur, stagiaire, autre_brigade, datetime.date.today()
+    )
+
+    assert nouvelle.brigade == autre_brigade
+    assert nouvelle.date_effet == datetime.date.today()
+    assert stagiaire.affectations.filter(date_fin__isnull=True).count() == 1

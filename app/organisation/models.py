@@ -207,6 +207,12 @@ class AffectationBrigade(ModeleHorodate):
     écrasée pour changer de brigade, toujours une fermeture suivie d'une
     ouverture (§ 6, Prompt 25).
 
+    `ck_affectation_dates` accepte `date_fin == date_effet` (demi-ouvert,
+    comme les autres plages horodatées du projet) : une affectation fermée
+    le jour même de son ouverture est un intervalle vide, pas une durée
+    négative. Un déplacement ou un retrait le jour même reste possible
+    (recette, correction NC majeur — voir DECISIONS.md, supersède D-110).
+
     RADIATION ET FERMETURE SONT DEUX MÉCANISMES INDÉPENDANTS. Radier un
     stagiaire ne ferme jamais automatiquement son affectation (ce serait une
     règle métier posée dans un signal, interdit par `.claude/rules/python.md`) :
@@ -246,7 +252,7 @@ class AffectationBrigade(ModeleHorodate):
             ),
             models.CheckConstraint(
                 condition=(
-                    models.Q(date_fin__isnull=True) | models.Q(date_fin__gt=models.F("date_effet"))
+                    models.Q(date_fin__isnull=True) | models.Q(date_fin__gte=models.F("date_effet"))
                 ),
                 name="ck_affectation_dates",
             ),

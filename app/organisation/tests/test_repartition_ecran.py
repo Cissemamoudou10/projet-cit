@@ -69,6 +69,50 @@ def test_f1_deplacer_par_l_ecran_deplace_reellement(client, redacteur, session, 
     assert ServiceAffectation.affectation_ouverte(stagiaire).brigade == autre_brigade
 
 
+def test_e1_deplacer_le_jour_meme_par_l_ecran_reussit(
+    client, redacteur, session, stagiaire, brigade
+):
+    """Recette RECETTE-00 (R00-SES-15), NC majeur : cycle HTTP réel, pas
+    seulement la couche services — affecter puis déplacer le même jour."""
+    autre_brigade = ServiceBrigade.creer(redacteur, session, donnees_brigade(designation="EXP2"))
+    aujourd_hui = datetime.date.today().isoformat()
+    client.force_login(redacteur)
+    client.post(
+        reverse("organisation:affecter_stagiaire", args=[session.pk, stagiaire.pk]),
+        {"brigade_id": brigade.pk},
+    )
+
+    reponse = client.post(
+        reverse("organisation:deplacer_stagiaire", args=[session.pk, stagiaire.pk]),
+        {"brigade": autre_brigade.pk, "date_effet": aujourd_hui},
+        follow=True,
+    )
+
+    assert reponse.status_code == 200
+    assert ServiceAffectation.affectation_ouverte(stagiaire).brigade == autre_brigade
+
+
+def test_e1_retirer_le_jour_meme_par_l_ecran_reussit(
+    client, redacteur, session, stagiaire, brigade
+):
+    """Symétrique — affecter puis retirer le même jour."""
+    aujourd_hui = datetime.date.today().isoformat()
+    client.force_login(redacteur)
+    client.post(
+        reverse("organisation:affecter_stagiaire", args=[session.pk, stagiaire.pk]),
+        {"brigade_id": brigade.pk},
+    )
+
+    reponse = client.post(
+        reverse("organisation:retirer_affectation", args=[session.pk, stagiaire.pk]),
+        {"date_fin": aujourd_hui},
+        follow=True,
+    )
+
+    assert reponse.status_code == 200
+    assert ServiceAffectation.affectation_ouverte(stagiaire) is None
+
+
 def test_f1_retirer_par_l_ecran_retire_reellement(client, redacteur, session, stagiaire, brigade):
     ServiceAffectation.affecter(redacteur, stagiaire, brigade, date_effet=datetime.date(2026, 1, 1))
     client.force_login(redacteur)
@@ -107,7 +151,9 @@ def test_avertissement_identique_repete_n_fois_affiche_une_seule_fois(client, re
     _creer_stagiaires(redacteur, session, 5)
     ServiceBrigade.creer(redacteur, session, donnees_brigade(effectif_previsionnel=5))
     client.force_login(redacteur)
-    reponse_proposition = client.post(reverse("organisation:proposer_repartition", args=[session.pk]))
+    reponse_proposition = client.post(
+        reverse("organisation:proposer_repartition", args=[session.pk])
+    )
     proposition_b64 = reponse_proposition.context["proposition_b64"]
 
     reponse = client.post(
@@ -117,8 +163,13 @@ def test_avertissement_identique_repete_n_fois_affiche_une_seule_fois(client, re
     )
 
     textes_avertissement = [str(m) for m in reponse.context["messages"] if m.tags == "warning"]
-    assert textes_avertissement.count("« EXP1 » n'a pas encore de salle attitrée : le contrôle "
-                                       "de capacité (RG-19) ne peut pas s'appliquer.") == 1
+    assert (
+        textes_avertissement.count(
+            "« EXP1 » n'a pas encore de salle attitrée : le contrôle "
+            "de capacité (RG-19) ne peut pas s'appliquer."
+        )
+        == 1
+    )
 
 
 # --- F2 — parcours complet par le vrai cycle --------------------------------
