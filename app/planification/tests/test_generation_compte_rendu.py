@@ -27,17 +27,21 @@ def test_f2_volume_programme_et_restant_par_matiere_et_par_brigade_exacts(
 ):
     qualifier(cours.instructeur, cours.element.matiere)
 
-    compte_rendu = ServiceGeneration.generer(scenario.planificateur, scenario.lundi, [brigade_formation])
+    compte_rendu = ServiceGeneration.generer(
+        scenario.planificateur, scenario.lundi, [brigade_formation]
+    )
 
     total_reel = sum(
         (s.fin - s.debut).total_seconds() / 3600
         for s in Seance.objects.filter(element_referentiel=cours.element)
     )
     ligne = next(
-        v for v in compte_rendu.volumes if v.brigade == brigade_formation and v.element == cours.element
+        v
+        for v in compte_rendu.volumes
+        if v.brigade == brigade_formation and v.element == cours.element
     )
     assert ligne.heures_cette_semaine == total_reel
-    assert ligne.volume_restant_element == cours.element.volume_horaire_prescrit - total_reel
+    assert ligne.volume_restant_brigade == cours.element.volume_horaire_prescrit - total_reel
 
 
 def test_f3_motifs_distincts_conflit_existant_versus_conflit_du_meme_lot(

@@ -101,7 +101,6 @@ class Contexte:
     occupations_epreuves: list
     salles_attitrees: dict
     effectifs_reels: dict
-    volume_programme_par_element: dict
     volume_programme_par_element_brigade: dict
     volume_realise_par_element_brigade: dict
     prerequis_par_element: dict
@@ -158,19 +157,24 @@ def _en_heures(table):
     return {cle: valeur / datetime.timedelta(hours=1) for cle, valeur in table.items()}
 
 
-def _agreger_par_element_et_par_element_brigade(lignes_values):
+def _agreger_par_element_brigade(lignes_values):
     """Même agrégation pour le programmé et le réalisé (R1/R4, US-SUI-01,
     prompt 44) : seule la requête qui produit `lignes_values` diffère entre
-    les deux définitions."""
-    par_element: dict = {}
+    les deux définitions.
+
+    Par (élément, brigade) UNIQUEMENT (prompt 55, correction R01-VAL03-03,
+    voir docs/suivi/DECISIONS.md) : RG-39 a) plafonne « le volume programmé
+    d'une matière POUR UNE BRIGADE » (conception de référence, `docs/
+    conception/11-cas-utilisation.md`, § RG-39) — un total par élément
+    SEUL, toutes brigades confondues, n'a jamais eu de lecteur légitime et
+    faisait qu'une brigade bloquait le budget d'une autre brigade partageant
+    la même session."""
     par_element_brigade: dict = {}
     for ligne in lignes_values:
         duree = ligne["seance__fin"] - ligne["seance__debut"]
-        element_id = ligne["seance__element_referentiel_id"]
-        par_element[element_id] = par_element.get(element_id, datetime.timedelta()) + duree
-        cle = (element_id, ligne["brigade_id"])
+        cle = (ligne["seance__element_referentiel_id"], ligne["brigade_id"])
         par_element_brigade[cle] = par_element_brigade.get(cle, datetime.timedelta()) + duree
-    return (_en_heures(par_element), _en_heures(par_element_brigade))
+    return _en_heures(par_element_brigade)
 
 
 def _valeurs_des_lignes(lignes):
@@ -185,7 +189,7 @@ def _charger_volumes(programme):
     à l'EXCLUSION du programme évalué, sans quoi une régénération verrait
     ses propres séances comme un dépassement."""
     lignes = _valeurs_des_lignes(LigneProgramme.objects.exclude(seance__programme=programme))
-    return _agreger_par_element_et_par_element_brigade(lignes)
+    return _agreger_par_element_brigade(lignes)
 
 
 def volumes_programmes_par_element_brigade(brigade_ids=None):
@@ -198,10 +202,7 @@ def volumes_programmes_par_element_brigade(brigade_ids=None):
     lignes = LigneProgramme.objects.all()
     if brigade_ids is not None:
         lignes = lignes.filter(brigade_id__in=brigade_ids)
-    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
-        _valeurs_des_lignes(lignes)
-    )
-    return par_element_brigade
+    return _agreger_par_element_brigade(_valeurs_des_lignes(lignes))
 
 
 def volume_programme_de_la_semaine(programme) -> dict:
@@ -210,10 +211,7 @@ def volume_programme_de_la_semaine(programme) -> dict:
     brigade` (cumul de toutes les semaines). Même agrégation, portée
     différente : les séances de CE programme seulement."""
     lignes = LigneProgramme.objects.filter(seance__programme=programme)
-    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
-        _valeurs_des_lignes(lignes)
-    )
-    return par_element_brigade
+    return _agreger_par_element_brigade(_valeurs_des_lignes(lignes))
 
 
 def volumes_programme_echu_par_element_brigade(a_la_date, brigade_ids=None):
@@ -227,10 +225,7 @@ def volumes_programme_echu_par_element_brigade(a_la_date, brigade_ids=None):
     )
     if brigade_ids is not None:
         lignes = lignes.filter(brigade_id__in=brigade_ids)
-    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
-        _valeurs_des_lignes(lignes)
-    )
-    return par_element_brigade
+    return _agreger_par_element_brigade(_valeurs_des_lignes(lignes))
 
 
 def volumes_realises_par_element_brigade(a_la_date, brigade_ids=None, programme_id=None):
@@ -247,10 +242,7 @@ def volumes_realises_par_element_brigade(a_la_date, brigade_ids=None, programme_
         lignes = lignes.filter(brigade_id__in=brigade_ids)
     if programme_id is not None:
         lignes = lignes.filter(seance__programme_id=programme_id)
-    _, par_element_brigade = _agreger_par_element_et_par_element_brigade(
-        _valeurs_des_lignes(lignes)
-    )
-    return par_element_brigade
+    return _agreger_par_element_brigade(_valeurs_des_lignes(lignes))
 
 
 def _charger_seances_existantes(programme):
@@ -307,7 +299,7 @@ class ServiceContraintes:
             Qualification.objects.values_list("instructeur_id", "matiere_id")
         )
         salles_attitrees, effectifs_reels = _charger_brigades()
-        volume_par_element, volume_par_element_brigade = _charger_volumes(programme)
+        volume_par_element_brigade = _charger_volumes(programme)
         # R2 (US-SUI-01) : le prérequis se vérifie sur le réalisé avant le
         # début de LA SEMAINE GÉNÉRÉE (`debut`), pas « maintenant » — une
         # semaine dont le programme n'est pas encore affiché ne fournit
@@ -330,7 +322,6 @@ class ServiceContraintes:
             occupations_epreuves=ResolveurOccupationsEpreuves.resoudre(debut, fin),
             salles_attitrees=salles_attitrees,
             effectifs_reels=effectifs_reels,
-            volume_programme_par_element=volume_par_element,
             volume_programme_par_element_brigade=volume_par_element_brigade,
             volume_realise_par_element_brigade=volume_realise_par_element_brigade,
             prerequis_par_element=_charger_prerequis(),

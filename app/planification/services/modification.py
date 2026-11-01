@@ -135,20 +135,15 @@ def _contexte_sans_la_seance(programme, seance):
     pas, il est fait pour la régénération."""
     contexte = ServiceContraintes.contexte(programme)
     autres = [s for s in contexte.seances_existantes if s.pk != seance.pk]
-    par_element = dict(contexte.volume_programme_par_element)
     par_element_brigade = dict(contexte.volume_programme_par_element_brigade)
     for autre in autres:
         heures = duree_heures(autre.debut, autre.fin)
-        par_element[autre.element_referentiel_id] = (
-            par_element.get(autre.element_referentiel_id, 0) + heures
-        )
         for ligne in autre.lignes.all():
             cle = (autre.element_referentiel_id, ligne.brigade_id)
             par_element_brigade[cle] = par_element_brigade.get(cle, 0) + heures
     return dataclasses.replace(
         contexte,
         seances_existantes=autres,
-        volume_programme_par_element=par_element,
         volume_programme_par_element_brigade=par_element_brigade,
     )
 

@@ -42,18 +42,30 @@ def verifier_rg39(candidate, contexte, lot_acceptees):
 
 
 def _volume_lot(candidate, lot_acceptees):
+    """Prompt 55 (correction R01-VAL03-03) : filtré aussi par brigade — sans
+    quoi deux brigades de la même session plaçant chacune la même matière
+    dans le même lot se bloqueraient mutuellement, exactement le défaut
+    corrigé ci-dessous pour `deja_programme`."""
     element = candidate.element_referentiel
     return sum(
         duree_heures(autre.debut, autre.fin)
         for autre in lot_acceptees
-        if autre.element_referentiel.pk == element.pk
+        if autre.element_referentiel.pk == element.pk and autre.brigade.pk == candidate.brigade.pk
     )
 
 
 def _verifier_volume(candidate, contexte, lot_acceptees):
+    """RG-39 a) : le volume programmé d'une matière POUR UNE BRIGADE ne peut
+    excéder le volume prescrit (conception de référence, `docs/conception/
+    11-cas-utilisation.md`, § RG-39) — `volume_programme_par_element_
+    brigade`, jamais un cumul par élément seul (corrigé prompt 55, voir
+    docs/suivi/DECISIONS.md, R01-VAL03-03 : deux brigades d'une même
+    session se volaient mutuellement leur budget)."""
     element = candidate.element_referentiel
     duree = duree_heures(candidate.debut, candidate.fin)
-    deja_programme = contexte.volume_programme_par_element.get(element.pk, 0)
+    deja_programme = contexte.volume_programme_par_element_brigade.get(
+        (element.pk, candidate.brigade.pk), 0
+    )
     volume_lot = _volume_lot(candidate, lot_acceptees)
     total = deja_programme + volume_lot + duree
     if total <= element.volume_horaire_prescrit:

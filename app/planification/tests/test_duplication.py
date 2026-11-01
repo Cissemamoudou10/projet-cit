@@ -172,11 +172,15 @@ def test_regroupement_partiellement_reporte(circuit, autre_brigade_formation):
 
 
 def test_depassement_de_volume_signale(circuit):
-    """RG-39 compte le volume programmé PAR ÉLÉMENT (toutes brigades, tous
-    programmes hors la cible elle-même) — les deux séances source comptent
-    déjà 4 h avant toute duplication ; un prescrit à 6 h laisse passer la
-    première candidate dupliquée (4 + 2 = 6) mais refuse la seconde
-    (4 + 2 + 2 = 8 > 6), une fois la première retenue dans le lot."""
+    """RG-39 compte le volume programmé par (ÉLÉMENT, BRIGADE) — corrigé
+    prompt 55 (R01-VAL03-03, docs/suivi/DECISIONS.md) : un cumul par
+    élément seul, toutes brigades confondues, n'a jamais été la règle (voir
+    `docs/conception/11-cas-utilisation.md`, § RG-39 : « pour une
+    brigade »). Une seule brigade ici (`circuit.brigade`) : les deux
+    séances source comptent déjà 4 h avant toute duplication ; un prescrit
+    à 6 h laisse passer la première candidate dupliquée (4 + 2 = 6) mais
+    refuse la seconde (4 + 2 + 2 = 8 > 6), une fois la première retenue
+    dans le lot."""
     qualifier(circuit.cours.instructeur, circuit.cours.element.matiere)
     element = circuit.cours.element
     element.volume_horaire_prescrit = 6
@@ -193,6 +197,36 @@ def test_depassement_de_volume_signale(circuit):
     assert compte_rendu.nombre_creees == 1
     assert len(compte_rendu.refusees) == 1
     assert any(v["code"] == "RG-39" for v in compte_rendu.refusees[0].violations)
+
+
+def test_depassement_de_volume_isole_par_brigade(circuit, autre_brigade_formation):
+    """Prompt 55 (correction R01-VAL03-03) : deux brigades de la même
+    session, chacune avec sa propre séance source de la même matière (2 h
+    chacune, prescrit 4 h) — dupliquées ENSEMBLE, dans le même appel. Sans
+    l'isolement par brigade du lot de duplication (`_volume_lot`), la
+    seconde brigade traitée verrait à tort le volume déjà accepté de la
+    première (2 + 2 + 2 = 6 > 4, refusée) ; isolée, chacune ne voit que son
+    propre cumul (2 + 0 + 2 = 4 ≤ 4, acceptée)."""
+    qualifier(circuit.cours.instructeur, circuit.cours.element.matiere)
+    element = circuit.cours.element
+    element.volume_horaire_prescrit = 4
+    element.save()
+    lundi_source = circuit.programme.lundi_de_semaine
+    seance_dans(circuit.programme, circuit.cours, circuit.brigade, instant(lundi_source, 0, 8))
+    seance_dans(
+        circuit.programme, circuit.cours, autre_brigade_formation, instant(lundi_source, 1, 8)
+    )
+    lundi_cible = _lundi_cible()
+
+    compte_rendu = ServiceDuplication.dupliquer(
+        circuit.acteurs.planificateur,
+        circuit.programme,
+        lundi_cible,
+        [circuit.brigade, autre_brigade_formation],
+    )
+
+    assert compte_rendu.nombre_creees == 2
+    assert not compte_rendu.refusees
 
 
 def test_requetes_constantes_avec_deux_et_dix_brigades(circuit, redacteur):

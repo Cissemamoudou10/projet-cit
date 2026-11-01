@@ -65,8 +65,13 @@ def _rarete_lieu(element, preparation):
 
 
 def _ratio_urgence(element, brigade, contexte, aujourd_hui):
-    volume_restant = element.volume_horaire_prescrit - contexte.volume_programme_par_element.get(
-        element.pk, 0
+    """Prompt 55 (correction R01-VAL03-03) : par (élément, brigade), même
+    défaut et même correction que `regles_volume._verifier_volume` — une
+    priorité calculée par élément seul mélangerait l'urgence de deux
+    brigades sur la même matière."""
+    volume_restant = (
+        element.volume_horaire_prescrit
+        - contexte.volume_programme_par_element_brigade.get((element.pk, brigade.pk), 0)
     )
     temps_restant_jours = max((brigade.session.date_fin - aujourd_hui).days, 1)
     return volume_restant / temps_restant_jours

@@ -14,7 +14,7 @@ class LigneVolume:
     element: object
     heures_cette_semaine: float
     volume_total_brigade: float
-    volume_restant_element: float
+    volume_restant_brigade: float
 
 
 @dataclasses.dataclass(frozen=True)
@@ -95,24 +95,30 @@ def _heures_par_brigade_element(placements):
 
 
 def _volumes(placements, brigades, contexte):
-    """Volume PAR MATIÈRE ET PAR BRIGADE (§ 7) — `volume_restant_element`
-    reste calculé au niveau de l'ÉLÉMENT (D-140 : le plafond RG-39 est
-    global, pas par brigade), affiché à côté du volume propre à la brigade
-    pour ne pas laisser croire à un plafond par brigade qui n'existe pas."""
+    """Volume PAR MATIÈRE ET PAR BRIGADE (§ 7) — RG-39 a) plafonne par
+    (élément, brigade), jamais par élément seul (prompt 55, correction
+    R01-VAL03-03, `docs/suivi/DECISIONS.md` : la version précédente de ce
+    commentaire citait D-140 à l'appui d'un plafond global que D-140 ne
+    tranche pas — vérifié par relecture complète de la décision).
+    `heures_par_cle`/`elements_par_cle` sont indexés (brigade, élément),
+    `volume_programme_par_element_brigade` (élément, brigade) — deux
+    agrégations indépendantes, jamais le même ordre de clé : la recherche
+    ci-dessous inverse donc l'ordre pour chaque ligne (défaut distinct,
+    corrigé au passage — sans cette inversion, `avant` ne trouvait jamais
+    sa valeur et restait 0)."""
     heures_par_cle, elements_par_cle = _heures_par_brigade_element(placements)
     brigades_par_pk = {brigade.pk: brigade for brigade in brigades}
     lignes = []
     for cle, heures in heures_par_cle.items():
         brigade_pk, element = cle[0], elements_par_cle[cle]
-        avant = contexte.volume_programme_par_element_brigade.get(cle, 0)
-        total_element = contexte.volume_programme_par_element.get(element.pk, 0)
+        avant = contexte.volume_programme_par_element_brigade.get((element.pk, brigade_pk), 0)
         lignes.append(
             LigneVolume(
                 brigade=brigades_par_pk[brigade_pk],
                 element=element,
                 heures_cette_semaine=heures,
                 volume_total_brigade=avant + heures,
-                volume_restant_element=element.volume_horaire_prescrit - (total_element + heures),
+                volume_restant_brigade=element.volume_horaire_prescrit - (avant + heures),
             )
         )
     return lignes
