@@ -11,7 +11,7 @@ from evaluations.models import Evaluation, TypeEvaluation
 from evaluations.services.evaluation import ServiceEvaluation
 from evaluations.tests.conftest import affecter_stagiaires, creer_brigade
 from noyau.exceptions import ErreurValidation
-from planification.models import EtatProgramme, ProgrammeHebdomadaire, Seance
+from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
 from referentiel.models import CategorieLieu, ElementReferentiel
 
 
@@ -192,19 +192,25 @@ def _element_plein_et_seance_existante(controle, formation):
 
     jour = controle.jour_creneau.jour
     creneau = controle.jour_creneau.creneau
-    programme = ProgrammeHebdomadaire.objects.create(
-        lundi_de_semaine=jour - datetime.timedelta(days=jour.weekday())
-    )
-    debut = timezone.make_aware(datetime.datetime.combine(jour, creneau.heure_debut))
-    fin = timezone.make_aware(datetime.datetime.combine(jour, creneau.heure_fin))
-    Seance.objects.create(
+    lundi_semaine_du_controle = jour - datetime.timedelta(days=jour.weekday())
+    # Une AUTRE semaine que celle du contrôle : `_charger_volumes` (RG-39 a))
+    # exclut les lignes NON VERROUILLÉES du programme en cours d'évaluation
+    # (`regles_volume.py`) — posée dans ce même programme, cette séance ne
+    # compterait jamais contre son propre volume, et RG-39 a) modifiée
+    # (prompt 56) accepterait alors la candidate (avant = 0 < 1 h).
+    autre_lundi = lundi_semaine_du_controle - datetime.timedelta(weeks=1)
+    programme = ProgrammeHebdomadaire.objects.create(lundi_de_semaine=autre_lundi)
+    debut = timezone.make_aware(datetime.datetime.combine(autre_lundi, creneau.heure_debut))
+    fin = timezone.make_aware(datetime.datetime.combine(autre_lundi, creneau.heure_fin))
+    seance = Seance.objects.create(
         programme=programme,
         element_referentiel=element_plein,
         instructeur=controle.instructeur,
-        debut=debut - datetime.timedelta(days=1),
-        fin=fin - datetime.timedelta(days=1),
+        debut=debut,
+        fin=fin,
         verrouillee=False,
     )
+    LigneProgramme.objects.create(seance=seance, brigade=controle.brigade)
     return element_plein
 
 

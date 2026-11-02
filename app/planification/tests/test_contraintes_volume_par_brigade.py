@@ -102,11 +102,15 @@ def test_g10_controle_verrouille_du_programme_evalue_compte_au_volume(
     réel du chargeur `complet` (E5 réservée avant la génération de W-1,
     prompt 51/55) — il doit compter contre le plafond : l'exclusion
     « programme évalué » ne vise que ce que CETTE génération va recomposer,
-    jamais une séance déjà écrite et verrouillée par un appel antérieur."""
+    jamais une séance déjà écrite et verrouillée par un appel antérieur.
+    Durée verrouillée EXACTEMENT égale au prescrit (2 h, prompt 56, RG-39 a)
+    modifiée) : le déjà-programmé atteint pile le prescrit, la candidate
+    suivante est donc bien refusée — une durée moindre serait désormais
+    tolérée (dépassement < une séance)."""
     lundi = programme.lundi_de_semaine
     cours = Cours(creer_element(formation, matiere, volume=2), instructeur)
     qualifier(instructeur, matiere)
-    _seance_verrouillee_dans(programme, cours, brigade, instant(lundi, 0, 8), duree_min=105)
+    _seance_verrouillee_dans(programme, cours, brigade, instant(lundi, 0, 8), duree_min=120)
     candidate = _candidate(brigade, cours, instant(lundi, 10, 0), duree_min=30)
 
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
@@ -123,11 +127,12 @@ def test_g10_bis_seance_saisie_a_la_main_verrouillee_compte_au_volume(
     verrouillée d'office (`ServiceEcritureSeance.creer_seance`) — jamais
     régénérée (US-PLAN-03 c.7). Même garantie que le test précédent, pour
     l'autre origine possible d'une séance verrouillée du programme évalué
-    (saisie manuelle, pas un contrôle)."""
+    (saisie manuelle, pas un contrôle). Durée verrouillée égale au
+    prescrit, même raison que G10."""
     lundi = programme.lundi_de_semaine
     cours = Cours(creer_element(formation, matiere, volume=2), instructeur)
     qualifier(instructeur, matiere)
-    _seance_verrouillee_dans(programme, cours, brigade, instant(lundi, 0, 8), duree_min=105)
+    _seance_verrouillee_dans(programme, cours, brigade, instant(lundi, 0, 8), duree_min=120)
     candidate = _candidate(brigade, cours, instant(lundi, 10, 0), duree_min=30)
 
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
@@ -180,16 +185,18 @@ def test_g12_lot_de_generation_isole_le_cumul_par_brigade(
     lot`/`_volume_lot`), pas seulement contre la base déjà en db : une
     génération place plusieurs candidates dans UN SEUL appel, pour
     plusieurs brigades. Trois candidates dans le même lot : la première
-    brigade consomme 1,5 h (acceptée), la seconde brigade — de la même
+    brigade atteint pile son prescrit avec sa première candidate (2 h,
+    acceptée — RG-39 a) modifiée, prompt 56 : le seuil se compare AVANT
+    cette candidate, jamais après) ; la seconde brigade — de la même
     session, sur la même matière — ne doit PAS être bloquée par le lot de
-    la première (acceptée elle aussi) ; mais la première brigade reste
-    plafonnée par SON PROPRE cumul de lot quand elle revient (1,5 + 1 =
-    2,5 > 2, refusée)."""
+    la première (acceptée elle aussi, vierge) ; mais la première brigade
+    reste plafonnée par SON PROPRE cumul de lot quand elle revient (déjà
+    programmé = 2 ≥ 2, refusée)."""
     formation = brigade_formation.session.formation
     lundi = programme.lundi_de_semaine
     cours = Cours(creer_element(formation, matiere, volume=2), instructeur)
     qualifier(instructeur, matiere)
-    candidate_b1_1 = _candidate(brigade_formation, cours, instant(lundi, 0, 8), duree_min=90)
+    candidate_b1_1 = _candidate(brigade_formation, cours, instant(lundi, 0, 8), duree_min=120)
     candidate_b2_1 = _candidate(autre_brigade_formation, cours, instant(lundi, 0, 10), duree_min=90)
     candidate_b1_2 = _candidate(brigade_formation, cours, instant(lundi, 0, 13), duree_min=60)
 

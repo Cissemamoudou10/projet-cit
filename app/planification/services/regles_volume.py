@@ -3,7 +3,18 @@ docs/suivi/DECISIONS.md pour le détail des deux arbitrages) :
 
 (a) le volume programmé compte tous les programmes, rejetés compris (V7,
     US-VAL-03), à l'exclusion du programme en cours d'évaluation (`ServiceContraintes.
-    contexte`, `_charger_volumes`) ;
+    contexte`, `_charger_volumes`). Modifiée prompt 56 (R01-VAL03-03, défaut
+    latent révélé par la preuve sur la session entière, docs/suivi/
+    DECISIONS.md) : une séance se place tant que le volume déjà programmé
+    (base + lot) de la matière, pour cette brigade, reste strictement
+    inférieur au prescrit — même si la durée de CETTE séance fait dépasser
+    le prescrit. Dès que le déjà-programmé atteint ou dépasse le prescrit,
+    plus aucune séance de cette matière. Le dépassement final est donc
+    toujours strictement inférieur à la durée d'une séance — hypothèse à
+    faire valider par la cellule planification. Sans cette tolérance, une
+    matière dont le reste exact ne correspond à aucun créneau existant ne
+    pouvait plus jamais atteindre son prescrit (RG-39 b, ci-dessous, devenait
+    inatteignable) ;
 (b) un prérequis est « achevé » quand le volume RÉALISÉ (RG-60, US-SUI-01,
     prompt 44, R2) de la matière prérequise POUR CETTE BRIGADE, avant le
     début de la semaine générée, atteint son volume prescrit — définition
@@ -11,7 +22,8 @@ docs/suivi/DECISIONS.md pour le détail des deux arbitrages) :
     `contexte.volume_realise_par_element_brigade`
     (`planification.services.contraintes.volumes_realises_par_element_brigade`).
     Conséquence assumée : une semaine dont le programme n'est pas encore
-    affiché ne fournit aucun prérequis à la suivante.
+    affiché ne fournit aucun prérequis à la suivante. Inchangée par le
+    prompt 56 : le seuil restait déjà `>=`, désormais atteignable.
 
 CUMUL PROVISOIRE DU LOT — les deux volets ne s'y comportent PAS pareil
 (Prompt 31 § 0.2, docs/suivi/DECISIONS.md, D-135 mis à jour) :
@@ -55,27 +67,29 @@ def _volume_lot(candidate, lot_acceptees):
 
 
 def _verifier_volume(candidate, contexte, lot_acceptees):
-    """RG-39 a) : le volume programmé d'une matière POUR UNE BRIGADE ne peut
-    excéder le volume prescrit (conception de référence, `docs/conception/
-    11-cas-utilisation.md`, § RG-39) — `volume_programme_par_element_
-    brigade`, jamais un cumul par élément seul (corrigé prompt 55, voir
-    docs/suivi/DECISIONS.md, R01-VAL03-03 : deux brigades d'une même
-    session se volaient mutuellement leur budget)."""
+    """RG-39 a), modifiée prompt 56 : le volume déjà programmé (base + lot)
+    d'une matière POUR UNE BRIGADE doit être strictement inférieur au
+    prescrit pour qu'une séance supplémentaire se place — pas le total après
+    cette séance. Une matière qui n'atteint jamais exactement son prescrit
+    (reste plus petit que tout créneau existant) peut ainsi tout de même
+    l'achever, au prix d'un dépassement toujours inférieur à la durée d'une
+    séance (docs/suivi/DECISIONS.md, R01-VAL03-03, défaut latent révélé par
+    la preuve sur la session entière). `volume_programme_par_element_
+    brigade`, jamais un cumul par élément seul (corrigé prompt 55)."""
     element = candidate.element_referentiel
-    duree = duree_heures(candidate.debut, candidate.fin)
     deja_programme = contexte.volume_programme_par_element_brigade.get(
         (element.pk, candidate.brigade.pk), 0
     )
-    volume_lot = _volume_lot(candidate, lot_acceptees)
-    total = deja_programme + volume_lot + duree
-    if total <= element.volume_horaire_prescrit:
+    avant = deja_programme + _volume_lot(candidate, lot_acceptees)
+    if avant < element.volume_horaire_prescrit:
         return []
-    origine = "base" if deja_programme + duree > element.volume_horaire_prescrit else "lot"
+    origine = "base" if deja_programme >= element.volume_horaire_prescrit else "lot"
     return [
         violation(
             "RG-39",
-            f"Le volume programmé de {element.matiere} atteindrait {total:.2f} h, "
-            f"au-delà du volume prescrit ({element.volume_horaire_prescrit} h).",
+            f"Le volume programmé de {element.matiere} a atteint {avant:.2f} h, "
+            f"au moins le volume prescrit ({element.volume_horaire_prescrit} h) : "
+            "plus aucune séance.",
             origine=origine,
         )
     ]

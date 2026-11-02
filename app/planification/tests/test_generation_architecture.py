@@ -16,12 +16,12 @@ from planification.tests.conftest import activer_grille, qualifier
 def test_i3_nombre_de_requetes_sql_borne_independant_du_nombre_de_cases(
     scenario, cours, brigade_formation
 ):
-    """Volume prescrit à 2 h : une seule séance s'écrit quel que soit le
-    nombre de créneaux offerts — isole les requêtes de LECTURE (contexte,
-    préparation) de celles d'ÉCRITURE, qui scalent légitimement avec le
-    nombre de séances produites, pas avec le nombre de cases évaluées."""
+    """Prescrit à 1 h, sous le plus petit créneau (1,75 h) : une seule
+    séance s'écrit, UNE FOIS pour toute la mesure (RG-39 a) modifiée,
+    prompt 56, dès la chauffe) — isole les requêtes de LECTURE de celles
+    d'ÉCRITURE, qui scalent avec les séances produites, pas les cases."""
     qualifier(cours.instructeur, cours.element.matiere)
-    cours.element.volume_horaire_prescrit = 2
+    cours.element.volume_horaire_prescrit = 1
     cours.element.save()
 
     # Semaine de chauffe, hors mesure : absorbe les requêtes ponctuelles

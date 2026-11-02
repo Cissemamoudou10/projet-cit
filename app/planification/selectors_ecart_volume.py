@@ -22,6 +22,20 @@ D-279 (fermée, prompt 48, Temps 0) : la mise en évidence sur l'écran du
 rapprochement (US-SUI-01) — fondée sur le RÉALISÉ, pas le programmé — vit
 désormais dans `selectors_alerte_ecart.py` (US-SUI-02), pas ici. Ce module
 ne couvre plus que la consultation de la semaine, avant soumission (E2).
+
+RG-39 a) modifiée (prompt 56, R01-VAL03-03) : la dernière séance d'une
+matière peut porter le programmé au-delà du prescrit, de moins de la durée
+d'un créneau — ce dépassement-là n'est jamais une sur-programmation
+(`_depassement_tolere`), seuls les écarts dus à autre chose le sont (un
+prescrit réduit après coup, R04-PLAN07-03). Hypothèse à faire valider par
+la cellule planification : la borne retenue est celle que la génération
+peut structurellement causer (le plus long créneau de la grille active,
+une candidate couvrant toujours exactement un créneau, `generation.
+candidats.construire_cases`) — une modification manuelle saisissant une
+séance de plus de deux créneaux consécutifs resterait, elle, signalée.
+`statut_volume` n'est jamais modifié pour ce filtre : il reste partagé
+avec US-SUI-02 (`.claude/rules/services.md`), ce module filtre seul après
+l'avoir appelé.
 """
 
 import dataclasses
@@ -29,7 +43,9 @@ import dataclasses
 from django.conf import settings
 from django.utils import timezone
 
+from planification.selectors import grille_active_avec_creneaux
 from planification.services.contraintes import volumes_programmes_par_element_brigade
+from planification.services.temps import duree_creneau_maximale
 from planification.statut_volume import DEPASSEMENT, RETARD, statut_volume
 from referentiel.models import ElementReferentiel
 
@@ -65,13 +81,35 @@ def _elements_par_formation(formation_ids):
     return elements_par_formation
 
 
-def _lignes_en_ecart(brigade, elements_par_formation, programme_par_cle, termine, seuil):
+def _depassement_tolere(prescrit, programme, tolerance):
+    """RG-39 a) modifiée (prompt 56) : dépassement strictement inférieur à
+    la borne qu'une séance générée peut causer — pas une sur-programmation
+    au sens d'US-PLAN-07."""
+    return programme - prescrit < tolerance
+
+
+@dataclasses.dataclass(frozen=True)
+class _ParametresEcart:
+    """`.claude/rules/python.md`, § 5 paramètres max : ce qui ne varie pas
+    par brigade voyage groupé jusqu'à `_lignes_en_ecart`."""
+
+    elements_par_formation: dict
+    programme_par_cle: dict
+    seuil: float
+    tolerance: float
+
+
+def _lignes_en_ecart(brigade, termine, parametres):
     lignes = []
-    for element in elements_par_formation.get(brigade.session.formation_id, []):
-        programme = programme_par_cle.get((element.pk, brigade.pk), 0)
+    for element in parametres.elements_par_formation.get(brigade.session.formation_id, []):
+        programme = parametres.programme_par_cle.get((element.pk, brigade.pk), 0)
         statut, ecart_pourcent = statut_volume(
-            element.volume_horaire_prescrit, programme, termine, seuil
+            element.volume_horaire_prescrit, programme, termine, parametres.seuil
         )
+        if statut == DEPASSEMENT and _depassement_tolere(
+            element.volume_horaire_prescrit, programme, parametres.tolerance
+        ):
+            continue
         if statut in (RETARD, DEPASSEMENT):
             lignes.append(
                 LigneEcartVolume(
@@ -99,15 +137,18 @@ def ecarts_volume_horaire(brigades, a_la_date=None) -> list:
     brigade_ids = [brigade.pk for brigade in brigades]
     if not brigade_ids:
         return []
-    elements_par_formation = _elements_par_formation({b.session.formation_id for b in brigades})
-    programme_par_cle = volumes_programmes_par_element_brigade(brigade_ids=brigade_ids)
+    _, creneaux = grille_active_avec_creneaux()
+    parametres = _ParametresEcart(
+        elements_par_formation=_elements_par_formation({b.session.formation_id for b in brigades}),
+        programme_par_cle=volumes_programmes_par_element_brigade(brigade_ids=brigade_ids),
+        seuil=seuil,
+        tolerance=duree_creneau_maximale(creneaux),
+    )
 
     groupes = []
     for brigade in brigades:
         termine = brigade.session.date_fin <= a_la_date
-        lignes = _lignes_en_ecart(
-            brigade, elements_par_formation, programme_par_cle, termine, seuil
-        )
+        lignes = _lignes_en_ecart(brigade, termine, parametres)
         if lignes:
             groupes.append(GroupeEcartVolume(brigade=brigade, lignes=lignes))
     return groupes
