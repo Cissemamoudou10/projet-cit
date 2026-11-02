@@ -239,12 +239,17 @@ def _generer_semaine_zero(contexte):
 
 
 def _generer_semaine_plus_1(contexte):
-    """E2 déjà réservée (`_reserver_controles_et_m2`) : générée le jour D
-    (horloge réelle), reste BROUILLON."""
-    programme = ServiceGeneration.generer(
-        contexte.agissant_plan, semaine(contexte.date_reference, 1), contexte.toutes_brigades
-    ).programme
-    contexte.stdout.write("  Programme W+1 généré (brouillon, horloge réelle, E2 déjà insérée).")
+    """E2 déjà réservée (`_reserver_controles_et_m2`), verrouillée. Le reste
+    de la semaine n'est PAS auto-rempli par une génération complète
+    (prompt 55, Temps 2) : R01-VAL03-03 (RECETTE-01) demande au recetteur
+    de générer/compléter W+1 lui-même — un chargeur qui le ferait déjà à
+    sa place laisserait trop peu de volume restant pour que ce contrôle
+    porte sur quelque chose de réel."""
+    programme = obtenir_programme_vide(contexte, 1)
+    contexte.stdout.write(
+        "  Programme W+1 laissé en brouillon (E2 déjà insérée, verrouillée) — "
+        "génération complète laissée au recetteur (RECETTE-01, R01-VAL03-03)."
+    )
     return programme
 
 
