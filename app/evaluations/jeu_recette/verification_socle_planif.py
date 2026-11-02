@@ -2,6 +2,8 @@
 crée ni ne modifie rien. Réutilise le patron de rapport du jeu `socle`
 (`verification.py::LigneRapport`/`_ligne`/`_imprimer`)."""
 
+from django.contrib.auth import get_user_model
+
 from evaluations.jeu_recette.donnees_socle_planif import (
     BRIGADES_SOCLE_PLANIF,
     CODE_MATIERE_OBJECTIFS,
@@ -15,7 +17,7 @@ from evaluations.jeu_recette.donnees_socle_planif import (
     NOMBRE_STAGIAIRES_IMPORTES,
     OBJECTIFS_PEDAGOGIQUES_M3,
 )
-from evaluations.jeu_recette.verification import _imprimer, _ligne
+from evaluations.jeu_recette.verification import _imprimer, _ligne, verifier_generation_a_blanc
 from organisation.models import AffectationBrigade, Brigade, Session, Stagiaire
 from planification.models import ProgrammeHebdomadaire
 from referentiel.models import Matiere
@@ -30,6 +32,23 @@ def verifier_socle_planif(stdout):
         + _verifier_aucun_programme()
     )
     _imprimer(stdout, "État du jeu de recette, ajouts de l'état socle-planif (Prompt 53)", lignes)
+    _verifier_generation_a_blanc_socle_planif(stdout)
+
+
+def _verifier_generation_a_blanc_socle_planif(stdout):
+    """Prompt 55, Temps 3 (voir `verification.py::verifier_generation_a_
+    blanc`) : F1 ne porte aucun prérequis — pas de matière exceptée. La
+    génération à blanc, toujours annulée, laisse `_verifier_aucun_
+    programme` ci-dessus valide (Temps 1, aucun programme écrit)."""
+    session = Session.objects.filter(intitule=INTITULE_SESSION).first()
+    if session is None:
+        return
+    brigades = list(Brigade.objects.filter(session=session))
+    agissant = get_user_model().objects.filter(username="u_plan").first()
+    if not brigades or agissant is None:
+        return
+    elements_attendus = session.formation.elements_referentiel.all()
+    verifier_generation_a_blanc(stdout, brigades, agissant, elements_attendus)
 
 
 def _verifier_session_et_brigades(session):

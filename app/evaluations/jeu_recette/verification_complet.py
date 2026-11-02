@@ -4,6 +4,7 @@ ni ne modifie rien. Réutilise le patron de rapport du jeu `socle`
 sortie, un seul `N/N conformes` à la fin, comme l'exige la règle commune
 n° 8 du prompt."""
 
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from evaluations.jeu_recette.donnees_complet import (
@@ -14,7 +15,7 @@ from evaluations.jeu_recette.donnees_complet import (
     SESSIONS_COMPLET,
 )
 from evaluations.jeu_recette.semaines import semaine
-from evaluations.jeu_recette.verification import _imprimer, _ligne
+from evaluations.jeu_recette.verification import _imprimer, _ligne, verifier_generation_a_blanc
 from evaluations.models import Evaluation, Note, OrganisationEpreuve, Sujet, TypeEvaluation
 from organisation.models import Brigade, Session, Stagiaire
 from planification.models import EtatProgramme, NonExecution, ProgrammeHebdomadaire
@@ -32,6 +33,23 @@ def verifier_complet(stdout):
         + _verifier_suivi_complet()
     )
     _imprimer(stdout, "État du jeu de recette, ajouts de l'état complet (§ 2)", lignes)
+    _verifier_generation_a_blanc_complet(stdout)
+
+
+def _verifier_generation_a_blanc_complet(stdout):
+    """Prompt 55, Temps 3 (voir `verification.py::verifier_generation_a_
+    blanc`) : M8 (prérequis M6 non achevé à ce point de l'historique) est
+    la seule matière de F6 exceptée de l'attente « au moins une séance »."""
+    formation = Formation.objects.filter(intitule__startswith="F6").first()
+    if formation is None:
+        return
+    brigades = list(Brigade.objects.filter(designation__in=("EXP1", "EXP2")))
+    agissant = get_user_model().objects.filter(username="u_plan").first()
+    if not brigades or agissant is None:
+        return
+    element_m8 = formation.elements_referentiel.filter(matiere__code="M8").first()
+    elements_attendus = formation.elements_referentiel.exclude(matiere__code="M8")
+    verifier_generation_a_blanc(stdout, brigades, agissant, elements_attendus, element_m8)
 
 
 def _verifier_referentiel_complet():

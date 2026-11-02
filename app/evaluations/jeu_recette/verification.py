@@ -208,6 +208,61 @@ def _verifier_fichiers_import():
     return lignes
 
 
+def _lignes_matieres_placees(brigades, elements_attendus, compte_rendu):
+    couples_places = {(ligne.brigade.pk, ligne.element.pk) for ligne in compte_rendu.volumes}
+    lignes = []
+    for brigade in brigades:
+        for element in elements_attendus:
+            lignes += _ligne(
+                (brigade.pk, element.pk) in couples_places,
+                f"Génération à blanc W+1 : {brigade.designation}/{element.matiere.code} placée",
+            )
+    return lignes
+
+
+def _lignes_matiere_ecartee_prerequis(brigades, element, compte_rendu):
+    lignes = []
+    for brigade in brigades:
+        ecartee = any(
+            e.element.pk == element.pk and e.brigade.pk == brigade.pk and "prérequis" in e.motif.lower()
+            for e in compte_rendu.matieres_ecartees
+        )
+        lignes += _ligne(
+            ecartee,
+            f"Génération à blanc W+1 : {brigade.designation}/{element.matiere.code} écartée (prérequis)",
+        )
+    return lignes
+
+
+def verifier_generation_a_blanc(stdout, brigades, agissant, elements_attendus, element_prerequis_inacheve=None):
+    """Prompt 55, Temps 3 : prouve, SANS RIEN ÉCRIRE, que la génération de
+    W+1 placerait au moins une séance par brigade et par matière
+    programmable — jamais seulement que l'état du programme (brouillon)
+    reste cohérent après coup, qui ne prouve rien sur ce qu'une vraie
+    génération ferait. `element_prerequis_inacheve`, s'il est fourni, doit
+    apparaître écarté pour motif de prérequis, pour chaque brigade.
+
+    Jamais de COMMIT : `transaction.set_rollback(True)` annule tout —
+    même patron que `test_determinisme_meme_graine_memes_valeurs`
+    (`evaluations/tests/test_jeu_recette_complet.py`), --verifier reste
+    lecture seule (§ 5)."""
+    from django.db import transaction
+    from django.utils import timezone
+
+    from evaluations.jeu_recette.semaines import semaine
+    from planification.services.generation import ServiceGeneration
+
+    lundi_w_plus_1 = semaine(timezone.localdate(), 1)
+    lignes = []
+    with transaction.atomic():
+        compte_rendu = ServiceGeneration.generer(agissant, lundi_w_plus_1, list(brigades))
+        lignes += _lignes_matieres_placees(brigades, elements_attendus, compte_rendu)
+        if element_prerequis_inacheve is not None:
+            lignes += _lignes_matiere_ecartee_prerequis(brigades, element_prerequis_inacheve, compte_rendu)
+        transaction.set_rollback(True)
+    _imprimer(stdout, "Génération à blanc de W+1, jamais écrite (prompt 55, Temps 3)", lignes)
+
+
 def _imprimer(stdout, titre, lignes):
     stdout.write(titre)
     for ligne in lignes:
