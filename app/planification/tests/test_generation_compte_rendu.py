@@ -13,6 +13,10 @@ def test_f1_nombre_de_seances_placees_par_brigade_exact(
 ):
     qualifier(cours.instructeur, cours.element.matiere)
     qualifier(autre_instructeur, cours.element.matiere)
+    # volume large (prompt 56, RG-66) : ce test compte des séances, le
+    # plafond hebdomadaire ne doit pas en retrancher.
+    cours.element.volume_horaire_prescrit = 4000
+    cours.element.save()
 
     compte_rendu = ServiceGeneration.generer(
         scenario.planificateur, scenario.lundi, [brigade_formation, autre_brigade_formation]

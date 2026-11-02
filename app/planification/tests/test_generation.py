@@ -12,7 +12,9 @@ def test_a1_generation_sur_une_semaine_vierge_cree_un_programme_brouillon(
 ):
     qualifier(cours.instructeur, cours.element.matiere)
 
-    compte_rendu = ServiceGeneration.generer(scenario.planificateur, scenario.lundi, [brigade_formation])
+    compte_rendu = ServiceGeneration.generer(
+        scenario.planificateur, scenario.lundi, [brigade_formation]
+    )
 
     programme = ProgrammeHebdomadaire.objects.get(lundi_de_semaine=scenario.lundi)
     assert compte_rendu.programme == programme
@@ -38,13 +40,15 @@ def test_a2_generation_sur_d_autres_brigades_complete_le_meme_programme(
 
     assert ProgrammeHebdomadaire.objects.filter(lundi_de_semaine=scenario.lundi).count() == 1
     programme = ProgrammeHebdomadaire.objects.get(lundi_de_semaine=scenario.lundi)
-    assert set(Seance.objects.filter(pk__in=premieres_seances).values_list("programme", flat=True)) == {
-        programme.pk
-    }
+    assert set(
+        Seance.objects.filter(pk__in=premieres_seances).values_list("programme", flat=True)
+    ) == {programme.pk}
     assert Seance.objects.filter(pk__in=premieres_seances).exists()
-    assert Seance.objects.exclude(pk__in=premieres_seances).filter(
-        lignes__brigade=autre_brigade_formation
-    ).exists()
+    assert (
+        Seance.objects.exclude(pk__in=premieres_seances)
+        .filter(lignes__brigade=autre_brigade_formation)
+        .exists()
+    )
 
 
 def test_a3_aucune_violation_d_unicite_apres_plusieurs_generations(
@@ -70,6 +74,11 @@ def test_a4_instructeur_affecte_a_une_brigade_non_selectionnee_vu_comme_occupe(
     séances déjà posées pour `brigade_formation`, qui n'est plus
     sélectionnée cette fois."""
     qualifier(cours.instructeur, cours.element.matiere)
+    # volume large (prompt 56, RG-66) : le plafond hebdomadaire de
+    # brigade_formation ne doit pas, lui, libérer de créneau — ce test
+    # porte sur RG-34, pas sur le plafond.
+    cours.element.volume_horaire_prescrit = 4000
+    cours.element.save()
     ServiceGeneration.generer(scenario.planificateur, scenario.lundi, [brigade_formation])
 
     compte_rendu = ServiceGeneration.generer(

@@ -82,10 +82,17 @@ def construire_cases(brigades, creneaux_projetes, periodes_bloquantes):
     return cases
 
 
-def _volume_restant(element, brigade, contexte):
+def volume_restant(element, brigade, contexte):
     """Prompt 55 (correction R01-VAL03-03) : par (élément, brigade), jamais
     un cumul par élément seul — voir `regles_volume._verifier_volume`,
-    même défaut, même correction."""
+    même défaut, même correction. Publique (sans `_`) : réutilisée par
+    `generation.plafond_hebdomadaire` (prompt 56, RG-66), jamais une
+    seconde implantation.
+
+    Inchangée par la tolérance RG-39 a) du prompt 56 (dépassement de moins
+    d'une séance) : `reste <= 0` exclut déjà une matière dès que le
+    déjà-programmé atteint ou dépasse le prescrit — exactement le seuil
+    que `regles_volume._verifier_volume` applique désormais lui-même."""
     deja_programme = contexte.volume_programme_par_element_brigade.get((element.pk, brigade.pk), 0)
     return element.volume_horaire_prescrit - deja_programme
 
@@ -106,8 +113,8 @@ def matieres_programmables(brigade, elements, contexte):
     programmables = []
     ecartees = []
     for element in elements:
-        volume_restant = _volume_restant(element, brigade, contexte)
-        if volume_restant <= 0:
+        reste = volume_restant(element, brigade, contexte)
+        if reste <= 0:
             ecartees.append(_ecartee(brigade, element, _motif_volume_epuise(element)))
             continue
         manquants = _prerequis_inacheves(element, brigade, contexte)

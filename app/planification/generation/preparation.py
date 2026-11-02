@@ -7,6 +7,7 @@ du nombre de cases.
 import dataclasses
 
 from planification.generation.candidats import matieres_programmables
+from planification.generation.plafond_hebdomadaire import calculer_plafonds
 from referentiel.models import ElementReferentiel
 from ressources.models import CategorieLieu as CategorieLieuRessource
 from ressources.models import Instructeur, Lieu
@@ -18,6 +19,7 @@ class Preparation:
     matieres_ecartees: list
     instructeurs_qualifies: dict
     lieux_partages_par_type: dict
+    plafonds: dict
 
 
 def _elements_par_formation(brigades):
@@ -63,11 +65,18 @@ def _lieux_partages_par_type():
     return resultat
 
 
-def preparer(brigades, contexte):
+def preparer(brigades, contexte, creneaux, lundi_de_semaine):
+    """`creneaux`/`lundi_de_semaine` : seulement pour le plafond hebdomadaire
+    (prompt 56, RG-66), calculé UNE FOIS ici comme le reste de cette
+    fonction (I3, Prompt 31)."""
     matieres_par_brigade, ecartees = _matieres_et_ecartees(brigades, contexte)
+    plafonds = calculer_plafonds(
+        matieres_par_brigade, brigades, contexte, creneaux, lundi_de_semaine
+    )
     return Preparation(
         matieres_par_brigade=matieres_par_brigade,
         matieres_ecartees=ecartees,
         instructeurs_qualifies=_instructeurs_qualifies(contexte),
         lieux_partages_par_type=_lieux_partages_par_type(),
+        plafonds=plafonds,
     )

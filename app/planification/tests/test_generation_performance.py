@@ -67,9 +67,21 @@ INSTRUCTEURS_PAR_MATIERE = 2  # assez pour ne pas buter systématiquement sur un
 # à jour) — PAS `update_or_create`, dont le `SAVEPOINT` imbriqué en coûtait
 # quatre de plus (55 mesuré), corrigé avant d'arriver ici. Coût FIXE par
 # génération, indépendant du nombre de brigades ou de cases (I3 tenu).
+# Note datée 2026-11-02 (plafond hebdomadaire, RG-66, prompt 56,
+# exigence manquante découverte en recette R01-VAL03-03) : 51 → 54, mesuré
+# réellement. `generation.plafond_hebdomadaire.calculer_plafonds` (appelé
+# UNE FOIS par `preparer()`, I3 tenu) ajoute `charger_periodes_bloquantes`
+# (la portée du calendrier bloquant sur toute la session restante, pas
+# seulement la semaine) et `Prerequis.objects.filter(...)` (matières
+# dépendantes, § 6) — deux requêtes fixes, jamais une par brigade ni par
+# case ; vérifié par `CaptureQueriesContext` autour de `calculer_plafonds`
+# seul (2 requêtes dans son périmètre propre, la troisième absorbée par un
+# accès à `brigade.session` déjà présent ailleurs dans `preparer()`, jamais
+# répété par brigade — coût constant confirmé par la mesure elle-même,
+# stable à 54 sur ce jeu de 10 brigades).
 # Marge repart à zéro : prochaine dérive à surveiller sans délai
 # supplémentaire, même règle que les relèves précédentes.
-REQUETES_REFERENCE_US_PLAN_03 = 51
+REQUETES_REFERENCE_US_PLAN_03 = 54
 MARGE_REQUETES = 2
 
 journal = logging.getLogger(__name__)

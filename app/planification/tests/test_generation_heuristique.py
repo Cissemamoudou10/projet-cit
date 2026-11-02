@@ -48,7 +48,10 @@ def test_c2_matiere_moins_qualifiee_placee_avant_matiere_tres_qualifiee(
     activer_grille(planificateur, "Une case C2", [(datetime.time(8, 0), datetime.time(9, 45))])
     matiere_rare = Matiere.objects.create(intitule="Matière rare C2", code="RAR2")
     matiere_abondante = Matiere.objects.create(intitule="Matière abondante C2", code="ABO10")
-    element_rare = creer_element(formation, matiere_rare, volume=40)
+    # volume large (prompt 56, RG-66) : le plafond hebdomadaire de RAR2 ne
+    # doit pas devenir lui-même la cause qui laisse une case à ABO10 — ce
+    # test porte sur la priorité, pas sur le plafond.
+    element_rare = creer_element(formation, matiere_rare, volume=4000)
     element_abondant = creer_element(formation, matiere_abondante, volume=40)
     for i in range(2):
         qualifier(_instructeur(f"RAR{i}"), matiere_rare)

@@ -154,6 +154,18 @@ MOIS_DEBUT_ANNEE_FORMATION = int(os.environ.get("MOIS_DEBUT_ANNEE_FORMATION", "9
 GENERATION_STRATEGIE = os.environ.get("GENERATION_STRATEGIE", "gloutonne")
 GENERATION_BORNE_TEMPS_SECONDES = int(os.environ.get("GENERATION_BORNE_TEMPS_SECONDES", "300"))
 
+# Plafond hebdomadaire de volume par matière et par brigade (RG-66, exigence
+# manquante découverte en recette, R01-VAL03-03, prompt 56) : limite ce
+# qu'UNE SEMAINE de génération automatique peut placer d'une même matière,
+# pour une même brigade, à (volume restant ÷ semaines restantes de la
+# session) × ce coefficient — jamais une contrainte dure, jamais appliquée
+# à la modification manuelle, à la substitution ni à la duplication. Valeur
+# par défaut (1,5) une HYPOTHÈSE, à faire valider par le terrain — voir
+# docs/suivi/DECISIONS.md. Chaîne parsée en `float` au point d'usage, comme
+# SEUIL_ECART_VOLUME_HORAIRE ci-dessous (jamais de `Decimal`, réservé aux
+# notes et coefficients de référentiel, `.claude/rules/modeles.md`).
+PLAFOND_HEBDOMADAIRE_COEFFICIENT = os.environ.get("PLAFOND_HEBDOMADAIRE_COEFFICIENT", "1.5")
+
 # Moyennes (US-EVAL-06, N6, prompt 46). Traitement d'une absence au calcul :
 # « zero » compte l'évaluation comme une note de zéro (valeur par défaut, la
 # plus défavorable — ne peut jamais avantager un stagiaire par erreur) ;

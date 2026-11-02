@@ -284,10 +284,12 @@ class ServiceGeneration:
             programme, _ = ProgrammeHebdomadaire.objects.get_or_create(
                 lundi_de_semaine=lundi_de_semaine
             )
-            return ServiceGeneration._generer_dans_programme(agissant, programme, brigades, cases)
+            return ServiceGeneration._generer_dans_programme(
+                agissant, programme, brigades, cases, creneaux
+            )
 
     @staticmethod
-    def _generer_dans_programme(agissant, programme, brigades, cases):
+    def _generer_dans_programme(agissant, programme, brigades, cases, creneaux):
         # V3 : la garde précède la SUPPRESSION des séances régénérées — un
         # programme soumis, validé ou affiché n'en perd aucune (C2, C5).
         programme = ServiceCircuitProgramme.garde_modification(
@@ -296,7 +298,7 @@ class ServiceGeneration:
         supprimees, a_cheval = _supprimer_seances_regenerees(programme, brigades)
         verrouillees = _seances_verrouillees_preservees(programme, brigades)
         contexte = ServiceContraintes.contexte(programme)
-        preparation = preparer(brigades, contexte)
+        preparation = preparer(brigades, contexte, creneaux, programme.lundi_de_semaine)
         strategie = _construire_strategie(preparation)
         resultat = strategie.generer(contexte, cases, settings.GENERATION_BORNE_TEMPS_SECONDES)
         groupes = [placement.candidates for placement in resultat.placements]
