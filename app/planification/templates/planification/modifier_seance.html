@@ -83,4 +83,28 @@
     </button>
   </form>
 </section>
+
+{% if avenants %}
+<section class="mt-4 max-w-3xl border border-gris-trait bg-fond-bloc">
+  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold
+            uppercase tracking-wide text-marine-900">
+    Avenants de cette séance
+  </p>
+  <ul class="divide-y divide-gris-trait px-4">
+    {% for avenant in avenants %}
+      <li class="py-2.5 text-sm">
+        <p>
+          <span class="font-medium text-encre">{{ avenant.get_nature_display }}</span>
+          <span class="text-gris-lecture"> — {{ avenant.cree_le|date:"d/m/Y H:i" }}{% if avenant.cree_par %}
+            par {{ avenant.cree_par }}{% endif %}</span>
+        </p>
+        <p class="mt-0.5 text-encre">{{ avenant.motif }}</p>
+        {% if avenant.detail %}
+          <p class="mt-0.5 text-2xs text-gris-lecture">{{ avenant.detail }}</p>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 {% endblock %}

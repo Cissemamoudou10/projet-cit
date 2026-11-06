@@ -74,5 +74,6 @@ def contexte_circuit(programme, utilisateur):
         "motif_rejet_visible": motif_rejet_visible(programme),
         "avenants": Avenant.objects.filter(seance__programme=programme)
         .select_related("seance__element_referentiel__matiere")
+        .prefetch_related("seance__lignes__brigade")
         .order_by("pk"),
     }

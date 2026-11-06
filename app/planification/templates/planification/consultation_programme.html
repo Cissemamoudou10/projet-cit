@@ -129,6 +129,12 @@
     {% endif %}
     {% for avenant in avenants %}
       <p class="border-l-2 border-marine-700 pl-3 text-gris-lecture">
+        <span class="text-2xs uppercase tracking-wide">
+          {{ avenant.seance.debut|date:"l d/m" }},
+          {{ avenant.seance.debut|date:"H:i" }}–{{ avenant.seance.fin|date:"H:i" }}
+          — {% for ligne in avenant.seance.lignes.all %}{% if not forloop.first %} + {% endif %}{{ ligne.brigade }}{% endfor %}
+          — {{ avenant.seance.element_referentiel.matiere }}
+        </span><br>
         Avenant du {{ avenant.cree_le|date:"d/m/Y" }} — {{ avenant.get_nature_display }} :
         <span class="text-encre">{{ avenant.motif }}</span>
         <span class="text-2xs">({{ avenant.detail }})</span>
@@ -313,6 +319,10 @@
                     {% if cellule.seance.verrouillee %}
                       <svg class="h-3 w-3 shrink-0 stroke-gris-lecture" aria-hidden="true">
                         <use href="{% static 'icones/planche.svg' %}#verrou"></use></svg>
+                    {% endif %}
+                    {% if cellule.porte_avenant %}
+                      <svg class="h-3 w-3 shrink-0 stroke-marine-700" aria-hidden="true">
+                        <use href="{% static 'icones/planche.svg' %}#avenant"></use></svg>
                     {% endif %}
                     {% if cellule.est_controle %}
                       <span class="border border-marine-700 px-1 text-2xs font-semibold

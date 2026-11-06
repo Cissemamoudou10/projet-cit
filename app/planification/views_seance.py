@@ -103,7 +103,12 @@ def modifier_seance(request, pk):
     return render(
         request,
         "planification/modifier_seance.html",
-        {"seance": seance, "programme": seance.programme, "formulaire": formulaire},
+        {
+            "seance": seance,
+            "programme": seance.programme,
+            "formulaire": formulaire,
+            "avenants": seance.avenants.select_related("cree_par").order_by("cree_le"),
+        },
     )
 
 

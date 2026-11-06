@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from noyau.services.parametres import ResolveurSeancesDeControle
 from planification.generation.candidats import periode_bloquante
-from planification.models import LigneProgramme
+from planification.models import Avenant, LigneProgramme
 from planification.selectors import JOUR_SEMAINE_PAR_ISO
 from planification.selectors_suivi import non_executions_des_lignes
 from planification.services.contraintes import charger_periodes_bloquantes
@@ -34,6 +34,7 @@ class CelluleProgramme:
     non_execution: object = None
     evenement_bloquant: object = None
     chevauchements: tuple = ()
+    porte_avenant: bool = False
 
     @property
     def seance(self):
@@ -121,6 +122,7 @@ class _ContexteGrille:
     controles: set
     non_executions: dict
     periodes_bloquantes: list
+    avenants: set
 
 
 def _cellules_de_la_brigade(brigade, creneaux, contexte):
@@ -150,6 +152,7 @@ def _cellules_de_la_brigade(brigade, creneaux, contexte):
                 non_execution=contexte.non_executions.get(ligne.pk) if ligne else None,
                 evenement_bloquant=evenement,
                 chevauchements=tuple(lignes[1:]),
+                porte_avenant=ligne.seance_id in contexte.avenants if ligne else False,
             )
         )
     return cellules
@@ -187,6 +190,16 @@ def _par_brigade_horaire(lignes_qs):
     return par_brigade_horaire
 
 
+def _seances_avec_avenant(lignes_qs):
+    """K9, prompt 59 (RECETTE-01 A5) : les séances de la semaine affichée qui
+    portent au moins un avenant — une requête pour toute la grille, jamais
+    une par cellule (`.claude/rules/python.md`)."""
+    identifiants = {ligne.seance_id for ligne in lignes_qs}
+    if not identifiants:
+        return set()
+    return set(Avenant.objects.filter(seance_id__in=identifiants).values_list("seance_id", flat=True))
+
+
 def _contexte_grille(programme, creneaux, lignes_qs):
     jour, bornes_jour = _bornes_creneaux(programme, creneaux)
     return _ContexteGrille(
@@ -196,6 +209,7 @@ def _contexte_grille(programme, creneaux, lignes_qs):
         controles=ResolveurSeancesDeControle.resoudre({ligne.seance_id for ligne in lignes_qs}),
         non_executions=non_executions_des_lignes([ligne.pk for ligne in lignes_qs]),
         periodes_bloquantes=charger_periodes_bloquantes(*bornes_jour) if jour else [],
+        avenants=_seances_avec_avenant(lignes_qs),
     )
 
 
