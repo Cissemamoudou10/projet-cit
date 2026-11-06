@@ -386,6 +386,11 @@
                         </button>
                       </form>
                     {% endif %}
+                  {% elif programme.etat == "affiche" %}
+                    <p class="mt-1 text-2xs text-gris-lecture">
+                      La non-exécution ne se déclare qu'une fois la séance passée. D'ici là, un
+                      changement passe par un avenant (remplacement ou déplacement).
+                    </p>
                   {% endif %}
                 </td>
               {% elif cellule.evenement_bloquant %}
