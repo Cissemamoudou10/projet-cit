@@ -34,8 +34,10 @@ def partage(circuit, lieu_partage, autre_instructeur, autre_brigade_formation, r
     """Une séance en amphithéâtre (lieu partagé), sur la brigade du circuit,
     qualifiée, prête à accueillir une seconde brigade. Un instructeur distinct
     de `circuit.cours.instructeur` : la semence posée par `amener_a` (même
-    programme, même créneau, cette autre matière) ne doit jamais interférer
-    avec RG-34, qui n'exempte pas une séance déjà en base par son regroupement."""
+    programme, cette autre matière, créneau distinct depuis RG-67, prompt 58
+    — sinon la brigade du circuit porterait deux séances qui se chevauchent)
+    ne doit jamais interférer avec RG-34, qui n'exempte pas une séance déjà
+    en base par son regroupement."""
     matiere = Matiere.objects.create(intitule="Guerre électronique (essai)", code="GE01")
     element = creer_element(
         circuit.cours.element.formation,
@@ -46,7 +48,10 @@ def partage(circuit, lieu_partage, autre_instructeur, autre_brigade_formation, r
     )
     qualifier(autre_instructeur, matiere)
     cours = Cours(element, autre_instructeur)
-    debut = instant(circuit.programme.lundi_de_semaine, 0, 8)
+    # 10:00, jamais 8:00 : `amener_a` (RG-67, prompt 58) pose une séance de
+    # `circuit.cours` pour `circuit.brigade` à 8:00-10:00 — un créneau
+    # distinct évite que cette fixture double-réserve la même brigade.
+    debut = instant(circuit.programme.lundi_de_semaine, 0, 10)
     seance = Seance.objects.create(
         programme=circuit.programme,
         element_referentiel=element,
@@ -76,6 +81,24 @@ def test_association_admise_une_seule_seance_deux_lignes(partage, autre_brigade_
     # C4 : une seule Seance porte les deux brigades, la charge de
     # l'instructeur (calculée sur les Seance, jamais sur les LigneProgramme)
     # ne peut donc pas être comptée deux fois — vrai par construction (D-139).
+
+
+def test_association_forcee_d_une_brigade_hors_referentiel_est_refusee(
+    partage, brigade_autre_session
+):
+    """RG-05 (D-309, prompt 58) : K4 exclut `brigade_autre_session` de la
+    liste proposée à l'écran (voir `test_http_brigade_hors_referentiel_non_
+    proposee`), mais un appel direct qui la forcerait malgré tout — import,
+    future API, admin — reste refusé par le service, maintenant que RG-05
+    vit dans `ServiceContraintes` plutôt que nulle part."""
+    circuit, seance, _ = partage
+
+    with pytest.raises(ErreurValidation, match="RG-05"):
+        ServiceEcritureSeance.associer_brigades(
+            circuit.acteurs.planificateur, seance, [brigade_autre_session]
+        )
+
+    assert LigneProgramme.objects.filter(seance=seance).count() == 1
 
 
 def test_capacite_depassee_est_refusee_avec_l_ecart(partage, autre_brigade_formation):
@@ -112,7 +135,7 @@ def test_brigade_deja_occupee_sur_le_creneau_est_refusee(partage, autre_brigade_
         fin=seance.fin,
     ).lignes.create(brigade=autre_brigade_formation)
 
-    with pytest.raises(ErreurValidation, match="n'est pas libre sur ce créneau"):
+    with pytest.raises(ErreurValidation, match="RG-67"):
         ServiceEcritureSeance.associer_brigades(
             circuit.acteurs.planificateur, seance, [autre_brigade_formation]
         )
@@ -243,6 +266,23 @@ def test_http_association_par_la_pedagogique_est_refusee_403(client, partage, au
 
     assert reponse.status_code == 403
     assert not LigneProgramme.objects.filter(seance=seance, brigade=autre_brigade_formation).exists()
+
+
+def test_http_brigade_hors_referentiel_non_proposee(client, partage, brigade_autre_session):
+    """K4, prompt 58 (RECETTE-01 A6 a) : une brigade dont la formation ne
+    porte pas l'élément de référentiel de la séance (ici
+    `brigade_autre_session`, d'une session/formation entièrement
+    différente de `circuit.brigade` — `brigade` suit désormais la MÊME
+    formation que `circuit.brigade` depuis la correction de la fixture
+    partagée `session` pour RG-05, D-309, et ne convient plus à ce test ;
+    équivalent de CDP1 face à M2 de F6) n'est jamais une candidate au
+    regroupement, même libre sur ce créneau."""
+    circuit, seance, _ = partage
+    client.force_login(circuit.acteurs.planificateur)
+
+    reponse = client.get(_url_brigades(seance))
+
+    assert brigade_autre_session.designation.encode() not in reponse.content
 
 
 def test_http_liste_des_brigades_candidates_en_nombre_de_requetes_constant(client, partage, autre_brigade_formation):

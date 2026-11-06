@@ -332,6 +332,15 @@
                   {% if cellule.autres_brigades %}
                     <p class="mt-1 text-2xs text-marine-700">{{ cellule.autres_brigades }}</p>
                   {% endif %}
+                  {% if cellule.chevauchements %}
+                    <div class="mt-1 border border-etat-ecart bg-etat-ecart-fond px-2 py-1 text-2xs text-etat-ecart">
+                      <p class="font-semibold uppercase tracking-wide">Chevauchement (données anciennes, RG-67)</p>
+                      {% for autre in cellule.chevauchements %}
+                        <p>{{ autre.seance.element_referentiel.matiere }} — {{ autre.seance.instructeur }}
+                          ({{ autre.seance.debut|date:"H:i" }}–{{ autre.seance.fin|date:"H:i" }})</p>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                   {% if programme.etat == "affiche" and cellule.est_passee %}
                     {% if cellule.non_execution %}
                       <p class="mt-1 border border-etat-ecart bg-etat-ecart-fond px-2 py-1 text-2xs text-etat-ecart">

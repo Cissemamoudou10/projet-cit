@@ -20,6 +20,12 @@ from planification.services.temps import duree_heures
 
 @dataclasses.dataclass(frozen=True)
 class CelluleProgramme:
+    """`chevauchements` (RG-67, prompt 58) : autres lignes de CETTE brigade
+    dont la séance chevauche aussi ce créneau — données anciennes
+    seulement, RG-67 refuse désormais toute nouvelle écriture qui créerait
+    un chevauchement. Jamais masqué : les deux lignes s'affichent, avec un
+    signalement visible."""
+
     ligne: object = None
     volume_cumule: float = 0.0
     autres_brigades: str = ""
@@ -27,6 +33,7 @@ class CelluleProgramme:
     creneau: object = None
     non_execution: object = None
     evenement_bloquant: object = None
+    chevauchements: tuple = ()
 
     @property
     def seance(self):
@@ -124,7 +131,8 @@ def _cellules_de_la_brigade(brigade, creneaux, contexte):
     cellules = []
     for creneau in creneaux:
         cle = (brigade.pk, JOUR_SEMAINE_PAR_ISO[creneau.jour_semaine], creneau.heure_debut)
-        ligne = contexte.par_brigade_horaire.get(cle)
+        lignes = contexte.par_brigade_horaire.get(cle, [])
+        ligne = lignes[0] if lignes else None
         evenement = None
         if not ligne:
             debut = timezone.make_aware(
@@ -141,17 +149,22 @@ def _cellules_de_la_brigade(brigade, creneaux, contexte):
                 creneau=creneau,
                 non_execution=contexte.non_executions.get(ligne.pk) if ligne else None,
                 evenement_bloquant=evenement,
+                chevauchements=tuple(lignes[1:]),
             )
         )
     return cellules
 
 
 def _par_brigade_horaire(lignes_qs):
+    """RG-67 (prompt 58) : une LISTE par créneau, jamais une ligne unique —
+    des données anciennes peuvent encore porter deux séances d'une même
+    brigade sur le même créneau (`_cellules_de_la_brigade` les affiche
+    toutes, jamais la dernière écrasant les autres en silence)."""
     par_brigade_horaire = {}
     for ligne in lignes_qs:
         debut_local = timezone.localtime(ligne.seance.debut)
         cle = (ligne.brigade_id, debut_local.isoweekday(), debut_local.time())
-        par_brigade_horaire[cle] = ligne
+        par_brigade_horaire.setdefault(cle, []).append(ligne)
     return par_brigade_horaire
 
 

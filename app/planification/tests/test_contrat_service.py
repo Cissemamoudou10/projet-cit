@@ -57,12 +57,16 @@ def test_h1_verifier_n_ecrit_rien_cas_refuse(programme, cours, brigade):
 # --- H2 — violations multiples : quatre règles, quatre violations ----------
 
 
-def test_h2_candidate_violant_quatre_regles_rend_quatre_violations(programme, cours, brigade):
-    from ressources.models import NatureEvenement, PeriodeCalendrier
+def _seance_en_conflit_rg34_rg67(programme, brigade, cours, lundi):
+    """RG-34 (instructeur) et RG-67 (brigade) : même semence, créneau
+    sécant. Une AUTRE matière que `cours.element` (D-309) : même formation,
+    donc `uq_element_referentiel_formation_matiere` refuserait de
+    réutiliser `cours.element.matiere`."""
+    from referentiel.models import Matiere
 
-    lundi = programme.lundi_de_semaine
-    # RG-34 : instructeur déjà affecté sur un créneau sécant.
-    autre_element = creer_element(brigade.session.formation, cours.element.matiere)
+    autre_element = creer_element(
+        brigade.session.formation, Matiere.objects.create(intitule="Autre matière H2", code="H2M1")
+    )
     seance = Seance.objects.create(
         programme=programme,
         element_referentiel=autre_element,
@@ -71,8 +75,14 @@ def test_h2_candidate_violant_quatre_regles_rend_quatre_violations(programme, co
         fin=instant(lundi, 0, 9, 45),
     )
     LigneProgramme.objects.create(seance=seance, brigade=brigade)
-    # RG-35 : pas de qualification posée — refus par construction.
-    # RG-36 : indisponibilité recouvrant le créneau.
+
+
+def test_h2_candidate_violant_cinq_regles_rend_cinq_violations(programme, cours, brigade):
+    from ressources.models import NatureEvenement, PeriodeCalendrier
+
+    lundi = programme.lundi_de_semaine
+    _seance_en_conflit_rg34_rg67(programme, brigade, cours, lundi)
+    # RG-35 (aucune qualification posée) et RG-36 (indisponibilité).
     IndisponibiliteInstructeur.objects.create(
         instructeur=cours.instructeur,
         debut=instant(lundi, 0, 7),
@@ -94,7 +104,7 @@ def test_h2_candidate_violant_quatre_regles_rend_quatre_violations(programme, co
 
     assert not verdict.accepte
     codes = sorted(v["code"] for v in verdict.violations)
-    assert codes == ["RG-34", "RG-35", "RG-36", "RG-38"]
+    assert codes == ["RG-34", "RG-35", "RG-36", "RG-38", "RG-67"]
 
 
 # --- H3 — chaque violation porte le code et nomme l'élément ----------------

@@ -78,11 +78,29 @@ def _grille_active_avec_creneaux():
     return list(CreneauType.objects.filter(grille=grille))
 
 
+def _seances_verrouillees_de_la_semaine(brigades, lundi_de_semaine):
+    """RG-67 (prompt 58) : chargée AVANT la création du programme (point 3,
+    même raison qu'E1/E6, voir docstring du module) — directement par le
+    lundi de la semaine, sans dépendre d'un `ProgrammeHebdomadaire` qui
+    n'existe peut-être pas encore."""
+    selectionnees = _brigades_ids(brigades)
+    return list(
+        Seance.objects.filter(
+            programme__lundi_de_semaine=lundi_de_semaine,
+            verrouillee=True,
+            lignes__brigade_id__in=selectionnees,
+        )
+        .distinct()
+        .prefetch_related("lignes__brigade")
+    )
+
+
 def _cases_ou_e1(brigades, creneaux, lundi_de_semaine):
     debut, fin = _semaine(lundi_de_semaine)
     periodes_bloquantes = charger_periodes_bloquantes(debut, fin)
     creneaux_projetes = projeter_creneaux(creneaux, lundi_de_semaine)
-    cases = construire_cases(brigades, creneaux_projetes, periodes_bloquantes)
+    seances_verrouillees = _seances_verrouillees_de_la_semaine(brigades, lundi_de_semaine)
+    cases = construire_cases(brigades, creneaux_projetes, periodes_bloquantes, seances_verrouillees)
     if not cases:
         raise SemaineEntierementBloquee(
             f"Aucun créneau ouvert pour la semaine du {lundi_de_semaine:%d/%m/%Y} : toutes les "
