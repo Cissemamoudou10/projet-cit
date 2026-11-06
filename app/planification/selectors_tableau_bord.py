@@ -86,20 +86,9 @@ def _ligne_de_brigade(brigade, elements, realise_par_cle, nombre_alertes):
     )
 
 
-def tableau_de_bord(a_la_date=None) -> list:
-    """B5 : groupé par session, puis par type de formation — comme au
-    programme (`selectors_consultation.grille_consultation`) ; une session ne porte
-    qu'une seule formation, donc un seul type, c'est le même regroupement
-    que la session elle-même."""
-    a_la_date = a_la_date or timezone.localdate()
-    brigades = _brigades_en_cours(a_la_date)
-    if not brigades:
-        return []
-    brigade_ids = [brigade.pk for brigade in brigades]
-    elements_par_formation = _elements_par_formation({b.session.formation_id for b in brigades})
-    realise_par_cle = volumes_realises_par_element_brigade(a_la_date, brigade_ids=brigade_ids)
-    alertes_par_brigade = _comptes_alertes_par_brigade(brigades)
-
+def _groupes_par_session(brigades, elements_par_formation, realise_par_cle, alertes_par_brigade):
+    """B5 : groupé par session, puis par type de formation — une session ne
+    porte qu'une seule formation, donc un seul type."""
     brigades_par_session: dict = {}
     for brigade in brigades:
         brigades_par_session.setdefault(brigade.session_id, []).append(brigade)
@@ -117,10 +106,22 @@ def tableau_de_bord(a_la_date=None) -> list:
             for brigade in brigades_de_la_session
         ]
         groupes.append(
-            {
-                "session": session,
-                "type_formation": session.formation.type_formation,
-                "lignes": lignes,
-            }
+            {"session": session, "type_formation": session.formation.type_formation, "lignes": lignes}
         )
     return groupes
+
+
+def tableau_de_bord(a_la_date=None) -> list:
+    """`a_la_date` : un instant AWARE, « sinon maintenant » (K7, prompt 58,
+    même convention que `decorer_rapprochement`, D-308) — `jour` en est
+    dérivé pour `_brigades_en_cours`, seule consommatrice d'un `date`."""
+    instant = a_la_date or timezone.now()
+    jour = timezone.localtime(instant).date()
+    brigades = _brigades_en_cours(jour)
+    if not brigades:
+        return []
+    brigade_ids = [brigade.pk for brigade in brigades]
+    elements_par_formation = _elements_par_formation({b.session.formation_id for b in brigades})
+    realise_par_cle = volumes_realises_par_element_brigade(instant, brigade_ids=brigade_ids)
+    alertes_par_brigade = _comptes_alertes_par_brigade(brigades)
+    return _groupes_par_session(brigades, elements_par_formation, realise_par_cle, alertes_par_brigade)
