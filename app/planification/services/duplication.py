@@ -102,7 +102,7 @@ def _groupes_sources(programme_source, brigades):
             "seance__element_referentiel__matiere",
             "seance__instructeur",
             "seance__lieu",
-            "brigade",
+            "brigade__session__formation",
             "non_execution",
         )
         .order_by("seance__debut", "seance_id")

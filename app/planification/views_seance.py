@@ -20,7 +20,7 @@ from planification.forms_seance import (
     FormulaireSeance,
 )
 from planification.models import ProgrammeHebdomadaire, Seance
-from planification.selectors import brigades_candidates_au_regroupement
+from planification.selectors import brigades_candidates_au_regroupement, formation_de_la_seance
 from planification.services.circuit import ServiceCircuitProgramme
 from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
@@ -72,12 +72,13 @@ def _appliquer(request, seance, formulaire):
 @exige_habilitation(PERMISSION_ECRITURE)
 def modifier_seance(request, pk):
     seance = get_object_or_404(Seance.objects.select_related("programme"), pk=pk)
+    formation = formation_de_la_seance(seance)
     if request.method == "POST":
-        formulaire = FormulaireSeance(request.POST)
+        formulaire = FormulaireSeance(request.POST, formation=formation)
         if formulaire.is_valid():
             return _appliquer(request, seance, formulaire)
     else:
-        formulaire = FormulaireSeance(initial=_valeurs_initiales(seance))
+        formulaire = FormulaireSeance(initial=_valeurs_initiales(seance), formation=formation)
     return render(
         request,
         "planification/modifier_seance.html",

@@ -64,6 +64,16 @@ class FormulaireSubstitutionSeance(ChampsAvenantMixin, forms.Form):
         widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
     )
 
+    def __init__(self, *args, formation=None, **kwargs):
+        """`formation` (prompt 58, RECETTE-01 A3) : borne les matières
+        proposées à celles de la formation de la brigade de la séance
+        substituée — même raison que `FormulaireSeance.__init__`."""
+        super().__init__(*args, **kwargs)
+        if formation is not None:
+            self.fields["element_referentiel"].queryset = ElementReferentiel.objects.filter(
+                formation=formation
+            ).select_related("matiere")
+
     def changements(self):
         changements = {"element_referentiel": self.cleaned_data["element_referentiel"]}
         if self.cleaned_data.get("instructeur"):

@@ -133,3 +133,32 @@ def test_f6_la_bascule_sans_lieu_n_est_pas_preselectionnee(client, circuit):
 
     assert f'value="{NatureAvenant.BASCULE_SANS_LIEU}" selected' not in contenu
     assert "bascule_sans_lieu" in contenu  # l'option existe, elle n'est pas présélectionnée
+
+
+def test_f7_la_matiere_proposee_est_filtree_sur_la_formation_de_la_brigade(client, circuit):
+    """K3, prompt 58 (RECETTE-01 A3) : l'écran de modification ne propose
+    que les éléments de référentiel de la formation de la brigade de la
+    séance — jamais une matière homonyme d'une AUTRE formation, qui
+    porterait un volume prescrit différent sans que rien ne les distingue
+    à l'écran."""
+    from referentiel.models import ElementReferentiel, Formation, TypeFormation
+
+    seance = _seance_de_test(circuit)
+    autre_formation = Formation.objects.create(
+        intitule="Autre formation (homonyme)",
+        specialite="Transmissions",
+        duree_semaines=1,
+        type_formation=TypeFormation.objects.create(intitule="Autre type F7"),
+    )
+    element_homonyme = ElementReferentiel.objects.create(
+        formation=autre_formation,
+        matiere=circuit.cours.element.matiere,
+        volume_horaire_prescrit=999,
+        categorie_lieu=circuit.cours.element.categorie_lieu,
+    )
+    client.force_login(circuit.acteurs.planificateur)
+
+    contenu = client.get(_url_modifier(seance)).content.decode("utf-8")
+
+    assert f'value="{circuit.cours.element.pk}"' in contenu
+    assert f'value="{element_homonyme.pk}"' not in contenu

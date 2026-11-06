@@ -16,6 +16,7 @@ from planification.jeu_demonstration_j2.instructeurs import (
 from planification.jeu_demonstration_j2.lieux import charger_lieu
 from planification.jeu_demonstration_j2.organisation import charger_organisation
 from planification.jeu_demonstration_j2.referentiel import charger_referentiel
+from ressources.services.salle_attitree import ServiceSalleAttitree
 
 
 def charger_tout(stdout):
@@ -41,6 +42,9 @@ def charger_tout(stdout):
     charger_qualifications(pedagogique, instructeurs, stdout)
     lieu = charger_lieu(planification, stdout)
     session, brigade, brigade_temoin = charger_organisation(pedagogique, formation, stdout)
+    # RG-37 (K2, prompt 58) refuse une brigade sans salle attitrée, même
+    # avec un lieu explicite — `brigade_temoin` reçoit donc la sienne.
+    ServiceSalleAttitree.attribuer(planification, brigade_temoin, lieu)
 
     call_command("initialiser_grilles_horaires")
 

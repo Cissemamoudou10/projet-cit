@@ -148,22 +148,50 @@ def test_c1_instructeur_non_qualifie_refus_matiere_et_instructeur_nommes(
     assert str(element_referentiel.matiere) in violation["message"]
 
 
-def test_c2_instructeur_qualifie_via_une_autre_formation_accepte(
-    programme, instructeur, brigade, matiere
-):
-    """La qualification est indépendante de la formation (CLS-03)."""
+def _element_et_brigade_sur_une_nouvelle_formation(redacteur, type_formation, intitule, matiere):
+    from organisation.services.brigade import ServiceBrigade
+    from organisation.services.session import ServiceSession
     from referentiel.models import Formation
 
-    autre_formation = Formation.objects.create(
-        intitule="Formation C2",
-        specialite="Transmissions",
-        duree_semaines=8,
-        type_formation=brigade.session.formation.type_formation,
+    formation = Formation.objects.create(
+        intitule=intitule, specialite="Transmissions", duree_semaines=8, type_formation=type_formation
     )
-    element_autre_formation = creer_element(autre_formation, matiere)
+    element = creer_element(formation, matiere)
+    aujourd_hui = datetime.date.today()
+    session = ServiceSession.creer(
+        redacteur,
+        {
+            "formation": formation,
+            "intitule": f"Session {intitule}",
+            "date_debut": aujourd_hui + datetime.timedelta(days=30),
+            "date_fin": aujourd_hui + datetime.timedelta(days=111),
+            "effectif_attendu": 24,
+        },
+    )
+    brigade = ServiceBrigade.creer(
+        redacteur, session, {"designation": "C2B1", "effectif_previsionnel": 20}
+    )
+    return element, brigade
+
+
+def test_c2_instructeur_qualifie_via_une_autre_formation_accepte(
+    programme, instructeur, brigade, matiere, redacteur
+):
+    """La qualification est indépendante de la formation (CLS-03) : un
+    instructeur qualifié pour une matière peut l'enseigner dans N'IMPORTE
+    QUELLE formation qui la porte. La brigade candidate doit néanmoins
+    suivre CETTE formation (RG-05, D-309, prompt 58) — construite ici sur
+    `autre_formation` elle-même, jamais sur `brigade` (formation partagée),
+    pour isoler RG-35 sans jamais exercer RG-05."""
+    element_autre_formation, brigade_autre_formation = _element_et_brigade_sur_une_nouvelle_formation(
+        redacteur, brigade.session.formation.type_formation, "Formation C2", matiere
+    )
     qualifier(instructeur, matiere)
     candidate = _candidate(
-        brigade, element_autre_formation, instructeur, instant(programme.lundi_de_semaine, 0, 8)
+        brigade_autre_formation,
+        element_autre_formation,
+        instructeur,
+        instant(programme.lundi_de_semaine, 0, 8),
     )
 
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))

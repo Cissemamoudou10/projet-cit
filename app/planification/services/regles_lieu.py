@@ -70,17 +70,33 @@ def _verifier_indisponibilite(candidate, contexte, lieu):
     return []
 
 
+def _message_salle_attitree_incorrecte(candidate, attendue):
+    if attendue is None:
+        return (
+            f"{candidate.brigade} n'a aucune salle attitrée : aucun lieu ne peut être retenu "
+            f"pour {candidate.element_referentiel.matiere}."
+        )
+    return (
+        f"{candidate.lieu or 'aucun lieu'} n'est pas la salle attitrée de {candidate.brigade} "
+        f"({attendue}) pour {candidate.element_referentiel.matiere}."
+    )
+
+
 def _verifier_salle_attitree(candidate, contexte):
-    """Exclusivité déjà garantie par US-SES-03/D-90 : seule la capacité se
-    revérifie ici, sur l'EFFECTIF RÉEL (qui a pu croître depuis
-    l'attribution) — c'est le rattrapage consigné à US-SES-03."""
-    salle = contexte.salles_attitrees.get(candidate.brigade.pk)
-    if salle is None:
-        return []
-    indisponibilite = _verifier_indisponibilite(candidate, contexte, salle)
+    """Exclusivité déjà garantie par US-SES-03/D-90 pour l'ATTRIBUTION
+    elle-même — mais rien ne vérifiait jusqu'ici que le lieu PORTÉ PAR LA
+    CANDIDATE est bien cette salle (prompt 58, RECETTE-01 A4) : la saisie
+    manuelle laisse choisir n'importe quel lieu (`forms_seance.py`), et
+    cette fonction se bornait à revérifier la capacité de la salle
+    attitrée de la brigade, sans jamais comparer `candidate.lieu` à rien —
+    la salle attitrée d'une AUTRE brigade passait donc sans être refusée."""
+    attendue = contexte.salles_attitrees.get(candidate.brigade.pk)
+    if attendue is None or candidate.lieu != attendue:
+        return [violation("RG-37", _message_salle_attitree_incorrecte(candidate, attendue))]
+    indisponibilite = _verifier_indisponibilite(candidate, contexte, attendue)
     if indisponibilite:
         return indisponibilite
-    if salle.capacite is None:
+    if attendue.capacite is None:
         return [
             violation(
                 "RG-37",
@@ -89,13 +105,13 @@ def _verifier_salle_attitree(candidate, contexte):
             )
         ]
     effectif = contexte.effectifs_reels.get(candidate.brigade.pk, 0)
-    if salle.capacite < effectif:
+    if attendue.capacite < effectif:
         return [
             violation(
                 "RG-37",
-                f"La salle attitrée de {candidate.brigade} (capacité {salle.capacite}) "
+                f"La salle attitrée de {candidate.brigade} (capacité {attendue.capacite}) "
                 f"est insuffisante pour l'effectif réel ({effectif}), écart de "
-                f"{effectif - salle.capacite}.",
+                f"{effectif - attendue.capacite}.",
             )
         ]
     return []

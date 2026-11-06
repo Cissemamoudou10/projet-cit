@@ -34,10 +34,15 @@ Elles sont ici et nulle part ailleurs. Aucune ne s'exprime en SQL déclaratif.
 
 ## Le service de contrôle des contraintes dures
 
-`ServiceContraintes` est l'**implantation unique** des six règles RG-34 à RG-39.
-Il est appelé par la génération, la modification manuelle, le regroupement et la
-duplication. Ne duplique jamais ces contrôles ailleurs : un programme généré et
-un programme saisi doivent obéir aux mêmes règles.
+`ServiceContraintes` est l'**implantation unique** des sept règles RG-34 à RG-39,
+plus RG-67 (une brigade ne peut pas avoir deux séances qui se chevauchent,
+prompt 58, D-305 — supersède D-249, qui l'avait d'abord laissée hors de
+`ServiceContraintes`) et RG-05 (le référentiel appartient à la formation,
+prompt 58, D-309 — supersède D-306, qui l'avait d'abord limitée à
+`modification.py` seule). Il est appelé par la génération, la modification
+manuelle, le regroupement, la substitution et la duplication. Ne duplique
+jamais ces contrôles ailleurs : un programme généré et un programme saisi
+doivent obéir aux mêmes règles.
 
 Il retourne **toutes** les règles violées, pas seulement la première, et désigne
 l'élément en cause — l'instructeur déjà affecté et à quelle brigade, le lieu
@@ -82,7 +87,7 @@ normale des évaluations : onze services désormais, pas neuf.
 | `ServiceReferentiel` | matières programmables, volumes, prérequis, coefficients |
 | `ServiceRessources` | disponibilité instructeurs et lieux, qualifications, calendrier, grille active |
 | `ServiceGeneration` | construction du programme hebdomadaire |
-| `ServiceContraintes` | les six contraintes dures |
+| `ServiceContraintes` | les sept contraintes dures (RG-34 à RG-39, RG-67), plus RG-05 |
 | `ServiceCircuitProgramme` | machine à états du programme (US-VAL-03) : transitions, garde de modification, validation et signature |
 | `ServiceEvaluation` | évaluations (création, date, suppression) |
 | `ServiceSujet` | sujets d'examen, sujet retenu (US-EVAL-03) |
