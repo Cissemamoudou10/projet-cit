@@ -94,16 +94,21 @@ def element_referentiel(db, formation, matiere):
 
 
 @pytest.fixture
-def session(db, redacteur, type_officiers):
+def session(db, redacteur, formation):
+    """Ouverte sur la formation PARTAGÉE (`formation`), jamais sur une
+    formation séparée (prompt 58, après D-306/D-309) : RG-05, désormais
+    dans `ServiceContraintes`, refuserait sinon tout `brigade`/
+    `autre_brigade` (qui en descendent) associé à un élément construit sur
+    `formation` — le couplage le plus courant des tests de contraintes, qui
+    ne se soucient jamais de la formation. Un élément DÉDIÉ (jamais
+    `matiere`/`element_referentiel`, que de nombreux tests réutilisent
+    librement sur `(formation, matiere)` — une collision sur la contrainte
+    d'unicité sinon, trouvée en mesurant l'impact réel) satisfait seul
+    « référentiel composé » avant que `ServiceSession.creer` ne le
+    vérifie."""
     aujourd_hui = datetime.date.today()
-    formation_session = Formation.objects.create(
-        intitule="Formation session PLAN",
-        specialite="Transmissions",
-        duree_semaines=10,
-        type_formation=type_officiers,
-    )
     ElementReferentiel.objects.create(
-        formation=formation_session,
+        formation=formation,
         matiere=Matiere.objects.create(intitule="Antennes PLAN", code="ANTP1"),
         volume_horaire_prescrit=40,
         categorie_lieu=CategorieLieu.AUCUN_LIEU,
@@ -111,7 +116,7 @@ def session(db, redacteur, type_officiers):
     return ServiceSession.creer(
         redacteur,
         {
-            "formation": formation_session,
+            "formation": formation,
             "intitule": "Session PLAN",
             "date_debut": aujourd_hui + datetime.timedelta(days=30),
             "date_fin": aujourd_hui + datetime.timedelta(days=111),

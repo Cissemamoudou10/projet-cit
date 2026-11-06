@@ -60,6 +60,40 @@ def test_ajout_violant_une_contrainte_est_refuse_en_la_nommant(qualifie):
     assert Seance.objects.filter(programme=qualifie.programme).count() == 1
 
 
+def test_ajout_d_un_element_hors_formation_est_refuse(qualifie):
+    """RG-05 (D-309, prompt 58) : l'ajout manuel (C4) n'avait jusqu'ici
+    AUCUNE protection, ni écran (la brigade se choisit dans le même
+    formulaire que la matière, filtrage différé, E1 reporté) ni service —
+    désormais refusé, RG-05 vivant dans `ServiceContraintes`."""
+    from planification.tests.conftest import creer_element
+    from referentiel.models import Formation, Matiere, TypeFormation
+
+    autre_formation = Formation.objects.create(
+        intitule="Autre formation (RG-05, ajout manuel)",
+        specialite="Transmissions",
+        duree_semaines=1,
+        type_formation=TypeFormation.objects.create(intitule="Autre type RG-05 ajout"),
+    )
+    element_hors_formation = creer_element(
+        autre_formation,
+        Matiere.objects.create(intitule="Hors formation (ajout manuel, essai)", code="HFA01"),
+    )
+    qualifier(qualifie.cours.instructeur, element_hors_formation.matiere)
+    debut = instant(qualifie.programme.lundi_de_semaine, 0, 8)
+    candidature = Candidate(
+        brigade=qualifie.brigade,
+        element_referentiel=element_hors_formation,
+        instructeur=qualifie.cours.instructeur,
+        debut=debut,
+        fin=debut + datetime.timedelta(minutes=120),
+    )
+
+    with pytest.raises(ErreurValidation, match="RG-05"):
+        ServiceEcritureSeance.creer_seance(qualifie.acteurs.planificateur, qualifie.programme, [candidature])
+
+    assert Seance.objects.filter(programme=qualifie.programme).count() == 0
+
+
 def test_ajout_sur_un_affiche_sans_avenant_refuse_avec_refuse(qualifie):
     amener_a(EtatProgramme.AFFICHE, qualifie)
     avant = Seance.objects.filter(programme=qualifie.programme).count()

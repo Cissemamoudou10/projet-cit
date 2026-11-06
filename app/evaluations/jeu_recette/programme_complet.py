@@ -35,7 +35,7 @@ import datetime
 from django.core.management.base import CommandError
 from django.utils import timezone
 
-from evaluations.jeu_recette.avenants_complet import poser_avenants_w0
+from evaluations.jeu_recette.avenants_complet import poser_avenants_w0, preparer_deplacement_w0
 from evaluations.jeu_recette.creneaux import creneau_libre
 from evaluations.jeu_recette.reservations_complet import (
     SpecificationControle,
@@ -227,14 +227,28 @@ def _generer_semaine_moins_1(contexte):
 
 
 def _generer_semaine_zero(contexte):
+    """Jamais `_generer_et_approuver` (W-2) : K6 (prompt 58) exige que la
+    case de l'avenant « déplacement » soit décidée, et au besoin libérée
+    par suppression, PENDANT que le programme est encore BROUILLON — donc
+    entre la génération et `_approuver`, jamais après (voir le docstring
+    d'`avenants_complet.py`)."""
+    from freezegun import freeze_time
+
     date_reference = contexte.date_reference
-    jours = (
+    jour_generation, jour_soumission, jour_signature = (
         jour_de_semaine(date_reference, -1, JEUDI_ISO),
         jour_de_semaine(date_reference, -1, VENDREDI_ISO),
         jour_de_semaine(date_reference, -1, SAMEDI_ISO),
     )
-    programme = _generer_et_approuver(contexte, semaine(date_reference, 0), jours)
-    poser_avenants_w0(contexte, programme)
+    lundi_w0 = semaine(date_reference, 0)
+    with freeze_time(_instant(jour_generation)):
+        programme = ServiceGeneration.generer(
+            contexte.agissant_plan, lundi_w0, contexte.toutes_brigades
+        ).programme
+        preparation = preparer_deplacement_w0(contexte, programme)
+    _approuver(contexte, programme, jour_soumission, jour_signature)
+    contexte.stdout.write(f"  Programme {lundi_w0.isoformat()} généré, approuvé et affiché.")
+    poser_avenants_w0(contexte, preparation)
     return programme
 
 

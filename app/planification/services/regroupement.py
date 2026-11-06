@@ -17,7 +17,6 @@ from administration.habilitations import verifier_habilitation
 from administration.models import TypeAction
 from administration.services.journal import DonneesEntreeJournal, ServiceJournal
 from noyau.exceptions import ErreurValidation
-from noyau.intervalles import se_recouvrent
 from noyau.services.base import ServiceBase
 from planification.models import EtatProgramme, LigneProgramme
 from planification.services.circuit import DECLENCHEUR_SEANCE, ServiceCircuitProgramme
@@ -65,24 +64,6 @@ def _candidates_du_regroupement(seance, brigades_supplementaires):
         )
         for brigade in toutes
     ]
-
-
-def _verifier_brigades_libres(programme, seance, brigades):
-    """« Brigades libres sur le créneau » (R1) : aucune des six contraintes
-    dures ne porte sur la brigade elle-même (RG-34 à RG-39 portent sur
-    l'instructeur, le lieu, le calendrier et le volume) — vérifié ici, pas
-    dans `ServiceContraintes`, qui en reste l'implantation exclusive."""
-    conflits = LigneProgramme.objects.filter(
-        brigade__in=brigades, seance__programme=programme
-    ).exclude(seance=seance).select_related("seance__element_referentiel__matiere", "brigade")
-    for ligne in conflits:
-        autre = ligne.seance
-        if se_recouvrent(seance.debut, seance.fin, autre.debut, autre.fin):
-            raise ErreurValidation(
-                f"{ligne.brigade} n'est pas libre sur ce créneau : elle est déjà en séance de "
-                f"{autre.element_referentiel.matiere} le {autre.debut:%d/%m %H:%M}"
-                f"–{autre.fin:%H:%M}."
-            )
 
 
 def _verifier_brigades_nouvelles(seance, brigades):
@@ -143,7 +124,6 @@ def associer_brigades(agissant, seance, brigades, confirmee=False, avenant=None)
         _refuser_si_commencee(seance)
         _verifier_confirmation(seance, confirmee)
         _verifier_brigades_nouvelles(seance, brigades)
-        _verifier_brigades_libres(programme, seance, brigades)
         _verifier_contraintes_association(programme, seance, brigades)
         for brigade in brigades:
             ServiceBase.creer(LigneProgramme(seance=seance, brigade=brigade), agissant)

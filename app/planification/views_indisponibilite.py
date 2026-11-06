@@ -8,8 +8,10 @@ le lien part de son gabarit par `{% url %}`, jamais par un import Python —
 même principe que D-121 E2 (`views_periode.py`). La liste des séances
 impactées (I2) reste à requêtes constantes : aucun sélecteur de remplaçants
 (I4) n'y est appelé — il ne l'est que sur l'écran dédié à UNE séance, ou à
-UN lot d'une seule matière.
+UN lot d'une seule matière ET d'une seule semaine (K11, prompt 58).
 """
+
+import datetime
 
 from django.contrib import messages
 from django.http import Http404
@@ -18,13 +20,13 @@ from django.urls import reverse
 
 from administration.habilitations import exige_habilitation
 from noyau.exceptions import ErreurIntrouvable, ErreurMetier
-from planification.circuit_affichage import LIBELLES_ACTIONS
 from planification.forms_indisponibilite import (
     FormulaireLotRemplacement,
     FormulaireRemplacementInstructeur,
     FormulaireSubstitutionSeance,
 )
 from planification.models import EtatProgramme, Seance
+from planification.selectors import formation_de_la_seance
 from planification.selectors_indisponibilite import (
     instructeurs_remplacants,
     seances_impactees_par_indisponibilite,
@@ -63,20 +65,24 @@ def _indisponibilite_ou_404(pk):
 
 def _ligne(seance):
     """I3 : ce que l'écran montre pour une séance selon l'état de son
-    programme — le message et la route de déblocage viennent du moteur
-    (`motif_refus_action`, `circuit_affichage.LIBELLES_ACTIONS`), jamais
-    recodés ici (D-256 corrigée après relecture)."""
+    programme — le message vient du moteur (`motif_refus_action`), jamais
+    recodé ici (D-256 corrigée après relecture). `url_blocage` (prompt 58,
+    RECETTE-01 A11) mène à la CONSULTATION du programme, où le vrai
+    formulaire POST de l'action de déblocage vit déjà (`actions_circuit`,
+    `consultation_programme.html`) — jamais directement vers l'URL de
+    l'action elle-même (`@require_POST` seule, un lien `<a>` en GET y
+    valait un 405)."""
     programme = seance.programme
     brigades = ", ".join(str(ligne.brigade) for ligne in seance.lignes.all())
     evenement_deblocage = EVENEMENT_DE_DEBLOCAGE.get(programme.etat)
     if evenement_deblocage is not None:
-        _, url_nom = LIBELLES_ACTIONS[evenement_deblocage]
+        url_consultation = reverse("planification:consultation_programme")
         return {
             "seance": seance,
             "brigades": brigades,
             "bloquee": True,
             "message_blocage": motif_refus_action(ECRIRE_SEANCE, programme.etat),
-            "url_blocage": reverse(url_nom, args=[programme.pk]),
+            "url_blocage": f"{url_consultation}?semaine={programme.lundi_de_semaine.isoformat()}",
         }
     return {
         "seance": seance,
@@ -87,17 +93,25 @@ def _ligne(seance):
 
 
 def _groupes_lot(lignes):
-    """C5 : un lien « traiter en lot » par matière qui compte plus d'une
-    séance traitable — uniquement de l'EXISTANT déjà chargé (`seances`),
-    aucune requête supplémentaire sur l'écran de liste (I2)."""
+    """C5 : un lien « traiter en lot » par matière ET par semaine qui
+    compte plus d'une séance traitable — jamais matière seule (K11,
+    prompt 58, RECETTE-01 A7) : une même matière répartie sur plusieurs
+    semaines formerait sinon un seul lot, demandant un remplaçant libre
+    sur toute l'étendue au lieu d'une semaine à la fois (I4). Uniquement
+    de l'EXISTANT déjà chargé (`seances`), aucune requête supplémentaire
+    sur l'écran de liste (I2)."""
     comptes = {}
     for ligne in lignes:
         if ligne["bloquee"]:
             continue
         matiere = ligne["seance"].element_referentiel.matiere
-        comptes[matiere] = comptes.get(matiere, 0) + 1
+        lundi_de_semaine = ligne["seance"].programme.lundi_de_semaine
+        cle = (matiere, lundi_de_semaine)
+        comptes[cle] = comptes.get(cle, 0) + 1
     return [
-        {"matiere": matiere, "nombre": nombre} for matiere, nombre in comptes.items() if nombre > 1
+        {"matiere": matiere, "lundi_de_semaine": lundi_de_semaine, "nombre": nombre}
+        for (matiere, lundi_de_semaine), nombre in comptes.items()
+        if nombre > 1
     ]
 
 
@@ -162,8 +176,9 @@ def remplacer_seance(request, indispo_pk, seance_pk):
 def substituer_seance(request, indispo_pk, seance_pk):
     indisponibilite = _indisponibilite_ou_404(indispo_pk)
     seance = get_object_or_404(Seance.objects.select_related("programme"), pk=seance_pk)
+    formation = formation_de_la_seance(seance)
     if request.method == "POST":
-        formulaire = FormulaireSubstitutionSeance(request.POST)
+        formulaire = FormulaireSubstitutionSeance(request.POST, formation=formation)
         if formulaire.is_valid():
             try:
                 ServiceEcritureSeance.modifier_seance(
@@ -179,7 +194,7 @@ def substituer_seance(request, indispo_pk, seance_pk):
                 messages.success(request, "Matière substituée.")
                 return _retour(indisponibilite)
     else:
-        formulaire = FormulaireSubstitutionSeance()
+        formulaire = FormulaireSubstitutionSeance(formation=formation)
     return render(
         request,
         "planification/substituer_seance.html",
@@ -201,14 +216,17 @@ def deprogrammer_seance(request, indispo_pk, seance_pk):
     return _retour(indisponibilite)
 
 
-def _candidats_lot(indisponibilite, matiere, matiere_pk):
-    """Séances traitables de `matiere` (ni bloquées, I3), remplaçants libres
-    sur l'étendue du lot (I4, bornes les plus larges du groupe) et le
-    queryset qui borne le champ `seances` du formulaire."""
+def _candidats_lot(indisponibilite, matiere, matiere_pk, lundi_de_semaine):
+    """Séances traitables de `matiere`, POUR UNE SEULE SEMAINE (ni bloquées,
+    I3 ; K11, prompt 58 : jamais plusieurs semaines dans le même lot, voir
+    `_groupes_lot`), remplaçants libres sur l'étendue du lot (I4, bornes les
+    plus larges du groupe) et le queryset qui borne le champ `seances` du
+    formulaire."""
     seances = [
         seance
         for seance in seances_impactees_par_indisponibilite(indisponibilite)
         if seance.element_referentiel.matiere_id == matiere_pk
+        and seance.programme.lundi_de_semaine == lundi_de_semaine
         and seance.programme.etat not in EVENEMENT_DE_DEBLOCAGE
     ]
     remplacants = (
@@ -222,11 +240,28 @@ def _candidats_lot(indisponibilite, matiere, matiere_pk):
     return seances, remplacants, Seance.objects.filter(pk__in=pks)
 
 
+def _lundi_de_semaine_demande(request):
+    """K11, prompt 58 : la semaine du lot est obligatoire — `?semaine=`,
+    même convention que `consultation_programme` — jamais déduite des
+    séances elles-mêmes (une demande malformée doit échouer bruyamment,
+    pas retomber silencieusement sur « toutes les semaines »)."""
+    valeur = request.GET.get("semaine")
+    if not valeur:
+        raise Http404("Paramètre « semaine » manquant.")
+    try:
+        return datetime.date.fromisoformat(valeur)
+    except ValueError:
+        raise Http404(f"Semaine invalide : « {valeur} ».") from None
+
+
 @exige_habilitation(PERMISSION_ECRITURE)
 def lot_remplacement(request, indispo_pk, matiere_pk):
     indisponibilite = _indisponibilite_ou_404(indispo_pk)
     matiere = get_object_or_404(Matiere, pk=matiere_pk)
-    seances, remplacants, seances_candidates = _candidats_lot(indisponibilite, matiere, matiere_pk)
+    lundi_de_semaine = _lundi_de_semaine_demande(request)
+    seances, remplacants, seances_candidates = _candidats_lot(
+        indisponibilite, matiere, matiere_pk, lundi_de_semaine
+    )
     pks = [seance.pk for seance in seances]
     if request.method == "POST":
         formulaire = FormulaireLotRemplacement(

@@ -18,7 +18,7 @@ from evaluations.jeu_recette.semaines import semaine
 from evaluations.jeu_recette.verification import _imprimer, _ligne, verifier_generation_a_blanc
 from evaluations.models import Evaluation, Note, OrganisationEpreuve, Sujet, TypeEvaluation
 from organisation.models import Brigade, Session, Stagiaire
-from planification.models import EtatProgramme, NonExecution, ProgrammeHebdomadaire
+from planification.models import Avenant, EtatProgramme, NonExecution, ProgrammeHebdomadaire
 from referentiel.models import Formation, Matiere
 from ressources.models import Instructeur, Lieu, Qualification
 
@@ -141,7 +141,29 @@ def _verifier_programmes_complet():
                 programme.etat == etat_attendu,
                 f"Programme {libelle} état={etat_attendu} (réel : {programme.etat})",
             )
+        if decalage == 0:
+            lignes += _verifier_avenants_m6_exp1_w0(programme)
     return lignes
+
+
+def _verifier_avenants_m6_exp1_w0(programme_w0):
+    """K6, prompt 58 (RECETTE-01 B1) : le chargeur pose deux avenants sur une
+    séance M6 d'EXP1 en W0 (déplacement, remplacement d'instructeur) — il
+    échoue bruyamment sinon (`avenants_complet.py::poser_avenants_w0`), mais
+    un contrôle ici couvre aussi une régression qui laisserait passer un
+    chargement partiel sans lever d'erreur."""
+    if programme_w0 is None:
+        return []
+    nombre = (
+        Avenant.objects.filter(
+            seance__programme=programme_w0,
+            seance__element_referentiel__matiere__code="M6",
+            seance__lignes__brigade__designation="EXP1",
+        )
+        .distinct()
+        .count()
+    )
+    return _ligne(nombre == 2, f"Deux avenants sur la séance M6 de EXP1 en W0 ({nombre} trouvé(s))")
 
 
 def _verifier_evaluations_existent():

@@ -69,16 +69,37 @@ def creneau_bloque(brigade, debut, fin, periodes_bloquantes):
     return periode_bloquante(brigade, debut, fin, periodes_bloquantes) is not None
 
 
-def construire_cases(brigades, creneaux_projetes, periodes_bloquantes):
+def brigade_deja_occupee(brigade, debut, fin, seances_verrouillees):
+    """RG-67 (prompt 58, RECETTE-01 A10/A1/A6 b) : une brigade qui a déjà
+    une séance verrouillée sur ce créneau (contrôle ou saisie manuelle,
+    posée avant cette génération) n'engendre aucune case — comme un
+    créneau bloqué. Sans cette exclusion, `ServiceContraintes.verifier`
+    refuserait quand même la candidate (RG-67, point d'application unique),
+    mais seulement après l'avoir essayée : exclure la case ici évite
+    l'essai voué à l'échec et une ligne de compte rendu qui redirait ce
+    que la grille montre déjà."""
+    for seance in seances_verrouillees:
+        if brigade.pk not in {ligne.brigade_id for ligne in seance.lignes.all()}:
+            continue
+        if se_recouvrent(debut, fin, seance.debut, seance.fin):
+            return True
+    return False
+
+
+def construire_cases(brigades, creneaux_projetes, periodes_bloquantes, seances_verrouillees=()):
     """Étapes 1-2 combinées : une `Case` par (brigade, créneau projeté) NON
-    bloqué. `creneaux_projetes` : sortie de `projeter_creneaux`."""
+    bloqué NI déjà occupé par une séance verrouillée de la brigade (RG-67).
+    `creneaux_projetes` : sortie de `projeter_creneaux`."""
     from planification.generation.strategie import Case
 
     cases = []
     for brigade in brigades:
         for debut, fin in creneaux_projetes:
-            if not creneau_bloque(brigade, debut, fin, periodes_bloquantes):
-                cases.append(Case(brigade=brigade, debut=debut, fin=fin))
+            if creneau_bloque(brigade, debut, fin, periodes_bloquantes):
+                continue
+            if brigade_deja_occupee(brigade, debut, fin, seances_verrouillees):
+                continue
+            cases.append(Case(brigade=brigade, debut=debut, fin=fin))
     return cases
 
 

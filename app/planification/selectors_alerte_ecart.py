@@ -59,11 +59,22 @@ def decorer_rapprochement(groupes, a_la_date=None) -> list:
     """A1/A2 : décore les groupes déjà calculés par
     `selectors_rapprochement.rapprochement` (US-SUI-01) — une seule requête
     de plus (le programmé échu), jamais une par brigade ni un second calcul
-    du réalisé lui-même."""
-    a_la_date = a_la_date or timezone.localdate()
+    du réalisé lui-même.
+
+    `a_la_date` : un instant AWARE (« sinon maintenant », même défaut que
+    `rapprochement.periode_fin`) — jamais une simple date : un `date` nu
+    passé tel quel à `volumes_programme_echu_par_element_brigade`
+    (`Seance.fin__lte`) forçait Django à le convertir en minuit NAÏF, un
+    `RuntimeWarning` pervasif dans la suite (K7, prompt 58, RECETTE-01) —
+    et un « échu » calculé à minuit plutôt qu'à l'instant réel du
+    rapprochement, sous-comptant toute séance déjà terminée plus tôt le
+    même jour. `jour`, un simple `date`, reste nécessaire pour la
+    comparaison avec `session.date_fin`."""
+    instant = a_la_date or timezone.now()
+    jour = timezone.localtime(instant).date()
     seuil = seuil_alerte_pourcent()
     brigade_ids = [groupe.brigade.pk for groupe in groupes if not groupe.sans_programme_affiche]
-    echu_par_cle = volumes_programme_echu_par_element_brigade(a_la_date, brigade_ids=brigade_ids)
+    echu_par_cle = volumes_programme_echu_par_element_brigade(instant, brigade_ids=brigade_ids)
 
     decores = []
     for groupe in groupes:
@@ -74,7 +85,7 @@ def decorer_rapprochement(groupes, a_la_date=None) -> list:
                 )
             )
             continue
-        termine = groupe.brigade.session.date_fin <= a_la_date
+        termine = groupe.brigade.session.date_fin <= jour
         lignes = []
         for ligne in groupe.lignes:
             if termine:

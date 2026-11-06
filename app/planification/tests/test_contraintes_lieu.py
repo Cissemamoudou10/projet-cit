@@ -113,7 +113,9 @@ def test_e2_capacite_insuffisante_pour_l_effectif_reel_refus_ecart_chiffre(
     ServiceSalleAttitree.attribuer(planificateur, brigade, lieu)
     affecter_stagiaires(redacteur, brigade, 20, prefixe="E2")
     Lieu.objects.filter(pk=lieu.pk).update(capacite=18)
-    candidate = _candidate(brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8))
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=lieu
+    )
 
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
 
@@ -129,11 +131,113 @@ def test_e3_capacite_exactement_egale_a_l_effectif_acceptee(
     lieu = Lieu.objects.create(intitule="Salle E3", capacite=20, categorie="salle_attitree")
     ServiceSalleAttitree.attribuer(planificateur, brigade, lieu)
     affecter_stagiaires(redacteur, brigade, 20, prefixe="E3")
-    candidate = _candidate(brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8))
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=lieu
+    )
 
     verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
 
     assert verdict.accepte
+
+
+def test_e3_bis_salle_attitree_d_une_autre_brigade_refusee(
+    programme, planificateur, cours_salle_attitree, brigade, autre_brigade
+):
+    """K2, prompt 58 (RECETTE-01 A4) : `candidate.lieu` est désormais
+    comparé à la salle attitrée de LA BRIGADE DE LA CANDIDATE — la salle
+    attitrée d'une AUTRE brigade n'est jamais une substitution valable,
+    même si elle est elle-même correctement configurée."""
+    salle_brigade = Lieu.objects.create(intitule="Salle brigade", capacite=20, categorie="salle_attitree")
+    salle_autre = Lieu.objects.create(intitule="Salle autre brigade", capacite=20, categorie="salle_attitree")
+    ServiceSalleAttitree.attribuer(planificateur, brigade, salle_brigade)
+    ServiceSalleAttitree.attribuer(planificateur, autre_brigade, salle_autre)
+    qualifier(cours_salle_attitree.instructeur, cours_salle_attitree.element.matiere)
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=salle_autre
+    )
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
+    violation = next(v for v in verdict.violations if v["code"] == "RG-37")
+    assert str(salle_autre) in violation["message"]
+    assert str(brigade) in violation["message"]
+
+
+def test_e3_ter_lieu_quelconque_pour_une_matiere_salle_attitree_refuse(
+    programme, planificateur, cours_salle_attitree, brigade, lieu_partage
+):
+    """K2 : même un lieu par ailleurs valide (un lieu partagé réel, pas
+    seulement la salle d'une autre brigade) ne remplace jamais la salle
+    attitrée de la brigade pour une matière de cette catégorie."""
+    salle_brigade = Lieu.objects.create(intitule="Salle brigade ter", capacite=20, categorie="salle_attitree")
+    ServiceSalleAttitree.attribuer(planificateur, brigade, salle_brigade)
+    qualifier(cours_salle_attitree.instructeur, cours_salle_attitree.element.matiere)
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=lieu_partage
+    )
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
+    assert any(v["code"] == "RG-37" for v in verdict.violations)
+
+
+def test_e3_quater_brigade_sans_salle_attitree_sans_lieu_refusee(
+    programme, cours_salle_attitree, brigade
+):
+    """K2 : brigade SANS AUCUNE salle attitrée, candidate SANS lieu — le
+    cas que `_message_salle_attitree_incorrecte` décrit nommément doit
+    être refusé, `candidate.lieu == attendue (None)` ne doit jamais
+    suffire à faire passer une matière « salle attitrée » sans salle du
+    tout (trouvé en relecture de conception, prompt 58)."""
+    qualifier(cours_salle_attitree.instructeur, cours_salle_attitree.element.matiere)
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=None
+    )
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
+    violation = next(v for v in verdict.violations if v["code"] == "RG-37")
+    assert str(brigade) in violation["message"]
+
+
+def test_e3_sexies_brigade_avec_salle_attitree_sans_lieu_refusee(
+    programme, planificateur, cours_salle_attitree, brigade
+):
+    """K2 : brigade AVEC une salle attitrée, candidate SANS lieu — refusée
+    elle aussi (`candidate.lieu (None) != attendue (une salle réelle)`),
+    distinct du cas quater (brigade sans salle du tout) — angle mort
+    signalé en relecture de conception, prompt 58."""
+    salle = Lieu.objects.create(intitule="Salle E3 sexies", capacite=20, categorie="salle_attitree")
+    ServiceSalleAttitree.attribuer(planificateur, brigade, salle)
+    qualifier(cours_salle_attitree.instructeur, cours_salle_attitree.element.matiere)
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=None
+    )
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
+    violation = next(v for v in verdict.violations if v["code"] == "RG-37")
+    assert str(salle) in violation["message"]
+
+
+def test_e3_quinquies_brigade_sans_salle_attitree_lieu_quelconque_refusee(
+    programme, cours_salle_attitree, brigade, lieu_partage
+):
+    """K2 : même sans salle attitrée du tout, un lieu quelconque ne
+    remplace jamais la salle manquante."""
+    qualifier(cours_salle_attitree.instructeur, cours_salle_attitree.element.matiere)
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=lieu_partage
+    )
+
+    verdict = ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme))
+
+    assert not verdict.accepte
+    assert any(v["code"] == "RG-37" for v in verdict.violations)
 
 
 # --- E4 — matière sans lieu, aucun contrôle ---------------------------------
@@ -167,7 +271,9 @@ def test_e5_salle_attitree_capacite_devenue_insuffisante_apres_croissance_effect
     lieu = Lieu.objects.create(intitule="Salle E5", capacite=20, categorie="salle_attitree")
     ServiceSalleAttitree.attribuer(planificateur, brigade, lieu)
     affecter_stagiaires(redacteur, brigade, 20, prefixe="E5A")
-    candidate = _candidate(brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8))
+    candidate = _candidate(
+        brigade, cours_salle_attitree, instant(programme.lundi_de_semaine, 0, 8), lieu=lieu
+    )
     assert ServiceContraintes.verifier(candidate, ServiceContraintes.contexte(programme)).accepte
 
     Lieu.objects.filter(pk=lieu.pk).update(capacite=18)

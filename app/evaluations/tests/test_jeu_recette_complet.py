@@ -19,7 +19,7 @@ def test_chargement_complet_passe_la_verification(db):
     call_command("charger_jeu_recette", etat="complet", verifier=True, stdout=sortie)
     rapport = sortie.getvalue()
     assert "MANQUANT" not in rapport
-    assert "47/47 contrôles conformes." in rapport
+    assert "48/48 contrôles conformes." in rapport
 
 
 def test_refuse_hors_developpement(monkeypatch, db):

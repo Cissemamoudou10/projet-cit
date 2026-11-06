@@ -47,12 +47,17 @@ DUREE_SEMAINES = 20
 
 # M1 porte le programme hebdomadaire (étapes 1, 5, 8). M2 porte le
 # contrôle formatif (étape 2) et l'examen final certificatif (étape 9) —
-# en SALLE ATTITRÉE (jamais AUCUN_LIEU) : aucune brigade de ce jeu n'en a
-# une, la génération écarte donc M2 d'elle-même pour chacune
-# (`_a_une_salle_attitree`, « pas de salle attitrée ») — sans quoi elle
-# occuperait Beta, seul qualifié pour M2, sur toute la semaine. Intitulés
-# courts : plusieurs champs d'affichage concatènent matière, formation,
-# brigade et lieu dans une seule colonne bornée (varchar(150)).
+# en SALLE ATTITRÉE (jamais AUCUN_LIEU) : `BRIGADE` (la seule incluse à la
+# génération de l'étape 1, voir `organisation.py`) n'en a aucune, la
+# génération écarte donc M2 d'elle-même pour elle (`_a_une_salle_attitree`,
+# « pas de salle attitrée ») — sans quoi elle occuperait Beta, seul
+# qualifié pour M2, sur toute la semaine. `BRIGADE_TEMOIN`, elle, reçoit sa
+# propre salle attitrée (`chargement.py`, K2/RG-37, prompt 58) : jamais
+# incluse à la génération, cela ne change rien à l'étape 1, et c'est ce que
+# RG-37 exige désormais pour que l'étape 2 (lieu choisi explicitement)
+# passe légitimement. Intitulés courts : plusieurs champs d'affichage
+# concatènent matière, formation, brigade et lieu dans une seule colonne
+# bornée (varchar(150)).
 MATIERE_PROGRAMME = ("Procédures radio J2", "J2-M1", 40)
 MATIERE_EXAMENS = ("Transmission sécurisée J2", "J2-M2", 40)
 

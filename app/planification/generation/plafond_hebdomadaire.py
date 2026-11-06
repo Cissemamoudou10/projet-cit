@@ -19,6 +19,7 @@ import datetime
 import math
 
 from django.conf import settings
+from django.utils import timezone
 
 from planification.generation.candidats import periode_bloquante, projeter_creneaux, volume_restant
 from planification.services.contraintes import charger_periodes_bloquantes
@@ -123,8 +124,10 @@ def _plafond_element(element, brigade, contexte, donnees):
 def _charger_donnees_calcul(matieres_par_brigade, brigades, creneaux, lundi_de_semaine):
     tous_elements = {e.pk: e for liste in matieres_par_brigade.values() for e in liste}
     fin_max = max((b.session.date_fin for b in brigades), default=lundi_de_semaine)
-    debut = datetime.datetime.combine(lundi_de_semaine, datetime.time.min)
-    fin = datetime.datetime.combine(fin_max + datetime.timedelta(weeks=1), datetime.time.min)
+    debut = timezone.make_aware(datetime.datetime.combine(lundi_de_semaine, datetime.time.min))
+    fin = timezone.make_aware(
+        datetime.datetime.combine(fin_max + datetime.timedelta(weeks=1), datetime.time.min)
+    )
     return _DonneesCalcul(
         creneaux=creneaux,
         lundi_de_semaine=lundi_de_semaine,

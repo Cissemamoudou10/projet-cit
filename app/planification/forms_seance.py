@@ -113,6 +113,19 @@ class FormulaireSeance(ChampsAvenantMixin, forms.Form):
         widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
     )
 
+    def __init__(self, *args, formation=None, **kwargs):
+        """`formation` (prompt 58, RECETTE-01 A3) : borne les matières
+        proposées à celles de la formation de la brigade concernée, posée
+        par l'appelant qui connaît déjà la séance (modification) — jamais
+        « Électronique numérique » de F1 confondue avec celle de F6.
+        `None` par défaut : `FormulaireAjoutSeance` choisit encore sa
+        brigade DANS le formulaire, son filtrage reste différé (E1)."""
+        super().__init__(*args, **kwargs)
+        if formation is not None:
+            self.fields["element_referentiel"].queryset = ElementReferentiel.objects.filter(
+                formation=formation
+            ).select_related("matiere")
+
     def clean(self):
         donnees = super().clean()
         debut = donnees.get("date_seance")

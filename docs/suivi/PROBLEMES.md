@@ -23,6 +23,82 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-76 — `test_ni_valeur_ni_absence_est_refuse_en_base` échoue dans la suite complète, jamais seul (flake, prompt 58)
+**Date** 2026-11-06 · **Story** aucune (observé en lançant la suite ciblée du prompt 58, sans rapport avec K1 à K11) · **État** : ouvert
+**Symptôme** — `app/evaluations/tests/test_notes.py::test_ni_valeur_ni_absence_est_refuse_en_base` (attend une `IntegrityError` quand une `Note` est créée sans valeur ni absence) échoue une fois dans la suite ciblée complète (`1 failed, 1685 passed` sur `app/planification/tests/ app/evaluations/tests/ app/ressources/tests/ tests/architecture`), mais passe systématiquement seul et dans son propre fichier.
+**Reproduction** (depuis `app/`, base de test) :
+```
+pytest -q app/evaluations/tests/test_notes.py::test_ni_valeur_ni_absence_est_refuse_en_base   # passe seul
+pytest -q app/evaluations/tests/test_notes.py                                                 # passe dans son fichier
+pytest -q app/planification/tests/ app/evaluations/tests/ app/ressources/tests/ tests/architecture  # a échoué une fois sur deux lancements complets
+```
+**Cause** — Non identifiée ; aucune piste dans ce que j'ai touché (K1 à K11 ne concernent ni `Note`, ni `test_notes.py`, ni le module `evaluations` autrement que `jeu_recette`). Signature typique d'une fuite d'état entre tests (ordre d'exécution, fixture partagée) plutôt que d'un défaut du modèle lui-même — la contrainte `ck_note_...` existe et fonctionne (le test passe isolément).
+**Résolution** — Aucune : hors du périmètre de cette story. Deux lancements complets de la suite ciblée ont eu lieu pendant ce prompt (après K1-K7+K11, puis après les deux corrections de régression) : ce test a échoué sur le second, pas sur le premier (où deux AUTRES tests avaient échoué, corrigés depuis) — à confirmer sur un troisième lancement avant de parler de récurrence systématique.
+**Risque concerné** — aucun du registre actuel ; à surveiller si la suite complète (P-51) doit rester déterministe.
+**Leçon** — Un test qui échoue seulement « en compagnie d'autres » mérite d'être tracé (ordre, fixtures partagées) avant d'être rejoué en espérant qu'il passe : noté ici plutôt que relancé en silence.
+
+---
+
+## P-75 — US-PLAN-09 c.5 : un lot de remplacement pouvait regrouper plusieurs semaines (A9, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K11 — RECETTE-01 A9, NC mineur) · **État** : résolu
+**Symptôme** — Le lien « traiter en lot » de l'écran de traitement d'une indisponibilité ne groupait les séances que par matière : une indisponibilité de plusieurs semaines produisait un seul lot cumulant toutes les semaines, avec un remplaçant cherché libre sur toute l'étendue au lieu d'une semaine à la fois.
+**Cause** — `_groupes_lot` (`views_indisponibilite.py`) comptait les séances traitables par `matiere` seule, sans tenir compte de `seance.programme.lundi_de_semaine`.
+**Résolution** — Regroupement par (matière, semaine) ; `lot_remplacement` reçoit désormais la semaine visée par `?semaine=` (obligatoire, 404 sinon) ; `_candidats_lot` filtre les séances candidates par cette semaine en plus de la matière (D-307).
+**Risque concerné** — aucun du registre actuel.
+
+## P-74 — `RuntimeWarning` « naive datetime » pervasif dans la suite, deux sources en production (B2, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K7 — RECETTE-01 B2, défaut de robustesse) · **État** : résolu
+**Symptôme** — Un `RuntimeWarning: DateTimeField ... received a naive datetime` apparaissait dans la quasi-totalité des tests touchant la génération ou le rapprochement, avec des dates variables (`PeriodeCalendrier.debut/fin`) ou fixée au jour courant (`Seance.fin`, exactement 75 occurrences sur la table des écrans d'écriture).
+**Cause** — Deux sites de production construisaient une borne de requête par `datetime.combine` sans jamais la rendre consciente du fuseau (`timezone.make_aware`) : `generation/plafond_hebdomadaire.py::_charger_donnees_calcul` (bornes de `charger_periodes_bloquantes`, un `date` combiné nu) et `selectors_alerte_ecart.py::decorer_rapprochement` (`a_la_date` défauté à `timezone.localdate()`, un simple `date`, transmis tel quel à `Seance.fin__lte`). Invisible fonctionnellement tant qu'`Africa/Casablanca` reste à UTC+0 (toute la période du jeu de recette), ce dernier site sous-comptait aussi le programmé échu de la journée en cours (minuit plutôt que l'instant réel).
+**Résolution** — Les deux sites enveloppent désormais leurs bornes dans `timezone.make_aware`/défautent à `timezone.now()` (D-308). Un test daté après le retour d'`Africa/Casablanca` à UTC+1 (~11/11/2026) couvre l'absence d'avertissement et la détection correcte d'une période bloquante dans ce fuseau (`test_plafond_hebdomadaire_fuseau_horaire.py`).
+**Risque concerné** — aucun du registre actuel (RECETTE-03 à 05, qui se jouent après le 11/11, en dépendaient).
+**Leçon** — Un `RuntimeWarning` répété dans des dizaines de tests sans rapport apparent mérite d'être tracé jusqu'à sa source une fois, plutôt que d'être filtré : il a révélé ici un second défaut fonctionnel (l'échu sous-compté), pas seulement du bruit.
+
+## P-73 — Chargeur `complet` : l'avenant « déplacement » de M6/EXP1 pouvait échouer en silence si W0 était saturée (B1, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K6 — RECETTE-01 B1, défaut de robustesse) · **État** : résolu
+**Symptôme** — Avec le jeu de données actuel, aucun jour de W0 n'offre de créneau naturellement libre pour EXP1 (20/20 créneaux occupés, confirmé empiriquement) : `poser_avenants_w0` se contentait alors d'un avertissement sur `stdout`, sans poser l'avenant « déplacement » — RECETTE-03 en dépend.
+**Cause** — `_premier_jour_libre` ne cherchait qu'un créneau VRAIMENT libre, jamais une solution de repli quand la semaine est entièrement saturée ; aucun échec bruyant ne signalait l'absence de l'avenant.
+**Résolution** — À défaut de créneau libre, le chargeur supprime une autre séance d'EXP1 de la même semaine (jeudi préféré) PENDANT que le programme est encore brouillon (seul moment où une suppression est admise, M4), puis déplace M6 vers cette case libérée une fois le programme affiché : un seul avenant « déplacement », en une seule écriture, aucune heure hors grille. (Une première version par échange via un créneau tampon a été écartée au profit de celle-ci, plus simple.) Le chargeur échoue désormais bruyamment (`CommandError`) si aucune séance d'EXP1 n'existe à supprimer. Nouveau contrôle `--verifier` : « Deux avenants sur la séance M6 de EXP1 en W0 ».
+**Risque concerné** — aucun du registre actuel.
+
+## P-72 — Lien « Y aller » d'une séance bloquée menait directement à l'action de déblocage, jamais à la consultation (A11, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K5 — RECETTE-01 A11, NC mineur) · **État** : résolu
+**Symptôme** — Sur l'écran de traitement d'une indisponibilité, le lien « Y aller » d'une séance bloquée par l'état du programme pointait vers l'URL de l'action qui la débloquerait (POST seule) : un clic en GET y valait un 405.
+**Cause** — `_ligne` (`views_indisponibilite.py`) construisait `url_blocage` avec `reverse(url_nom, args=[programme.pk])` — l'URL de l'action elle-même, jamais celle de l'écran où cette action se déclenche réellement.
+**Résolution** — `url_blocage` pointe désormais vers `consultation_programme?semaine=...` : l'utilisateur atterrit sur l'écran où le vrai formulaire POST existe.
+**Risque concerné** — aucun du registre actuel.
+
+## P-71 — Regroupement : brigades candidates proposées sans tenir compte du référentiel de la matière (A6 a, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K4 — RECETTE-01 A6 a, NC mineur) · **État** : résolu
+**Symptôme** — L'écran de regroupement proposait CDP1 comme brigade candidate pour une séance de M2, alors que CDP1 ne suit pas le référentiel qui porte M2.
+**Cause** — `brigades_candidates_au_regroupement` (`selectors.py`) ne filtrait pas sur la formation de la séance à regrouper.
+**Résolution** — Le queryset filtre désormais sur `session__formation=seance.element_referentiel.formation_id`.
+**Risque concerné** — aucun du registre actuel.
+
+## P-70 — RG-05 (le référentiel appartient à la formation) vérifiée seulement par le formulaire, jamais par le service (A3, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K3 — RECETTE-01 A3, NC majeur) · **État** : résolu
+**Symptôme** — L'écran de modification/substitution d'une séance proposait des matières d'une AUTRE formation que celle de la brigade concernée (le volume affiché pour EXP1 ne correspondait pas à F6).
+**Cause** — Le filtrage par formation n'existait que dans `forms_seance.py`/`forms_indisponibilite.py` (confort d'écran) ; `modification.py::modifier_seance` ne le vérifiait jamais, contournable par tout appel direct au service.
+**Résolution** — `_verifier_referentiel_de_la_formation` ajoutée à la chaîne de gardes de `modifier_seance` (D-306) ; le filtrage du formulaire est conservé en plus, pas à la place.
+**Risque concerné** — aucun du registre actuel.
+
+## P-69 — Salle attitrée : aucune vérification du lieu choisi contre celui de la brigade (A4, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K2 — RECETTE-01 A4, NC majeur) · **État** : résolu
+**Symptôme** — Une séance d'une matière « salle attitrée » pouvait être posée dans la salle attitrée d'une AUTRE brigade, ou dans un lieu quelconque, sans refus.
+**Cause** — `_verifier_salle_attitree` (`regles_lieu.py`) ne comparait jamais `candidate.lieu` à la salle attitrée attendue ; un bug supplémentaire (`attendue is None` courtcircuitait le refus même quand `candidate.lieu` était aussi `None`) laissait passer une brigade sans salle attitrée ET sans lieu choisi.
+**Résolution** — Réécrite pour toujours comparer `candidate.lieu` à la salle attitrée attendue (ou refuser si la brigade n'en a aucune), avant toute vérification de capacité ou d'indisponibilité. Cinq nouveaux tests couvrent les angles morts découverts en relecture.
+**Risque concerné** — aucun du registre actuel.
+
+## P-68 — Une brigade pouvait avoir deux séances qui se chevauchent : aucune règle ne l'interdisait (A1, A10, A6 b, prompt 58)
+**Date** 2026-11-04 · **Story** aucune (prompt 58, K1 — RECETTE-01 A1/A10/A6 b, NC majeur) · **État** : résolu
+**Symptôme** — RECETTE-02 (04/11) : le contrôle E2 d'EXP2, visible le mercredi avant la génération de W+1, disparaît après — remplacé par une séance générée sur le même créneau. Une vérification directe de `pfe_cit_recette` (lecture seule) confirme 5 paires de séances qui se chevauchent pour les brigades 1 et 2, antérieures à cette correction ; `pfe_cit_volume` n'en contient aucune.
+**Cause** — RG-34 (instructeur) et RG-37 (lieu) sont les seules contraintes qui bornent indirectement un chevauchement ; aucune ne porte sur LA BRIGADE elle-même. `regroupement.py::_verifier_brigades_libres` portait un contrôle équivalent, mais localement, jamais appelé par la génération, la modification manuelle, la substitution ni la duplication.
+**Résolution** — RG-67, nouvelle contrainte dure de `ServiceContraintes` (D-305) : appliquée aux cinq chemins d'écriture. `_verifier_brigades_libres` supprimée (doublon). L'affichage ne masque plus un chevauchement existant en base : les deux lignes s'affichent, signalées. Le chargeur `complet`, qui passe par les services, ne peut plus en produire (confirmé par `test_chargement_complet_passe_la_verification`/`test_avenants_complet.py`, RG-67 active tout du long).
+**Risque concerné** — aucun du registre actuel.
+**Leçon** — Une règle sciemment écartée de l'implantation unique (D-249) pour limiter la portée d'un changement a fini par être la cause réelle de trois anomalies distinctes, chacune sur un chemin d'écriture différent : la duplication que l'architecture en couches proscrit n'est pas qu'un défaut de style, elle laisse échapper des combinaisons qu'aucun chemin protégé seul n'aurait anticipées.
+
+---
+
 ## P-67 — RG-39 a) (version D-302) pouvait bloquer une matière indéfiniment sous son prescrit (prompt 56)
 **Date** 2026-11-02 · **Story** aucune (prompt 56, défaut latent révélé par la preuve sur la session entière) · **État** : résolu
 **Symptôme** — La preuve par le vrai générateur (session S1 entière, deux brigades, `test_plafond_hebdomadaire_session_entiere.py`) montrait M6 et M9 stationner à 39,167 h/40 h et 19,42 h/20 h respectivement, jamais à l'exact prescrit, quel que soit le nombre de semaines générées en plus ; M8 (dépendante de M6, RG-39 b) restait bloquée à 0 h pour les deux brigades.

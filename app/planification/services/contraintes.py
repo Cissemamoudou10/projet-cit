@@ -1,6 +1,7 @@
-"""Contrôle des six contraintes dures — CU-P5-02, RG-34 à RG-39, Prompt 30.
+"""Contrôle des contraintes dures — CU-P5-02, RG-34 à RG-39, Prompt 30, plus
+RG-67 et RG-05 (prompt 58, voir plus bas).
 
-`ServiceContraintes` est l'implantation UNIQUE de ces six règles
+`ServiceContraintes` est l'implantation UNIQUE de ces règles
 (.claude/rules/services.md) : appelé par la modification manuelle, la
 génération, le regroupement et la duplication (tous à venir, US-PLAN-03 et
 suivantes) — jamais par un utilisateur (§ 6, Prompt 30), donc aucune
@@ -39,6 +40,22 @@ exposé pour une stratégie qui essaie plusieurs candidates par case avant de
 retenir la bonne (contrairement à `verifier_lot`, qui reçoit une liste déjà
 tranchée). `verifier(candidate, contexte)` reste valide, `provisoires` vaut
 `()` par défaut.
+
+RG-67 (prompt 58, RECETTE-01 A10/A1/A6 b) : une brigade ne peut pas avoir
+deux séances qui se chevauchent — absente jusqu'ici, RG-34 ne porte que sur
+l'instructeur, RG-37 que sur le lieu. Voir `regles_brigade.py`. Même sous-
+traitance que les six autres : une candidate dont la brigade a déjà une
+séance sur ce créneau (base ou lot, hors même regroupement) est refusée,
+quels que soient l'instructeur et le lieu choisis.
+
+RG-05 (prompt 58, RECETTE-01 A3 ; D-309, supersède D-306) : le référentiel
+appartient à la formation — une candidate dont l'élément n'appartient pas
+au référentiel de la formation de la brigade est refusée. Vérifiée
+jusqu'ici seulement par le filtrage des formulaires, puis par
+`modification.py` seule (D-306) : l'ajout manuel et le regroupement
+restaient sans aucune protection. Voir `regles_referentiel.py` — ne dépend
+d'aucun contexte ni d'aucune autre candidate du lot, contrairement aux
+autres règles.
 """
 
 import dataclasses
@@ -51,7 +68,14 @@ from noyau.intervalles import filtre_recouvrement
 from noyau.services.parametres import ResolveurJoursExamen, ResolveurOccupationsEpreuves
 from organisation.models import Brigade
 from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire, Seance
-from planification.services import regles_calendrier, regles_instructeur, regles_lieu, regles_volume
+from planification.services import (
+    regles_brigade,
+    regles_calendrier,
+    regles_instructeur,
+    regles_lieu,
+    regles_referentiel,
+    regles_volume,
+)
 from referentiel.models import ElementReferentiel, Prerequis
 from ressources.models import (
     IndisponibiliteInstructeur,
@@ -351,6 +375,8 @@ class ServiceContraintes:
         violations += regles_instructeur.verifier_rg34(candidate, contexte, lot_acceptees)
         violations += regles_instructeur.verifier_rg35(candidate, contexte)
         violations += regles_instructeur.verifier_rg36(candidate, contexte)
+        violations += regles_brigade.verifier_rg67(candidate, contexte, lot_acceptees)
+        violations += regles_referentiel.verifier_rg05(candidate)
         violations += regles_lieu.verifier_rg37(candidate, contexte, lot_acceptees)
         violations += regles_calendrier.verifier_rg38(candidate, contexte)
         violations += regles_volume.verifier_rg39(candidate, contexte, lot_acceptees)

@@ -205,9 +205,21 @@ horodatés lundi 2026-10-26 06:00:00+00:00 :
 | 1 | Déplacement | Séance déplacée vers le **2026-10-30 10:10-12:00** | « Déplacement de séance (recette, § 2.4). » |
 | 2 | Remplacement d'instructeur | Instructeur `I6` → `I8` | « Remplacement d'instructeur (recette, § 2.4). » |
 
-**Écart avec le prompt** (§ 2.4 : « une séance M6 de EXP1 déplacée du lundi
-au **jeudi** ») — voir § « Écarts avec le prompt » ci-dessous : le
-déplacement a atterri le **vendredi** 2026-10-30, pas le jeudi 2026-10-29.
+**Mis à jour (prompt 58, K6)** — ce qui précède décrit le chargement de
+contrôle du 27/10/2026, AVANT la correction de K6. Rechargé depuis le
+correctif (vérification du 06/11/2026) : la séance M6 d'`EXP1` était cette
+fois entièrement saturée (20/20 créneaux occupés, aucun jour naturellement
+libre, même en élargissant la recherche aux six jours de la grille) — le
+chargeur a donc supprimé une AUTRE séance d'`EXP1` de la même semaine
+PENDANT que W0 était encore brouillon, puis déplacé M6 vers la case ainsi
+libérée une fois le programme affiché (voir § « Écarts avec le prompt »
+ci-dessous, réécrit) : **un seul avenant** « déplacement » sur M6, aucune
+heure hors grille, nulle part. L'avenant est retombé sur le **jeudi
+08:00–09:45** de W0 — la journée préférée depuis l'origine (§ 2.4), mais
+atteinte cette fois par suppression préalable plutôt que par un créneau
+resté naturellement libre. **Le jour exact dépend de l'occupation réelle
+de la semaine au moment du chargement (`D`), pas seulement du code** : une
+base rechargée un autre jour peut à nouveau atterrir ailleurs.
 
 ### 2.5 Évaluations, telles que chargées
 
@@ -399,27 +411,37 @@ conteneur reste nécessaire, un test unitaire seul ne l'aurait pas trouvé.
 
 ## Écarts avec le prompt
 
-### État `complet` — l'avenant « déplacement » atterrit le vendredi, pas le jeudi annoncé
+### État `complet` — l'avenant « déplacement », de simple repli à suppression préalable (K6, prompt 58)
 
-**Constat** — § 2.4 du prompt annonce « une séance M6 de EXP1 déplacée du
-lundi au jeudi ». Dans ce chargement réel (D = 2026-10-27), la séance a été
-déplacée au **vendredi** 2026-10-30, pas au jeudi 2026-10-29.
+**Constat (27/10/2026, avant K6)** — § 2.4 du prompt annonce « une séance
+M6 de EXP1 déplacée du lundi au jeudi ». Dans ce chargement réel
+(D = 2026-10-27), la séance a été déplacée au **vendredi** 2026-10-30, pas
+au jeudi 2026-10-29 : `_premier_jour_libre` retenait alors le premier jour
+QUI OFFRAIT RÉELLEMENT un créneau libre (jeudi, vendredi, mercredi, mardi,
+samedi) ; ce jour-là, seul le vendredi en avait un.
 
-**Cause** — `avenants_complet.py::_premier_jour_libre` cherche d'abord un
-créneau libre le jeudi de W0 pour `EXP1`, mais retient le **premier** autre
-jour qui en offre réellement un (jeudi, puis vendredi, mercredi, mardi,
-samedi, dans cet ordre) si le jeudi est dense — documenté dans le code
-lui-même (« la semaine peut être densément remplie »). Pour cette graine et
-cette date de référence, le jeudi de W0 (2026-10-29) n'offrait aucun
-créneau libre pour `EXP1` ; le vendredi (2026-10-30), oui.
+**Constat (06/11/2026, après K6, RECETTE-01 B1)** — Rejoué depuis le
+correctif : la semaine W0 était cette fois **saturée** (20/20 créneaux
+occupés par `EXP1`, confirmé empiriquement, aucun jour naturellement libre
+même en élargissant la recherche au lundi et au samedi). Le simple repli
+d'avant K6 aurait alors échoué — exactement le symptôme de RECETTE-01 B1
+(avertissement muet, avenant jamais posé).
 
-**Résolution** — Ce n'est pas un défaut à corriger : le repli est délibéré
-et déjà écrit pour ce cas précis (plutôt que de faire échouer tout le
-chargement pour un jour que rien n'impose absolument). Seul le libellé du
-§ 2.4 (« du lundi au jeudi ») est littéral et ne décrit pas tous les cas —
-consigné ici, pas dans `DECISIONS.md` : aucune décision de conception
-nouvelle, le comportement de repli existait déjà avant ce chargement de
-contrôle.
+**Résolution (K6, version finale)** — Une première version (échange via un
+créneau tampon hors grille, deux écritures sur la partenaire) a été
+écartée sur demande du chef de projet, au profit d'un mécanisme plus
+simple : pendant que W0 est encore BROUILLON — seul moment où une
+suppression de séance est admise (M4) —, `preparer_deplacement_w0`
+détermine la case cible et, si aucun jour n'est naturellement libre,
+**supprime** une AUTRE séance d'`EXP1` de la même semaine pour la libérer.
+Une fois W0 affiché, `poser_avenants_w0` déplace M6 vers cette case déjà
+libre en **une seule écriture** : un seul avenant « déplacement », aucune
+heure hors grille, nulle part, ni dans l'état final ni dans l'historique
+d'aucune séance. Le chargeur échoue bruyamment (`CommandError`) si aucune
+séance d'`EXP1` n'existe à supprimer. Le libellé du § 2.4 (« du lundi au
+jeudi ») reste littéral et ne décrit toujours pas tous les cas — aucune
+décision de conception nouvelle, seule la fiabilité du repli a changé
+(`docs/suivi/PROBLEMES.md`, P-73).
 
 ### Jeu volumineux — calibrage recalé sur `etudes/solveur/HYPOTHESES.md`
 

@@ -244,8 +244,11 @@ def brigades_de_la_periode(periode):
 def brigades_candidates_au_regroupement(seance):
     """US-PLAN-06, R5 : brigades que la séance peut accueillir — ni déjà sur
     cette séance, ni déjà en séance sur ce créneau (toutes brigades
-    confondues, même programme) — en un nombre de requêtes constant, quel
-    que soit le nombre de brigades candidates (CU-P5-04, étape 2)."""
+    confondues, même programme), ni hors du référentiel de la matière
+    (prompt 58, RECETTE-01 A6 a — une brigade dont la formation ne porte
+    pas cet élément n'a jamais eu de raison d'y figurer) — en un nombre de
+    requêtes constant, quel que soit le nombre de brigades candidates
+    (CU-P5-04, étape 2)."""
     deja = LigneProgramme.objects.filter(seance=seance).values_list("brigade_id", flat=True)
     occupees = (
         LigneProgramme.objects.filter(
@@ -258,7 +261,21 @@ def brigades_candidates_au_regroupement(seance):
     )
     exclues = set(deja) | set(occupees)
     return (
-        Brigade.objects.exclude(pk__in=exclues)
+        Brigade.objects.filter(session__formation=seance.element_referentiel.formation_id)
+        .exclude(pk__in=exclues)
         .select_related("session__formation")
         .order_by("designation")
     )
+
+
+def formation_de_la_seance(seance):
+    """Prompt 58, RECETTE-01 A3 : la formation de LA PREMIÈRE brigade de la
+    séance — pour borner les matières proposées en modification manuelle
+    et en substitution (`forms_seance.py`/`forms_indisponibilite.py`) à
+    celles de cette formation, jamais toutes formations confondues. Une
+    séance regroupée dont les brigades suivraient des formations
+    différentes reste un cas limite non couvert ici — voir K4
+    (`brigades_candidates_au_regroupement`, filtrée par référentiel depuis
+    ce prompt, qui en réduit l'occurrence pour les regroupements futurs)."""
+    ligne = seance.lignes.select_related("brigade__session__formation").first()
+    return ligne.brigade.session.formation if ligne else None

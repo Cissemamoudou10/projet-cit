@@ -123,9 +123,15 @@ def test_a5_deverrouillage_puis_regeneration_remplace_la_seance(scenario, qualif
     assert not Seance.objects.filter(pk=seance.pk).exists()
 
 
-def test_a6_seance_regroupee_sans_confirmation_est_refusee_avec_ses_brigades(qualifie, autre_brigade):
+def test_a6_seance_regroupee_sans_confirmation_est_refusee_avec_ses_brigades(
+    qualifie, autre_brigade_formation
+):
+    """`autre_brigade_formation` (même formation que `qualifie.cours.element`,
+    via `session_formation`) — pas `autre_brigade` (RG-05, prompt 58) : une
+    séance regroupée réelle ne mélange jamais les formations, ce test
+    porte sur la confirmation (M8), pas sur RG-05."""
     seance = _seance_libre(qualifie)
-    LigneProgramme.objects.create(seance=seance, brigade=autre_brigade)
+    LigneProgramme.objects.create(seance=seance, brigade=autre_brigade_formation)
     with pytest.raises(ErreurValidation, match="Confirmez la modification"):
         ServiceEcritureSeance.modifier_seance(qualifie.acteurs.planificateur, seance, {"lieu": None})
     ServiceEcritureSeance.modifier_seance(
@@ -310,3 +316,30 @@ def test_a9_bascule_sans_lieu_refusee_si_la_matiere_exige_un_lieu(qualifie):
         ServiceEcritureSeance.modifier_seance(qualifie.acteurs.planificateur, seance, {"lieu": None})
     seance.refresh_from_db()
     assert seance.lieu is None
+
+
+def test_a10_element_d_une_autre_formation_refuse(qualifie):
+    """K3, prompt 58 (RECETTE-01 A3) : RG-05 (le référentiel appartient à
+    la formation, jamais à la brigade) est désormais vérifiée au niveau du
+    SERVICE, pas seulement par le filtrage du formulaire de saisie
+    (`forms_seance.py`) — un appel direct qui contournerait ce filtrage
+    (import, future API, admin) reste refusé."""
+    from referentiel.models import Formation, TypeFormation
+
+    seance = _seance_libre(qualifie)
+    autre_formation = Formation.objects.create(
+        intitule="Autre formation (RG-05, essai)",
+        specialite="Transmissions",
+        duree_semaines=1,
+        type_formation=TypeFormation.objects.create(intitule="Autre type RG-05"),
+    )
+    element_hors_formation = creer_element(
+        autre_formation, Matiere.objects.create(intitule="Hors formation (essai)", code="HF01")
+    )
+
+    with pytest.raises(ErreurValidation, match="RG-05"):
+        ServiceEcritureSeance.modifier_seance(
+            qualifie.acteurs.planificateur, seance, {"element_referentiel": element_hors_formation}
+        )
+    seance.refresh_from_db()
+    assert seance.element_referentiel != element_hors_formation
