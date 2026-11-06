@@ -59,9 +59,12 @@ saisies au calendrier.
 `RG-63` L'activation d'une grille est une **décision datée et nominative**, jamais
 déduite du calendrier.
 
-`RG-64` La grille contraint ce que la génération **propose**, jamais ce que la
-saisie manuelle décide. La séance porte ses heures réelles, le créneau type
-n'étant qu'une référence facultative.
+`RG-64` La grille contraint ce que la génération **propose** — et, depuis
+D-310 (amende D-133, prompt 59, RECETTE-01 A2), ce que l'ajout et la
+modification manuelle **imposent** : la saisie choisit un créneau de la
+grille active, jamais une heure libre. La séance porte ses heures réelles
+(celles du créneau choisi) ; le créneau type (`creneau_type`) reste une
+référence facultative, non renseignée par ce changement.
 
 ## Planification
 
