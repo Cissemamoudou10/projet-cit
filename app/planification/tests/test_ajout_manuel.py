@@ -10,18 +10,30 @@ from django.urls import reverse
 from noyau.exceptions import ErreurValidation
 from planification.exceptions import TransitionProgrammeRefusee
 from planification.models import Avenant, EtatProgramme, NatureAvenant, Seance
+from planification.selectors import JOUR_SEMAINE_PAR_ISO, grille_active_avec_creneaux
 from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
 from planification.services.modification import Avenantage
 from planification.tests.aide_circuit import amener_a, seance_dans
-from planification.tests.conftest import instant, qualifier
+from planification.tests.conftest import activer_grille, instant, qualifier
 
 AVENANT_AJOUT = Avenantage(motif="Rattrapage programmé.", nature=NatureAvenant.AJOUT)
 
 
 @pytest.fixture
 def qualifie(circuit):
+    """K8 (prompt 59) : le formulaire d'ajout impose un créneau de la grille
+    active — vendredi et samedi (jours 4 et 5, utilisés par les tests HTTP
+    ci-dessous) y portent un créneau 09:00-11:00."""
+    from ressources.models import JourSemaine
+
     qualifier(circuit.cours.instructeur, circuit.cours.element.matiere)
+    activer_grille(
+        circuit.acteurs.planificateur,
+        "Essai ajout manuel",
+        [(datetime.time(9, 0), datetime.time(11, 0))],
+        jours=[JourSemaine.VENDREDI, JourSemaine.SAMEDI],
+    )
     return circuit
 
 
@@ -126,17 +138,21 @@ def _url_ajout(programme):
     return reverse("planification:ajouter_seance", args=[programme.pk])
 
 
-def _formulaire(qualifie, jour=4, debut="09:00", fin="11:00", **extra):
+def _creneau_du_jour(qualifie, jour):
+    """K8 (prompt 59) : résout le créneau de la grille active dont le jour
+    correspond à `jour` (décalage depuis le lundi du programme)."""
+    jour_date = qualifie.programme.lundi_de_semaine + datetime.timedelta(days=jour)
+    _, creneaux = grille_active_avec_creneaux()
+    return next(c for c in creneaux if JOUR_SEMAINE_PAR_ISO[c.jour_semaine] == jour_date.isoweekday())
+
+
+def _formulaire(qualifie, jour=4, **extra):
     donnees = {
         "brigade": qualifie.brigade.pk,
         "element_referentiel": qualifie.cours.element.pk,
         "instructeur": qualifie.cours.instructeur.pk,
         "lieu": "",
-        "date_seance": (
-            qualifie.programme.lundi_de_semaine + datetime.timedelta(days=jour)
-        ).isoformat(),
-        "heure_debut": debut,
-        "heure_fin": fin,
+        "creneau": _creneau_du_jour(qualifie, jour).pk,
     }
     donnees.update(extra)
     return donnees

@@ -2,12 +2,14 @@
 
 import datetime
 
+import pytest
 from django.urls import reverse
 
 from administration.models import EntreeJournal, TypeAction
 from planification.models import Avenant, EtatProgramme, NatureAvenant, Seance
+from planification.selectors import JOUR_SEMAINE_PAR_ISO, grille_active_avec_creneaux
 from planification.tests.aide_circuit import amener_a, seance_dans
-from planification.tests.conftest import instant, qualifier
+from planification.tests.conftest import activer_grille, instant, qualifier
 
 
 def _seance_de_test(circuit):
@@ -16,14 +18,48 @@ def _seance_de_test(circuit):
     )
 
 
-def _formulaire(circuit, jour, debut="09:00", fin="11:00", **extra):
+@pytest.fixture
+def grille(circuit):
+    """K8 (prompt 59) : le formulaire de modification impose un créneau de
+    la grille active — deux créneaux (celui par défaut de `_formulaire` et
+    celui, décalé, utilisé par F1) sur tous les jours ouvrés."""
+    from ressources.models import JourSemaine
+
+    return activer_grille(
+        circuit.acteurs.planificateur,
+        "Essai modification écran",
+        [(datetime.time(9, 0), datetime.time(10, 0)), (datetime.time(10, 10), datetime.time(12, 0))],
+        jours=[
+            JourSemaine.LUNDI,
+            JourSemaine.MARDI,
+            JourSemaine.MERCREDI,
+            JourSemaine.JEUDI,
+            JourSemaine.VENDREDI,
+            JourSemaine.SAMEDI,
+        ],
+    )
+
+
+def _creneau(circuit, jour, debut, fin):
+    jour_date = circuit.programme.lundi_de_semaine + datetime.timedelta(days=jour)
+    _, creneaux = grille_active_avec_creneaux()
+    debut_t = datetime.time.fromisoformat(debut)
+    fin_t = datetime.time.fromisoformat(fin)
+    return next(
+        c
+        for c in creneaux
+        if JOUR_SEMAINE_PAR_ISO[c.jour_semaine] == jour_date.isoweekday()
+        and c.heure_debut == debut_t
+        and c.heure_fin == fin_t
+    )
+
+
+def _formulaire(circuit, jour, debut="09:00", fin="10:00", **extra):
     donnees = {
         "element_referentiel": circuit.cours.element.pk,
         "instructeur": circuit.cours.instructeur.pk,
         "lieu": "",
-        "date_seance": (circuit.programme.lundi_de_semaine + datetime.timedelta(days=jour)).isoformat(),
-        "heure_debut": debut,
-        "heure_fin": fin,
+        "creneau": _creneau(circuit, jour, debut, fin).pk,
     }
     donnees.update(extra)
     return donnees
@@ -41,7 +77,7 @@ def _consultation(circuit, jour=None):
     return url + (f"&jour={jour}" if jour else "")
 
 
-def test_f1_modification_par_la_planification_verrouille_et_s_affiche(client, scenario, circuit):
+def test_f1_modification_par_la_planification_verrouille_et_s_affiche(client, grille, circuit):
     qualifier(circuit.cours.instructeur, circuit.cours.element.matiere)
     seance = _seance_de_test(circuit)
     client.force_login(circuit.acteurs.planificateur)
@@ -57,7 +93,7 @@ def test_f1_modification_par_la_planification_verrouille_et_s_affiche(client, sc
     assert "#verrou" in client.get(_consultation(circuit, "jeudi")).content.decode("utf-8")
 
 
-def test_f2_modification_violant_une_contrainte_affiche_la_regle_et_n_ecrit_rien(client, circuit):
+def test_f2_modification_violant_une_contrainte_affiche_la_regle_et_n_ecrit_rien(client, grille, circuit):
     qualifier(circuit.cours.instructeur, circuit.cours.element.matiere)
     seance = _seance_de_test(circuit)
     seance_dans(circuit.programme, circuit.cours, circuit.brigade, instant(circuit.programme.lundi_de_semaine, 3, 9))
@@ -72,7 +108,7 @@ def test_f2_modification_violant_une_contrainte_affiche_la_regle_et_n_ecrit_rien
     assert "RG-34" in reponse.content.decode("utf-8")
 
 
-def test_f3_affiche_sans_avenant_est_refuse_puis_avec_avenant_le_motif_s_affiche(client, circuit):
+def test_f3_affiche_sans_avenant_est_refuse_puis_avec_avenant_le_motif_s_affiche(client, grille, circuit):
     qualifier(circuit.cours.instructeur, circuit.cours.element.matiere)
     amener_a(EtatProgramme.AFFICHE, circuit)
     seance = Seance.objects.get(programme=circuit.programme)
@@ -114,7 +150,7 @@ def test_f4_annulation_de_validation_sans_motif_refusee_puis_admise_avec_motif(c
     ).exists()
 
 
-def test_f5_modification_par_la_pedagogique_est_refusee_403(client, circuit):
+def test_f5_modification_par_la_pedagogique_est_refusee_403(client, grille, circuit):
     seance = _seance_de_test(circuit)
     client.force_login(circuit.acteurs.pedagogique)
 

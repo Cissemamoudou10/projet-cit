@@ -3,6 +3,14 @@
 Validation de forme seulement : les contraintes, la garde et l'avenant sont
 décidés par la porte (`ServiceEcritureSeance.modifier_seance`). La nature de
 l'avenant n'a aucune valeur présélectionnée (M9) : le choix est humain.
+
+K8, prompt 59 (RECETTE-01 A2) : le créneau se CHOISIT parmi ceux de la
+grille active, jamais une heure libre — RG-64 amendée (D-310) : la grille
+contraint désormais aussi la saisie manuelle, pas seulement ce que la
+génération propose. Une heure libre acceptée en silence (ex. 14:45, hors
+du créneau 14:40–16:00) produisait une séance ensuite invisible sur la
+grille de consultation (`selectors_consultation.py`, qui ne visite que les
+créneaux réels).
 """
 
 import datetime
@@ -12,8 +20,11 @@ from django.utils import timezone
 
 from organisation.models import Brigade
 from planification.models import NatureAvenant
+from planification.selectors import JOUR_SEMAINE_PAR_ISO, grille_active_avec_creneaux
 from referentiel.models import ElementReferentiel
 from ressources.models import Instructeur, Lieu
+
+LIBELLES_JOUR = {1: "Lundi", 2: "Mardi", 3: "Mercredi", 4: "Jeudi", 5: "Vendredi", 6: "Samedi"}
 
 CHOIX_NATURE = [("", "— choisir une nature —")] + list(NatureAvenant.choices)
 
@@ -91,21 +102,9 @@ class FormulaireSeance(ChampsAvenantMixin, forms.Form):
         label="Lieu",
         widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
-    date_seance = forms.DateField(
-        label="Date",
-        # `format="%Y-%m-%d"` explicite : `type="date"` exige l'ISO quel que
-        # soit le format local (`fr-fr` affiche jj/mm/aaaa), sans quoi le
-        # navigateur rejette la valeur pré-remplie en silence (champ vide à
-        # l'édition, trouvé en relecture visuelle de cet écran).
-        widget=forms.DateInput(
-            attrs={"type": "date", "class": CLASSE_CHAMP}, format="%Y-%m-%d"
-        ),
-    )
-    heure_debut = forms.TimeField(
-        label="Début", widget=forms.TimeInput(attrs={"type": "time", "class": CLASSE_CHAMP_HEURE})
-    )
-    heure_fin = forms.TimeField(
-        label="Fin", widget=forms.TimeInput(attrs={"type": "time", "class": CLASSE_CHAMP_HEURE})
+    creneau = forms.ChoiceField(
+        label="Créneau",
+        widget=forms.Select(attrs={"class": CLASSE_CHAMP}),
     )
     confirmee = forms.BooleanField(
         required=False,
@@ -113,28 +112,55 @@ class FormulaireSeance(ChampsAvenantMixin, forms.Form):
         widget=forms.CheckboxInput(attrs={"class": CLASSE_CASE}),
     )
 
-    def __init__(self, *args, formation=None, **kwargs):
+    def __init__(self, *args, formation=None, programme=None, **kwargs):
         """`formation` (prompt 58, RECETTE-01 A3) : borne les matières
         proposées à celles de la formation de la brigade concernée, posée
         par l'appelant qui connaît déjà la séance (modification) — jamais
         « Électronique numérique » de F1 confondue avec celle de F6.
         `None` par défaut : `FormulaireAjoutSeance` choisit encore sa
-        brigade DANS le formulaire, son filtrage reste différé (E1)."""
+        brigade DANS le formulaire, son filtrage reste différé (E1).
+
+        `programme` (K8, prompt 59) : construit les choix de `creneau`, un
+        par créneau de la grille active projeté sur la semaine DE CE
+        programme — jamais `None` en usage réel, seulement dans les tests
+        qui ne s'intéressent pas à ce champ."""
         super().__init__(*args, **kwargs)
         if formation is not None:
             self.fields["element_referentiel"].queryset = ElementReferentiel.objects.filter(
                 formation=formation
             ).select_related("matiere")
+        self._jours_et_creneaux_par_pk = {}
+        if programme is not None:
+            self.fields["creneau"].choices = self._choix_creneaux(programme)
+
+    def _choix_creneaux(self, programme):
+        _, creneaux = grille_active_avec_creneaux()
+        choix = []
+        for creneau in sorted(
+            creneaux, key=lambda c: (JOUR_SEMAINE_PAR_ISO[c.jour_semaine], c.ordre)
+        ):
+            jour_iso = JOUR_SEMAINE_PAR_ISO[creneau.jour_semaine]
+            jour = programme.lundi_de_semaine + datetime.timedelta(days=jour_iso - 1)
+            pk = str(creneau.pk)
+            self._jours_et_creneaux_par_pk[pk] = (jour, creneau)
+            libelle = (
+                f"{LIBELLES_JOUR[jour_iso]} {jour:%d/%m} — "
+                f"{creneau.heure_debut:%H:%M}–{creneau.heure_fin:%H:%M}"
+            )
+            choix.append((pk, libelle))
+        return choix
 
     def clean(self):
         donnees = super().clean()
-        debut = donnees.get("date_seance")
-        if debut and donnees.get("heure_debut") and donnees.get("heure_fin"):
-            fin = self._instant(debut, donnees["heure_fin"])
-            donnees["debut_instant"] = self._instant(debut, donnees["heure_debut"])
-            donnees["fin_instant"] = fin
-            if fin <= donnees["debut_instant"]:
-                raise forms.ValidationError("L'heure de fin doit suivre l'heure de début.")
+        valeur = donnees.get("creneau")
+        if valeur:
+            resolu = self._jours_et_creneaux_par_pk.get(valeur)
+            if resolu is None:
+                self.add_error("creneau", "Créneau invalide.")
+            else:
+                jour, creneau = resolu
+                donnees["debut_instant"] = self._instant(jour, creneau.heure_debut)
+                donnees["fin_instant"] = self._instant(jour, creneau.heure_fin)
         return donnees
 
     @staticmethod

@@ -257,11 +257,17 @@
   <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
     Aucun programme généré pour cette semaine.
   </p>
-{% elif not creneaux %}
+{% elif not creneaux and not seances_hors_grille %}
   <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
     Aucun créneau le {{ jour_actif }} dans la grille « {{ grille_active.intitule }} ».
   </p>
 {% else %}
+  {% if not creneaux %}
+    <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">
+      Aucun créneau le {{ jour_actif }} dans la grille « {{ grille_active.intitule }} » — les
+      séances ci-dessous sont hors grille (K8, RECETTE-01 A2).
+    </p>
+  {% endif %}
 <section class="mt-4 border border-gris-trait bg-fond-bloc">
   <table class="w-full table-fixed border-collapse text-sm">
     <colgroup>
@@ -386,7 +392,7 @@
                     {{ cellule.libelle_vide }}
                   </div>
                   {% if perms.noyau.programme_ecriture %}
-                    <a href="{% url 'planification:ajouter_seance' programme.pk %}?brigade={{ ligne.brigade.pk }}&amp;date={{ date_du_jour|date:'Y-m-d' }}&amp;heure_debut={{ cellule.creneau.heure_debut|time:'H:i' }}&amp;heure_fin={{ cellule.creneau.heure_fin|time:'H:i' }}"
+                    <a href="{% url 'planification:ajouter_seance' programme.pk %}?brigade={{ ligne.brigade.pk }}&amp;creneau={{ cellule.creneau.pk }}"
                        class="mt-1 block text-2xs text-marine-700 underline-offset-2 hover:underline">
                       + Ajouter une séance
                     </a>
@@ -395,6 +401,28 @@
               {% endif %}
             {% endfor %}
           </tr>
+          {% if ligne.hors_grille %}
+            <tr class="border-t border-dashed border-gris-trait bg-etat-ecart-fond align-top">
+              <th scope="row" class="px-3 py-2 text-left font-medium leading-tight text-etat-ecart">
+                Hors grille
+              </th>
+              <td colspan="{{ creneaux|length }}" class="px-3 py-2">
+                <ul class="space-y-1">
+                  {% for ligne_hg in ligne.hors_grille %}
+                    <li class="text-2xs text-etat-ecart">
+                      {{ ligne_hg.seance.debut|date:"H:i" }}–{{ ligne_hg.seance.fin|date:"H:i" }}
+                      — {{ ligne_hg.seance.element_referentiel.matiere }}
+                      — {{ ligne_hg.seance.instructeur }}
+                      {% if ligne_hg.seance.lieu %}— {{ ligne_hg.seance.lieu }}{% endif %}
+                      <a href="{% url 'planification:modifier_seance' ligne_hg.seance.pk %}"
+                         data-impression="masquer"
+                         class="ml-1 text-marine-700 no-underline hover:underline">Modifier</a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </td>
+            </tr>
+          {% endif %}
         {% endfor %}
       {% endfor %}
     </tbody>

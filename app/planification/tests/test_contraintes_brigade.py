@@ -248,7 +248,7 @@ def test_affichage_de_deux_lignes_qui_se_chevauchent(base):
         heure_fin=datetime.time(9, 45),
     )
 
-    groupes = grille_consultation(base.programme, [creneau], [base.brigade])
+    groupes = grille_consultation(base.programme, [creneau], [base.brigade], "lundi")
     cellules = [c for g in groupes for ligne in g["lignes"] for c in ligne["cellules"]]
     cellule = next(c for c in cellules if c.ligne is not None)
 
