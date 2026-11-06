@@ -23,8 +23,9 @@
     <ul class="divide-y divide-gris-trait">
       {% for groupe in groupes_lot %}
         <li class="flex items-center justify-between px-4 py-2 text-sm">
-          <span>{{ groupe.matiere }} — {{ groupe.nombre }} séances</span>
-          <a href="{% url 'planification:lot_remplacement' indisponibilite.pk groupe.matiere.pk %}"
+          <span>{{ groupe.matiere }} — semaine du {{ groupe.lundi_de_semaine|date:"d/m/Y" }} —
+            {{ groupe.nombre }} séances</span>
+          <a href="{% url 'planification:lot_remplacement' indisponibilite.pk groupe.matiere.pk %}?semaine={{ groupe.lundi_de_semaine|date:'Y-m-d' }}"
              class="text-sm text-marine-700 no-underline hover:underline">Traiter en lot</a>
         </li>
       {% endfor %}
