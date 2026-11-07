@@ -18,7 +18,7 @@ from evaluations.services.evaluation import (
     ServiceEvaluation,
 )
 from evaluations.services.note import PERMISSION_ECRITURE as PERMISSION_NOTES
-from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.exceptions import ErreurIntrouvable, ErreurMetier
 from noyau.habilitations import a_permission
 from noyau.pagination import paginer
 
@@ -113,7 +113,7 @@ def vue_creer_evaluation(request):
         if formulaire.is_valid():
             try:
                 evaluation = ServiceEvaluation.creer(request.user, formulaire.cleaned_data)
-            except ErreurValidation as erreur:
+            except ErreurMetier as erreur:
                 messages.error(request, str(erreur))
             else:
                 messages.success(request, "Évaluation créée.")
@@ -166,7 +166,7 @@ def vue_modifier_date_certificative(request, pk):
                     formulaire.cleaned_data["nouvelle_date"],
                     formulaire.cleaned_data["motif"],
                 )
-            except ErreurValidation as erreur:
+            except ErreurMetier as erreur:
                 messages.error(request, str(erreur))
             else:
                 messages.success(request, "Date de l'examen final modifiée.")

@@ -313,7 +313,7 @@ def test_e1_date_changee_vers_un_jour_ou_le_lieu_est_occupe_signale_le_conflit(
         examens, epreuve, cible, "Notification du 3e bureau."
     ).avertissements
 
-    assert any("déjà pris" in item for item in avertissements)
+    assert any("déjà pris" in item["message"] for item in avertissements)
     assert not LectureOrganisationEpreuve.est_complete(epreuve) or any(
         "conflits" in m for m in LectureOrganisationEpreuve.incompletudes(epreuve)
     )
@@ -325,7 +325,10 @@ def test_e2_date_changee_vers_un_jour_libre_sans_conflit(epreuve, examens, briga
         examens, epreuve, epreuve.date + datetime.timedelta(days=6), "Notification du 3e bureau."
     ).avertissements
     organisation.refresh_from_db()
-    assert not any("déjà pris" in item or "indisponible" in item for item in avertissements)
+    assert not any(
+        "déjà pris" in item["message"] or "indisponible" in item["message"]
+        for item in avertissements
+    )
     assert OrganisationEpreuve.objects.filter(pk=organisation.pk, lieu=salle).exists()
     assert Surveillance.objects.filter(organisation=organisation).exists()
 

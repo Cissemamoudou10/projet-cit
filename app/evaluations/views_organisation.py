@@ -22,7 +22,7 @@ from evaluations.services.evaluation import (
 )
 from evaluations.services.organisation import ServiceOrganisationEpreuve
 from evaluations.services.organisation_lecture import LectureOrganisationEpreuve
-from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.exceptions import ErreurIntrouvable, ErreurMetier
 from noyau.habilitations import a_permission
 
 
@@ -85,12 +85,12 @@ def vue_fixer_creneau(request, pk):
                 formulaire.cleaned_data["heure_debut"],
                 formulaire.cleaned_data["heure_fin"],
             )
-        except ErreurValidation as erreur:
+        except ErreurMetier as erreur:
             messages.error(request, str(erreur))
         else:
             messages.success(request, "Créneau enregistré.")
             for item in evaluation.avertissements:
-                messages.warning(request, item)
+                messages.warning(request, item["message"])
     else:
         messages.error(request, "Heures de créneau invalides.")
     return redirect(_url_organisation(pk))
@@ -110,7 +110,7 @@ def vue_ajouter_organisation(request, pk):
                 formulaire.cleaned_data["lieu"],
                 formulaire.cleaned_data["effectif_attendu"],
             )
-        except ErreurValidation as erreur:
+        except ErreurMetier as erreur:
             messages.error(request, str(erreur))
         else:
             messages.success(request, "Organisation ajoutée.")
@@ -125,7 +125,7 @@ def vue_retirer_organisation(request, pk):
     organisation = _organisation_ou_404(pk)
     try:
         ServiceOrganisationEpreuve.retirer_organisation(request.user, organisation)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
     else:
         messages.success(request, "Organisation retirée.")
@@ -145,7 +145,7 @@ def vue_ajouter_surveillant(request, pk):
                 instructeur=formulaire.cleaned_data["instructeur"],
                 nom_libre=formulaire.cleaned_data["nom_libre"],
             )
-        except ErreurValidation as erreur:
+        except ErreurMetier as erreur:
             messages.error(request, str(erreur))
         else:
             messages.success(request, "Surveillant ajouté.")
@@ -160,7 +160,7 @@ def vue_retirer_surveillant(request, pk):
     surveillance = _surveillance_ou_404(pk)
     try:
         ServiceOrganisationEpreuve.retirer_surveillant(request.user, surveillance)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
     else:
         messages.success(request, "Surveillant retiré.")

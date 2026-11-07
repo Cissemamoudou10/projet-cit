@@ -20,7 +20,7 @@ from django.views.decorators.http import require_POST
 from administration.habilitations import exige_habilitation
 from evaluations.services.evaluation import ServiceEvaluation
 from evaluations.services.note import PERMISSION_ECRITURE, ServiceNote
-from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.exceptions import ErreurIntrouvable, ErreurMetier
 from noyau.services import etat_transitoire
 
 
@@ -84,7 +84,7 @@ def vue_notes(request, pk):
     lignes_brutes = _lignes_depuis_post(request)
     try:
         rapport = ServiceNote.verifier(request.user, evaluation, lignes_brutes)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
         return _rendre_grille(request, evaluation, brutes=lignes_brutes)
     return render(
@@ -114,7 +114,7 @@ def vue_confirmer_notes(request, pk):
     lignes_brutes = json.loads(contenu)
     try:
         rapport = ServiceNote.confirmer(request.user, evaluation, lignes_brutes)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
     else:
         total = len(rapport.saisies) + len(rapport.absences)

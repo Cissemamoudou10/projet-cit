@@ -16,7 +16,7 @@ from evaluations.services.proces_verbal import (
     PERMISSION_LECTURE,
     ServiceProcesVerbal,
 )
-from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.exceptions import ErreurIntrouvable, ErreurMetier
 from noyau.habilitations import a_permission
 from organisation.services.session import ServiceSession
 
@@ -94,7 +94,7 @@ def vue_generer_proces_verbal(request, session_pk):
     numero = request.POST.get("numero", "")
     try:
         ServiceProcesVerbal.generer(request.user, session, type_pv, evaluation, numero)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
     else:
         messages.success(request, "Procès-verbal généré.")

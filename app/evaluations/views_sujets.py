@@ -13,7 +13,7 @@ from administration.habilitations import exige_habilitation
 from evaluations.forms import FormulaireChangerRetenu, FormulaireRetenirSujet, FormulaireSujet
 from evaluations.services.evaluation import ServiceEvaluation
 from evaluations.services.sujet import PERMISSION_ECRITURE, ServiceSujet
-from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.exceptions import ErreurIntrouvable, ErreurMetier
 
 
 def _evaluation_ou_404(pk):
@@ -61,7 +61,7 @@ def vue_sujets(request, pk):
         if formulaire.is_valid():
             try:
                 ServiceSujet.enregistrer(request.user, evaluation, formulaire.cleaned_data)
-            except ErreurValidation as erreur:
+            except ErreurMetier as erreur:
                 messages.error(request, str(erreur))
             else:
                 messages.success(request, "Sujet enregistré.")
@@ -92,7 +92,7 @@ def vue_corriger_sujet(request, pk):
     if formulaire.is_valid():
         try:
             ServiceSujet.corriger(request.user, sujet, formulaire.cleaned_data)
-        except ErreurValidation as erreur:
+        except ErreurMetier as erreur:
             messages.error(request, str(erreur))
         else:
             messages.success(request, "Sujet corrigé.")
@@ -107,7 +107,7 @@ def vue_supprimer_sujet(request, pk):
     evaluation_pk = sujet.evaluation_id
     try:
         ServiceSujet.supprimer(request.user, sujet)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
     else:
         messages.success(request, "Sujet supprimé.")
@@ -121,7 +121,7 @@ def vue_retenir_sujet(request, pk):
     confirmation = formulaire.is_valid() and formulaire.cleaned_data["confirmation"]
     try:
         ServiceSujet.retenir(request.user, sujet, confirmation=confirmation)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
     else:
         messages.success(request, "Sujet retenu.")
@@ -135,7 +135,7 @@ def vue_changer_retenu_sujet(request, pk):
     motif = formulaire.cleaned_data["motif"] if formulaire.is_valid() else ""
     try:
         ServiceSujet.changer_retenu(request.user, sujet, motif)
-    except ErreurValidation as erreur:
+    except ErreurMetier as erreur:
         messages.error(request, str(erreur))
     else:
         messages.success(request, "Sujet retenu changé.")
