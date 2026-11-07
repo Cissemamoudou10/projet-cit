@@ -81,10 +81,7 @@ def vue_sujets(request, pk):
             "formulaire_retenir": FormulaireRetenirSujet(),
             "formulaire_changer": FormulaireChangerRetenu(),
             "url_liste": reverse("evaluations:detail_evaluation", args=[pk]),
-            # B-A4, prompt 61 : décide, par sujet NON retenu, s'il propose la
-            # retenue initiale (`retenir_sujet`, rien n'est encore retenu) ou
-            # le changement (`changer_retenu_sujet`, motif obligatoire,
-            # RG-50 bis) — jamais les deux, jamais sur la ligne DÉJÀ retenue.
+            # B-A4 : decide quel formulaire (retenir / changer_retenu) la ligne non retenue propose.
             "un_sujet_retenu": any(sujet.retenu for sujet in sujets),
         },
     )

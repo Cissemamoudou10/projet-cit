@@ -262,8 +262,7 @@ def test_http_association_par_la_planification(client, partage, autre_brigade_fo
 
 
 def test_http_aucun_champ_avenant_sur_un_brouillon(client, partage):
-    """A13, prompt 61 : sur un brouillon, l'association d'une brigade ne
-    porte jamais d'avenant — les champs n'ont pas à s'afficher."""
+    """A13, prompt 61 : sur un brouillon, l'association ne porte jamais d'avenant."""
     circuit, seance, _ = partage
     client.force_login(circuit.acteurs.planificateur)
 

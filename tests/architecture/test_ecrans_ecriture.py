@@ -583,6 +583,12 @@ ECRANS_ECRITURE = [
         "noyau.evaluations_ecriture",
         lambda objets: [objets["evaluation"].pk],
     ),
+    # --- evaluations : suppression d'une évaluation (B-A2, prompt 61, D-240) ---
+    EcranEcriture(
+        "evaluations:confirmer_suppression_evaluation",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["evaluation"].pk],
+    ),
     # --- evaluations : moyennes et classement (US-EVAL-06, prompt 46) ---
     # M8 : même figure que les notes, lecture seule mais réservée à
     # evaluations_ecriture (le backlog ne nomme que la cellule examens).
@@ -700,8 +706,9 @@ ECRANS_ECRITURE = [
 # passage 45 → 47). 131 après la duplication du programme hebdomadaire
 # (prompt 48, US-PLAN-11 : un seul écran de lancement, même permission que
 # la génération, `programme_ecriture`). 132 après la suppression d'un
-# programme en brouillon (évolution du prompt 53, Temps 2).
-assert len(ECRANS_ECRITURE) == 132
+# programme en brouillon (évolution du prompt 53, Temps 2). 133 après la
+# suppression d'une évaluation (B-A2, prompt 61).
+assert len(ECRANS_ECRITURE) == 133
 
 
 def _groupes_sans(permission):

@@ -358,14 +358,6 @@ class ServiceEvaluation:
             _journaliser_modification_date(
                 agissant, evaluation, ancienne_date, nouvelle_date, motif
             )
-        # L2, prompt 61 : calculé HORS transaction, délibérément — même choix que
-        # `_avertissements_seances` (C3, « la date s'enregistre quoi qu'il arrive ») : ce sont
-        # des AVERTISSEMENTS, jamais un motif de refus, la date déjà commitée ne doit pas
-        # dépendre d'une lecture qui la suit. Le 500 du constat (B-A5) ne venait pas de cette
-        # frontière de transaction — `conflits_de_l_epreuve` est une lecture pure, qui ne lève
-        # aucune exception métier — mais du mélange dict/str corrigé ci-dessus
-        # (`conflits.py::conflits`) : une fois les deux sources uniformes, cette lecture ne
-        # peut plus échouer après l'écriture.
         evaluation.avertissements = _avertissements_seances(perimetre, nouvelle_date) + (
             conflits_de_l_epreuve(evaluation)
         )
