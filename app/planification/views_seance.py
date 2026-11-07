@@ -23,6 +23,7 @@ from planification.models import ProgrammeHebdomadaire, Seance
 from planification.selectors import (
     JOUR_SEMAINE_PAR_ISO,
     brigades_candidates_au_regroupement,
+    filtres_seance_par_element,
     formation_de_la_seance,
     grille_active_avec_creneaux,
 )
@@ -37,6 +38,12 @@ PERMISSION_ECRITURE = "noyau.programme_ecriture"
 def _retour_consultation(programme):
     url = reverse("planification:consultation_programme")
     return redirect(f"{url}?semaine={programme.lundi_de_semaine.isoformat()}")
+
+
+def _filtres_seance(formulaire):
+    """L10, prompt 61 : les éléments déjà bornés par le formulaire
+    (`formation`, prompt 58) — jamais une seconde requête non filtrée."""
+    return filtres_seance_par_element(formulaire.fields["element_referentiel"].queryset)
 
 
 def _url_modification(seance):
@@ -108,6 +115,7 @@ def modifier_seance(request, pk):
             "programme": seance.programme,
             "formulaire": formulaire,
             "avenants": seance.avenants.select_related("cree_par").order_by("cree_le"),
+            "filtres_seance": _filtres_seance(formulaire),
         },
     )
 
@@ -157,7 +165,11 @@ def ajouter_seance(request, pk):
     return render(
         request,
         "planification/ajouter_seance.html",
-        {"programme": programme, "formulaire": formulaire},
+        {
+            "programme": programme,
+            "formulaire": formulaire,
+            "filtres_seance": _filtres_seance(formulaire),
+        },
     )
 
 

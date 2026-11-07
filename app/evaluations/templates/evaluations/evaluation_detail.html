@@ -116,6 +116,12 @@
             {% endif %}
           </dd>
         </div>
+        {% if evaluation.heure_debut %}
+          <div>
+            <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Créneau</dt>
+            <dd>{{ evaluation.heure_debut|time:"H:i" }} à {{ evaluation.heure_fin|time:"H:i" }}</dd>
+          </div>
+        {% endif %}
         {% if evaluation.motif_date_passee %}
           <div>
             <dt class="text-2xs font-medium uppercase tracking-wide text-gris-lecture">Motif (date déjà passée)</dt>

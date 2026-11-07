@@ -6,3 +6,38 @@
 
 {% include "referentiel/_champ_formulaire.html" with champ=formulaire.nature_avenant %}
 {% include "referentiel/_champ_formulaire.html" with champ=formulaire.motif_avenant %}
+
+{{ filtres_seance|json_script:"filtres-seance" }}
+<script>
+  (function () {
+    // L10, prompt 61 : filtrage CÔTÉ CLIENT seulement — données déjà en page
+    // (`filtres-seance`), aucun aller-retour. Sans JavaScript, rien n'est
+    // masqué : la liste complète reste utilisable. Le serveur reste seul
+    // juge (ServiceContraintes, RG-35/RG-37).
+    var donnees = document.getElementById("filtres-seance");
+    var selecteurMatiere = document.getElementById("{{ formulaire.element_referentiel.id_for_label }}");
+    var selecteurInstructeur = document.getElementById("{{ formulaire.instructeur.id_for_label }}");
+    var selecteurLieu = document.getElementById("{{ formulaire.lieu.id_for_label }}");
+    if (!donnees || !selecteurMatiere) return;
+    var filtres = JSON.parse(donnees.textContent);
+
+    function filtrer(selecteur, pks) {
+      if (!selecteur) return;
+      Array.prototype.forEach.call(selecteur.options, function (option) {
+        // Valeur vide ("Sans lieu") et sélection déjà en place (modification
+        // d'une donnée ancienne) jamais masquées, même hors du filtre.
+        if (option.value === "" || option.selected) return;
+        option.hidden = pks !== null && pks.indexOf(parseInt(option.value, 10)) === -1;
+      });
+    }
+
+    function appliquer() {
+      var filtre = filtres[selecteurMatiere.value];
+      filtrer(selecteurInstructeur, filtre ? filtre.instructeurs : null);
+      filtrer(selecteurLieu, filtre ? filtre.lieux : null);
+    }
+
+    selecteurMatiere.addEventListener("change", appliquer);
+    appliquer();
+  })();
+</script>

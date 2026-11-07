@@ -239,3 +239,21 @@ def test_f1_la_convocation_ne_consulte_aucune_requete_sur_les_sujets(
     assert reponse.status_code == 200
     assert not [q for q in capture.captured_queries if "evaluations_sujet" in q["sql"]]
     assert "Pli F1" not in reponse.content.decode()
+
+
+def test_l12_bouton_fixer_creneau_ne_retrecit_pas_sans_style_en_ligne(
+    client, examens, certificative
+):
+    """L12, prompt 61 : le bouton débordait dans la rangée flex avec les
+    deux champs d'heure — correctif par classes de la charte (`shrink-0`,
+    `whitespace-nowrap`), jamais un `style=` en ligne."""
+    client.force_login(examens)
+
+    reponse = client.get(reverse("evaluations:organisation", args=[certificative.pk]))
+
+    contenu = reponse.content.decode()
+    debut = contenu.index(">Fixer le créneau<")
+    bouton = contenu[contenu.rindex("<button", 0, debut) : debut]
+    assert "style=" not in bouton
+    assert "shrink-0" in bouton
+    assert "whitespace-nowrap" in bouton

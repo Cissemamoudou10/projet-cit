@@ -256,3 +256,29 @@ def test_b_a1_perimetre_session_affiche_l_avertissement_a8(client, examens, sess
     )
 
     assert "Périmètre session" in reponse.content.decode("utf-8")
+
+
+# --- L11, prompt 61 — créneau affiché sur la fiche d'une épreuve -----------
+
+
+def test_l11_creneau_fixe_affiche_sur_la_fiche_de_l_evaluation(client, examens, certificative):
+    """Le créneau s'affichait déjà sur l'écran « Organisation » — jamais
+    sur la fiche de l'évaluation elle-même, qui ne montrait que la date."""
+    client.force_login(examens)
+    client.post(
+        reverse("evaluations:fixer_creneau", args=[certificative.pk]),
+        {"heure_debut": "08:00", "heure_fin": "09:45"},
+    )
+
+    reponse = client.get(reverse("evaluations:detail_evaluation", args=[certificative.pk]))
+
+    assert "08:00" in reponse.content.decode("utf-8")
+    assert "09:45" in reponse.content.decode("utf-8")
+
+
+def test_l11_sans_creneau_fixe_rien_affiche(client, examens, certificative):
+    client.force_login(examens)
+
+    reponse = client.get(reverse("evaluations:detail_evaluation", args=[certificative.pk]))
+
+    assert "Créneau" not in reponse.content.decode("utf-8")
