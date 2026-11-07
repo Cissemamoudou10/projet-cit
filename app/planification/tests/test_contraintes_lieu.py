@@ -320,10 +320,10 @@ def test_e7_mode_sequentiel_deux_brigades_meme_lieu_meme_creneau_refus_meme_regr
     suffirait — alors que ce lieu n'accueille JAMAIS de regroupement
     (RG-40), quel que soit l'horaire."""
     lieu_sequentiel = Lieu.objects.create(
-        intitule="Labo séquentiel",
+        intitule="Amphi séquentiel",
         capacite=50,
         categorie="lieu_partage",
-        type_partage="laboratoire",
+        type_partage="amphitheatre",
         mode_partage=ModePartage.SEQUENTIEL,
     )
     qualifier(cours_lieu_partage.instructeur, cours_lieu_partage.element.matiere)

@@ -227,25 +227,59 @@ def _verifier_capacite_partagee(candidate, effectif_regroupe):
     return []
 
 
+def _message_categorie_incorrecte(candidate):
+    return (
+        f"{candidate.lieu} n'est pas un lieu partagé (catégorie "
+        f"{candidate.lieu.get_categorie_display()}) : "
+        f"{candidate.element_referentiel.matiere} exige un lieu partagé."
+    )
+
+
+def _message_type_incorrect(candidate):
+    element = candidate.element_referentiel
+    return (
+        f"{candidate.lieu} est un lieu partagé de type "
+        f"{candidate.lieu.get_type_partage_display()} : {element.matiere} exige un lieu "
+        f"partagé de type {element.get_type_lieu_partage_display()}."
+    )
+
+
+def lieu_est_compatible(element, categorie_lieu, type_partage_lieu):
+    """A4/RG-37 bis (prompt 61, prompt 61 bis) : un lieu est compatible avec
+    `element` si sa catégorie réelle correspond à l'exigence de la
+    matière — et, pour un lieu partagé, si son TYPE
+    (`ressources.models.TypeLieuPartage`) correspond exactement au type
+    exigé (`element.type_lieu_partage`) : un laboratoire ne remplace
+    jamais un amphithéâtre, même partagés tous les deux. Implantation
+    UNIQUE de cette notion (`.claude/rules/python.md`, « une seule
+    implantation, dans `ServiceContraintes` ») — `planification.selectors`
+    l'importe pour le filtre d'écran (L10), jamais l'inverse. Décidé par
+    le chef de projet après RECETTE-01/02 : le type est une obligation,
+    pas un confort d'écran."""
+    if element.categorie_lieu == CategorieLieuReferentiel.AUCUN_LIEU:
+        return False
+    if element.categorie_lieu == CategorieLieuReferentiel.SALLE_ATTITREE:
+        return categorie_lieu == CategorieLieu.SALLE_ATTITREE
+    return (
+        categorie_lieu == CategorieLieu.LIEU_PARTAGE
+        and type_partage_lieu == element.type_lieu_partage
+    )
+
+
 def _verifier_categorie_reelle(candidate):
-    """A4 (RECETTE-01, prompt 61) : `_verifier_salle_attitree` compare déjà
-    `candidate.lieu` à la salle ATTENDUE de la brigade — mais rien ne
-    vérifiait, côté lieu partagé, que `candidate.lieu` est RÉELLEMENT de
-    catégorie physique `LIEU_PARTAGE` (`ressources.models.CategorieLieu`,
-    propriété du lieu — à ne pas confondre avec `categorie_lieu` du
-    référentiel, une exigence de matière). Une salle attitrée (catégorie
-    `SALLE_ATTITREE`), celle d'EXP1 ou de toute autre brigade, passait donc
-    sans jamais être refusée dès qu'elle était libre et assez grande."""
-    if candidate.lieu.categorie != CategorieLieu.LIEU_PARTAGE:
-        return [
-            violation(
-                "RG-37",
-                f"{candidate.lieu} n'est pas un lieu partagé (catégorie "
-                f"{candidate.lieu.get_categorie_display()}) : "
-                f"{candidate.element_referentiel.matiere} exige un lieu partagé.",
-            )
-        ]
-    return []
+    """A4/RG-37 bis (RECETTE-01, prompt 61) : `_verifier_salle_attitree`
+    compare déjà `candidate.lieu` à la salle ATTENDUE de la brigade — mais
+    rien ne vérifiait, côté lieu partagé, que `candidate.lieu` est
+    RÉELLEMENT de catégorie physique `LIEU_PARTAGE`
+    (`ressources.models.CategorieLieu`, propriété du lieu — à ne pas
+    confondre avec `categorie_lieu` du référentiel, une exigence de
+    matière), NI que son TYPE correspond à celui exigé par la matière."""
+    lieu = candidate.lieu
+    if lieu_est_compatible(candidate.element_referentiel, lieu.categorie, lieu.type_partage):
+        return []
+    if lieu.categorie != CategorieLieu.LIEU_PARTAGE:
+        return [violation("RG-37", _message_categorie_incorrecte(candidate))]
+    return [violation("RG-37", _message_type_incorrect(candidate))]
 
 
 def _verifier_lieu_partage(candidate, contexte, lot_acceptees):
