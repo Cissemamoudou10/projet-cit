@@ -21,6 +21,11 @@ urlpatterns = [
         name="modifier_date_certificative",
     ),
     path(
+        "evaluations/<int:pk>/supprimer/",
+        views.vue_confirmer_suppression_evaluation,
+        name="confirmer_suppression_evaluation",
+    ),
+    path(
         "evaluations/sessions/<int:session_pk>/moyennes/",
         views_moyennes.vue_moyennes,
         name="moyennes_session",

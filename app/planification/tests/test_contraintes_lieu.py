@@ -314,6 +314,11 @@ def test_e6_capacite_non_renseignee_refus_message_correctif(
 def test_e7_mode_sequentiel_deux_brigades_meme_lieu_meme_creneau_refus_meme_regroupe(
     programme, cours_lieu_partage, brigade, autre_brigade
 ):
+    """A12 (RECETTE-01, prompt 61, L4) : un regroupement visé sur un lieu
+    séquentiel était refusé à juste titre, mais sous le code RG-37 et un
+    message « déjà occupé » qui laisse croire qu'un autre horaire
+    suffirait — alors que ce lieu n'accueille JAMAIS de regroupement
+    (RG-40), quel que soit l'horaire."""
     lieu_sequentiel = Lieu.objects.create(
         intitule="Labo séquentiel",
         capacite=50,
@@ -332,7 +337,9 @@ def test_e7_mode_sequentiel_deux_brigades_meme_lieu_meme_creneau_refus_meme_regr
 
     assert verdicts[0].accepte
     assert not verdicts[1].accepte
-    assert any(v["code"] == "RG-37" for v in verdicts[1].violations)
+    violation = next(v for v in verdicts[1].violations if v["code"] == "RG-40")
+    assert "séquentiel" in violation["message"].lower()
+    assert "regroup" in violation["message"].lower()
 
 
 # --- E8 — regroupement simultané : capacité sur la somme --------------------

@@ -18,18 +18,9 @@ from evaluations.services.evaluation import (
     ServiceEvaluation,
 )
 from evaluations.services.note import PERMISSION_ECRITURE as PERMISSION_NOTES
-from noyau.exceptions import ErreurIntrouvable, ErreurValidation
+from noyau.exceptions import ErreurIntrouvable, ErreurMetier
 from noyau.habilitations import a_permission
 from noyau.pagination import paginer
-
-GROUPES_FORMULAIRE = [
-    {"legende": "Module et type", "champs": ["element_referentiel", "type"]},
-    {"legende": "Périmètre", "champs": ["session", "brigade"]},
-    {
-        "legende": "Date et contrôle à venir",
-        "champs": ["date", "creneau_type", "instructeur", "lieu", "motif_date_passee"],
-    },
-]
 
 
 def _evaluation_ou_404(pk):
@@ -113,7 +104,7 @@ def vue_creer_evaluation(request):
         if formulaire.is_valid():
             try:
                 evaluation = ServiceEvaluation.creer(request.user, formulaire.cleaned_data)
-            except ErreurValidation as erreur:
+            except ErreurMetier as erreur:
                 messages.error(request, str(erreur))
             else:
                 messages.success(request, "Évaluation créée.")
@@ -124,10 +115,9 @@ def vue_creer_evaluation(request):
         formulaire = FormulaireEvaluation()
     return render(
         request,
-        "noyau/gestion/formulaire.html",
+        "evaluations/creer_evaluation.html",
         {
             "titre": "Créer une évaluation",
-            "groupes": GROUPES_FORMULAIRE,
             "form": formulaire,
             "url_annuler": reverse("evaluations:liste_evaluations"),
             "libelle_bouton": "Créer l'évaluation",
@@ -149,6 +139,33 @@ def vue_detail_evaluation(request, pk):
             "peut_gerer_sujets": a_permission(request.user, PERMISSION_ECRITURE),
             "peut_modifier_date": a_permission(request.user, PERMISSION_ECRITURE),
             "peut_saisir_notes": a_permission(request.user, PERMISSION_NOTES),
+            "peut_supprimer": a_permission(request.user, PERMISSION_ECRITURE),
+        },
+    )
+
+
+@exige_habilitation(PERMISSION_ECRITURE)
+def vue_confirmer_suppression_evaluation(request, pk):
+    """B-A2, prompt 61 (RECETTE-02) : le service existait déjà en entier
+    (`ServiceEvaluation.supprimer`, D-240) — seule l'exposition écran
+    manquait. Confirmation explicite nommant l'évaluation et sa séance
+    (BNF-09), même patron que `referentiel::vue_confirmer_suppression_
+    objectif_pedagogique`."""
+    evaluation = _evaluation_ou_404(pk)
+    if request.method == "POST":
+        try:
+            ServiceEvaluation.supprimer(request.user, evaluation)
+        except ErreurMetier as erreur:
+            messages.error(request, str(erreur))
+            return redirect("evaluations:detail_evaluation", evaluation.pk)
+        messages.success(request, "Évaluation supprimée.")
+        return redirect("evaluations:liste_evaluations")
+    return render(
+        request,
+        "evaluations/evaluation_confirmer_suppression.html",
+        {
+            "evaluation": evaluation,
+            "url_annuler": reverse("evaluations:detail_evaluation", args=[evaluation.pk]),
         },
     )
 
@@ -166,7 +183,7 @@ def vue_modifier_date_certificative(request, pk):
                     formulaire.cleaned_data["nouvelle_date"],
                     formulaire.cleaned_data["motif"],
                 )
-            except ErreurValidation as erreur:
+            except ErreurMetier as erreur:
                 messages.error(request, str(erreur))
             else:
                 messages.success(request, "Date de l'examen final modifiée.")

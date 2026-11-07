@@ -23,6 +23,16 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-79 — Six règles d'architecture rouvertes par L1 à L7 (prompt 61), vues seulement à la suite complète
+**Date** 2026-11-07 · **Story** aucune (prompt 61, corrections L1 à L9) · **État** : résolu
+**Symptôme** — Les tests ciblés de chaque correction (L1 à L9) passaient tous, séparément. La suite complète (`tests/architecture`, lancée une seule fois en fin de partie A plutôt qu'après chaque commit) a trouvé quatre échecs qu'aucun test ciblé n'avait vus : `evaluation.py` (L2) et `views_sujets.py` (L6) repassés au-dessus de 400/40 lignes par un commentaire ou une ligne de contexte ajoutée ; `evaluations:confirmer_suppression_evaluation` (L5) absente de `ECRANS_ECRITURE` ; `test_contraintes_lieu.py` (L3) passé à 456 lignes avec les trois nouveaux tests A4.
+**Cause** — Chaque correction est restée sous ses propres limites PRISE ISOLÉMENT, mais les règles d'architecture (fichier sous 400 lignes, fonction sous 40, table `ECRANS_ECRITURE` exhaustive) sont des contraintes sur l'état FINAL du dépôt, jamais sur un commit seul — un fichier déjà proche de sa limite (ici `evaluation.py`, exactement à 400 avant toute modification) bascule au premier ajout, quelle que soit sa taille.
+**Résolution** — Commentaires raccourcis (L2, L6) sans perte d'information utile (le choix expliqué reste dans le commit) ; entrée ajoutée à `ECRANS_ECRITURE` (L5, 132 → 133) ; `test_contraintes_lieu.py` scindé en `test_contraintes_lieu_categorie.py` (L3), ses deux fixtures propres dupliquées plutôt qu'importées d'un autre fichier de test. Un commit dédié, séparé des commits L1-L2/L3-L4/L5-L6/L7 déjà faits — pas un `--amend`, pour ne jamais réécrire un commit déjà posé sans demande explicite.
+**Risque concerné** — aucun.
+**Leçon** — relancer `tests/architecture` après CHAQUE correction qui touche un fichier déjà volumineux, pas seulement en fin de lot : un fichier à 400 lignes exactement (la limite elle-même) est un signal à vérifier avant d'y toucher, pas après.
+
+---
+
 ## P-78 — `test_demonstration_j2.py` cassé par le champ `creneau` (K8, prompt 59), manqué par l'audit initial
 **Date** 2026-11-06 · **Story** aucune (prompt 59, K8) · **État** : résolu
 **Symptôme** — Suite complète (Temps 2, après feu vert) : `tests/scenarios/test_demonstration_j2.py::test_scenario_j2_du_debut_a_la_fin` échoue — `modifier_seance` (étape 5) reste en `rejete` au lieu de revenir en `brouillon` (reprise implicite T6), le POST ayant échoué silencieusement (formulaire invalide, fields inconnus ignorés par Django, jamais une 500).

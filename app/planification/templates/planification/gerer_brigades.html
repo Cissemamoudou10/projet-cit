@@ -49,8 +49,16 @@
     </label>
     <p class="text-xs text-gris-lecture">
       Une confirmation est exigée si la séance réunit déjà plusieurs brigades.
-      Un avenant est obligatoire sur un programme affiché ; sa nature n'est jamais présélectionnée.
     </p>
+    {% if programme.etat == "affiche" %}
+      {% include "referentiel/_champ_formulaire.html" with champ=formulaire.nature_avenant %}
+      {% include "referentiel/_champ_formulaire.html" with champ=formulaire.motif_avenant %}
+      <p class="text-xs text-gris-lecture">
+        Programme affiché : un avenant (nature, motif) est obligatoire pour associer une
+        brigade — sa nature n'est jamais présélectionnée. La validation et la signature ne
+        sont pas annulées.
+      </p>
+    {% endif %}
     <div>
       <button type="submit" class="inline-flex h-controle items-center border border-marine-900 bg-marine-900 px-3.5 text-sm font-semibold text-blanc hover:bg-marine-700">Associer</button>
       <a href="{% url 'planification:consultation_programme' %}?semaine={{ programme.lundi_de_semaine|date:'Y-m-d' }}" class="ml-3 text-sm text-marine-700 no-underline hover:underline">Retour au programme</a>

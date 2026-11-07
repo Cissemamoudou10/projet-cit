@@ -74,9 +74,9 @@ def _verifier_capacite(lieu, effectif):
 
 def _verifier_disponibilite(evaluation, lieu, instructeurs=()):
     """C3 / C5 : aucun conflit sur le créneau, sinon refus nommant l'occupant."""
-    messages = conflits(evaluation, {lieu.pk} if lieu else set(), set(instructeurs))
-    if messages:
-        raise ErreurValidation(" ".join(messages))
+    avertissements = conflits(evaluation, {lieu.pk} if lieu else set(), set(instructeurs))
+    if avertissements:
+        raise ErreurValidation(" ".join(item["message"] for item in avertissements))
 
 
 def _journaliser(agissant, type_action, objet_type, objet, **detail):

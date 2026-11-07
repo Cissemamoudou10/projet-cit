@@ -6,6 +6,7 @@ et la fabrique de formative de `conftest.py`.
 import datetime
 
 import pytest
+from django.urls import reverse
 
 from evaluations.models import Evaluation, OrganisationEpreuve, Sujet
 from evaluations.services.evaluation import ServiceEvaluation
@@ -87,3 +88,46 @@ def test_d3_evaluation_a_sujet_retenu_ne_se_supprime_pas(controle):
     with pytest.raises(ErreurValidation, match="sujet est retenu"):
         ServiceEvaluation.supprimer(controle.examens, evaluation)
     assert Evaluation.objects.filter(pk=evaluation.pk).exists()
+
+
+# --- HTTP (L5, prompt 61, B-A2) — écran manquant, service déjà complet ------
+
+
+def _url_confirmer(evaluation):
+    return reverse("evaluations:confirmer_suppression_evaluation", args=[evaluation.pk])
+
+
+def test_http_confirmation_nomme_l_evaluation_et_sa_seance(client, controle):
+    evaluation, seance = _seance_de_controle(controle)
+    client.force_login(controle.examens)
+
+    reponse = client.get(_url_confirmer(evaluation))
+
+    contenu = reponse.content.decode("utf-8")
+    assert str(evaluation) in contenu
+    assert str(seance.instructeur) in contenu
+
+
+def test_http_suppression_admise_efface_l_evaluation_et_sa_seance(client, controle):
+    evaluation, seance = _seance_de_controle(controle)
+    client.force_login(controle.examens)
+
+    reponse = client.post(_url_confirmer(evaluation), follow=True)
+
+    assert "Évaluation supprimée." in reponse.content.decode("utf-8")
+    assert not Evaluation.objects.filter(pk=evaluation.pk).exists()
+    assert not Seance.objects.filter(pk=seance.pk).exists()
+
+
+def test_http_suppression_refusee_si_organisee_affiche_le_message_d240(
+    client, controle, brigade, lieu
+):
+    evaluation, seance = _seance_de_controle(controle)
+    OrganisationEpreuve.objects.create(evaluation=evaluation, brigade=brigade, lieu=lieu, effectif_attendu=1)
+    client.force_login(controle.examens)
+
+    reponse = client.post(_url_confirmer(evaluation), follow=True)
+
+    assert "organisée" in reponse.content.decode("utf-8").lower()
+    assert Evaluation.objects.filter(pk=evaluation.pk).exists()
+    assert Seance.objects.filter(pk=seance.pk).exists()

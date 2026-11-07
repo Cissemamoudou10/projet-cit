@@ -1,0 +1,41 @@
+{% extends "noyau/base.html" %}
+
+{% block titre %}Supprimer une évaluation — {{ block.super }}{% endblock %}
+
+{% block contenu %}
+<dialog open aria-labelledby="titre-dialogue"
+        class="w-[520px] animate-ouvrir border border-etat-ecart bg-fond-bloc p-0
+               shadow-superpose backdrop:bg-encre/45">
+  <!-- arbitraire : w-[520px], largeur fixe de dialogue -->
+  <form method="post">
+    {% csrf_token %}
+    <p id="titre-dialogue"
+       class="flex items-center gap-2 bg-etat-ecart px-4 py-2 font-titre text-base
+              font-semibold text-blanc">
+      Supprimer « {{ evaluation }} »
+    </p>
+    <div class="px-4 py-4 text-sm">
+      <p>{{ evaluation.get_type_display }} — {% if evaluation.session_id %}session {{ evaluation.session }}{% else %}brigade {{ evaluation.brigade }}{% endif %}</p>
+      {% if evaluation.seance_id %}
+        <p class="mt-1 text-gris-lecture">
+          Sa séance — {{ evaluation.seance.debut|date:"d/m/Y H:i" }}–{{ evaluation.seance.fin|date:"H:i" }},
+          {{ evaluation.seance.instructeur }}{% if evaluation.seance.lieu %}, {{ evaluation.seance.lieu }}{% endif %} —
+          sera supprimée avec elle.
+        </p>
+      {% endif %}
+      <p class="mt-3 border border-gris-trait bg-sable px-3 py-2.5 text-xs text-gris-lecture">
+        Action définitive. Une évaluation déjà organisée, ou dont un sujet est retenu, ne se
+        supprime pas (M8) — désorganisez-la ou retirez le sujet retenu d'abord.
+      </p>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-gris-trait bg-fond-bande px-4 py-2.5">
+      <a href="{{ url_annuler }}" class="inline-flex items-center px-3.5 py-1.5 text-sm text-marine-700">
+        Annuler</a>
+      <button type="submit"
+              class="inline-flex items-center gap-2 border border-etat-ecart bg-etat-ecart
+                     px-3.5 py-1.5 text-sm font-semibold text-blanc
+                     transition-colors duration-survol hover:bg-etat-ecart-fonce">Supprimer</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

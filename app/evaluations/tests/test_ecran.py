@@ -194,3 +194,91 @@ def test_e6_formulaire_aucun_troisieme_type_propose(client, examens):
     formulaire = reponse.context["form"]
     valeurs = {valeur for valeur, _ in formulaire.fields["type"].choices}
     assert valeurs == {"formative", "certificative"}
+
+
+# --- B-A1 (L8, prompt 61) — périmètre par défaut selon le type -------------
+
+
+def test_b_a1_formative_par_defaut_brigade_visible_session_masquee_sans_js(client, examens):
+    """La valeur par défaut existe SANS JavaScript : `form.type.value` (ici
+    l'initial du champ, « formative ») décide, côté serveur, quel bloc de
+    périmètre porte `hidden` — le script ne fait que suivre un changement
+    ultérieur."""
+    client.force_login(examens)
+
+    contenu = client.get(reverse("evaluations:creer_evaluation")).content.decode("utf-8")
+
+    debut_brigade = contenu.index('data-perimetre="brigade"')
+    debut_session = contenu.index('data-perimetre="session"')
+    assert "hidden" not in contenu[debut_brigade : debut_brigade + 40]
+    assert "hidden" in contenu[debut_session : debut_session + 40]
+
+
+def test_b_a1_formulaire_invalide_reaffiche_respecte_le_type_choisi(client, examens):
+    """Un POST invalide (ici : aucune date certificative) réaffiche le
+    formulaire — `form.type.value` doit alors suivre la valeur SOUMISE
+    (certificative), pas retomber sur l'initial (formative)."""
+    client.force_login(examens)
+
+    reponse = client.post(
+        reverse("evaluations:creer_evaluation"),
+        {
+            "element_referentiel": "",
+            "type": "certificative",
+            "session": "",
+            "brigade": "",
+            "date": "",
+            "creneau_type": "",
+            "instructeur": "",
+            "lieu": "",
+            "motif_date_passee": "",
+        },
+    )
+
+    contenu = reponse.content.decode("utf-8")
+    debut_brigade = contenu.index('data-perimetre="brigade"')
+    debut_session = contenu.index('data-perimetre="session"')
+    assert "hidden" in contenu[debut_brigade : debut_brigade + 40]
+    assert "hidden" not in contenu[debut_session : debut_session + 40]
+
+
+def test_b_a1_perimetre_session_affiche_l_avertissement_a8(client, examens, session, element_referentiel):
+    """Le mécanisme serveur (`_avertissements`, A8) existait déjà et était
+    déjà testé au niveau service (`test_b5_...`) — ce test confirme qu'il
+    remonte réellement jusqu'à l'écran de création, preuve manquante avant
+    cette story (B-A1 notait « aucun avertissement ne s'affiche »)."""
+    client.force_login(examens)
+
+    reponse = client.post(
+        reverse("evaluations:creer_evaluation"),
+        _donnees_certificative(element_referentiel, session),
+        follow=True,
+    )
+
+    assert "Périmètre session" in reponse.content.decode("utf-8")
+
+
+# --- L11, prompt 61 — créneau affiché sur la fiche d'une épreuve -----------
+
+
+def test_l11_creneau_fixe_affiche_sur_la_fiche_de_l_evaluation(client, examens, certificative):
+    """Le créneau s'affichait déjà sur l'écran « Organisation » — jamais
+    sur la fiche de l'évaluation elle-même, qui ne montrait que la date."""
+    client.force_login(examens)
+    client.post(
+        reverse("evaluations:fixer_creneau", args=[certificative.pk]),
+        {"heure_debut": "08:00", "heure_fin": "09:45"},
+    )
+
+    reponse = client.get(reverse("evaluations:detail_evaluation", args=[certificative.pk]))
+
+    assert "08:00" in reponse.content.decode("utf-8")
+    assert "09:45" in reponse.content.decode("utf-8")
+
+
+def test_l11_sans_creneau_fixe_rien_affiche(client, examens, certificative):
+    client.force_login(examens)
+
+    reponse = client.get(reverse("evaluations:detail_evaluation", args=[certificative.pk]))
+
+    assert "Créneau" not in reponse.content.decode("utf-8")

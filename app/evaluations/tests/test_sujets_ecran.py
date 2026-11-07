@@ -108,6 +108,55 @@ def test_e1_deux_sujets_puis_retenue_par_la_cellule_examens(client, examens, cer
     assert EntreeJournal.objects.filter(type_action=TypeAction.SELECTION_SUJET).exists()
 
 
+def test_b_a4_changer_retenu_sujet_cible_le_sujet_non_retenu(client, examens, certificative):
+    """B-A4, prompt 61 (RECETTE-02) : le formulaire « changer_retenu_sujet »
+    doit cibler le sujet NON retenu — avant cette correction, il ciblait le
+    sujet déjà retenu (self-référentiel, sans effet utile), la retenue
+    restait bloquée sur le premier choix malgré un second sujet
+    disponible."""
+    client.force_login(examens)
+    url = reverse("evaluations:sujets", args=[certificative.pk])
+    client.post(url, {"reference": "Pli A", "date_depot": timezone.localdate().isoformat()})
+    client.post(url, {"reference": "Pli B", "date_depot": timezone.localdate().isoformat()})
+    sujet_a = certificative.sujets.get(rang=1)
+    sujet_b = certificative.sujets.get(rang=2)
+    client.post(reverse("evaluations:retenir_sujet", args=[sujet_a.pk]), {})
+
+    contenu = client.get(url).content.decode()
+    assert reverse("evaluations:changer_retenu_sujet", args=[sujet_b.pk]) in contenu
+    assert reverse("evaluations:changer_retenu_sujet", args=[sujet_a.pk]) not in contenu
+
+    reponse = client.post(
+        reverse("evaluations:changer_retenu_sujet", args=[sujet_b.pk]),
+        {"motif": "Pli A jugé incomplet par la commission."},
+        follow=True,
+    )
+
+    assert "Sujet retenu changé." in reponse.content.decode()
+    sujet_a.refresh_from_db()
+    sujet_b.refresh_from_db()
+    assert sujet_a.retenu is False
+    assert sujet_b.retenu is True
+
+
+def test_b_a4_motif_obligatoire_pour_changer_le_sujet_retenu(client, examens, certificative):
+    client.force_login(examens)
+    url = reverse("evaluations:sujets", args=[certificative.pk])
+    client.post(url, {"reference": "Pli A", "date_depot": timezone.localdate().isoformat()})
+    client.post(url, {"reference": "Pli B", "date_depot": timezone.localdate().isoformat()})
+    sujet_a = certificative.sujets.get(rang=1)
+    sujet_b = certificative.sujets.get(rang=2)
+    client.post(reverse("evaluations:retenir_sujet", args=[sujet_a.pk]), {})
+
+    reponse = client.post(
+        reverse("evaluations:changer_retenu_sujet", args=[sujet_b.pk]), {"motif": ""}, follow=True
+    )
+
+    assert "motif est obligatoire" in reponse.content.decode().lower()
+    sujet_a.refresh_from_db()
+    assert sujet_a.retenu is True
+
+
 def test_corriger_sujet_atteignable_depuis_l_ecran_et_ecrit_reellement(
     client, examens, certificative
 ):

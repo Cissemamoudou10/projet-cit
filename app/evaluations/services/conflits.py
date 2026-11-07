@@ -7,8 +7,11 @@ de requêtes constant, quel que soit le nombre de lieux et de surveillants.
 
 from evaluations.models import OrganisationEpreuve, Surveillance
 from noyau.intervalles import instant_de, se_recouvrent
+from noyau.services.gestion import avertissement
 from planification.selectors_occupation import seances_occupant_instructeurs, seances_occupant_lieux
 from ressources.selectors import indisponibilites_des_instructeurs, indisponibilites_des_lieux
+
+CODE = "A9"
 
 
 def creneau_de(evaluation):
@@ -84,16 +87,21 @@ def _conflits_autres_epreuves(evaluation, lieux, instructeurs, debut, fin):
 
 
 def conflits(evaluation, lieux, instructeurs) -> list:
-    """Messages de conflit pour des lieux et des instructeurs visés sur le créneau
-    de `evaluation`. Vide : rien ne s'oppose. Ne lit pas les organisations de
-    l'épreuve elle-même : c'est à l'appelant de passer ce qu'il veut vérifier."""
+    """Avertissements `{"code", "message"}` (L2, prompt 61 — même forme que
+    `ServiceGestion._avertissements`, jamais une liste de chaînes brutes :
+    tout appelant qui compose `evaluation.avertissements` à partir de
+    plusieurs sources doit pouvoir les traiter de façon uniforme) pour des
+    lieux et des instructeurs visés sur le créneau de `evaluation`. Vide :
+    rien ne s'oppose. Ne lit pas les organisations de l'épreuve elle-même :
+    c'est à l'appelant de passer ce qu'il veut vérifier."""
     if evaluation.heure_debut is None:
         return []
     lieux, instructeurs = set(lieux), set(instructeurs)
     debut, fin = creneau_de(evaluation)
-    return _conflits_sources(lieux, instructeurs, debut, fin) + _conflits_autres_epreuves(
+    messages = _conflits_sources(lieux, instructeurs, debut, fin) + _conflits_autres_epreuves(
         evaluation, lieux, instructeurs, debut, fin
     )
+    return [avertissement(CODE, message) for message in messages]
 
 
 def conflits_de_l_epreuve(evaluation) -> list:

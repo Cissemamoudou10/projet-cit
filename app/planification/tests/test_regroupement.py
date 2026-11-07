@@ -113,12 +113,16 @@ def test_capacite_depassee_est_refusee_avec_l_ecart(partage, autre_brigade_forma
 
 
 def test_lieu_non_partageable_est_refuse(partage, autre_brigade_formation):
+    """A12 (RECETTE-01, prompt 61, L4) : un mode de partage non renseigné
+    reste traité au moins aussi restrictivement qu'un lieu séquentiel —
+    RG-40, pas RG-37 (qui laisserait croire qu'un autre horaire
+    suffirait)."""
     circuit, seance, _ = partage
     seance.lieu.mode_partage = None
     seance.lieu.save()
     affecter_stagiaires(circuit.acteurs.pedagogique, autre_brigade_formation, 5, prefixe="N")
 
-    with pytest.raises(ErreurValidation, match="RG-37"):
+    with pytest.raises(ErreurValidation, match="RG-40"):
         ServiceEcritureSeance.associer_brigades(
             circuit.acteurs.planificateur, seance, [autre_brigade_formation]
         )
@@ -257,6 +261,57 @@ def test_http_association_par_la_planification(client, partage, autre_brigade_fo
     assert LigneProgramme.objects.filter(seance=seance, brigade=autre_brigade_formation).exists()
 
 
+def test_http_aucun_champ_avenant_sur_un_brouillon(client, partage):
+    """A13, prompt 61 : sur un brouillon, l'association ne porte jamais d'avenant."""
+    circuit, seance, _ = partage
+    client.force_login(circuit.acteurs.planificateur)
+
+    contenu = client.get(_url_brigades(seance)).content.decode("utf-8")
+
+    assert "nature_avenant" not in contenu
+    assert "motif_avenant" not in contenu
+
+
+def test_http_champs_avenant_affiches_et_association_avec_avenant_sur_un_affiche(
+    client, partage, autre_brigade_formation
+):
+    """A13, prompt 61 (RECETTE-01, R01-PLAN06-08) : sur un programme
+    affiché, l'écran « Brigades » de la séance propose désormais les
+    champs nature/motif d'avenant — la seule pièce manquante, le
+    formulaire (`ChampsAvenantMixin`) et le service (`associer_brigades`)
+    les portaient déjà. Sans eux, l'association était refusée sans aucun
+    moyen de la mener à bien depuis l'écran."""
+    circuit, seance, _ = partage
+    affecter_stagiaires(circuit.acteurs.pedagogique, autre_brigade_formation, 5, prefixe="N")
+    amener_a(EtatProgramme.AFFICHE, circuit)
+    client.force_login(circuit.acteurs.planificateur)
+
+    contenu = client.get(_url_brigades(seance)).content.decode("utf-8")
+    assert "nature_avenant" in contenu
+    assert "motif_avenant" in contenu
+
+    refus = client.post(
+        _url_brigades(seance), {"brigades": [autre_brigade_formation.pk]}, follow=True
+    )
+    assert "portez un avenant" in refus.content.decode("utf-8").lower()
+    assert not LigneProgramme.objects.filter(seance=seance, brigade=autre_brigade_formation).exists()
+
+    admis = client.post(
+        _url_brigades(seance),
+        {
+            "brigades": [autre_brigade_formation.pk],
+            "nature_avenant": NatureAvenant.AJOUT,
+            "motif_avenant": "Rattrapage en commun.",
+        },
+        follow=True,
+    )
+    assert "Brigades associées à la séance." in admis.content.decode("utf-8")
+    assert LigneProgramme.objects.filter(seance=seance, brigade=autre_brigade_formation).exists()
+    circuit.programme.refresh_from_db()
+    assert circuit.programme.etat == EtatProgramme.AFFICHE
+    assert Avenant.objects.filter(seance=seance, nature=NatureAvenant.AJOUT).exists()
+
+
 def test_http_association_par_la_pedagogique_est_refusee_403(client, partage, autre_brigade_formation):
     circuit, seance, _ = partage
     affecter_stagiaires(circuit.acteurs.pedagogique, autre_brigade_formation, 5, prefixe="N")
@@ -283,6 +338,26 @@ def test_http_brigade_hors_referentiel_non_proposee(client, partage, brigade_aut
     reponse = client.get(_url_brigades(seance))
 
     assert brigade_autre_session.designation.encode() not in reponse.content
+
+
+def test_http_aucune_candidate_proposee_pour_un_lieu_sequentiel(
+    client, partage, autre_brigade_formation
+):
+    """A12 (RECETTE-01, prompt 61, L4) : un lieu séquentiel (RG-40)
+    n'accueille jamais de regroupement — le formulaire ne propose plus
+    `autre_brigade_formation`, pourtant libre et qualifiée (elle est la
+    candidate du test `test_association_admise_une_seule_seance_deux_
+    lignes` sur ce même lieu, redevenu simultané)."""
+    from ressources.models import ModePartage
+
+    circuit, seance, _ = partage
+    seance.lieu.mode_partage = ModePartage.SEQUENTIEL
+    seance.lieu.save()
+    client.force_login(circuit.acteurs.planificateur)
+
+    reponse = client.get(_url_brigades(seance))
+
+    assert autre_brigade_formation.designation.encode() not in reponse.content
 
 
 def test_http_liste_des_brigades_candidates_en_nombre_de_requetes_constant(client, partage, autre_brigade_formation):

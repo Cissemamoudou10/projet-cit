@@ -14,19 +14,19 @@ jamais une autorisation implicite de simultanéité.
 
 from noyau.intervalles import se_recouvrent
 from planification.services.violations import violation
-from referentiel.models import CategorieLieu
-from ressources.models import ModePartage
+from referentiel.models import CategorieLieu as CategorieLieuReferentiel
+from ressources.models import CategorieLieu, ModePartage
 
 
 def verifier_rg37(candidate, contexte, lot_acceptees):
     violations = _verifier_epreuves_lieu(candidate, contexte)
-    if candidate.element_referentiel.categorie_lieu == CategorieLieu.AUCUN_LIEU:
+    if candidate.element_referentiel.categorie_lieu == CategorieLieuReferentiel.AUCUN_LIEU:
         return violations
     return violations + _verifier_categorie(candidate, contexte, lot_acceptees)
 
 
 def _verifier_categorie(candidate, contexte, lot_acceptees):
-    if candidate.element_referentiel.categorie_lieu == CategorieLieu.SALLE_ATTITREE:
+    if candidate.element_referentiel.categorie_lieu == CategorieLieuReferentiel.SALLE_ATTITREE:
         return _verifier_salle_attitree(candidate, contexte)
     return _verifier_lieu_partage(candidate, contexte, lot_acceptees)
 
@@ -36,7 +36,9 @@ def _verifier_epreuves_lieu(candidate, contexte):
     comme par une séance. Le lieu visé est celui de la candidate, ou la salle
     attitrée de sa brigade à défaut."""
     lieu = candidate.lieu
-    if lieu is None and candidate.element_referentiel.categorie_lieu != CategorieLieu.AUCUN_LIEU:
+    if lieu is None and (
+        candidate.element_referentiel.categorie_lieu != CategorieLieuReferentiel.AUCUN_LIEU
+    ):
         lieu = contexte.salles_attitrees.get(candidate.brigade.pk)
     if lieu is None:
         return []
@@ -150,11 +152,30 @@ def _occupants_du_lieu(candidate, contexte, lot_acceptees):
     return occupants
 
 
+def _message_regroupement_sequentiel(candidate, libelle, mode):
+    motif = (
+        "il est séquentiel"
+        if mode == ModePartage.SEQUENTIEL
+        else "son mode de partage n'est pas renseigné, traité au moins aussi restrictivement"
+    )
+    return (
+        f"{candidate.lieu} n'accueille pas ce regroupement (RG-40) : {motif}, il n'accueille "
+        f"les brigades que l'une après l'autre, jamais regroupées — {libelle} y est déjà le "
+        f"{candidate.debut:%d/%m %H:%M}–{candidate.fin:%H:%M}."
+    )
+
+
 def _verifier_occupation(candidate, contexte, occupants, mode):
     """Rend `(violations, effectif_regroupe)` : une occupation non
     conciliable (pas le même regroupement, ou lieu séquentiel/mode
     inconnu) refuse immédiatement ; un regroupement simultané valide
-    ajoute son effectif au total à comparer à la capacité."""
+    ajoute son effectif au total à comparer à la capacité.
+
+    A12 (RECETTE-01, prompt 61, L4) : un regroupement visé sur un lieu
+    séquentiel (même `cle_regroupement`, mode PAS simultané) n'est pas une
+    occupation ordinaire — le message doit nommer RG-40 (le lieu n'accueille
+    jamais de regroupement), jamais RG-37 (« déjà occupé »), qui laisse
+    croire qu'un autre horaire suffirait."""
     effectif_regroupe = contexte.effectifs_reels.get(candidate.brigade.pk, 0)
     for occupant, origine in occupants:
         meme_regroupement = (
@@ -166,6 +187,11 @@ def _verifier_occupation(candidate, contexte, occupants, mode):
             effectif_regroupe += effectif_occupant
             continue
         libelle, _ = _occupant_brigade_et_effectif(contexte, occupant)
+        if meme_regroupement:
+            return (
+                [violation("RG-40", _message_regroupement_sequentiel(candidate, libelle, mode))],
+                effectif_regroupe,
+            )
         return (
             [
                 violation(
@@ -201,7 +227,31 @@ def _verifier_capacite_partagee(candidate, effectif_regroupe):
     return []
 
 
+def _verifier_categorie_reelle(candidate):
+    """A4 (RECETTE-01, prompt 61) : `_verifier_salle_attitree` compare déjà
+    `candidate.lieu` à la salle ATTENDUE de la brigade — mais rien ne
+    vérifiait, côté lieu partagé, que `candidate.lieu` est RÉELLEMENT de
+    catégorie physique `LIEU_PARTAGE` (`ressources.models.CategorieLieu`,
+    propriété du lieu — à ne pas confondre avec `categorie_lieu` du
+    référentiel, une exigence de matière). Une salle attitrée (catégorie
+    `SALLE_ATTITREE`), celle d'EXP1 ou de toute autre brigade, passait donc
+    sans jamais être refusée dès qu'elle était libre et assez grande."""
+    if candidate.lieu.categorie != CategorieLieu.LIEU_PARTAGE:
+        return [
+            violation(
+                "RG-37",
+                f"{candidate.lieu} n'est pas un lieu partagé (catégorie "
+                f"{candidate.lieu.get_categorie_display()}) : "
+                f"{candidate.element_referentiel.matiere} exige un lieu partagé.",
+            )
+        ]
+    return []
+
+
 def _verifier_lieu_partage(candidate, contexte, lot_acceptees):
+    categorie = _verifier_categorie_reelle(candidate)
+    if categorie:
+        return categorie
     indisponibilite = _verifier_indisponibilite(candidate, contexte, candidate.lieu)
     if indisponibilite:
         return indisponibilite

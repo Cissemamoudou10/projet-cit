@@ -22,7 +22,16 @@ from noyau.intervalles import filtre_recouvrement
 from organisation.models import Brigade
 from organisation.services.session import ServiceSession
 from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
-from ressources.models import CreneauType, GrilleHoraire, Instructeur, Lieu
+from referentiel.models import CategorieLieu as CategorieLieuReferentiel
+from ressources.models import (
+    CategorieLieu,
+    CreneauType,
+    GrilleHoraire,
+    Instructeur,
+    Lieu,
+    ModePartage,
+    Qualification,
+)
 
 JOUR_SEMAINE_PAR_ISO = {
     "lundi": 1,
@@ -209,6 +218,48 @@ def lieux_pour_choix() -> list[tuple[int, str]]:
     )
 
 
+def _lieux_compatibles(element, lieux):
+    if element.categorie_lieu == CategorieLieuReferentiel.AUCUN_LIEU:
+        return []
+    if element.categorie_lieu == CategorieLieuReferentiel.SALLE_ATTITREE:
+        return [pk for pk, categorie, _ in lieux if categorie == CategorieLieu.SALLE_ATTITREE]
+    return [
+        pk
+        for pk, categorie, type_partage in lieux
+        if categorie == CategorieLieu.LIEU_PARTAGE and type_partage == element.type_lieu_partage
+    ]
+
+
+def filtres_seance_par_element(elements):
+    """L10, prompt 61 (listes filtrées, demandée en RECETTE-01 et 02) :
+    pour chaque élément, les instructeurs qualifiés de sa matière et les
+    lieux compatibles avec sa catégorie — embarqué en page pour un
+    filtrage CÔTÉ CLIENT des listes instructeur/lieu du formulaire de
+    séance, sans aller-retour serveur ; `ServiceContraintes` (RG-35,
+    RG-37) reste seule juge. Deux requêtes fixes, quel que soit le nombre
+    d'éléments (`.claude/rules/python.md`) — approximation délibérée pour
+    une salle attitrée : la brigade n'étant pas toujours connue au moment
+    du choix (ajout manuel), toute salle attitrée du catalogue est
+    proposée, pas seulement celle de la brigade visée."""
+    elements = list(elements)
+    if not elements:
+        return {}
+    matieres_pks = {element.matiere_id for element in elements}
+    instructeurs_par_matiere = {}
+    for matiere_pk, instructeur_pk in Qualification.objects.filter(
+        matiere_id__in=matieres_pks, instructeur__archive=False
+    ).values_list("matiere_id", "instructeur_id"):
+        instructeurs_par_matiere.setdefault(matiere_pk, []).append(instructeur_pk)
+    lieux = list(Lieu.objects.filter(archive=False).values_list("pk", "categorie", "type_partage"))
+    return {
+        element.pk: {
+            "instructeurs": instructeurs_par_matiere.get(element.matiere_id, []),
+            "lieux": _lieux_compatibles(element, lieux),
+        }
+        for element in elements
+    }
+
+
 def seances_recouvertes(brigades, debut, fin):
     """A7, Prompt 36 : signalement de C5, jamais une suppression — rend les
     séances des brigades données qui recouvrent `[debut, fin)`, programme et
@@ -248,7 +299,11 @@ def brigades_candidates_au_regroupement(seance):
     (prompt 58, RECETTE-01 A6 a — une brigade dont la formation ne porte
     pas cet élément n'a jamais eu de raison d'y figurer) — en un nombre de
     requêtes constant, quel que soit le nombre de brigades candidates
-    (CU-P5-04, étape 2)."""
+    (CU-P5-04, étape 2). A12 (RECETTE-01, prompt 61, L4) : un lieu
+    séquentiel (RG-40) n'accueille jamais de regroupement, quelle que soit
+    la brigade visée — aucune candidate n'est jamais proposée."""
+    if seance.lieu is not None and seance.lieu.mode_partage == ModePartage.SEQUENTIEL:
+        return Brigade.objects.none()
     deja = LigneProgramme.objects.filter(seance=seance).values_list("brigade_id", flat=True)
     occupees = (
         LigneProgramme.objects.filter(
