@@ -241,9 +241,60 @@ def _verifier_evaluations_complet():
     return _verifier_evaluations_existent() + _verifier_organisation_e3() + _verifier_notes()
 
 
+def _heures_par_jour_de_la_grille_active():
+    from planification.selectors import JOUR_SEMAINE_PAR_ISO, grille_active_avec_creneaux
+
+    _, creneaux = grille_active_avec_creneaux()
+    heures_par_jour = {}
+    for creneau in creneaux:
+        jour_iso = JOUR_SEMAINE_PAR_ISO[creneau.jour_semaine]
+        heures_par_jour.setdefault(jour_iso, set()).add((creneau.heure_debut, creneau.heure_fin))
+    return heures_par_jour
+
+
+def _verifier_hors_grille():
+    """L9, prompt 61 (RECETTE-02, données) : aucune séance ni épreuve
+    certificative organisée (heure_debut renseignée) du jeu ne doit être
+    hors grille — même défaut que celui corrigé pour E3 (créneau
+    08:00-10:00, remplacé par 08:00-09:45, le premier créneau réel de la
+    grille Ordinaire)."""
+    from planification.models import Seance
+
+    heures_par_jour = _heures_par_jour_de_la_grille_active()
+
+    seances_hors_grille = []
+    for seance in Seance.objects.all():
+        debut_local = timezone.localtime(seance.debut)
+        paire = (debut_local.time(), timezone.localtime(seance.fin).time())
+        if paire not in heures_par_jour.get(debut_local.isoweekday(), set()):
+            seances_hors_grille.append(seance.pk)
+
+    epreuves_hors_grille = [
+        evaluation.pk
+        for evaluation in Evaluation.objects.filter(heure_debut__isnull=False)
+        if (evaluation.heure_debut, evaluation.heure_fin)
+        not in heures_par_jour.get(evaluation.date.isoweekday(), set())
+    ]
+
+    lignes = _ligne(
+        not seances_hors_grille,
+        "Aucune séance hors grille"
+        if not seances_hors_grille
+        else f"{len(seances_hors_grille)} séance(s) hors grille (pk {seances_hors_grille})",
+    )
+    lignes += _ligne(
+        not epreuves_hors_grille,
+        "Aucune épreuve hors grille"
+        if not epreuves_hors_grille
+        else f"{len(epreuves_hors_grille)} épreuve(s) hors grille (pk {epreuves_hors_grille})",
+    )
+    return lignes
+
+
 def _verifier_suivi_complet():
     lignes = []
     lignes += _ligne(
         NonExecution.objects.count() >= 2, "Au moins 2 non-exécutions déclarées (§ 2.6)"
     )
+    lignes += _verifier_hors_grille()
     return lignes

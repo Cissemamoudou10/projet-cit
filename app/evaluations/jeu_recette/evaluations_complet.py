@@ -107,10 +107,14 @@ def _creer_evaluation_e3(contexte, session_s1):
 
 
 def _organiser_evaluation_e3(contexte, evaluation):
+    """L9, prompt 61 (RECETTE-02, données) : 08:00-09:45, le premier
+    créneau RÉEL de la grille Ordinaire (`initialiser_grilles_horaires`)
+    — 08:00-10:00 ne correspondait à aucun créneau, `--verifier` le
+    signale désormais (`_verifier_hors_grille`)."""
     from evaluations.services.organisation import ServiceOrganisationEpreuve
 
     ServiceOrganisationEpreuve.fixer_creneau(
-        contexte.agissant_examens, evaluation, datetime.time(8, 0), datetime.time(10, 0)
+        contexte.agissant_examens, evaluation, datetime.time(8, 0), datetime.time(9, 45)
     )
     organisation_exp1 = ServiceOrganisationEpreuve.ajouter_organisation(
         contexte.agissant_examens,
