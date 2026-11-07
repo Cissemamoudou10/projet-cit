@@ -46,6 +46,7 @@ class FormulaireEvaluation(forms.Form):
     )
     type = forms.ChoiceField(
         choices=TypeEvaluation.choices,
+        initial=TypeEvaluation.FORMATIVE,
         label="Type",
         widget=forms.Select(attrs={"class": CLASSES_LISTE_DEROULANTE}),
     )

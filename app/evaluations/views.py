@@ -22,15 +22,6 @@ from noyau.exceptions import ErreurIntrouvable, ErreurMetier
 from noyau.habilitations import a_permission
 from noyau.pagination import paginer
 
-GROUPES_FORMULAIRE = [
-    {"legende": "Module et type", "champs": ["element_referentiel", "type"]},
-    {"legende": "Périmètre", "champs": ["session", "brigade"]},
-    {
-        "legende": "Date et contrôle à venir",
-        "champs": ["date", "creneau_type", "instructeur", "lieu", "motif_date_passee"],
-    },
-]
-
 
 def _evaluation_ou_404(pk):
     try:
@@ -124,10 +115,9 @@ def vue_creer_evaluation(request):
         formulaire = FormulaireEvaluation()
     return render(
         request,
-        "noyau/gestion/formulaire.html",
+        "evaluations/creer_evaluation.html",
         {
             "titre": "Créer une évaluation",
-            "groupes": GROUPES_FORMULAIRE,
             "form": formulaire,
             "url_annuler": reverse("evaluations:liste_evaluations"),
             "libelle_bouton": "Créer l'évaluation",
