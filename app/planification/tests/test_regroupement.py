@@ -261,6 +261,58 @@ def test_http_association_par_la_planification(client, partage, autre_brigade_fo
     assert LigneProgramme.objects.filter(seance=seance, brigade=autre_brigade_formation).exists()
 
 
+def test_http_aucun_champ_avenant_sur_un_brouillon(client, partage):
+    """A13, prompt 61 : sur un brouillon, l'association d'une brigade ne
+    porte jamais d'avenant — les champs n'ont pas à s'afficher."""
+    circuit, seance, _ = partage
+    client.force_login(circuit.acteurs.planificateur)
+
+    contenu = client.get(_url_brigades(seance)).content.decode("utf-8")
+
+    assert "nature_avenant" not in contenu
+    assert "motif_avenant" not in contenu
+
+
+def test_http_champs_avenant_affiches_et_association_avec_avenant_sur_un_affiche(
+    client, partage, autre_brigade_formation
+):
+    """A13, prompt 61 (RECETTE-01, R01-PLAN06-08) : sur un programme
+    affiché, l'écran « Brigades » de la séance propose désormais les
+    champs nature/motif d'avenant — la seule pièce manquante, le
+    formulaire (`ChampsAvenantMixin`) et le service (`associer_brigades`)
+    les portaient déjà. Sans eux, l'association était refusée sans aucun
+    moyen de la mener à bien depuis l'écran."""
+    circuit, seance, _ = partage
+    affecter_stagiaires(circuit.acteurs.pedagogique, autre_brigade_formation, 5, prefixe="N")
+    amener_a(EtatProgramme.AFFICHE, circuit)
+    client.force_login(circuit.acteurs.planificateur)
+
+    contenu = client.get(_url_brigades(seance)).content.decode("utf-8")
+    assert "nature_avenant" in contenu
+    assert "motif_avenant" in contenu
+
+    refus = client.post(
+        _url_brigades(seance), {"brigades": [autre_brigade_formation.pk]}, follow=True
+    )
+    assert "portez un avenant" in refus.content.decode("utf-8").lower()
+    assert not LigneProgramme.objects.filter(seance=seance, brigade=autre_brigade_formation).exists()
+
+    admis = client.post(
+        _url_brigades(seance),
+        {
+            "brigades": [autre_brigade_formation.pk],
+            "nature_avenant": NatureAvenant.AJOUT,
+            "motif_avenant": "Rattrapage en commun.",
+        },
+        follow=True,
+    )
+    assert "Brigades associées à la séance." in admis.content.decode("utf-8")
+    assert LigneProgramme.objects.filter(seance=seance, brigade=autre_brigade_formation).exists()
+    circuit.programme.refresh_from_db()
+    assert circuit.programme.etat == EtatProgramme.AFFICHE
+    assert Avenant.objects.filter(seance=seance, nature=NatureAvenant.AJOUT).exists()
+
+
 def test_http_association_par_la_pedagogique_est_refusee_403(client, partage, autre_brigade_formation):
     circuit, seance, _ = partage
     affecter_stagiaires(circuit.acteurs.pedagogique, autre_brigade_formation, 5, prefixe="N")
