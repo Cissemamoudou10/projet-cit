@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from noyau.services.parametres import ResolveurSeancesDeControle
 from planification.generation.candidats import periode_bloquante
-from planification.models import LigneProgramme
+from planification.models import Avenant, LigneProgramme
 from planification.selectors import JOUR_SEMAINE_PAR_ISO
 from planification.selectors_suivi import non_executions_des_lignes
 from planification.services.contraintes import charger_periodes_bloquantes
@@ -34,6 +34,7 @@ class CelluleProgramme:
     non_execution: object = None
     evenement_bloquant: object = None
     chevauchements: tuple = ()
+    porte_avenant: bool = False
 
     @property
     def seance(self):
@@ -121,6 +122,7 @@ class _ContexteGrille:
     controles: set
     non_executions: dict
     periodes_bloquantes: list
+    avenants: set
 
 
 def _cellules_de_la_brigade(brigade, creneaux, contexte):
@@ -150,9 +152,29 @@ def _cellules_de_la_brigade(brigade, creneaux, contexte):
                 non_execution=contexte.non_executions.get(ligne.pk) if ligne else None,
                 evenement_bloquant=evenement,
                 chevauchements=tuple(lignes[1:]),
+                porte_avenant=ligne.seance_id in contexte.avenants if ligne else False,
             )
         )
     return cellules
+
+
+def _heures_grille(creneaux):
+    return {creneau.heure_debut for creneau in creneaux}
+
+
+def _hors_grille_de_la_brigade(brigade, jour_iso, heures_grille, contexte):
+    """K8, prompt 59 (RECETTE-01 A2) : les lignes de `brigade` ce jour dont
+    l'heure ne correspond à AUCUN créneau de la grille active — jamais
+    invisibles (données anciennes, duplication depuis une autre grille,
+    grille changée en cours de semaine, y compris un jour où la grille
+    active ne porte ce jour-là AUCUN créneau du tout : `jour_iso` vient du
+    jour consulté, jamais de `creneaux` qui peut être vide dans ce cas —
+    voir `grille_consultation`)."""
+    resultat = []
+    for (brigade_pk, jour, heure), lignes in contexte.par_brigade_horaire.items():
+        if brigade_pk == brigade.pk and jour == jour_iso and heure not in heures_grille:
+            resultat.extend(lignes)
+    return resultat
 
 
 def _par_brigade_horaire(lignes_qs):
@@ -168,6 +190,16 @@ def _par_brigade_horaire(lignes_qs):
     return par_brigade_horaire
 
 
+def _seances_avec_avenant(lignes_qs):
+    """K9, prompt 59 (RECETTE-01 A5) : les séances de la semaine affichée qui
+    portent au moins un avenant — une requête pour toute la grille, jamais
+    une par cellule (`.claude/rules/python.md`)."""
+    identifiants = {ligne.seance_id for ligne in lignes_qs}
+    if not identifiants:
+        return set()
+    return set(Avenant.objects.filter(seance_id__in=identifiants).values_list("seance_id", flat=True))
+
+
 def _contexte_grille(programme, creneaux, lignes_qs):
     jour, bornes_jour = _bornes_creneaux(programme, creneaux)
     return _ContexteGrille(
@@ -177,17 +209,25 @@ def _contexte_grille(programme, creneaux, lignes_qs):
         controles=ResolveurSeancesDeControle.resoudre({ligne.seance_id for ligne in lignes_qs}),
         non_executions=non_executions_des_lignes([ligne.pk for ligne in lignes_qs]),
         periodes_bloquantes=charger_periodes_bloquantes(*bornes_jour) if jour else [],
+        avenants=_seances_avec_avenant(lignes_qs),
     )
 
 
-def grille_consultation(programme, creneaux, brigades):
+def grille_consultation(programme, creneaux, brigades, jour_actif):
     """Groupée par type de formation, une ligne par brigade, une colonne
     par créneau (§ 9) — `creneaux` porte déjà UN SEUL JOUR, sélectionné par
     la vue (onglets), pour tenir en largeur (jamais les sept jours à la
     fois). R00B-GEN-06 : un créneau bloqué par une période du calendrier
-    (US-PLAN-04) porte désormais l'événement — voir `_cellules_de_la_brigade`."""
+    (US-PLAN-04) porte désormais l'événement — voir `_cellules_de_la_brigade`.
+    `jour_actif` (K8, prompt 59) : le jour réellement consulté, toujours
+    fourni par l'appelant — jamais déduit de `creneaux[0]`, qui peut être
+    vide si la grille active ne porte aucun créneau ce jour-là ; sans quoi
+    une séance hors grille CE jour-là redeviendrait invisible, exactement le
+    défaut que « Hors grille » corrige (D-310)."""
     lignes_qs = list(_lignes_du_programme(programme, brigades))
     contexte = _contexte_grille(programme, creneaux, lignes_qs)
+    jour_iso = JOUR_SEMAINE_PAR_ISO[jour_actif]
+    heures_grille = _heures_grille(creneaux)
 
     groupes, brigades_par_type = [], {}
     for brigade in brigades:
@@ -196,8 +236,19 @@ def grille_consultation(programme, creneaux, brigades):
 
     for type_formation, brigades_du_type in brigades_par_type.items():
         lignes_affichees = [
-            {"brigade": brigade, "cellules": _cellules_de_la_brigade(brigade, creneaux, contexte)}
+            {
+                "brigade": brigade,
+                "cellules": _cellules_de_la_brigade(brigade, creneaux, contexte),
+                "hors_grille": _hors_grille_de_la_brigade(brigade, jour_iso, heures_grille, contexte),
+            }
             for brigade in brigades_du_type
         ]
         groupes.append({"type_formation": type_formation, "lignes": lignes_affichees})
     return groupes
+
+
+def seances_hors_grille_existent(groupes):
+    """K8, prompt 59 : vrai si au moins une ligne de `groupes` (résultat de
+    `grille_consultation`) porte une séance hors grille — pour afficher le
+    tableau même un jour sans aucun créneau (D-310)."""
+    return any(ligne["hors_grille"] for groupe in groupes for ligne in groupe["lignes"])

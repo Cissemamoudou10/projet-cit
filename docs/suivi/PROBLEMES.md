@@ -23,6 +23,26 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-78 — `test_demonstration_j2.py` cassé par le champ `creneau` (K8, prompt 59), manqué par l'audit initial
+**Date** 2026-11-06 · **Story** aucune (prompt 59, K8) · **État** : résolu
+**Symptôme** — Suite complète (Temps 2, après feu vert) : `tests/scenarios/test_demonstration_j2.py::test_scenario_j2_du_debut_a_la_fin` échoue — `modifier_seance` (étape 5) reste en `rejete` au lieu de revenir en `brouillon` (reprise implicite T6), le POST ayant échoué silencieusement (formulaire invalide, fields inconnus ignorés par Django, jamais une 500).
+**Cause** — Avant de réécrire `FormulaireSeance` (K8), l'audit des tests cassés par le retrait des champs `date_seance`/`heure_debut`/`heure_fin` n'a cherché que sous `app/planification/tests/` (`grep` scopé à ce dossier) — `tests/scenarios/test_demonstration_j2.py` vit à la racine du dépôt (`tests/`, pas `app/`), hors de ce périmètre, et postait encore les trois anciens champs à `modifier_seance`.
+**Résolution** — Nouvelle fonction `_creneau_de_la_seance(seance)` dans le test, même principe que `_premier_creneau_libre` déjà présente dans ce fichier (résout le créneau de la grille active qui correspond aux heures réelles de la séance) ; le POST envoie désormais `creneau` au lieu des trois anciens champs.
+**Risque concerné** — aucun.
+**Leçon** — un changement de contrat d'un formulaire (champs retirés/renommés) s'audite sur TOUT le dépôt (`grep` depuis la racine), jamais seulement sous le dossier de tests de l'application qui porte le formulaire — un scénario de bout en bout peut vivre ailleurs (`tests/scenarios/`, `tests/architecture/`).
+
+---
+
+## P-77 — « Hors grille » (K8, prompt 59) invisible un jour sans aucun créneau (relecture `relecteur-conception`)
+**Date** 2026-11-06 · **Story** aucune (prompt 59, K8, RECETTE-01 A2) · **État** : résolu
+**Symptôme** — Trouvé en relecture `relecteur-conception`, pas en test : `grille_consultation(programme, creneaux, brigades)` déduisait le jour consulté (`jour_iso`) du premier créneau de `creneaux`, lui-même déjà filtré sur le jour par la vue. Si la grille active ne porte AUCUN créneau ce jour-là (samedi, ou une grille changée en cours de semaine qui a retiré le jour), `creneaux` est vide, `jour_iso` devenait `None`, et `_hors_grille_de_la_brigade` renvoyait `[]` sans condition — exactement le scénario que la ligne « Hors grille » (D-310) est censée couvrir en premier lieu.
+**Cause** — Le jour réellement consulté n'était jamais passé explicitement au sélecteur, seulement déduit d'une donnée (`creneaux[0]`) qui peut légitimement être vide.
+**Résolution** — `grille_consultation` reçoit désormais `jour_actif` (le jour choisi par l'onglet, toujours connu de la vue) en paramètre explicite ; `jour_iso` en est déduit directement, jamais de `creneaux[0]`. Le gabarit (`consultation_programme.html`) affichait jusqu'ici un message « Aucun créneau ce jour » qui masquait TOUT le tableau, y compris la ligne « Hors grille » — corrigé pour afficher quand même le tableau (réduit à la seule colonne « Groupe ») dès qu'au moins une ligne porte une séance hors grille ce jour-là (`seances_hors_grille`, calculé dans la vue, aucune requête supplémentaire). Deux tests ajoutés (`test_hors_grille.py`) couvrent le samedi, jour que `grille_active` (fixture) ne couvre jamais.
+**Risque concerné** — aucun.
+**Leçon** — un calcul qui a besoin de savoir « quel jour est consulté » ne doit jamais le déduire d'une donnée filtrée sur ce jour (vide si rien n'y correspond) : le jour lui-même doit être un paramètre explicite, pas une inférence.
+
+---
+
 ## P-76 — `test_ni_valeur_ni_absence_est_refuse_en_base` échoue dans la suite complète, jamais seul (flake, prompt 58)
 **Date** 2026-11-06 · **Story** aucune (observé en lançant la suite ciblée du prompt 58, sans rapport avec K1 à K11) · **État** : ouvert
 **Symptôme** — `app/evaluations/tests/test_notes.py::test_ni_valeur_ni_absence_est_refuse_en_base` (attend une `IntegrityError` quand une `Note` est créée sans valeur ni absence) échoue une fois dans la suite ciblée complète (`1 failed, 1685 passed` sur `app/planification/tests/ app/evaluations/tests/ app/ressources/tests/ tests/architecture`), mais passe systématiquement seul et dans son propre fichier.

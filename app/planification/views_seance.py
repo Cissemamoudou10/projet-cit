@@ -20,7 +20,12 @@ from planification.forms_seance import (
     FormulaireSeance,
 )
 from planification.models import ProgrammeHebdomadaire, Seance
-from planification.selectors import brigades_candidates_au_regroupement, formation_de_la_seance
+from planification.selectors import (
+    JOUR_SEMAINE_PAR_ISO,
+    brigades_candidates_au_regroupement,
+    formation_de_la_seance,
+    grille_active_avec_creneaux,
+)
 from planification.services.circuit import ServiceCircuitProgramme
 from planification.services.contraintes import Candidate
 from planification.services.ecriture import ServiceEcritureSeance
@@ -38,16 +43,29 @@ def _url_modification(seance):
     return reverse("planification:modifier_seance", args=[seance.pk])
 
 
-def _valeurs_initiales(seance):
+def _creneau_actuel(seance):
+    """K8, prompt 59 : le créneau de la grille active dont le jour et les
+    heures correspondent à ceux, RÉELS, de `seance` — `None` si elle est
+    HORS GRILLE (aucune correspondance, données anciennes ou grille
+    changée) : le formulaire de modification force alors un choix neuf,
+    plutôt que de présélectionner un créneau qui ne serait pas le sien."""
     debut = timezone.localtime(seance.debut)
     fin = timezone.localtime(seance.fin)
+    _, creneaux = grille_active_avec_creneaux()
+    for creneau in creneaux:
+        meme_jour = JOUR_SEMAINE_PAR_ISO[creneau.jour_semaine] == debut.isoweekday()
+        if meme_jour and creneau.heure_debut == debut.time() and creneau.heure_fin == fin.time():
+            return creneau
+    return None
+
+
+def _valeurs_initiales(seance):
+    creneau = _creneau_actuel(seance)
     return {
         "element_referentiel": seance.element_referentiel_id,
         "instructeur": seance.instructeur_id,
         "lieu": seance.lieu_id,
-        "date_seance": debut.date(),
-        "heure_debut": debut.time(),
-        "heure_fin": fin.time(),
+        "creneau": creneau.pk if creneau else None,
     }
 
 
@@ -73,16 +91,24 @@ def _appliquer(request, seance, formulaire):
 def modifier_seance(request, pk):
     seance = get_object_or_404(Seance.objects.select_related("programme"), pk=pk)
     formation = formation_de_la_seance(seance)
+    programme = seance.programme
     if request.method == "POST":
-        formulaire = FormulaireSeance(request.POST, formation=formation)
+        formulaire = FormulaireSeance(request.POST, formation=formation, programme=programme)
         if formulaire.is_valid():
             return _appliquer(request, seance, formulaire)
     else:
-        formulaire = FormulaireSeance(initial=_valeurs_initiales(seance), formation=formation)
+        formulaire = FormulaireSeance(
+            initial=_valeurs_initiales(seance), formation=formation, programme=programme
+        )
     return render(
         request,
         "planification/modifier_seance.html",
-        {"seance": seance, "programme": seance.programme, "formulaire": formulaire},
+        {
+            "seance": seance,
+            "programme": seance.programme,
+            "formulaire": formulaire,
+            "avenants": seance.avenants.select_related("cree_par").order_by("cree_le"),
+        },
     )
 
 
@@ -90,12 +116,8 @@ def _valeurs_initiales_ajout(request):
     valeurs = {}
     if request.GET.get("brigade"):
         valeurs["brigade"] = request.GET["brigade"]
-    if request.GET.get("date"):
-        valeurs["date_seance"] = request.GET["date"]
-    if request.GET.get("heure_debut"):
-        valeurs["heure_debut"] = request.GET["heure_debut"]
-    if request.GET.get("heure_fin"):
-        valeurs["heure_fin"] = request.GET["heure_fin"]
+    if request.GET.get("creneau"):
+        valeurs["creneau"] = request.GET["creneau"]
     return valeurs
 
 
@@ -125,11 +147,13 @@ def _appliquer_ajout(request, programme, formulaire):
 def ajouter_seance(request, pk):
     programme = get_object_or_404(ProgrammeHebdomadaire, pk=pk)
     if request.method == "POST":
-        formulaire = FormulaireAjoutSeance(request.POST)
+        formulaire = FormulaireAjoutSeance(request.POST, programme=programme)
         if formulaire.is_valid():
             return _appliquer_ajout(request, programme, formulaire)
     else:
-        formulaire = FormulaireAjoutSeance(initial=_valeurs_initiales_ajout(request))
+        formulaire = FormulaireAjoutSeance(
+            initial=_valeurs_initiales_ajout(request), programme=programme
+        )
     return render(
         request,
         "planification/ajouter_seance.html",

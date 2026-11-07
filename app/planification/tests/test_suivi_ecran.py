@@ -78,6 +78,26 @@ def test_declaration_puis_affichage_de_la_mention(client, circuit, grille_active
     assert "Annuler la déclaration" in page
 
 
+def test_k10_message_sur_seance_future_lien_inchange_sur_seance_passee(
+    client, circuit, grille_active
+):
+    """K10, prompt 59 (RECETTE-01 A7) : rien n'expliquait, sur une séance
+    future d'un programme affiché, comment déclarer une non-exécution — la
+    consultation n'affichait tout simplement rien. Sur la séance PASSÉE
+    (créneau 2, `_ligne_passee`), le lien existant reste inchangé ; sur la
+    séance FUTURE (créneau 1, posée par `amener_a`), un message renvoie à
+    l'avenant en attendant qu'elle soit passée."""
+    affiche = amener_a(EtatProgramme.AFFICHE, circuit)
+    _ligne_passee(affiche, circuit)
+    client.force_login(circuit.acteurs.planificateur)
+
+    contenu = client.get(_url_consultation(affiche)).content.decode("utf-8")
+
+    assert "Déclarer non exécutée" in contenu
+    assert "ne se déclare qu'une fois la séance passée" in contenu
+    assert "avenant" in contenu.lower()
+
+
 def test_post_sans_motif_refuse_rien_n_est_ecrit(client, circuit):
     affiche = amener_a(EtatProgramme.AFFICHE, circuit)
     ligne = _ligne_passee(affiche, circuit)

@@ -123,6 +123,19 @@ def _etape_4_rejet(client, donnees, programme):
     assert programme.motif_rejet
 
 
+def _creneau_de_la_seance(seance):
+    """K8, prompt 59 : le créneau de la grille active qui correspond aux
+    heures réelles de `seance` — la génération (étape 1) place déjà ses
+    séances sur la grille, il existe toujours ici."""
+    debut_local = timezone.localtime(seance.debut)
+    _, creneaux = grille_active_avec_creneaux()
+    for creneau in creneaux:
+        jour_iso = JOUR_SEMAINE_PAR_ISO[creneau.jour_semaine]
+        if jour_iso == debut_local.isoweekday() and creneau.heure_debut == debut_local.time():
+            return creneau
+    raise AssertionError("Créneau introuvable pour cette séance — grille changée ?")
+
+
 def _etape_5_modification_et_resoumission(client, donnees, programme):
     """Planification lit le motif, modifie une séance — reprise implicite
     (REJETÉ -> BROUILLON, T6) — puis resoumet."""
@@ -133,16 +146,13 @@ def _etape_5_modification_et_resoumission(client, donnees, programme):
         .first()
     )
     seance = ligne.seance
-    debut_local = timezone.localtime(seance.debut)
     reponse = client.post(
         reverse("planification:modifier_seance", args=[seance.pk]),
         {
             "element_referentiel": seance.element_referentiel_id,
             "instructeur": seance.instructeur_id,
             "lieu": "",
-            "date_seance": debut_local.date().isoformat(),
-            "heure_debut": debut_local.time().strftime("%H:%M"),
-            "heure_fin": timezone.localtime(seance.fin).time().strftime("%H:%M"),
+            "creneau": _creneau_de_la_seance(seance).pk,
             "confirmee": "",
             "nature_avenant": "",
             "motif_avenant": "",

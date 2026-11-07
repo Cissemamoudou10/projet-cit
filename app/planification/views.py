@@ -35,7 +35,7 @@ from planification.selectors_circuit import (
     peut_supprimer_brouillon,
 )
 from planification.selectors_compte_rendu import derniere_generation
-from planification.selectors_consultation import grille_consultation
+from planification.selectors_consultation import grille_consultation, seances_hors_grille_existent
 from planification.selectors_ecart_volume import ecarts_volume_horaire
 from planification.services.generation import PERMISSION_ECRITURE, ServiceGeneration
 
@@ -188,7 +188,8 @@ def vue_consultation_programme(request):
             brigade_pk=request.GET.get("brigade"), session_pk=request.GET.get("session")
         )
     )
-    groupes = grille_consultation(programme, creneaux_du_jour, brigades) if programme else []
+    groupes = grille_consultation(programme, creneaux_du_jour, brigades, jour_actif) if programme else []
+    seances_hors_grille = seances_hors_grille_existent(groupes)
     contexte_du_circuit = contexte_circuit(programme, request.user) if programme else {}
     return render(
         request,
@@ -203,6 +204,7 @@ def vue_consultation_programme(request):
             "onglets_jours": _onglets_jours(jours, jour_actif, lundi),
             "grille_active": grille,
             "groupes": groupes,
+            "seances_hors_grille": seances_hors_grille,
             "nombre_brigades": len(brigades),
             "toutes_brigades": brigades_pour_filtre(),
             # US-PLAN-07, E2 : visible avant soumission, mêmes brigades que
