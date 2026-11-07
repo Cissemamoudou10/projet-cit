@@ -48,6 +48,14 @@
           Modifier la date
         </a>
       {% endif %}
+      {% if peut_supprimer %}
+        <a href="{% url 'evaluations:confirmer_suppression_evaluation' evaluation.pk %}"
+           class="inline-flex h-controle items-center gap-2 border border-etat-ecart px-3.5
+                  text-sm font-semibold text-etat-ecart no-underline transition-colors duration-survol
+                  hover:bg-etat-ecart-fond">
+          Supprimer
+        </a>
+      {% endif %}
     </div>
   </div>
 </div>

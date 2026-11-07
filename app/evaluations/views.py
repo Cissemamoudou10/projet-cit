@@ -149,6 +149,33 @@ def vue_detail_evaluation(request, pk):
             "peut_gerer_sujets": a_permission(request.user, PERMISSION_ECRITURE),
             "peut_modifier_date": a_permission(request.user, PERMISSION_ECRITURE),
             "peut_saisir_notes": a_permission(request.user, PERMISSION_NOTES),
+            "peut_supprimer": a_permission(request.user, PERMISSION_ECRITURE),
+        },
+    )
+
+
+@exige_habilitation(PERMISSION_ECRITURE)
+def vue_confirmer_suppression_evaluation(request, pk):
+    """B-A2, prompt 61 (RECETTE-02) : le service existait déjà en entier
+    (`ServiceEvaluation.supprimer`, D-240) — seule l'exposition écran
+    manquait. Confirmation explicite nommant l'évaluation et sa séance
+    (BNF-09), même patron que `referentiel::vue_confirmer_suppression_
+    objectif_pedagogique`."""
+    evaluation = _evaluation_ou_404(pk)
+    if request.method == "POST":
+        try:
+            ServiceEvaluation.supprimer(request.user, evaluation)
+        except ErreurMetier as erreur:
+            messages.error(request, str(erreur))
+            return redirect("evaluations:detail_evaluation", evaluation.pk)
+        messages.success(request, "Évaluation supprimée.")
+        return redirect("evaluations:liste_evaluations")
+    return render(
+        request,
+        "evaluations/evaluation_confirmer_suppression.html",
+        {
+            "evaluation": evaluation,
+            "url_annuler": reverse("evaluations:detail_evaluation", args=[evaluation.pk]),
         },
     )
 
