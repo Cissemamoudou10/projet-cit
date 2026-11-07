@@ -22,7 +22,7 @@ from noyau.intervalles import filtre_recouvrement
 from organisation.models import Brigade
 from organisation.services.session import ServiceSession
 from planification.models import LigneProgramme, ProgrammeHebdomadaire, Seance
-from ressources.models import CreneauType, GrilleHoraire, Instructeur, Lieu
+from ressources.models import CreneauType, GrilleHoraire, Instructeur, Lieu, ModePartage
 
 JOUR_SEMAINE_PAR_ISO = {
     "lundi": 1,
@@ -248,7 +248,11 @@ def brigades_candidates_au_regroupement(seance):
     (prompt 58, RECETTE-01 A6 a — une brigade dont la formation ne porte
     pas cet élément n'a jamais eu de raison d'y figurer) — en un nombre de
     requêtes constant, quel que soit le nombre de brigades candidates
-    (CU-P5-04, étape 2)."""
+    (CU-P5-04, étape 2). A12 (RECETTE-01, prompt 61, L4) : un lieu
+    séquentiel (RG-40) n'accueille jamais de regroupement, quelle que soit
+    la brigade visée — aucune candidate n'est jamais proposée."""
+    if seance.lieu is not None and seance.lieu.mode_partage == ModePartage.SEQUENTIEL:
+        return Brigade.objects.none()
     deja = LigneProgramme.objects.filter(seance=seance).values_list("brigade_id", flat=True)
     occupees = (
         LigneProgramme.objects.filter(

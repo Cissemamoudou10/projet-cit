@@ -113,12 +113,16 @@ def test_capacite_depassee_est_refusee_avec_l_ecart(partage, autre_brigade_forma
 
 
 def test_lieu_non_partageable_est_refuse(partage, autre_brigade_formation):
+    """A12 (RECETTE-01, prompt 61, L4) : un mode de partage non renseigné
+    reste traité au moins aussi restrictivement qu'un lieu séquentiel —
+    RG-40, pas RG-37 (qui laisserait croire qu'un autre horaire
+    suffirait)."""
     circuit, seance, _ = partage
     seance.lieu.mode_partage = None
     seance.lieu.save()
     affecter_stagiaires(circuit.acteurs.pedagogique, autre_brigade_formation, 5, prefixe="N")
 
-    with pytest.raises(ErreurValidation, match="RG-37"):
+    with pytest.raises(ErreurValidation, match="RG-40"):
         ServiceEcritureSeance.associer_brigades(
             circuit.acteurs.planificateur, seance, [autre_brigade_formation]
         )
@@ -283,6 +287,26 @@ def test_http_brigade_hors_referentiel_non_proposee(client, partage, brigade_aut
     reponse = client.get(_url_brigades(seance))
 
     assert brigade_autre_session.designation.encode() not in reponse.content
+
+
+def test_http_aucune_candidate_proposee_pour_un_lieu_sequentiel(
+    client, partage, autre_brigade_formation
+):
+    """A12 (RECETTE-01, prompt 61, L4) : un lieu séquentiel (RG-40)
+    n'accueille jamais de regroupement — le formulaire ne propose plus
+    `autre_brigade_formation`, pourtant libre et qualifiée (elle est la
+    candidate du test `test_association_admise_une_seule_seance_deux_
+    lignes` sur ce même lieu, redevenu simultané)."""
+    from ressources.models import ModePartage
+
+    circuit, seance, _ = partage
+    seance.lieu.mode_partage = ModePartage.SEQUENTIEL
+    seance.lieu.save()
+    client.force_login(circuit.acteurs.planificateur)
+
+    reponse = client.get(_url_brigades(seance))
+
+    assert autre_brigade_formation.designation.encode() not in reponse.content
 
 
 def test_http_liste_des_brigades_candidates_en_nombre_de_requetes_constant(client, partage, autre_brigade_formation):
