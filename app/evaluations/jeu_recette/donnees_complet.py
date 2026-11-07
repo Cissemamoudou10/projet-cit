@@ -40,6 +40,12 @@ MATIERES_COMPLET = {
 # soit pas son seul lieu possible — cohérent avec le § 2.4 (la séance
 # regroupée du programme porte M2, pas M7, et vit dans L9).
 TYPE_LIEU_PARTAGE_M7 = TypeLieuPartageReferentiel.LABORATOIRE
+# M2 (F6) est un lieu partagé : amphithéâtre — c'est le lieu où vit sa séance
+# regroupée du § 2.4 (W-1, `reserver_m2_regroupe`, lieu=L9). `referentiel_
+# complet.py` appliquait par erreur TYPE_LIEU_PARTAGE_M7 à M2 aussi (RECETTE-
+# 01/02, prompt 61 bis) : l'élément référentiel de M2 était alors désaccordé
+# de sa propre séance regroupée.
+TYPE_LIEU_PARTAGE_M2_F6 = TypeLieuPartageReferentiel.AMPHITHEATRE
 
 CODE_FORMATION_F6 = "F6"
 LIBELLE_FORMATION_F6 = "F6 — Transmissions"

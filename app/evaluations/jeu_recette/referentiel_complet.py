@@ -19,6 +19,7 @@ from evaluations.jeu_recette.donnees_complet import (
     MATIERES_COMPLET,
     OBJECTIFS_PEDAGOGIQUES_M6,
     PREREQUIS_COMPLET,
+    TYPE_LIEU_PARTAGE_M2_F6,
     TYPE_LIEU_PARTAGE_M7,
 )
 from referentiel.models import CategorieLieu
@@ -31,6 +32,12 @@ from referentiel.services.referentiel import ServiceReferentiel
 CATEGORIES_PAR_MATIERE = {
     **{code: categorie for code, (_, categorie) in MATIERES_SOCLE.items()},
     **{code: categorie for code, (_, categorie) in MATIERES_COMPLET.items()},
+}
+# Chaque matière F6 en lieu partagé a son propre type (§ 2.4) : M2 vit en
+# amphithéâtre (sa séance regroupée, L9), M7 en laboratoire.
+TYPES_LIEU_PARTAGE_F6 = {
+    "M2": TYPE_LIEU_PARTAGE_M2_F6,
+    "M7": TYPE_LIEU_PARTAGE_M7,
 }
 
 
@@ -66,7 +73,9 @@ def charger_composition_f6(agissant, formation, matieres_socle, matieres_complet
     for donnees in COMPOSITION_F6:
         categorie = CATEGORIES_PAR_MATIERE[donnees.code_matiere]
         type_lieu_partage = (
-            TYPE_LIEU_PARTAGE_M7 if categorie == CategorieLieu.LIEU_PARTAGE else None
+            TYPES_LIEU_PARTAGE_F6.get(donnees.code_matiere)
+            if categorie == CategorieLieu.LIEU_PARTAGE
+            else None
         )
         elements[donnees.code_matiere] = ServiceReferentiel.rattacher(
             agissant,
