@@ -3,12 +3,17 @@
 
 **Une seule fonction de statut** (Temps 0, point 1 du prompt 48) : elle
 reçoit une RÉFÉRENCE et une MESURE, jamais « le prescrit » et « le
-programmé » nommément — PLAN-07 lui passe `(prescrit, programmé)`, US-SUI-02
-lui passe `(prescrit, réalisé)` une fois la session terminée, ou
-`(programmé échu, réalisé)` en cours de session (A2, le réalisé ne peut
-jamais dépasser le programmé échu par construction — les séances réalisées
-en sont un sous-ensemble — le dépassement n'y est donc jamais atteignable,
-exactement ce que RG-61/A2 attendent).
+programmé » nommément — PLAN-07 lui passe `(prescrit, programmé)`. US-SUI-02
+l'appelle deux fois par ligne (D-311, RECETTE-03, R03-SUI02-06) :
+`(prescrit, réalisé)` en premier, pour le dépassement, qu'il reste
+détectable ou non, quel que soit l'état de la session (RG-61/D-283) ; si le
+réalisé ne dépasse pas le prescrit, une seconde fois pour le retard —
+`(prescrit, réalisé)` une fois la session terminée, ou `(programmé échu,
+réalisé)` en cours de session, le réalisé ne pouvant alors jamais dépasser
+l'échu par construction (les séances réalisées en sont un sous-ensemble) :
+un dépassement produit par ce second appel n'est qu'une avance sur l'échu,
+jamais une sur-programmation, et `selectors_alerte_ecart._decorer_ligne` le
+ramène à `conforme`.
 
 `reference_echue` ne signifie PAS littéralement « la session est terminée » :
 elle signifie que la RÉFÉRENCE passée est déjà entièrement constituée, donc

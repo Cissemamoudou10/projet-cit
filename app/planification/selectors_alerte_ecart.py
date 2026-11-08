@@ -8,12 +8,20 @@ programmé). Une seule fonction de statut, partagée avec PLAN-07 :
 `planification.statut_volume.statut_volume` — un test d'architecture
 interdit un second calcul.
 
-A2 : en cours de session, la référence du retard est le PROGRAMMÉ ÉCHU
+A2 : en cours de session, la référence du RETARD est le PROGRAMMÉ ÉCHU
 (`volumes_programme_echu_par_element_brigade`, nouveau), pas le prescrit —
 sinon toute matière non encore enseignée paraîtrait en retard. À la fin de
-session (même borne que D-278), la référence devient le prescrit. Le
+session (même borne que D-278), cette référence devient le prescrit. Le
 réalisé lui-même n'est JAMAIS recalculé ici : `ligne.realise`, déjà porté
 par `LigneRapprochement` (US-SUI-01), est réutilisé tel quel.
+
+D-311 (RECETTE-03, R03-SUI02-06) : le DÉPASSEMENT, lui, se vérifie toujours
+contre le PRESCRIT, quel que soit l'état de la session — voir `_decorer_
+ligne`. Avant cette correction, le dépassement n'était jamais atteignable
+avant la fin de session (la référence alors en vigueur, l'échu, ne peut
+jamais être dépassée par construction) ; une réduction rétroactive du
+prescrit (R04-PLAN07-03) pendant qu'une session tourne encore passait donc
+inaperçue, contrairement à ce que D-283 demande.
 """
 
 import dataclasses
@@ -23,7 +31,7 @@ from django.utils import timezone
 
 from planification.selectors_rapprochement import rapprochement
 from planification.services.contraintes import volumes_programme_echu_par_element_brigade
-from planification.statut_volume import DEPASSEMENT, RETARD, statut_volume
+from planification.statut_volume import CONFORME, DEPASSEMENT, RETARD, statut_volume
 
 
 @dataclasses.dataclass(frozen=True)
@@ -47,12 +55,45 @@ def seuil_alerte_pourcent() -> float:
     return float(settings.SEUIL_ALERTE_ECART_REALISE)
 
 
-def _decorer_ligne(ligne, reference, seuil):
-    """A2 : `reference_echue` vaut toujours `True` — la référence choisie
-    par l'appelant (programmé échu, ou prescrit après la fin de session)
-    est par construction déjà entièrement constituée (D-282)."""
-    statut, ecart_pourcent = statut_volume(reference, ligne.realise, True, seuil)
+def _decorer_ligne(ligne, reference_retard, seuil):
+    """D-311 (RECETTE-03, R03-SUI02-06) précise A2/D-283 : le réalisé ne
+    peut jamais dépasser le programmé échu par construction (les séances
+    réalisées en sont un sous-ensemble) — mais rien n'empêche qu'une
+    réduction rétroactive du prescrit (R04-PLAN07-03) laisse le réalisé
+    au-dessus de LUI pendant que la session tourne encore, ce que D-283
+    demande de signaler sans attendre la fin de session. Le dépassement
+    contre le prescrit est donc vérifié EN PREMIER, indépendamment de
+    l'état de la session ; seul le « sinon » retombe sur la référence de
+    retard choisie par l'appelant (programmé échu en cours de session,
+    prescrit une fois celle-ci terminée, D-282) — un dépassement que ce
+    second appel produirait (réalisé en avance sur l'échu, jamais sur le
+    prescrit) n'est qu'une avance de rythme, jamais une sur-programmation :
+    ramené à `conforme`."""
+    if ligne.realise > ligne.prescrit:
+        statut, ecart_pourcent = statut_volume(ligne.prescrit, ligne.realise, True, seuil)
+    else:
+        statut, ecart_pourcent = statut_volume(reference_retard, ligne.realise, True, seuil)
+        if statut == DEPASSEMENT:
+            statut = CONFORME
     return LigneRapprochementDecoree(ligne=ligne, statut=statut, ecart_pourcent=ecart_pourcent)
+
+
+def _decorer_groupe(groupe, jour, echu_par_cle, seuil):
+    if groupe.sans_programme_affiche:
+        return GroupeRapprochementDecore(
+            brigade=groupe.brigade, lignes=[], sans_programme_affiche=True
+        )
+    termine = groupe.brigade.session.date_fin <= jour
+    lignes = []
+    for ligne in groupe.lignes:
+        if termine:
+            reference_retard = ligne.prescrit
+        else:
+            reference_retard = echu_par_cle.get(
+                (ligne.element_referentiel.pk, groupe.brigade.pk), 0
+            )
+        lignes.append(_decorer_ligne(ligne, reference_retard, seuil))
+    return GroupeRapprochementDecore(brigade=groupe.brigade, lignes=lignes)
 
 
 def decorer_rapprochement(groupes, a_la_date=None) -> list:
@@ -75,26 +116,7 @@ def decorer_rapprochement(groupes, a_la_date=None) -> list:
     seuil = seuil_alerte_pourcent()
     brigade_ids = [groupe.brigade.pk for groupe in groupes if not groupe.sans_programme_affiche]
     echu_par_cle = volumes_programme_echu_par_element_brigade(instant, brigade_ids=brigade_ids)
-
-    decores = []
-    for groupe in groupes:
-        if groupe.sans_programme_affiche:
-            decores.append(
-                GroupeRapprochementDecore(
-                    brigade=groupe.brigade, lignes=[], sans_programme_affiche=True
-                )
-            )
-            continue
-        termine = groupe.brigade.session.date_fin <= jour
-        lignes = []
-        for ligne in groupe.lignes:
-            if termine:
-                reference = ligne.prescrit
-            else:
-                reference = echu_par_cle.get((ligne.element_referentiel.pk, groupe.brigade.pk), 0)
-            lignes.append(_decorer_ligne(ligne, reference, seuil))
-        decores.append(GroupeRapprochementDecore(brigade=groupe.brigade, lignes=lignes))
-    return decores
+    return [_decorer_groupe(groupe, jour, echu_par_cle, seuil) for groupe in groupes]
 
 
 def alertes(formation_id=None, session_id=None, brigade_id=None, a_la_date=None) -> list:

@@ -23,6 +23,16 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-80 — R03-SUI02-06 (RECETTE-03) : le dépassement n'était jamais atteignable avant la fin de session
+**Date** 2026-11-08 · **Story** US-SUI-02 (RECETTE-03, prompt 61 ter) · **État** : résolu (D-311)
+**Symptôme** — Test manuel R03-SUI02-06 : abaisser le prescrit de M7 (F6) sous le réalisé (5 h prescrites, 14,17 h réalisées, session en cours) devait signaler un dépassement (D-283). L'écran des alertes affichait « retard 11 % », jamais « dépassement ».
+**Cause** — `decorer_rapprochement` compare le réalisé au programmé ÉCHU tant que la session tourne (A2), jamais au prescrit — et le réalisé ne peut jamais dépasser l'échu par construction (`statut_volume.py` le documentait même comme acquis). Le dépassement contre le prescrit n'était donc comparé qu'une fois la session terminée : le scénario de R03-SUI02-06, délibérément joué en cours de session, ne pouvait structurellement jamais le produire.
+**Résolution** — `selectors_alerte_ecart._decorer_ligne` vérifie le dépassement contre le prescrit EN PREMIER, quel que soit l'état de la session ; la comparaison à l'échu ne tranche plus que le « sinon » (retard), voir D-311.
+**Risque concerné** — aucun.
+**Leçon** — un commentaire qui affirme qu'un cas est « impossible par construction » (ici, dans `statut_volume.py`) documente une conséquence du code À CET INSTANT, pas une propriété durable : il doit être revérifié dès qu'une story change la référence qu'un appelant lui passe, pas seulement relu comme une preuve acquise.
+
+---
+
 ## P-79 — Six règles d'architecture rouvertes par L1 à L7 (prompt 61), vues seulement à la suite complète
 **Date** 2026-11-07 · **Story** aucune (prompt 61, corrections L1 à L9) · **État** : résolu
 **Symptôme** — Les tests ciblés de chaque correction (L1 à L9) passaient tous, séparément. La suite complète (`tests/architecture`, lancée une seule fois en fin de partie A plutôt qu'après chaque commit) a trouvé quatre échecs qu'aucun test ciblé n'avait vus : `evaluation.py` (L2) et `views_sujets.py` (L6) repassés au-dessus de 400/40 lignes par un commentaire ou une ligne de contexte ajoutée ; `evaluations:confirmer_suppression_evaluation` (L5) absente de `ECRANS_ECRITURE` ; `test_contraintes_lieu.py` (L3) passé à 456 lignes avec les trois nouveaux tests A4.

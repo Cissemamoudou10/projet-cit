@@ -143,6 +143,26 @@ def test_decoration_signale_depassement_apres_la_fin_de_session(
     assert _ligne_de(decores, element).statut == DEPASSEMENT
 
 
+def test_decoration_signale_depassement_en_cours_de_session_sur_le_prescrit(
+    planificateur, redacteur, instructeur, brigade_formation
+):
+    """D-311 (RECETTE-03, R03-SUI02-06) : une réduction rétroactive du
+    prescrit sous le réalisé doit signaler un dépassement MÊME en cours de
+    session — avant cette correction, la référence alors en vigueur (le
+    programmé échu, jamais dépassable par construction) le masquait."""
+    element = _element(brigade_formation.session.formation, volume=5, suffixe="P5")
+    qualifier(instructeur, element.matiere)
+    cours = Cours(element, instructeur)
+    passe = _programme_passe()
+    _programmer(passe, cours, brigade_formation, 8, passe.lundi_de_semaine)  # 16 h, prescrit 5 h
+    _amener_a_affiche(passe, planificateur, redacteur)
+
+    groupes = rapprochement(brigade_id=brigade_formation.pk)
+    decores = decorer_rapprochement(groupes)
+
+    assert _ligne_de(decores, element).statut == DEPASSEMENT
+
+
 # --- A1/A3 — la liste d'alertes elle-même -----------------------------------
 
 
@@ -171,7 +191,9 @@ def test_retard_signale_sur_le_prescrit_en_fin_de_session(
     qualifier(instructeur, element.matiere)
     cours = Cours(element, instructeur)
     passe = _programme_passe()
-    _programmer(passe, cours, brigade_formation, 1, passe.lundi_de_semaine)  # 2 h sur 10 h prescrites
+    _programmer(
+        passe, cours, brigade_formation, 1, passe.lundi_de_semaine
+    )  # 2 h sur 10 h prescrites
     _amener_a_affiche(passe, planificateur, redacteur)
     _terminer_la_session(brigade_formation)
 
