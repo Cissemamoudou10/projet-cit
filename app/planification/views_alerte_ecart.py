@@ -8,6 +8,7 @@ from django.shortcuts import render
 
 from administration.habilitations import exige_habilitation
 from noyau.pagination import paginer
+from planification.navigation import onglets_suivi
 from planification.selectors import brigades_pour_filtre
 from planification.selectors_alerte_ecart import alertes
 from planification.selectors_rapprochement import sessions_pour_filtre
@@ -24,6 +25,7 @@ def vue_alertes(request):
     brigade_id = request.GET.get("brigade") or None
     groupes = alertes(session_id=session_id, brigade_id=brigade_id)
     page = paginer(groupes, request.GET.get("page"))
+    onglets, onglet_actif = onglets_suivi(request.user, "alertes")
     return render(
         request,
         "planification/alertes_ecart.html",
@@ -31,5 +33,7 @@ def vue_alertes(request):
             "page": page,
             "sessions": sessions_pour_filtre(),
             "brigades": brigades_pour_filtre(),
+            "onglets": onglets,
+            "onglet_actif": onglet_actif,
         },
     )

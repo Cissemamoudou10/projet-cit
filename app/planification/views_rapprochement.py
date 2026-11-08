@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from administration.habilitations import exige_habilitation
 from noyau.pagination import paginer
+from planification.navigation import onglets_suivi
 from planification.selectors import brigades_pour_filtre
 from planification.selectors_alerte_ecart import decorer_rapprochement
 from planification.selectors_rapprochement import formations_pour_filtre, sessions_pour_filtre
@@ -53,6 +54,7 @@ def vue_rapprochement(request):
     # consultation de la semaine) — une seule requête de plus.
     groupes = decorer_rapprochement(groupes)
     page = paginer(groupes, request.GET.get("page"))
+    onglets, onglet_actif = onglets_suivi(request.user, "rapprochement")
     return render(
         request,
         "planification/rapprochement.html",
@@ -63,5 +65,7 @@ def vue_rapprochement(request):
             "sessions": sessions_pour_filtre(),
             "brigades": brigades_pour_filtre(),
             "a_la_date": periode_fin or timezone.now(),
+            "onglets": onglets,
+            "onglet_actif": onglet_actif,
         },
     )

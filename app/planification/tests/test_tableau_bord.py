@@ -199,6 +199,23 @@ def test_http_pedagogique_consulte_le_tableau_de_bord(
     assert "91 %" in page
 
 
+def test_http_onglets_suivi_tableau_de_bord_actif(client, direction_formation):
+    """Ergonomie (RECETTE-04, prompt 61 ter) : les trois écrans de la
+    rubrique Suivi s'atteignent désormais directement les uns des autres
+    par des onglets, pas seulement par un lien de circonstance vers le
+    suivant."""
+    client.force_login(direction_formation)
+
+    reponse = client.get(reverse("planification:tableau_bord"))
+
+    assert reponse.context["onglet_actif"] == "tableau-bord"
+    slugs = {onglet["slug"] for onglet in reponse.context["onglets"]}
+    assert slugs == {"tableau-bord", "alertes", "rapprochement"}
+    page = reponse.content.decode("utf-8")
+    assert reverse("planification:alertes_ecart") in page
+    assert reverse("planification:rapprochement") in page
+
+
 def test_http_direction_autorisee(client, circuit, direction_formation):
     client.force_login(direction_formation)
 

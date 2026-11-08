@@ -27,7 +27,9 @@ def _programme_passe(decalage_semaines=4):
 
 
 def _element(formation, volume, suffixe):
-    matiere = Matiere.objects.create(intitule=f"Matière alertes HTTP {suffixe}", code=f"ALH{suffixe}")
+    matiere = Matiere.objects.create(
+        intitule=f"Matière alertes HTTP {suffixe}", code=f"ALH{suffixe}"
+    )
     return creer_element(formation, matiere, volume=volume)
 
 
@@ -66,6 +68,19 @@ def test_http_cellule_pedagogique_consulte_les_alertes(
     assert "retard" in page
 
 
+def test_http_onglets_suivi_alertes_actif(client, acteurs):
+    """Ergonomie (RECETTE-04, prompt 61 ter) : voir
+    `test_tableau_bord.py::test_http_onglets_suivi_tableau_de_bord_actif`."""
+    client.force_login(acteurs.pedagogique)
+
+    reponse = client.get(reverse("planification:alertes_ecart"))
+
+    assert reponse.context["onglet_actif"] == "alertes"
+    page = reponse.content.decode("utf-8")
+    assert reverse("planification:tableau_bord") in page
+    assert reverse("planification:rapprochement") in page
+
+
 def test_http_sans_alerte_affiche_le_message(client, acteurs):
     client.force_login(acteurs.pedagogique)
 
@@ -74,7 +89,9 @@ def test_http_sans_alerte_affiche_le_message(client, acteurs):
     assert "Aucune alerte" in reponse.content.decode("utf-8")
 
 
-def test_http_filtre_par_brigade(client, acteurs, instructeur, brigade_formation, session_formation):
+def test_http_filtre_par_brigade(
+    client, acteurs, instructeur, brigade_formation, session_formation
+):
     _mettre_une_brigade_en_alerte(
         acteurs.planificateur, acteurs.pedagogique, instructeur, brigade_formation, "H2"
     )
@@ -139,6 +156,4 @@ def test_le_compteur_de_la_navigation_n_apparait_pas_pour_la_planification(clien
 
     reponse = client.get(reverse("planification:consultation_programme"))
 
-    assert (
-        "alertes_en_attente" not in reponse.context or not reponse.context["alertes_en_attente"]
-    )
+    assert "alertes_en_attente" not in reponse.context or not reponse.context["alertes_en_attente"]

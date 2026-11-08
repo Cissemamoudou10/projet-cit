@@ -7,6 +7,7 @@ le calcul vit dans `selectors_tableau_bord.tableau_de_bord`.
 from django.shortcuts import render
 
 from administration.habilitations import exige_habilitation
+from planification.navigation import onglets_suivi
 from planification.selectors_tableau_bord import tableau_de_bord
 from planification.services.suivi import PERMISSION_LECTURE
 
@@ -15,8 +16,9 @@ from planification.services.suivi import PERMISSION_LECTURE
 def vue_tableau_bord(request):
     """B6 : la matrice fait foi pour la lecture du domaine « suivi » —
     quatre profils, pas seulement les deux cités par le critère (D-284)."""
+    onglets, onglet_actif = onglets_suivi(request.user, "tableau-bord")
     return render(
         request,
         "planification/tableau_bord.html",
-        {"groupes": tableau_de_bord()},
+        {"groupes": tableau_de_bord(), "onglets": onglets, "onglet_actif": onglet_actif},
     )

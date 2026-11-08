@@ -12,14 +12,9 @@
         Brigades des sessions en cours — avancement horaire, matières et alertes.
       </p>
     </div>
-    <a href="{% url 'planification:alertes_ecart' %}"
-       class="inline-flex h-controle shrink-0 items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
-              text-sm font-medium text-encre no-underline transition-colors duration-survol
-              hover:border-marine-700">
-      Alertes
-    </a>
   </div>
 </div>
+{% include "noyau/composants/_onglets.html" %}
 {% endblock %}
 
 {% block contenu %}

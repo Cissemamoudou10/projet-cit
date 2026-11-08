@@ -46,6 +46,19 @@ def test_http_direction_consulte_le_rapprochement(client, circuit, direction_for
     assert str(circuit.cours.element.matiere) in page
 
 
+def test_http_onglets_suivi_rapprochement_actif(client, direction_formation):
+    """Ergonomie (RECETTE-04, prompt 61 ter) : voir
+    `test_tableau_bord.py::test_http_onglets_suivi_tableau_de_bord_actif`."""
+    client.force_login(direction_formation)
+
+    reponse = client.get(_url())
+
+    assert reponse.context["onglet_actif"] == "rapprochement"
+    page = reponse.content.decode("utf-8")
+    assert reverse("planification:tableau_bord") in page
+    assert reverse("planification:alertes_ecart") in page
+
+
 def test_http_sans_programme_affiche_affiche_le_message_e1(client, circuit, direction_formation):
     client.force_login(direction_formation)
 
