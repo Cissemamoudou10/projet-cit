@@ -6,11 +6,14 @@ Le motif de rejet et l'auteur d'une soumission ne sont pas stockés sur le
 programme : ils se lisent dans le journal, où le moteur les écrit déjà.
 """
 
+import dataclasses
+
 from django.db.models import Q
 
 from administration.models import EntreeJournal, TypeAction
 from organisation.models import Brigade
 from planification.models import EtatProgramme, ProgrammeHebdomadaire, Seance
+from planification.services.circuit import NATURES_PAR_NUMERO
 
 OBJET_TYPE = "programme"
 DETAIL_SOUMISSION = "T2"
@@ -76,10 +79,14 @@ def a_une_histoire_de_circuit(programme):
     primaire), qui ne doit hériter d'aucune histoire de l'ancien. Repli sur
     `objet_identifiant` pour les entrées écrites avant que cette porte ne
     pose `objet_cle` (même repli que `ServiceJournal.historique_de`)."""
-    return _entrees_du_programme(
-        programme,
-        type_action__in=NATURES_HISTOIRE_DE_CIRCUIT,
-    ).filter(Q(objet_cle=str(programme.pk)) | Q(objet_cle="")).exists()
+    return (
+        _entrees_du_programme(
+            programme,
+            type_action__in=NATURES_HISTOIRE_DE_CIRCUIT,
+        )
+        .filter(Q(objet_cle=str(programme.pk)) | Q(objet_cle=""))
+        .exists()
+    )
 
 
 def peut_supprimer_brouillon(programme):
@@ -98,11 +105,36 @@ def brigades_et_nombre_seances(programme):
     return brigades, Seance.objects.filter(programme=programme).count()
 
 
+@dataclasses.dataclass(frozen=True)
+class LigneHistorique:
+    """RECETTE-04 (R04-VAL05-02/03, prompt 61 ter) : décore une `EntreeJournal`
+    de sa NATURE (« Soumission », « Rejet »...) au lieu du `type_action`
+    brut — T2/T3/T6/T7/T8/T9 partagent tous `TRANSITION_PROGRAMME` et
+    s'affichaient donc tous sous le même libellé générique « Transition
+    d'un programme »."""
+
+    cree_le: object
+    nature: str
+    auteur: object
+    detail: str
+
+
+def _decorer_entree_historique(entree):
+    numero, _separateur, reste = entree.detail.partition(SEPARATEUR_DETAIL)
+    nature = NATURES_PAR_NUMERO.get(numero)
+    if nature is None:
+        return LigneHistorique(
+            entree.cree_le, entree.get_type_action_display(), entree.auteur, entree.detail
+        )
+    return LigneHistorique(entree.cree_le, nature, entree.auteur, reste)
+
+
 def historique_du_programme(programme):
     """US-VAL-05, H1 : toutes les transitions du programme (génération,
     soumission, retrait, validation, rejet, reprise, signature, affichage,
-    annulation de validation), dans l'ordre CHRONOLOGIQUE — le journal porte
-    déjà l'auteur, la date et le motif de chacune (le moteur les y écrit,
+    annulation de validation), dans l'ordre CHRONOLOGIQUE, décorées de leur
+    nature propre (RECETTE-04) — le journal porte déjà l'auteur, la date et
+    le motif de chacune (le moteur les y écrit,
     `services/circuit.py::_journaliser`) : aucune table d'historique
     nouvelle. Une seule requête, quel que soit le nombre de transitions.
 
@@ -112,7 +144,8 @@ def historique_du_programme(programme):
     donc écrite sous `objet_type="programme"` pour un avenant, qui se
     consulte au niveau de la séance (`Avenant`, section « Circuit du
     programme » de la consultation), pas ici."""
-    return _entrees_du_programme(programme).select_related("auteur").order_by("cree_le", "pk")
+    entrees = _entrees_du_programme(programme).select_related("auteur").order_by("cree_le", "pk")
+    return [_decorer_entree_historique(entree) for entree in entrees]
 
 
 def programmes_filtres(etat=None, periode_debut=None, periode_fin=None):

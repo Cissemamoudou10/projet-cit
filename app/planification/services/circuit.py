@@ -78,6 +78,26 @@ LIBELLES_EVENEMENTS = {
     GENERER: "La génération",
 }
 
+# RECETTE-04 (R04-VAL05-02/03, prompt 61 ter) : nature de chaque transition pour
+# l'historique du programme (`selectors_circuit.historique_du_programme`) —
+# forme nominale de `LIBELLES_EVENEMENTS`, qui reste la forme sujet des
+# messages de refus (« La soumission n'est pas possible... »). Indexée par
+# NUMÉRO (T2 à T9), jamais par `TypeAction` : VALIDER et REJETER portent
+# chacun leur propre nature de journal, mais T2/T3/T6/T7/T8/T9 partagent
+# tous `TRANSITION_PROGRAMME` et ne se distinguent qu'au numéro écrit dans
+# `detail` (`_libelle_detail`) — c'est ce numéro, pas le type_action, que
+# l'écran doit traduire pour ne plus répéter « Transition d'un programme ».
+NATURES_PAR_NUMERO = {
+    "T2": "Soumission",
+    "T3": "Retrait de la soumission",
+    "T4": "Validation",
+    "T5": "Rejet",
+    "T6": "Reprise en correction",
+    "T7": "Signature",
+    "T8": "Affichage",
+    "T9": "Annulation de la validation",
+}
+
 
 @dataclass(frozen=True)
 class Transition:

@@ -9,7 +9,6 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
-from administration.models import TypeAction
 from planification.models import ProgrammeHebdomadaire
 from planification.selectors_circuit import historique_du_programme, programmes_filtres
 from planification.services.circuit import ServiceCircuitProgramme
@@ -42,17 +41,17 @@ def test_cycle_complet_dans_l_ordre_chronologique_avec_auteurs_et_motifs(circuit
     )
     ServiceCircuitProgramme.afficher(acteurs.planificateur, circuit.programme)
 
-    entrees = list(historique_du_programme(circuit.programme))
+    entrees = historique_du_programme(circuit.programme)
 
-    natures = [entree.type_action for entree in entrees]
+    natures = [entree.nature for entree in entrees]
     assert natures == [
-        TypeAction.TRANSITION_PROGRAMME,  # T2 — soumission
-        TypeAction.REJET_PROGRAMME,  # T5
-        TypeAction.TRANSITION_PROGRAMME,  # T6 — reprise
-        TypeAction.TRANSITION_PROGRAMME,  # T2 — resoumission
-        TypeAction.VALIDATION_PROGRAMME,  # T4
-        TypeAction.TRANSITION_PROGRAMME,  # T7 — signature
-        TypeAction.TRANSITION_PROGRAMME,  # T8 — affichage
+        "Soumission",  # T2
+        "Rejet",  # T5
+        "Reprise en correction",  # T6
+        "Soumission",  # T2 — resoumission
+        "Validation",  # T4
+        "Signature",  # T7
+        "Affichage",  # T8
     ]
     assert MOTIF_REJET in entrees[1].detail
     assert entrees[1].auteur == acteurs.pedagogique

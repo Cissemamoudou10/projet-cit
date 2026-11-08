@@ -222,7 +222,7 @@
       {% for entree in historique %}
         <tr class="border-t border-gris-trait">
           <td class="px-3 py-2 tabular-nums">{{ entree.cree_le|date:"d/m/Y H:i" }}</td>
-          <td class="px-3 py-2">{{ entree.get_type_action_display }}</td>
+          <td class="px-3 py-2">{{ entree.nature }}</td>
           <td class="px-3 py-2">{{ entree.auteur|default:"—" }}</td>
           <td class="px-3 py-2 text-gris-lecture">{{ entree.detail|default:"—" }}</td>
         </tr>
