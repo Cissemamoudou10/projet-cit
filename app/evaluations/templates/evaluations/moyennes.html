@@ -1,5 +1,6 @@
 {% extends "noyau/base.html" %}
 {% load static %}
+{% load pagination %}
 
 {% block titre %}Moyennes — {{ session }} — {{ block.super }}{% endblock %}
 
@@ -44,42 +45,103 @@
   </section>
 {% endif %}
 
-{% for brigade, resultats in par_brigade.items %}
-  <section class="mt-4 border border-gris-trait bg-fond-bloc">
-    <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs
-              font-semibold uppercase tracking-wide text-marine-900">
-      {{ brigade }}
-    </p>
-    <table class="w-full border-collapse text-sm">
-      <thead>
-        <tr>
-          <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
-                                 font-semibold uppercase tracking-wider text-blanc">Stagiaire</th>
-          <th scope="col" class="w-28 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
-                                 font-semibold uppercase tracking-wider text-blanc">Moyenne</th>
-          <th scope="col" class="w-28 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
-                                 font-semibold uppercase tracking-wider text-blanc">Rang (brigade)</th>
-          <th scope="col" class="w-28 bg-marine-900 px-3 py-2 text-right font-titre text-2xs
-                                 font-semibold uppercase tracking-wider text-blanc">Rang (session)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for resultat in resultats %}
-          <tr class="h-ligne border-t border-gris-trait">
-            <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ resultat.stagiaire }}</th>
-            <td class="px-3 py-1.5 text-right tabular-nums">{{ resultat.moyenne }}</td>
-            <td class="px-3 py-1.5 text-right tabular-nums">{{ resultat.rang_brigade }}</td>
-            <td class="px-3 py-1.5 text-right tabular-nums">{{ resultat.rang_session }}</td>
-          </tr>
+{# US-IHM-03 (prompt 64) : même composant que les autres listes —
+   recherche/filtre/tri/pagination, voir noyau/gestion/liste.html. #}
+<form method="get"
+      class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
+  <div>
+    <label for="filtre-recherche"
+           class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      {{ champ_recherche_libelle }}</label>
+    <input type="text" id="filtre-recherche" name="recherche" value="{{ filtres.recherche }}"
+           class="h-controle w-64 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                  outline-none hover:border-marine-700
+                  focus:border-marine-700 focus:ring-2 focus:ring-focus">
+  </div>
+  {% for champ in filtres_champs %}
+    <div>
+      <label for="filtre-{{ champ.nom }}"
+             class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+        {{ champ.libelle }}</label>
+      <select id="filtre-{{ champ.nom }}" name="{{ champ.nom }}"
+              class="h-controle w-52 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                     outline-none hover:border-marine-700
+                     focus:border-marine-700 focus:ring-2 focus:ring-focus">
+        <option value="">Toutes</option>
+        {% for valeur, libelle in champ.choix %}
+          <option value="{{ valeur }}" {% if valeur == champ.valeur %}selected{% endif %}>{{ libelle }}</option>
         {% endfor %}
-      </tbody>
-    </table>
-  </section>
-{% empty %}
-  <section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
-    <p class="text-sm text-gris-lecture">Aucune moyenne calculable pour l'instant.</p>
-  </section>
-{% endfor %}
+      </select>
+    </div>
+  {% endfor %}
+  <button type="submit"
+          class="inline-flex h-controle items-center gap-2 border border-marine-900 bg-marine-900
+                 px-3.5 text-sm font-semibold text-blanc transition-colors duration-survol
+                 hover:bg-marine-700
+                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                 focus-visible:outline-marine-700">
+    Appliquer
+  </button>
+  <a href="{{ url_liste }}" class="px-3 text-sm text-marine-700">Réinitialiser</a>
+</form>
+
+<div class="mt-4 border border-gris-trait bg-fond-bloc">
+  {% if page %}
+    <div class="max-h-96 overflow-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr>
+            {% for colonne in colonnes %}
+              {% if colonne.cle_tri %}
+                <th scope="col" aria-sort="{{ colonne.aria }}"
+                    class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                           font-semibold uppercase tracking-wider text-blanc">
+                  <a href="{% querystring tri=colonne.tri_suivant %}"
+                     class="inline-flex items-center gap-1.5 text-blanc no-underline
+                            hover:text-gris-trait
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+                            focus-visible:outline-blanc">
+                    {{ colonne.libelle }}
+                    {% if colonne.sens == "asc" %}
+                      <svg class="h-3 w-3 text-blanc" aria-hidden="true"><use href="{% static 'icones/planche.svg' %}#tri-croissant"></use></svg>
+                    {% elif colonne.sens == "desc" %}
+                      <svg class="h-3 w-3 text-blanc" aria-hidden="true"><use href="{% static 'icones/planche.svg' %}#tri-decroissant"></use></svg>
+                    {% else %}
+                      <svg class="h-3 w-3 text-blanc" aria-hidden="true"><use href="{% static 'icones/planche.svg' %}#tri"></use></svg>
+                    {% endif %}
+                  </a>
+                </th>
+              {% else %}
+                <th scope="col" class="sticky top-0 z-10 bg-marine-900 px-3 py-2 text-left
+                                       font-titre text-2xs font-semibold uppercase tracking-wider text-blanc">
+                  {{ colonne.libelle }}</th>
+              {% endif %}
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for ligne in lignes %}
+            {% cycle 'bg-fond-bloc' 'bg-fond-bande' as bande silent %}
+            <tr class="{% cycle bande %} h-ligne border-t border-gris-trait">
+              {% for cellule in ligne.cellules %}
+                <td class="px-3 text-left">{{ cellule }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% pagination page %}
+  {% else %}
+    <div class="border-t border-gris-trait px-6 py-8">
+      <svg class="mb-2.5 h-6 w-6 text-gris-trait" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#recherche"></use>
+      </svg>
+      <p class="mb-1 font-titre text-lg font-semibold">{{ libelle_vide|default:"Aucun élément" }}</p>
+      <p class="mb-3.5 max-w-lg text-sm text-gris-lecture">{{ texte_vide }}</p>
+    </div>
+  {% endif %}
+</div>
 
 <p class="mt-4 text-2xs text-gris-lecture">
   Classement de compétition : deux stagiaires à égalité partagent le même rang, le

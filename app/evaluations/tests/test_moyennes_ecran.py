@@ -66,6 +66,53 @@ def test_ecran_refuse_a_la_direction(client, direction_formation, session):
     assert reponse.status_code == 403
 
 
+def test_recherche_filtre_et_tri_restreignent_les_lignes_affichees(
+    client, examens, redacteur, session, element_referentiel
+):
+    """US-IHM-03, critère 1 (prompt 64) : même composant que les autres
+    listes — recherche, filtre (brigade) et tri sur la liste des stagiaires."""
+    brigade_a = _brigade_notee(redacteur, session, element_referentiel, "MOYFA", 10)
+    _brigade_notee(redacteur, session, element_referentiel, "MOYFB", 16)
+    client.force_login(examens)
+    url = reverse("evaluations:moyennes_session", args=[session.pk])
+
+    reponse = client.get(url, {"recherche": "MOYFA0001"})
+    contenu = reponse.content.decode("utf-8")
+    assert "MOYFA0001" in contenu
+    assert "MOYFB0001" not in contenu
+
+    reponse = client.get(url, {"brigade": str(brigade_a.pk)})
+    contenu = reponse.content.decode("utf-8")
+    assert "MOYFA0001" in contenu
+    assert "MOYFB0001" not in contenu
+
+    reponse_croissant = client.get(url, {"tri": "moyenne"})
+    contenu_croissant = reponse_croissant.content.decode("utf-8")
+    assert contenu_croissant.index("MOYFA0001") < contenu_croissant.index("MOYFB0001")
+
+    reponse_decroissant = client.get(url, {"tri": "-moyenne"})
+    contenu_decroissant = reponse_decroissant.content.decode("utf-8")
+    assert contenu_decroissant.index("MOYFB0001") < contenu_decroissant.index("MOYFA0001")
+
+
+def test_pagination_limite_le_nombre_de_lignes_par_page(
+    client, examens, redacteur, session, element_referentiel
+):
+    """US-IHM-03, critère 1 : pagination — `settings.TAILLE_PAGE_DEFAUT`
+    (20) lignes sur la première page, le reste sur la seconde."""
+    for i in range(23):
+        _brigade_notee(redacteur, session, element_referentiel, f"MOYP{i:02d}", 10)
+    client.force_login(examens)
+    url = reverse("evaluations:moyennes_session", args=[session.pk])
+
+    premiere_page = client.get(url)
+    deuxieme_page = client.get(url, {"page": 2})
+
+    assert len(list(premiere_page.context["page"])) == 20
+    assert len(list(deuxieme_page.context["page"])) == 3
+    assert premiere_page.context["page"].paginator.count == 23
+
+
 def test_requetes_constantes_avec_deux_et_dix_brigades(
     client, examens, redacteur, session, element_referentiel
 ):

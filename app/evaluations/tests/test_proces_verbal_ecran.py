@@ -10,7 +10,7 @@ from administration.models import EntreeJournal, TypeAction
 from evaluations.models import TypeProcesVerbal
 from evaluations.services.note import ServiceNote
 from evaluations.services.proces_verbal import ServiceProcesVerbal
-from evaluations.tests.conftest import affecter_stagiaires
+from evaluations.tests.conftest import affecter_stagiaires, creer_brigade
 
 
 @pytest.fixture(autouse=True)
@@ -30,11 +30,55 @@ def _noter(dossier, prefixe):
     return stagiaire
 
 
+def _noter_dans_brigade(dossier, brigade, prefixe, valeur):
+    stagiaire = affecter_stagiaires(dossier.redacteur, brigade, 1, prefixe=prefixe)[0]
+    ServiceNote.confirmer(
+        dossier.examens,
+        dossier.certificative,
+        {str(stagiaire.pk): {"valeur": str(valeur), "absent": False}},
+    )
+    return stagiaire
+
+
+def test_recherche_filtre_et_tri_restreignent_les_lignes_de_l_apercu(client, dossier_pv):
+    """US-IHM-03, critère 1 (prompt 64) : même composant que les autres
+    listes — recherche, filtre (brigade) et tri sur la liste des
+    stagiaires de l'aperçu du procès-verbal."""
+    autre_brigade = creer_brigade(dossier_pv.redacteur, dossier_pv.session, "PVF2")
+    stagiaire_bas = _noter_dans_brigade(dossier_pv, dossier_pv.brigade, "PVFA", 8)
+    stagiaire_haut = _noter_dans_brigade(dossier_pv, autre_brigade, "PVFB", 18)
+    client.force_login(dossier_pv.examens)
+    url = reverse("evaluations:apercu_proces_verbal", args=[dossier_pv.session.pk])
+    base = {"type_pv": "fin_de_formation", "evaluation_pk": "", "numero": ""}
+
+    reponse = client.get(url, {**base, "recherche": str(stagiaire_bas)})
+    contenu = reponse.content.decode("utf-8")
+    assert str(stagiaire_bas) in contenu
+    assert str(stagiaire_haut) not in contenu
+
+    reponse = client.get(url, {**base, "brigade": str(autre_brigade)})
+    contenu = reponse.content.decode("utf-8")
+    assert str(stagiaire_haut) in contenu
+    assert str(stagiaire_bas) not in contenu
+
+    # Tri par défaut (rang_session croissant) : la meilleure moyenne (rang 1) d'abord.
+    reponse_croissant = client.get(url, {**base, "tri": "rang_session"})
+    contenu_croissant = reponse_croissant.content.decode("utf-8")
+    assert contenu_croissant.index(str(stagiaire_haut)) < contenu_croissant.index(str(stagiaire_bas))
+
+    reponse_decroissant = client.get(url, {**base, "tri": "-rang_session"})
+    contenu_decroissant = reponse_decroissant.content.decode("utf-8")
+    assert contenu_decroissant.index(str(stagiaire_bas)) < contenu_decroissant.index(str(stagiaire_haut))
+
+
 def test_apercu_http_affiche_les_decisions(client, dossier_pv):
+    """1.2 (prompt 47) ; GET depuis le prompt 64 (US-IHM-03) : l'aperçu ne
+    fait qu'afficher, jamais une écriture — voir evaluations.views_
+    proces_verbal._evaluation_depuis_requete."""
     _noter(dossier_pv, "PVH1")
     client.force_login(dossier_pv.examens)
 
-    reponse = client.post(
+    reponse = client.get(
         reverse("evaluations:apercu_proces_verbal", args=[dossier_pv.session.pk]),
         {"type_pv": "fin_de_formation", "evaluation_pk": "", "numero": ""},
     )
@@ -49,7 +93,7 @@ def test_apercu_http_d_une_evaluation_n_affiche_aucune_decision(client, dossier_
     _noter(dossier_pv, "PVH5")
     client.force_login(dossier_pv.examens)
 
-    reponse = client.post(
+    reponse = client.get(
         reverse("evaluations:apercu_proces_verbal", args=[dossier_pv.session.pk]),
         {
             "type_pv": "evaluation",
