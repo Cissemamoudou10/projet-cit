@@ -597,6 +597,12 @@ ECRANS_ECRITURE = [
         "noyau.evaluations_ecriture",
         lambda objets: [objets["session"].pk],
     ),
+    # --- evaluations : détail d'une moyenne par module (US-EVAL-12, prompt 64) ---
+    EcranEcriture(
+        "evaluations:detail_moyenne",
+        "noyau.evaluations_ecriture",
+        lambda objets: [objets["session"].pk, objets["stagiaire"].pk],
+    ),
     # --- evaluations : procès-verbaux (US-EVAL-07, prompt 46) --- V10 :
     # générer seul suit evaluations_ecriture ; consulter/télécharger
     # suivent evaluations_lecture (examens ET Direction), hors de cette
@@ -707,8 +713,9 @@ ECRANS_ECRITURE = [
 # (prompt 48, US-PLAN-11 : un seul écran de lancement, même permission que
 # la génération, `programme_ecriture`). 132 après la suppression d'un
 # programme en brouillon (évolution du prompt 53, Temps 2). 133 après la
-# suppression d'une évaluation (B-A2, prompt 61).
-assert len(ECRANS_ECRITURE) == 133
+# suppression d'une évaluation (B-A2, prompt 61). 134 après le détail d'une
+# moyenne par module (US-EVAL-12, prompt 64).
+assert len(ECRANS_ECRITURE) == 134
 
 
 def _groupes_sans(permission):

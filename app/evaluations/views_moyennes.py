@@ -23,11 +23,19 @@ from noyau.exceptions import ErreurIntrouvable
 from noyau.listes import colonne_triee, correspond_filtre, correspond_recherche
 from noyau.pagination import paginer
 from organisation.services.session import ServiceSession
+from organisation.services.stagiaire import ServiceStagiaire
 
 
 def _session_ou_404(pk):
     try:
         return ServiceSession.obtenir(pk)
+    except ErreurIntrouvable as erreur:
+        raise Http404 from erreur
+
+
+def _stagiaire_ou_404(pk):
+    try:
+        return ServiceStagiaire.obtenir(pk)
     except ErreurIntrouvable as erreur:
         raise Http404 from erreur
 
@@ -78,10 +86,15 @@ def _colonnes(tri_actuel):
     ]
 
 
-def _ligne(resultat):
+def _ligne(resultat, session_pk):
+    url_detail = reverse("evaluations:detail_moyenne", args=[session_pk, resultat.stagiaire.pk])
     return {
         "cellules": [
-            str(resultat.stagiaire),
+            format_html(
+                '<a href="{}" class="text-marine-700 no-underline hover:underline">{}</a>',
+                url_detail,
+                resultat.stagiaire,
+            ),
             str(resultat.brigade),
             format_html('<span class="tabular-nums">{}</span>', resultat.moyenne),
             format_html('<span class="tabular-nums">{}</span>', resultat.rang_session),
@@ -131,9 +144,31 @@ def vue_moyennes(request, session_pk):
             "masquer_filtre_archive": True,
             "url_liste": reverse("evaluations:moyennes_session", args=[session.pk]),
             "colonnes": _colonnes(tri_actuel),
-            "lignes": [_ligne(resultat) for resultat in page] if page else [],
+            "lignes": [_ligne(resultat, session.pk) for resultat in page] if page else [],
             "libelle_vide": "Aucun stagiaire ne correspond aux filtres",
             "texte_vide": "Ajustez la recherche ou réinitialisez les filtres.",
             "page": page,
+        },
+    )
+
+
+@exige_habilitation(PERMISSION_ECRITURE)
+def vue_detail_moyenne(request, session_pk, stagiaire_pk):
+    """US-EVAL-12 : détail par module — `ServiceMoyenne.detailler` fait
+    toute la décision (calcul, journalisation), cette vue ne fait
+    qu'afficher."""
+    session = _session_ou_404(session_pk)
+    stagiaire = _stagiaire_ou_404(stagiaire_pk)
+    try:
+        detail = ServiceMoyenne.detailler(request.user, session, stagiaire)
+    except ErreurIntrouvable as erreur:
+        raise Http404 from erreur
+    return render(
+        request,
+        "evaluations/detail_moyenne.html",
+        {
+            "session": session,
+            "detail": detail,
+            "url_liste": reverse("evaluations:moyennes_session", args=[session.pk]),
         },
     )

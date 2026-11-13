@@ -138,6 +138,11 @@ class TypeAction(models.TextChoices):
     (`noyau.services.gestion`) ; c'est un acte distinct, réservé au
     brouillon jamais soumis (S2), qui efface le programme, ses séances et
     ses lignes sans toucher au journal lui-même (RG-27).
+
+    `CONSULTATION_MOYENNES` (US-EVAL-12, prompt 64) — une extension de
+    plus, même patron que `CONSULTATION_NOTES` : le détail par module de la
+    moyenne d'un stagiaire est une donnée aussi sensible que la note
+    elle-même (M8), chaque consultation est journalisée.
     """
 
     ECHEC_AUTHENTIFICATION = "echec_authentification", "Échec d'authentification"
@@ -180,6 +185,7 @@ class TypeAction(models.TextChoices):
     )
     CLOTURE_SESSION = "cloture_session", "Clôture d'une session"
     SUPPRESSION_PROGRAMME = "suppression_programme", "Suppression d'un programme"
+    CONSULTATION_MOYENNES = "consultation_moyennes", "Consultation du détail d'une moyenne"
 
 
 class EntreeJournal(ModeleHorodate):
