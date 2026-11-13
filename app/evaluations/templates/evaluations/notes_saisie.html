@@ -27,6 +27,38 @@
       Aucun stagiaire actif dans le périmètre de cette évaluation.
     </p>
   {% else %}
+    {# US-IHM-03 (prompt 64) : recherche et filtre SANS PAGINATION — toutes
+       les lignes restent dans le formulaire, un script montre/masque
+       seulement leur affichage (data-stagiaire/data-renseigne), jamais le
+       sous-ensemble soumis : changer de filtre ne peut pas faire perdre
+       une note déjà saisie, rien n'est retiré du DOM ni de la requête. #}
+    <div class="flex flex-wrap items-end gap-3 border-b border-gris-trait px-4 py-2.5">
+      <div>
+        <label for="filtre-recherche-notes"
+               class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+          Stagiaire</label>
+        <input type="text" id="filtre-recherche-notes"
+               class="h-controle w-64 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                      outline-none hover:border-marine-700
+                      focus:border-marine-700 focus:ring-2 focus:ring-focus">
+      </div>
+      <div>
+        <label for="filtre-etat-notes"
+               class="mb-1 block text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+          Afficher</label>
+        <select id="filtre-etat-notes"
+                class="h-controle w-52 rounded border border-gris-trait bg-fond-bloc px-2.5 text-sm
+                       outline-none hover:border-marine-700
+                       focus:border-marine-700 focus:ring-2 focus:ring-focus">
+          <option value="">Tous</option>
+          <option value="non-renseigne">Non renseignés</option>
+          <option value="absent">Absents</option>
+        </select>
+      </div>
+      <p class="text-xs text-gris-lecture">
+        <span id="filtre-notes-compte"></span>
+      </p>
+    </div>
     <form method="post" action="{{ url_verifier }}">
       {% csrf_token %}
       <table class="w-full border-collapse text-sm">
@@ -40,9 +72,11 @@
                                    font-semibold uppercase tracking-wider text-blanc">Absent</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="corps-notes">
           {% for ligne in lignes %}
-            <tr class="h-ligne border-t border-gris-trait">
+            <tr class="h-ligne border-t border-gris-trait" data-stagiaire="{{ ligne.stagiaire|lower }}"
+                data-renseigne="{% if ligne.valeur or ligne.absent %}1{% else %}0{% endif %}"
+                data-absent="{% if ligne.absent %}1{% else %}0{% endif %}">
               <th scope="row" class="px-3 py-1.5 text-left font-medium">{{ ligne.stagiaire }}</th>
               <td class="px-3 py-1.5">
                 <input type="text" inputmode="decimal" name="valeur_{{ ligne.stagiaire.pk }}"
@@ -72,4 +106,33 @@
     </form>
   {% endif %}
 </section>
+<script>
+  (function () {
+    const recherche = document.getElementById("filtre-recherche-notes");
+    const etat = document.getElementById("filtre-etat-notes");
+    const compte = document.getElementById("filtre-notes-compte");
+    const lignes = Array.from(document.querySelectorAll("#corps-notes tr"));
+
+    function appliquer() {
+      const texte = recherche.value.trim().toLowerCase();
+      const filtreEtat = etat.value;
+      let visibles = 0;
+      lignes.forEach(function (ligne) {
+        const correspondTexte = !texte || ligne.dataset.stagiaire.includes(texte);
+        const correspondEtat =
+          !filtreEtat ||
+          (filtreEtat === "non-renseigne" && ligne.dataset.renseigne === "0") ||
+          (filtreEtat === "absent" && ligne.dataset.absent === "1");
+        const visible = correspondTexte && correspondEtat;
+        ligne.hidden = !visible;
+        if (visible) visibles += 1;
+      });
+      compte.textContent = visibles + " / " + lignes.length + " affiché(s) — rien n'est retiré de la saisie.";
+    }
+
+    recherche.addEventListener("input", appliquer);
+    etat.addEventListener("change", appliquer);
+    appliquer();
+  })();
+</script>
 {% endblock %}

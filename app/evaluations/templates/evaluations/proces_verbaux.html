@@ -61,8 +61,12 @@
             font-semibold uppercase tracking-wide text-marine-900">
     Générer un procès-verbal
   </p>
-  <form method="post" action="{{ url_apercu }}" class="flex flex-wrap items-end gap-3 px-4 py-3.5">
-    {% csrf_token %}
+  {# US-IHM-03 (prompt 64) : GET, pas POST — l'aperçu ne fait qu'afficher
+     (ServiceProcesVerbal.apercu n'écrit rien), ce qui permet la recherche/
+     le filtre/le tri de proces_verbal_apercu.html en querystring, comme
+     sur les autres listes. Seule « Générer » (plus loin) écrit, et reste
+     en POST. #}
+  <form method="get" action="{{ url_apercu }}" class="flex flex-wrap items-end gap-3 px-4 py-3.5">
     <div class="w-56">
       <label class="mb-1 block text-xs font-medium tracking-wide text-gris-lecture">Type</label>
       <select name="type_pv" class="h-controle w-full rounded border border-gris-trait bg-fond-bloc

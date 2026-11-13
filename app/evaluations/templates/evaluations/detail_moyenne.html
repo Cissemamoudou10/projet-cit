@@ -1,0 +1,109 @@
+{% extends "noyau/base.html" %}
+{% load static %}
+
+{% block titre %}Détail de la moyenne — {{ detail.stagiaire }} — {{ block.super }}{% endblock %}
+
+{% block entete_page %}
+<div class="border-b border-gris-trait bg-fond-bloc px-6 pb-3 pt-4">
+  <a href="{{ url_liste }}"
+     class="mb-1.5 inline-flex items-center gap-1.5 text-xs text-marine-700 no-underline hover:underline">
+    <svg class="h-3 w-3 rotate-180 text-marine-700" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#chevron-droite"></use>
+    </svg>
+    Retour aux moyennes
+  </a>
+  <h1 class="font-titre text-xl font-semibold leading-tight">
+    Détail de la moyenne — {{ detail.stagiaire }}</h1>
+  <p class="text-sm text-gris-lecture">{{ detail.brigade }} — {{ session }}</p>
+</div>
+{% endblock %}
+
+{% block contenu %}
+<section class="mt-4 grid grid-cols-3 gap-6">
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Moyenne générale</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">
+      {% if detail.moyenne != None %}{{ detail.moyenne }}{% else %}—{% endif %}</p>
+  </div>
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Rang (session)</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">
+      {{ detail.rang_session|default:"—" }}</p>
+  </div>
+  <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+      Rang (brigade)</p>
+    <p class="font-titre text-xl font-bold leading-none tabular-nums">
+      {{ detail.rang_brigade|default:"—" }}</p>
+  </div>
+</section>
+
+<p class="mt-4 text-xs text-gris-lecture">
+  La moyenne générale pondère la note de chaque module par son coefficient ; la
+  note d'un module pondère sa moyenne formative et sa moyenne certificative par
+  leur poids respectif.
+</p>
+
+{% if not detail.modules %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3.5">
+    <p class="text-sm text-gris-lecture">Aucun module évalué pour ce stagiaire.</p>
+  </section>
+{% endif %}
+
+{% for module_detail in detail.modules %}
+  <section class="mt-4 border border-gris-trait bg-fond-bloc">
+    <div class="flex items-center justify-between border-b border-gris-trait bg-fond-bande px-4 py-2">
+      <p class="font-titre text-xs font-semibold uppercase tracking-wide text-marine-900">
+        {{ module_detail.module.matiere }}</p>
+      <p class="text-xs text-gris-lecture tabular-nums">
+        Coefficient {{ module_detail.coefficient }} — note du module
+        {% if module_detail.note_module != None %}{{ module_detail.note_module|floatformat:2 }}/20{% else %}—{% endif %}
+      </p>
+    </div>
+    <div class="grid grid-cols-2">
+      <div class="border-r border-gris-trait px-4 py-2.5">
+        <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+          Formative — poids {{ module_detail.poids_formatif }}</p>
+        {% if module_detail.notes_formatives %}
+          <ul class="divide-y divide-gris-trait text-sm">
+            {% for note in module_detail.notes_formatives %}
+              <li class="flex items-center justify-between py-1">
+                <span>{{ note.evaluation.date|date:"d/m/Y" }}</span>
+                <span class="tabular-nums">
+                  {% if note.absent %}Absent
+                  {% elif note.valeur != None %}{{ note.valeur|floatformat:2 }}/20
+                  {% else %}—{% endif %}
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-sm text-gris-lecture">Aucune évaluation formative.</p>
+        {% endif %}
+      </div>
+      <div class="px-4 py-2.5">
+        <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">
+          Certificative — poids {{ module_detail.poids_certificatif }}</p>
+        {% if module_detail.notes_certificatives %}
+          <ul class="divide-y divide-gris-trait text-sm">
+            {% for note in module_detail.notes_certificatives %}
+              <li class="flex items-center justify-between py-1">
+                <span>{{ note.evaluation.date|date:"d/m/Y" }}</span>
+                <span class="tabular-nums">
+                  {% if note.absent %}Absent
+                  {% elif note.valeur != None %}{{ note.valeur|floatformat:2 }}/20
+                  {% else %}—{% endif %}
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-sm text-gris-lecture">Aucune évaluation certificative.</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endfor %}
+{% endblock %}

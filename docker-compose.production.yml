@@ -61,6 +61,12 @@ services:
       # ne sert qu'à la commande manuelle `migrate` (voir INSTALLATION.md).
       BASE_UTILISATEUR: ${BASE_UTILISATEUR}
       BASE_MOT_DE_PASSE: ${BASE_MOT_DE_PASSE}
+      # RG-66 (prompt 64) — seul paramètre que le terrain doit pouvoir
+      # ajuster sans reconstruire l'image ; procédure d'ajustement dans
+      # docs/exploitation/EXPLOITATION.md. Défaut Python (1.5) repris ici
+      # explicitement : sans cette ligne, ${PLAFOND_HEBDOMADAIRE_COEFFICIENT}
+      # non défini dans .env ne serait jamais transmis au conteneur.
+      PLAFOND_HEBDOMADAIRE_COEFFICIENT: ${PLAFOND_HEBDOMADAIRE_COEFFICIENT:-1.5}
     depends_on:
       base:
         condition: service_healthy

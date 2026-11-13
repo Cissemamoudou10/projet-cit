@@ -7,7 +7,7 @@ class EvaluationsConfig(AppConfig):
     verbose_name = "Évaluations"
 
     def ready(self):
-        from evaluations import selectors
+        from evaluations import selectors, selectors_accueil
         from evaluations.reinitialisation_demonstration_j2 import (
             vider_evaluations_demonstration_j2,
         )
@@ -17,6 +17,7 @@ class EvaluationsConfig(AppConfig):
             ResolveurOccupationsEpreuves,
             ResolveurReinitialisationEvaluations,
             ResolveurSeancesDeControle,
+            ResolveurTableauBordAccueil,
         )
 
         ResolveurSeancesDeControle.installer_fournisseur(selectors.seances_de_controle_parmi)
@@ -28,3 +29,4 @@ class EvaluationsConfig(AppConfig):
         ResolveurReinitialisationEvaluations.installer_fournisseur(
             vider_evaluations_demonstration_j2
         )
+        ResolveurTableauBordAccueil.installer_fournisseur(selectors_accueil.tableau_de_bord_accueil)

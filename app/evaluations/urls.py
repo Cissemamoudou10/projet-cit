@@ -31,6 +31,11 @@ urlpatterns = [
         name="moyennes_session",
     ),
     path(
+        "evaluations/sessions/<int:session_pk>/moyennes/<int:stagiaire_pk>/",
+        views_moyennes.vue_detail_moyenne,
+        name="detail_moyenne",
+    ),
+    path(
         "evaluations/sessions/<int:session_pk>/proces-verbaux/",
         views_proces_verbal.vue_proces_verbaux,
         name="proces_verbaux",

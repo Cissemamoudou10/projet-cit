@@ -7,4 +7,133 @@
   <h1 class="font-titre text-xl font-semibold">Bienvenue, {{ user.grade }} {{ user.last_name|upper }}</h1>
   <p class="mt-1 text-sm text-gris-lecture">Profil : {{ user.get_profil_display }}</p>
 </div>
+
+{% if tableau %}
+  {% with t=tableau %}
+    {% if t.nombre_formations != None or t.nombre_instructeurs != None or t.nombre_lieux != None %}
+      <section class="mt-6">
+        <p class="mb-2 font-titre text-xs font-semibold uppercase tracking-wide text-gris-lecture">
+          Chiffres d'ensemble</p>
+        <div class="grid grid-cols-4 gap-3">
+          {% if t.nombre_formations != None %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Formations</p>
+              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_formations }}</p>
+            </div>
+          {% endif %}
+          {% if t.nombre_matieres != None %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Matières</p>
+              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_matieres }}</p>
+            </div>
+          {% endif %}
+          {% if t.nombre_instructeurs != None %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Instructeurs</p>
+              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_instructeurs }}</p>
+            </div>
+          {% endif %}
+          {% if t.nombre_lieux != None %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Lieux</p>
+              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_lieux }}</p>
+            </div>
+          {% endif %}
+          {% if t.nombre_sessions_en_cours != None %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Sessions en cours</p>
+              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_sessions_en_cours }}</p>
+            </div>
+          {% endif %}
+          {% if t.nombre_sessions_cloturees != None %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Sessions clôturées</p>
+              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_sessions_cloturees }}</p>
+            </div>
+          {% endif %}
+          {% if t.nombre_stagiaires_actifs != None %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Stagiaires actifs</p>
+              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_stagiaires_actifs }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+    {% endif %}
+
+    {% if t.nombre_matieres_sans_instructeur != None or t.nombre_alertes_ecart != None or t.nombre_programmes_en_attente != None or t.nombre_evaluations_non_pretes != None %}
+      <section class="mt-6">
+        <p class="mb-2 font-titre text-xs font-semibold uppercase tracking-wide text-gris-lecture">
+          Points d'attention</p>
+        <ul class="divide-y divide-gris-trait border border-gris-trait bg-fond-bloc text-sm">
+          {% if t.nombre_matieres_sans_instructeur != None %}
+            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_matieres_sans_instructeur > 0 %}bg-etat-ecart-fond{% endif %}">
+              <span>Matières sans instructeur qualifié</span>
+              <span class="font-semibold tabular-nums {% if t.nombre_matieres_sans_instructeur > 0 %}text-etat-ecart{% else %}text-gris-lecture{% endif %}">
+                {{ t.nombre_matieres_sans_instructeur }}</span>
+            </li>
+          {% endif %}
+          {% if t.nombre_alertes_ecart != None %}
+            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_alertes_ecart > 0 %}bg-etat-ecart-fond{% endif %}">
+              <span>Alertes d'écart de volume horaire</span>
+              {% if t.nombre_alertes_ecart > 0 %}
+                <a href="{% url 'planification:alertes_ecart' %}"
+                   class="font-semibold tabular-nums text-etat-ecart hover:underline">{{ t.nombre_alertes_ecart }}</a>
+              {% else %}
+                <span class="font-semibold tabular-nums text-gris-lecture">0</span>
+              {% endif %}
+            </li>
+          {% endif %}
+          {% if t.nombre_programmes_en_attente != None %}
+            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_programmes_en_attente > 0 %}bg-etat-ecart-fond{% endif %}">
+              <span>Programmes en attente de validation ou de signature</span>
+              {% if t.nombre_programmes_en_attente > 0 %}
+                <a href="{% url 'planification:attente_validation' %}"
+                   class="font-semibold tabular-nums text-etat-ecart hover:underline">{{ t.nombre_programmes_en_attente }}</a>
+              {% else %}
+                <span class="font-semibold tabular-nums text-gris-lecture">0</span>
+              {% endif %}
+            </li>
+          {% endif %}
+          {% if t.nombre_evaluations_non_pretes != None %}
+            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_evaluations_non_pretes > 0 %}bg-etat-ecart-fond{% endif %}">
+              <span>Évaluations à venir non prêtes</span>
+              {% if t.nombre_evaluations_non_pretes > 0 %}
+                <a href="{% url 'evaluations:liste_evaluations' %}"
+                   class="font-semibold tabular-nums text-etat-ecart hover:underline">{{ t.nombre_evaluations_non_pretes }}</a>
+              {% else %}
+                <span class="font-semibold tabular-nums text-gris-lecture">0</span>
+              {% endif %}
+            </li>
+          {% endif %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% if t.semaine_courante or t.semaine_suivante %}
+      <section class="mt-6">
+        <p class="mb-2 font-titre text-xs font-semibold uppercase tracking-wide text-gris-lecture">
+          Programme hebdomadaire</p>
+        <div class="grid grid-cols-2 gap-3">
+          {% if t.semaine_courante %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">
+                Semaine en cours — {{ t.semaine_courante.lundi|date:"d/m" }}</p>
+              <p class="font-titre text-base font-semibold">
+                {{ t.semaine_courante.etat_libelle|default:"Aucun programme" }}</p>
+            </div>
+          {% endif %}
+          {% if t.semaine_suivante %}
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
+              <p class="text-2xs uppercase tracking-wide text-gris-lecture">
+                Semaine suivante — {{ t.semaine_suivante.lundi|date:"d/m" }}</p>
+              <p class="font-titre text-base font-semibold">
+                {{ t.semaine_suivante.etat_libelle|default:"Aucun programme" }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+    {% endif %}
+  {% endwith %}
+{% endif %}
 {% endblock %}

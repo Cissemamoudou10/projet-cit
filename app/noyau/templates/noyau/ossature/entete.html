@@ -2,7 +2,8 @@
 <header class="bg-marine-900 text-blanc">
   <div class="flex h-12 items-center justify-between px-6">
     <div class="flex items-center gap-6">
-      <span class="font-titre text-md font-bold tracking-wide">
+      <span class="flex items-center gap-2.5 font-titre text-md font-bold tracking-wide">
+        <img src="{% static 'images/logo.png' %}" alt="" class="h-8 w-8 shrink-0">
         CENTRE D'INSTRUCTION — GESTION DES ACTIVITÉS
       </span>
       {% include "noyau/ossature/navigation.html" %}
@@ -18,28 +19,32 @@
           <span class="font-semibold">{{ grille_active.intitule }}</span>
         </span>
       {% endif %}
-      <span class="flex items-center gap-2">
-        <svg class="h-4 w-4 text-gris-trait" aria-hidden="true">
-          <use href="{% static 'icones/planche.svg' %}#groupe"></use>
-        </svg>
-        <span>{{ user.grade }} {{ user.last_name|upper }}</span>
-        <!-- écart charte : pas d'attribut cellule sur Utilisateur, profil s'y substitue — voir docs/suivi/CHARTE-INTEGRATION.md -->
-        <span class="text-gris-trait">— {{ user.get_profil_display }}</span>
-      </span>
       {% if user.is_authenticated %}
-        <a href="{% url 'administration:changer_mot_de_passe' %}"
-           class="text-gris-trait underline-offset-2 transition-colors duration-survol
-                  hover:text-blanc hover:underline">
-          Mot de passe
-        </a>
-        <form method="post" action="{% url 'administration:deconnexion' %}">
-          {% csrf_token %}
-          <button type="submit"
-                  class="text-gris-trait underline-offset-2 transition-colors duration-survol
-                         hover:text-blanc hover:underline">
-            Déconnexion
-          </button>
-        </form>
+        <details class="relative inline-block">
+          <summary class="inline-flex cursor-pointer list-none items-center gap-2">
+            <svg class="h-4 w-4 text-gris-trait" aria-hidden="true">
+              <use href="{% static 'icones/planche.svg' %}#groupe"></use>
+            </svg>
+            <span>{{ user.grade }} {{ user.last_name|upper }}</span>
+            <!-- écart charte : pas d'attribut cellule sur Utilisateur, profil s'y substitue — voir docs/suivi/CHARTE-INTEGRATION.md -->
+            <span class="text-gris-trait">— {{ user.get_profil_display }}</span>
+            <svg class="h-3.5 w-3.5 stroke-gris-trait" aria-hidden="true">
+              <use href="{% static 'icones/planche.svg' %}#chevron-bas"></use>
+            </svg>
+          </summary>
+          <div class="absolute right-0 z-30 mt-1 min-w-48 animate-ouvrir border border-gris-trait
+                      bg-fond-bloc text-sm text-encre shadow-superpose">
+            <a href="{% url 'administration:changer_mot_de_passe' %}"
+               class="flex items-center gap-2.5 px-3 py-1.5 no-underline text-encre
+                      transition-colors duration-survol hover:bg-fond-survol">Changer le mot de passe</a>
+            <form method="post" action="{% url 'administration:deconnexion' %}" class="border-t border-gris-trait">
+              {% csrf_token %}
+              <button type="submit"
+                      class="flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-encre
+                             transition-colors duration-survol hover:bg-fond-survol">Déconnexion</button>
+            </form>
+          </div>
+        </details>
       {% endif %}
     </div>
   </div>
