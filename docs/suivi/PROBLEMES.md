@@ -23,6 +23,13 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-81 — `EXPLOITATION.md` documente `compose/docker-compose.production.yml` et `compose/.env`, absents du dépôt à ces chemins
+**Date** 2026-11-13 · **Story** Prompt 64, hors story (`PLAFOND_HEBDOMADAIRE_COEFFICIENT`) · **État** : résolu — faux problème
+**Symptôme** — en ajoutant la procédure d'ajustement de `PLAFOND_HEBDOMADAIRE_COEFFICIENT` à `docs/exploitation/EXPLOITATION.md`, j'ai repris la convention de chemin déjà en place dans tout ce document (« Mettre à jour vers une nouvelle version » notamment) : `compose/docker-compose.production.yml`, `compose/.env`. Le dépôt git, lui, place `docker-compose.production.yml` et `.env.exemple` à la racine, pas sous `compose/`.
+**Cause** — `docs/exploitation/INSTALLATION.md` (§ structure du paquet, ligne 17, et §§ 3-4) confirme que `compose/` est le nom du dossier du PAQUET DE DÉPLOIEMENT livré au centre (`docker-compose.production.yml`, `.env.exemple`, etc. y sont copiés à l'assemblage), distinct de la racine du dépôt git — ce n'est pas un chemin erroné, seulement deux arborescences différentes pour deux usages différents.
+**Résolution** — aucune : la convention de chemin de `EXPLOITATION.md` est correcte, confirmée par `INSTALLATION.md`. Entrée conservée pour la trace de la vérification, pas pour un correctif.
+**Risque concerné** — aucun.
+
 ## P-80 — R03-SUI02-06 (RECETTE-03) : le dépassement n'était jamais atteignable avant la fin de session
 **Date** 2026-11-08 · **Story** US-SUI-02 (RECETTE-03, prompt 61 ter) · **État** : résolu (D-311)
 **Symptôme** — Test manuel R03-SUI02-06 : abaisser le prescrit de M7 (F6) sous le réalisé (5 h prescrites, 14,17 h réalisées, session en cours) devait signaler un dépassement (D-283). L'écran des alertes affichait « retard 11 % », jamais « dépassement ».
