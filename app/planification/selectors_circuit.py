@@ -39,6 +39,16 @@ def compte_en_attente():
     return programmes_en_attente().count()
 
 
+def compte_en_attente_validation_ou_signature():
+    """US-IHM-01 (prompt 64) : pour le tableau de bord d'accueil — `SOUMIS`
+    (en attente de validation pédagogique) ET `VALIDE` (validé, en attente
+    de signature du directeur, RG-46) ; `compte_en_attente()` ci-dessus ne
+    compte que le premier, pour l'écran dédié à cette seule étape."""
+    return ProgrammeHebdomadaire.objects.filter(
+        etat__in=(EtatProgramme.SOUMIS, EtatProgramme.VALIDE)
+    ).count()
+
+
 def auteurs_des_soumissions(programmes):
     """{pk du programme : auteur de sa dernière soumission}. Une seule requête,
     jamais une par programme."""

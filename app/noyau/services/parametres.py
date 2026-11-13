@@ -254,3 +254,31 @@ class ResolveurOccupationsEpreuves:
         if cls._fournisseur is not None:
             return cls._fournisseur(debut, fin)
         return []
+
+
+class ResolveurTableauBordAccueil:
+    """US-IHM-01, prompt 64 : la page d'accueil (`noyau:accueil`) présente
+    des chiffres et des points d'attention venant de `referentiel`,
+    `organisation`, `ressources`, `planification` ET `evaluations` —
+    `noyau` ne peut importer AUCUN d'entre eux. Seule `evaluations`, en
+    tête de la chaîne de dépendance, voit tout ; elle installe son
+    fournisseur ici, même motif que les autres résolveurs de ce module.
+
+    `resoudre(utilisateur)` rend l'objet de tableau de bord construit par
+    `evaluations.selectors_accueil.tableau_de_bord_accueil` (chaque champ
+    gardé par sa propre permission de lecture — « chaque profil n'y voit
+    que ce que la matrice d'habilitation lui permet »). Repli : aucun
+    fournisseur ⇒ `None`, le gabarit n'affiche alors aucun bloc.
+    """
+
+    _fournisseur = None
+
+    @classmethod
+    def installer_fournisseur(cls, fonction):
+        cls._fournisseur = fonction
+
+    @classmethod
+    def resoudre(cls, utilisateur):
+        if cls._fournisseur is not None:
+            return cls._fournisseur(utilisateur)
+        return None

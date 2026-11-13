@@ -8,12 +8,13 @@ Prompt 36. `evaluations_non_finalisees` l'est pour
 `ResolveurEvaluationsNonFinalisees` — C2, US-SES-09, prompt 47.
 """
 
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
+from django.utils import timezone
 
 from evaluations.models import Evaluation, OrganisationEpreuve, Sujet, Surveillance, TypeEvaluation
 from evaluations.services.moyenne import evaluations_de_la_session
 from noyau.intervalles import instant_de, se_recouvrent
-from organisation.models import Brigade
+from organisation.models import Brigade, EtatSession
 
 
 def seances_de_controle_parmi(ids_seances) -> frozenset:
@@ -81,6 +82,23 @@ def evaluations_non_pretes(ids_evaluations) -> frozenset:
         if (type_ == TypeEvaluation.CERTIFICATIVE and not a_retenu)
         or (type_ == TypeEvaluation.FORMATIVE and not a_sujet)
     )
+
+
+def evaluations_a_venir_non_pretes() -> int:
+    """US-IHM-01 (prompt 64), tableau de bord d'accueil : parmi les
+    évaluations À VENIR de sessions/brigades NON clôturées, celles qui ne
+    sont pas prêtes — même règle que `evaluations_non_pretes` ci-dessus.
+    Deux requêtes au total (les identifiants, puis leur statut), jamais
+    une par évaluation."""
+    aujourdhui = timezone.localdate()
+    ids = list(
+        Evaluation.objects.filter(date__gte=aujourdhui)
+        .exclude(
+            Q(session__etat=EtatSession.CLOTUREE) | Q(brigade__session__etat=EtatSession.CLOTUREE)
+        )
+        .values_list("pk", flat=True)
+    )
+    return len(evaluations_non_pretes(ids))
 
 
 def _lieux_et_instructeurs_par_epreuve(pks):
