@@ -5,6 +5,19 @@ réévaluation de R6) — ce que `ServiceContraintes` applique en Python, un sol
 devra le modéliser à l'identique, faute de quoi il optimiserait un problème
 différent de celui que le système contrôle réellement.
 
+> **Addendum du 12 novembre 2026 — document figé à l'état de l'étude R6 (septembre 2026), à compléter avant toute implantation d'un solveur.**
+>
+> Ce document décrit les **six** contraintes dures de la conception initiale (RG-34 à RG-39), et le prototype de l'étude (`etudes/solveur/`) n'en modélisait que **quatre** (RG-34, RG-35, RG-37, RG-39 — sans RG-36, RG-38 ni le refus de salle attitrée, voir `etudes/solveur/RECOMMANDATION.md`). Depuis, la recette de la phase 6 a modifié le problème que `ServiceContraintes` contrôle réellement. Un solveur futur (US-PLAN-08, déclassée en perspective) devra modéliser en plus :
+>
+> - **RG-05** — la matière appartient au référentiel de la formation suivie par la brigade (D-309, désormais dans `ServiceContraintes`) ;
+> - **RG-67** — une brigade ne peut pas avoir deux séances qui se chevauchent, toutes lignes d'une séance regroupée comprises (D-305) ;
+> - **RG-37, type de lieu** — le type de lieu partagé exigé par la matière est une contrainte dure, et plus seulement la catégorie (prompt 62) ;
+> - **RG-39, tolérance** — une séance reste plaçable tant que le volume déjà programmé est strictement inférieur au prescrit, le dépassement final restant inférieur à la durée d'une séance (D-304) ;
+> - **RG-66** — plafond hebdomadaire de génération par (matière, brigade) : (volume restant ÷ semaines restantes) × `PLAFOND_HEBDOMADAIRE_COEFFICIENT`, arrondi au créneau supérieur ; contrainte de génération seulement, jamais de `ServiceContraintes` (D-303) ;
+> - **RG-36, RG-38 et la salle attitrée**, déjà décrites ci-dessous mais absentes du prototype.
+>
+> Quel que soit le modèle, les placements d'un solveur passeraient par `ServiceEcritureSeance`, qui revérifie chaque séance par `ServiceContraintes` avant écriture : un modèle incomplet produirait des refus, jamais une séance invalide en base.
+
 Vocabulaire commun : une **candidate** est un tuple (brigade, élément de
 référentiel, instructeur, début, fin, lieu éventuel) — voir
 `planification.services.contraintes.Candidate`. Le solveur manipule des

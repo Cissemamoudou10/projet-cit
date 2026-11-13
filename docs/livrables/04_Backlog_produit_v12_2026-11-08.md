@@ -2,11 +2,11 @@
 
 User stories et critères d’acceptation · Système de gestion des activités de formation du CIT
 
-*Livrables 2 et 3 / 3 — Phase 2 · Version 11 du 23 octobre 2026 · Remplace la version 10 du 10 octobre 2026 · Artefact vivant*
+*Livrables 2 et 3 / 3 — Phase 2 · Version 12 du 8 novembre 2026 · Remplace la version 11 du 23 octobre 2026 · Artefact vivant*
 
 # **1. Méthode**
 
-Ce document constitue le backlog produit du projet. Il traduit les 61 besoins fonctionnels du cahier des charges en user stories, chacune assortie de ses critères d’acceptation.
+Ce document constitue le backlog produit du projet. Il traduit les 61 besoins fonctionnels du cahier des charges, complétés par les exigences découvertes en recette, en user stories, chacune assortie de ses critères d’acceptation.
 
 ## **1.1 Structure retenue**
 
@@ -35,7 +35,7 @@ Les stories sont estimées en **points de complexité** selon la suite de Fibona
 | 8 | Élevée | Algorithme, workflow multi-états ou nombreuses interactions |
 | 13 | Très élevée | Complexité algorithmique forte ; à découper si possible |
 
-| **Clé de conversion et contrôle de cohérence — état au 23 octobre 2026, fin du développement** Le backlog totalise **263 points**, inchangé depuis la version 10. **Quatre sprints consécutifs ont livré cent pour cent de leur périmètre : 58 points sur 58, 61 sur 61, 50 sur 50, puis 55 sur 55.** L’estimation en points est validée par la mesure, et c’est désormais un résultat définitif : le développement est clos. La clé de conversion de 1,3 heure par point, en revanche, **ne sera jamais vérifiée par un relevé contemporain** : la colonne des heures humaines n’a été renseignée pour aucune des cinquante-deux stories livrées. Le relevé du sprint 4 mesure, comme celui du sprint 3, le temps de session de l’outil de développement, avec des interruptions non toujours notées. Le mémoire présentera donc l’estimation en points comme la seule mesure validée, et la clé de conversion comme une hypothèse de planification jamais vérifiée, avec la raison. Un relevé rétrospectif déclaratif reste possible, à condition d’être présenté comme tel. |
+| **Clé de conversion et contrôle de cohérence — état au 23 octobre 2026, fin du développement** Le backlog totalisait **263 points** à la fin du développement, inchangé depuis la version 10 ; la version 12 y ajoute quatre stories d’ergonomie (13 points), soit 276. **Quatre sprints consécutifs ont livré cent pour cent de leur périmètre : 58 points sur 58, 61 sur 61, 50 sur 50, puis 55 sur 55.** L’estimation en points est validée par la mesure, et c’est désormais un résultat définitif : le développement est clos. La clé de conversion de 1,3 heure par point, en revanche, **ne sera jamais vérifiée par un relevé contemporain** : la colonne des heures humaines n’a été renseignée pour aucune des cinquante-deux stories livrées. Le relevé du sprint 4 mesure, comme celui du sprint 3, le temps de session de l’outil de développement, avec des interruptions non toujours notées. Le mémoire présentera donc l’estimation en points comme la seule mesure validée, et la clé de conversion comme une hypothèse de planification jamais vérifiée, avec la raison. Un relevé rétrospectif déclaratif reste possible, à condition d’être présenté comme tel. |
 | --- |
 
 ## **1.4 Historique des versions**
@@ -50,9 +50,10 @@ Les encadrés d’évolution des versions 5 à 10 sont conservés dans les versi
 | 8 | 08/09 | Clôture du sprint 1 | 60 · 255 | Quatre stories précisées ; contradiction d’unicité tranchée sur US-REF-01 |
 | 9 | 30/09 | Clôture du sprint 2 | 60 · 255 | Six stories précisées ; US-PLAN-08 déclassée ; trois principes d’arbitrage posés |
 | 10 | 10/10 | Clôture du sprint 3, jalon J2 | 61 · 263 | Neuf stories réécrites ; US-PLAN-05 et US-VAL-05 réestimées ; US-EVAL-11 créée |
-| **11** | **23/10** | **Clôture du sprint 4, jalon J3** | **61 · 263** | **Voir ci-dessous** |
+| 11 | 23/10 | Clôture du sprint 4, jalon J3 | 61 · 263 | Quatorze stories précisées ; architecture maintenue (validée le 22/10) |
+| **12** | **08/11** | **Recette de la phase 6 (RECETTE-00 à 04 prononcées)** | **65 · 276** | **Voir ci-dessous** |
 
-| **Évolutions de la version 11 — clôture du sprint 4, jalon J3** La version 11 est la dernière version de développement du backlog : le sprint 4 a livré ses quatorze stories, cinquante-cinq points, et le jalon J3 a été atteint le 20 octobre, quatre jours avant son échéance. **Les cinquante-deux stories planifiées hors réserve sont livrées, soit 224 points sur 224.** Les neuf stories de la réserve, 39 points, ne sont pas développées : la phase 6 n’ouvre aucune story. **Aucune estimation n’est révisée, aucune story n’est créée ni retirée** : le périmètre reste de 61 stories et 263 points. **Quatorze stories sont précisées** pour décrire le comportement arbitré et livré, à partir des seize écarts consolidés dans le registre des écarts du sprint 4 et des décisions du sprint : US-REF-03, US-REF-09, US-SES-09, US-INS-04, US-PLAN-07, US-PLAN-08, US-PLAN-11, US-EVAL-07, US-EVAL-11, US-SUI-01, US-SUI-02, US-SUI-03, US-SUI-05 et US-SUI-06. Chaque précision est signalée par une note v11 sous la story concernée — pour US-PLAN-08 et US-SUI-05, dans le texte même —, et a été vérifiée à sa destination, critère par critère, conformément à la règle posée en version 10. **Trois corrections de fond.** Le critère 5 d’US-SUI-01 omettait deux profils, que la matrice d’habilitation désigne : il est corrigé, comme celui d’US-SUI-03, sur la même règle de précédent. US-REF-03 ne nommait ni le coefficient ni les deux poids, pourtant exigés par le calcul des moyennes : leur absence de critère explique qu’ils n’aient été implantés qu’au sprint 4. US-EVAL-07 confondait deux documents : le procès-verbal de fin de formation, qui porte la décision, et le procès-verbal d’une évaluation, qui n’en porte aucune. **Trois reports dits orphelins sont rangés.** D-212 et D-215, signalés sans story à la clôture du sprint 4, sont exactement les critères 2 et 1 d’US-EVAL-11, créée en version 10 pour les recevoir : ils ne sont pas orphelins mais en réserve avec elle. D-182 était déjà classé Won’t en version 10 (section 11.2). **Une demande d’évolution tranchée.** La séparation de l’application en un front-end et un back-end distincts, demandée par l’encadrant pendant le sprint 4, a fait l’objet d’une justification écrite ; l’encadrant a validé le maintien de l’architecture le 22 octobre. Elle est classée Won’t pour la version courante, comme perspective d’évolution (section 11.2). **Les travaux techniques hors backlog du sprint 4 sont tous clos** (section 11.1). **Ce que la version 11 ne modifie pas** : les estimations, les priorités et la clé de conversion (section 1.3). |
+| **Évolutions de la version 12 — recette de la phase 6** La version 12 reporte au backlog ce que la recette a appris. Cinq cahiers sur six sont prononcés au 8 novembre (RECETTE-00, 00 bis, 01, 02, 03 et 04) ; RECETTE-05, transverse, est prévue le 13 novembre. **Quatre exigences manquantes, découvertes par les scénarios de bout en bout, deviennent des critères** : l'étalement hebdomadaire d'une matière (RG-66, D-303), le dépassement de moins d'une séance pour qu'une matière s'achève (RG-39 a modifiée, D-304), l'interdiction de deux séances simultanées pour une même brigade (RG-67, D-305) et le type de lieu exigé par la matière comme contrainte dure (prompt 62). **Quatre précisions de portée** : le volume se compte par matière et par brigade (D-302) ; RG-05 est vérifiée par le contrôleur de contraintes sur tous les chemins (D-309, qui remplace D-306) ; un lot de remplacement porte sur une seule semaine (D-307) ; la saisie manuelle choisit un créneau de la grille active (RG-64 amendée, D-310). **Trois évolutions demandées par le chef de projet en recette** : la suppression d'un brouillon jamais soumis (D-298), le compte rendu de génération consultable et condensé (D-299), et le déplacement ou le retrait d'un stagiaire le jour même de son affectation (D-300). **Une correction documentaire** : le critère 5 d'US-SES-05 décrivait un import « jamais partiel » qui se lisait comme un blocage total ; il décrit désormais le comportement de CU-P3-05 et de RG-18. **Quatre stories créées**, de priorité Should, pour un lot d'ergonomie demandé en recette et planifié le 12 novembre : US-EVAL-12 (moyennes détaillées), US-IHM-01 (tableau de bord d'accueil), US-IHM-02 (identité visuelle et barre de navigation), US-IHM-03 (listes de stagiaires avec recherche, filtre et tri). Le périmètre passe à **65 stories et 276 points**. **Trois demandes reportées en perspective** (section 11.2). Chaque précision est signalée par une note v12 sous la story concernée. **Ce que la version 12 ne modifie pas** : les priorités et les estimations des stories existantes, la clé de conversion (section 1.3). |
 | --- |
 
 # **2. Vue d’ensemble des epics**
@@ -65,9 +66,10 @@ Les encadrés d’évolution des versions 5 à 10 sont conservés dans les versi
 | E4 | Instructeurs et qualifications | 4 | 16 | Must |
 | E5 | Planification | 12 | 71 | Must et Should |
 | E6 | Validation du programme | 5 | 20 | Must |
-| E7 | Évaluations | 11 | 49 | Must |
+| E7 | Évaluations | 12 | 52 | Must |
 | E8 | Suivi et traçabilité | 6 | 21 | Must et Should |
-|  | Total | 61 | 263 |  |
+| E9 | Ergonomie et présentation | 3 | 10 | Should |
+|  | Total | 65 | 276 |  |
 
 ## **2.1 État de livraison au 23 octobre 2026 — fin du développement**
 
@@ -81,6 +83,20 @@ Les encadrés d’évolution des versions 5 à 10 sont conservés dans les versi
 | Réserve | non engagée | 0 / 9 | 0 / 39 | Non développée : la phase 6 n’ouvre aucune story |
 
 Les 194 points Must sont livrés depuis le 17 octobre, les 30 points Should du sprint 4 depuis le 20 octobre. Le plan des sprints et de la réserve est tenu au classeur de pilotage, seul document de référence pour l’ordonnancement. Le backlog porte les priorités et les estimations ; il n’affecte pas les stories aux sprints.
+
+## **2.2 État de la recette au 8 novembre 2026**
+
+| **Cahier** | **Objet** | **Contrôles** | **Verdict** |
+| --- | --- | --- | --- |
+| RECETTE-00 | Socle : administration, référentiel, ressources, calendrier, organisation | 59 | Prononcée après rejeu |
+| RECETTE-00 bis | Planification de base : génération, suppression d'un brouillon | 32 | Prononcée |
+| RECETTE-01 | Circuit de validation, modification, regroupement, indisponibilités | 67 / 67 | Prononcée le 07/11 |
+| RECETTE-02 | Évaluations | 55 C + 2 SO | Prononcée le 07/11 |
+| RECETTE-03 | Suivi et traçabilité | 42 / 42 | Prononcée le 08/11 |
+| RECETTE-04 | Pilotage (stories Should) | 27 / 27 | Prononcée le 08/11 |
+| RECETTE-05 | Transverse : habilitations, journal, impressions, volumétrie | 47 | Prévue le 13/11 |
+
+Les anomalies, leur cause et leur correction sont consignées dans les cahiers et dans `PROBLEMES.md` (P-53 à P-80) ; les décisions qui en découlent, dans `DECISIONS.md` (D-298 à D-311).
 
 # **3. Epic E1 — Administration et sécurité**
 
@@ -262,7 +278,9 @@ Cet epic établit la source unique de vérité du système. Le référentiel est
 
 - Les matières sans lieu requis, telles que l’ordre serré ou le sport, ne consomment aucune ressource de salle lors de la génération.
 
-- La catégorie est exploitée comme contrainte par le moteur de génération.
+- La catégorie **et le type** sont des contraintes dures, vérifiées par le contrôleur de contraintes sur tous les chemins d’écriture d’une séance, et non par le seul moteur de génération : une matière de laboratoire n’a jamais lieu dans un amphithéâtre.
+
+*Note v12 : décision du chef de projet en recette (07/11, prompt 62). L’écran filtrait déjà le type, le serveur ne vérifiait que la catégorie : les deux utilisent désormais la même fonction de compatibilité.*
 
 | **US-REF-05** | **Associer des objectifs pédagogiques aux matières** | **Must** | 3 pts | BF-REF-05 |
 | --- | --- | --- | --- | --- |
@@ -411,7 +429,9 @@ Cet epic gère l’exécution datée du référentiel. Une session est l’ouver
 
 - Le format attendu des colonnes est documenté et un modèle de fichier est téléchargeable.
 
-- Les lignes comportant une erreur sont signalées avec leur numéro et le motif ; aucun import partiel n’est effectué tant que les erreurs subsistent.
+- Les lignes comportant une erreur sont signalées avec leur numéro et le motif, et exclues du lot proposé à la confirmation. Après confirmation, les lignes valides sont enregistrées en un seul bloc, jamais partiellement (RG-18).
+
+*Note v12 : la version 11 se lisait comme une interdiction de tout import tant qu’une seule ligne est en anomalie, contraire à CU-P3-05 (étape 4, exception E4) et au comportement livré (constat R00-SES-10, écart 3 de la phase 6).*
 
 - Le matricule est unique au sein d’une session ; les doublons sont détectés à l’import.
 
@@ -433,6 +453,10 @@ Cet epic gère l’exécution datée du référentiel. Une session est l’ouver
 - Un stagiaire ne peut être affecté qu’à une seule brigade au sein d’une session.
 
 - Les stagiaires non affectés sont listés séparément.
+
+- Un déplacement ou un retrait peut prendre effet le jour même de l’affectation qu’il clôt ; l’historique des affectations reste exact à toute date.
+
+*Note v12 : NC majeur R00-SES-15 ; décision D-300, qui remplace D-110.*
 
 | **US-SES-07** | **Consulter la liste des stagiaires** | **Must** | 3 pts | BF-SES-07 |
 | --- | --- | --- | --- | --- |
@@ -647,7 +671,13 @@ Cet epic constitue le cœur métier du système et concentre la complexité algo
 
 - La génération est refusée sur un programme soumis, validé ou affiché ; sur un programme rejeté, elle le ramène d’abord à l’état brouillon.
 
-- Un compte rendu indique le nombre de séances placées et les éventuelles séances non placées avec leur motif.
+- Un compte rendu indique le nombre de séances placées et les éventuelles séances non placées avec leur motif. Le compte rendu de la dernière génération reste consultable depuis le programme, tant qu’il existe, condensé par motif.
+
+- La génération automatique étale chaque matière sur la durée de la session : le volume placé par semaine, pour une matière et une brigade, ne dépasse pas un plafond égal au volume restant divisé par le nombre de semaines restantes, multiplié par un coefficient paramétrable (1,5 par défaut, hypothèse à faire valider par la cellule planification), arrondi à la séance supérieure. Le plafond est recalculé à chaque génération. Pour une matière prérequise d’une autre, la fin de session est avancée afin de réserver le temps de la matière dépendante. Les créneaux non placés pour ce motif reviennent aux autres matières. Le plafond ne s’applique qu’à la génération automatique, jamais à une modification humaine (RG-66).
+
+- Un brouillon qui n’a jamais été soumis peut être supprimé par la cellule planification, après une confirmation qui nomme la semaine, les brigades et le nombre de séances. La suppression est refusée, avec la marche à suivre, si le programme a une histoire de circuit ou porte une séance de contrôle. Elle est journalisée.
+
+*Note v12 : trois apports de la recette. Le compte rendu persistant corrige le NC R00-GEN-03 (D-299). L’étalement est une exigence manquante découverte en RECETTE-01 : sur une session de douze semaines, deux matières étaient épuisées en trois semaines (P-66, D-303). La suppression d’un brouillon est une évolution demandée par le chef de projet (D-298).*
 
 | **US-PLAN-04** | **Garantir le respect des contraintes dures** | **Must** | 8 pts | BF-PLAN-04 |
 | --- | --- | --- | --- | --- |
@@ -666,11 +696,17 @@ Cet epic constitue le cœur métier du système et concentre la complexité algo
 
 - Aucune séance n’est placée sur une période bloquée par le calendrier annuel, sur un jour d’examen final dont le périmètre couvre la brigade, ou sur une indisponibilité déclarée.
 
-- Le volume horaire programmé pour une matière n’excède pas le volume prescrit par le référentiel de la formation. Tous les programmes de la brigade comptent, quel que soit leur état, rejetés compris.
+- Le volume horaire programmé pour une matière **et une brigade** ne dépasse pas le volume prescrit par le référentiel de la formation de plus d’une séance : une séance se place tant que le volume déjà programmé est strictement inférieur au prescrit. Tous les programmes de la brigade comptent, quel que soit leur état, rejetés compris, ainsi que les séances verrouillées du programme évalué.
+
+- Une brigade ne peut pas avoir deux séances qui se chevauchent ; une séance regroupée occupe le créneau de chacune de ses brigades (RG-67).
+
+- La matière d’une séance appartient au référentiel de la formation de la brigade (RG-05).
 
 - Une matière ne peut être programmée avant que ses matières prérequises aient été dispensées.
 
-- Ces contrôles s’appliquent à tous les chemins d’écriture d’une séance, sans exception : génération, saisie manuelle, regroupement, traitement d’une indisponibilité, insertion d’un contrôle.
+- Ces contrôles s’appliquent à tous les chemins d’écriture d’une séance, sans exception : génération, saisie manuelle, regroupement, traitement d’une indisponibilité, duplication, insertion d’un contrôle.
+
+*Note v12 : quatre corrections de recette. Le volume était cumulé toutes brigades confondues, et les séances verrouillées du programme évalué étaient ignorées (P-63, P-64, D-302). La règle de « ne jamais dépasser » empêchait une matière de s’achever lorsque son reste était inférieur à une séance, bloquant ses dépendantes (P-67, D-304, décision du chef de projet). Aucune règle n’interdisait deux séances simultanées pour une brigade : une séance verrouillée pouvait être recouverte en silence (P-68, D-305). RG-05 n’était vérifiée que par les formulaires (P-70, D-309). Le contrôleur applique désormais, outre les six contraintes d’origine (RG-34 à RG-39), RG-67 et RG-05, et vérifie la catégorie et le type du lieu.*
 
 | **US-PLAN-05** | **Modifier manuellement une affectation** | **Must** | 8 pts | BF-PLAN-05 |
 | --- | --- | --- | --- | --- |
@@ -699,6 +735,14 @@ Cet epic constitue le cœur métier du système et concentre la complexité algo
 
 - Sur un programme **affiché**, la modification ou l’ajout portent un **avenant** daté, motivé et typé ; le programme reste affiché, la validation et la signature demeurent acquises. La suppression d’une séance affichée est refusée : une séance qui n’a pas lieu relève de la non-exécution (US-SUI-05).
 
+- L’ajout et la modification choisissent un créneau de la grille active, et non des heures libres. Une séance déjà hors grille, issue de données anciennes ou d’une duplication, reste visible dans une ligne « hors grille » de son jour.
+
+- Les avenants d’une séance sont visibles depuis la séance elle-même ; dans la liste du programme, chaque avenant nomme sa séance.
+
+- Les listes d’instructeurs et de lieux du formulaire de séance ne proposent que les instructeurs qualifiés et les lieux compatibles avec la matière choisie ; le serveur reste seul juge.
+
+*Note v12 : une séance saisie à 14 h 45 au lieu de 14 h 40 était acceptée puis invisible (NC R01-VAL02-06) ; RG-64 est amendée (D-310, qui remplace D-133 sur ce point). Avenants non consultables (NC R01-PLAN05-14). Listes filtrées : demande répétée du recetteur, livrée pour le formulaire de séance (écart 11 de la phase 6).*
+
 | **US-PLAN-06** | **Regrouper plusieurs brigades sur une même séance** | **Must** | 5 pts | BF-PLAN-06 |
 | --- | --- | --- | --- | --- |
 
@@ -720,7 +764,11 @@ Cet epic constitue le cœur métier du système et concentre la complexité algo
 
 - Plusieurs brigades accueillies successivement dans un même lieu ne forment pas un regroupement mais des séances distinctes, comptées séparément dans la charge.
 
-- Sur un programme affiché, l’association d’une brigade porte un avenant ; le retrait est refusé et relève de la non-exécution.
+- Sur un programme affiché, l’association d’une brigade porte un avenant, saisi depuis l’écran d’association lui-même ; le retrait est refusé et relève de la non-exécution.
+
+- Une séance en lieu séquentiel n’est pas proposée au regroupement ; une demande forcée est refusée par un message qui le dit.
+
+*Note v12 : le critère 8 n’était tenu par aucun chemin (NC majeur R01-PLAN06-08) ; le refus en lieu séquentiel citait une occupation du lieu au lieu de sa nature (R01-PLAN06-04).*
 
 | **US-PLAN-07** | **Signaler les écarts de volume horaire** | **Should** | 3 pts | BF-PLAN-07 |
 | --- | --- | --- | --- | --- |
@@ -740,6 +788,8 @@ Cet epic constitue le cœur métier du système et concentre la complexité algo
 - La sous-programmation n’est signalée qu’après la date de fin de la session ; avant, la matière est présentée « en cours ». Le seuil est exprimé en pourcentage du volume prescrit, 10 % par défaut.
 
 *Note v11 : sans la première précision, toute matière en cours de session paraîtrait sous-programmée (décision D-278). L’indicateur compare le volume **programmé** ; l’alerte sur le volume **réalisé** relève d’US-SUI-02 (décision D-282).*
+
+*Note v12 : le dépassement de moins d’une séance admis par US-PLAN-04 (D-304) n’est pas signalé comme une sur-programmation.*
 
 | **US-PLAN-08** | **Optimiser l’affectation sous contraintes** | **Should — déclassée** | 8 pts | BF-PLAN-08 |
 | --- | --- | --- | --- | --- |
@@ -778,7 +828,9 @@ Cet epic constitue le cœur métier du système et concentre la complexité algo
 
 - La substitution place une autre matière du référentiel, dans le respect des prérequis et du volume prescrit.
 
-- Les séances d’une même matière peuvent être traitées en lot avec un même remplaçant, après confirmation globale. Le lot est tout ou rien : si une seule séance est refusée, aucune n’est modifiée et le refus nomme la séance et la contrainte.
+- Les séances d’une même matière **et d’une même semaine** peuvent être traitées en lot avec un même remplaçant, après confirmation globale. Le lot est tout ou rien : si une seule séance est refusée, aucune n’est modifiée et le refus nomme la séance et la contrainte.
+
+*Note v12 : un lot mêlait toutes les semaines de l’indisponibilité (NC R01-PLAN09-09, D-307).*
 
 - Le traitement suit l’état du programme : sur un programme soumis, il renvoie au retrait de la soumission ; sur un programme validé, à l’annulation de la validation ; sur un programme affiché, le remplacement et la substitution portent un avenant et le programme reste affiché, la déprogrammation étant refusée au profit de la non-exécution.
 
@@ -913,7 +965,9 @@ Cet epic matérialise le circuit de validation croisée identifié sur le terrai
 
 - Une liste présente les programmes de toutes les semaines, avec leur état, filtrable par état et par période, et donne accès à chaque programme.
 
-- Chaque changement d’état est présenté avec son auteur, sa date et son motif éventuel.
+- Chaque changement d’état est présenté avec **sa nature** (soumission, retrait, rejet, reprise, validation, annulation de validation, signature, affichage), son auteur, sa date et son motif éventuel.
+
+*Note v12 : l’historique présentait une « transition d’un programme » sans dire laquelle (NC R04-VAL05-02 et 03).*
 
 - L’historique est consultable depuis le programme.
 
@@ -1121,6 +1175,23 @@ Cet epic couvre les **deux** circuits d’évaluation identifiés lors de l’en
 
 - Un candidat admis peut être converti en stagiaire d’une formation.
 
+| **US-EVAL-12** | **Détailler la moyenne d’un stagiaire** | **Should** | 3 pts | BF-EVAL-06 |
+| --- | --- | --- | --- | --- |
+
+*En tant que membre de la cellule examens, je veux voir le détail de la moyenne de chaque stagiaire, afin de pouvoir la justifier et la vérifier.*
+
+**Story nouvelle en version 12**, demandée en recette (RECETTE-02).
+
+**Critères d’acceptation :**
+
+- Pour chaque stagiaire et chaque module, l’écran présente les notes formatives et certificatives, le poids de chaque type, la note du module et son coefficient.
+
+- La moyenne générale et le rang se déduisent visiblement de ce détail.
+
+- La liste est consultable par brigade ou pour la session, avec recherche, filtre et tri.
+
+- L’accès suit la matrice d’habilitation des notes ; la consultation est journalisée.
+
 | **US-EVAL-11** | **Suivre les épreuves à venir** | **Should** | 3 pts | BF-EVAL-03, BF-EVAL-04 |
 | --- | --- | --- | --- | --- |
 
@@ -1187,6 +1258,8 @@ Cet epic répond à la limite de traçabilité identifiée dans l’analyse de l
 - Le nombre d’alertes est visible dans la navigation de la cellule pédagogique.
 
 *Note v11 : sans référence échue, toute matière en cours paraîtrait en retard. L’alerte porte sur le volume **réalisé**, l’indicateur d’US-PLAN-07 sur le volume **programmé**, par une seule fonction de statut (décisions D-282 et D-283).*
+
+*Note v12 : le critère 5 était écrit mais pas tenu : en cours de session, un réalisé de 14 h pour 5 h prescrites s’affichait « retard 11 % » (NC R03-SUI02-06, D-311). L’échu inclut les séances terminées plus tôt dans la journée (D-308).*
 
 | **US-SUI-03** | **Consulter le tableau de bord des formations** | **Should** | 5 pts | BF-SUI-03 |
 | --- | --- | --- | --- | --- |
@@ -1262,6 +1335,51 @@ Cet epic répond à la limite de traçabilité identifiée dans l’analyse de l
 
 *Note v11 : le vocabulaire de la « séance reportée » est précisé pour que le mémoire ne laisse pas supposer une classe qui n’existe pas (écart 3 du sprint 4).*
 
+# **10 bis. Epic E9 — Ergonomie et présentation**
+
+Epic créé en version 12. Il regroupe les demandes d’ergonomie exprimées pendant la recette, planifiées en un lot le 12 novembre 2026, avant RECETTE-05 qui en vérifie le résultat.
+
+| **US-IHM-01** | **Accueillir chaque utilisateur sur un tableau de bord** | **Should** | 5 pts | BF-SUI-03 |
+| --- | --- | --- | --- | --- |
+
+*En tant qu’utilisateur d’une cellule, je veux arriver sur une page de synthèse plutôt que sur une page vide, afin de voir d’emblée l’état du centre et ce qui demande mon attention.*
+
+**Critères d’acceptation :**
+
+- La page présente des chiffres d’ensemble : formations, matières, instructeurs, lieux, sessions en cours et clôturées, stagiaires actifs.
+
+- Elle signale les points d’attention : matières sans instructeur qualifié, alertes d’écart, programmes en attente de validation ou de signature, évaluations non prêtes.
+
+- Elle rappelle l’état du programme de la semaine en cours et de la suivante.
+
+- Chaque profil n’y voit que ce que la matrice d’habilitation lui permet de voir.
+
+- Le nombre de requêtes de la page ne croît pas avec le volume de données.
+
+| **US-IHM-02** | **Identité visuelle et barre de navigation** | **Should** | 2 pts | — |
+| --- | --- | --- | --- | --- |
+
+*En tant qu’utilisateur, je veux une barre de navigation lisible et aux couleurs de l’école, afin de me repérer sans encombrement.*
+
+**Critères d’acceptation :**
+
+- Le logo de l’école figure sur la page de connexion, dans la barre de navigation et dans l’onglet du navigateur.
+
+- La déconnexion et le changement de mot de passe sont regroupés dans un menu déroulant du compte.
+
+- La barre ne se déforme pas lors de la navigation entre les rubriques.
+
+| **US-IHM-03** | **Rechercher, filtrer et trier les listes de stagiaires** | **Should** | 3 pts | BF-SES-07 |
+| --- | --- | --- | --- | --- |
+
+*En tant que membre de la cellule examens, je veux retrouver un stagiaire rapidement dans les listes de notes, de moyennes et de procès-verbaux, afin de travailler sans faire défiler toute la brigade.*
+
+**Critères d’acceptation :**
+
+- Les listes de stagiaires des moyennes et des procès-verbaux sont paginées, avec recherche, filtre et tri, comme les autres listes de l’application.
+
+- La saisie des notes offre la recherche et le filtre, **sans pagination** : changer de page ne doit jamais faire perdre une note saisie.
+
 # **11. Hors backlog**
 
 ## **11.1 Travaux techniques du sprint 4 — état à la clôture**
@@ -1273,7 +1391,7 @@ Ces travaux ne sont pas des user stories : ils ne produisent aucun résultat dé
 | Ordre de verrouillage du traitement en lot | Problème P-42 | **Corrigé** en ouverture du sprint 4 : tri par programme avant l’écriture, test de reproduction |
 | Stabilité de la suite de tests | Revue du sprint 3 | **Mesurée** : cinq exécutions complètes consécutives, aucun échec. La cause des échecs antérieurs est établie — deux exécutions concurrentes sur la même base (P-51) — et bloquée par un verrou |
 | Présélection de la génération | Écart 25 du sprint 3 | **Mesurée, non modifiée** (D-290) : une candidate inutile, aucune requête supplémentaire. Dette assumée, sans échéance |
-| Impression du programme hebdomadaire | Décision D-155 | **Exemplaire produit** (D-291) : le programme déborde de la page A4 dès le troisième créneau. Traité en phase 6 comme anomalie de recette, et non comme story |
+| Impression du programme hebdomadaire | Décision D-155 | **Exemplaire produit** (D-291) : le programme déborde de la page A4 dès le troisième créneau. Traité en phase 6 comme anomalie de recette, et non comme story. **Résolu** : impression par journée (D-157), vérifiée par un test en navigateur réel (D-301) |
 | Relation facultative séance ↔ créneau type (RG-64) | Décision D-133 | **Limite consignée** (D-288) : aucun comportement observable n’en dépend |
 
 ## **11.2 Hors périmètre de la version courante (Won’t)**
@@ -1281,6 +1399,9 @@ Ces travaux ne sont pas des user stories : ils ne produisent aucun résultat dé
 | **Élément** | **Origine** | **Motif** |
 | --- | --- | --- |
 | Mesure de l’écart de progression entre les brigades d’une même session, à la création d’une évaluation de périmètre session | Fiche CU-P6-01, E2 ; décision D-182 | Aucun livrable ne définit la mesure ni le seuil. Un avertissement systématique, non bloquant, est en place depuis US-EVAL-01. Perspective d’évolution, à reprendre si le terrain fixe un critère. Le report D-182 est fermé par ce classement |
+| Listes filtrées dans la création d’évaluation et dans la substitution d’une séance | Demande du recetteur (RECETTE-01 et 02) ; écart 11 de la phase 6 | Livrées pour le formulaire de séance seulement (arbitrage du 7 novembre, plafond de trois heures). Le serveur refuse déjà les choix invalides : confort d’écran. Estimation 1,5 à 2 h par écran |
+| Masquer les brigades des sessions terminées à la génération, et les brigades hors session dans l’organisation d’une épreuve ; effectif attendu modifiable en ligne | Demandes du recetteur (RECETTE-02) | Confort d’écran, sans effet sur les règles ; reporté pour tenir le calendrier |
+| Terminer une matière par une séance raccourcie plutôt que par un léger dépassement | Question ouverte en recette (D-304) | Le chef de projet a retenu le dépassement de moins d’une séance ; la pratique réelle de la cellule planification est à confirmer |
 | Séparation de l’application en un front-end et un back-end distincts, communiquant par une interface de programmation | Demande de l’encadrant pendant le sprint 4 ; maintien de l’architecture validé par l’encadrant le 22 octobre 2026 | Déploiement hors ligne, réduction de la surface d’exposition des notes et des sujets, calendrier restant. La couche de services, indépendante de l’interface, est le point d’appui d’une évolution vers une interface de programmation : à présenter comme telle au mémoire, à la demande de l’encadrant |
 
 ## **11.3 Annexe historique — proposition de découpage de la phase 2**
@@ -1304,4 +1425,4 @@ Ce backlog constitue un artefact vivant et l’unique source de vérité du pér
 
 - **Version unique** : toute modification donne lieu à une nouvelle version datée remplaçant la précédente. Aucune version parallèle ne doit circuler.
 
-*Artefact vivant — version 11 du 23 octobre 2026. Remplace la version 10 du 10 octobre 2026. Intègre la clôture du sprint 4, le jalon J3, les seize écarts entre livrables du sprint 4 et la validation du maintien de l’architecture par l’encadrant.*
+*Artefact vivant — version 12 du 8 novembre 2026. Remplace la version 11 du 23 octobre 2026. Intègre la recette de la phase 6 (RECETTE-00 à 04), les décisions D-298 à D-311, les onze écarts de la phase 6 et le lot d’ergonomie planifié le 12 novembre.*
