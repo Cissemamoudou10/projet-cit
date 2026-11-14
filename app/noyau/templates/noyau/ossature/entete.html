@@ -2,10 +2,12 @@
 <header class="bg-marine-900 text-blanc">
   <div class="flex h-12 items-center justify-between px-6">
     <div class="flex items-center gap-6">
-      <span class="flex items-center gap-2.5 font-titre text-md font-bold tracking-wide">
+      <a href="{% url 'noyau:accueil' %}"
+         class="flex items-center gap-2.5 font-titre text-md font-bold tracking-wide
+                text-blanc no-underline hover:text-gris-trait">
         <img src="{% static 'images/logo.png' %}" alt="" class="h-8 w-8 shrink-0">
         CENTRE D'INSTRUCTION — GESTION DES ACTIVITÉS
-      </span>
+      </a>
       {% include "noyau/ossature/navigation.html" %}
     </div>
     <div class="flex items-center gap-4 text-xs">
