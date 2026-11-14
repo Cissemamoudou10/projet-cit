@@ -49,6 +49,13 @@
     </div>
   </div>
 </header>
+<script>
+  document.addEventListener("click", function (evenement) {
+    document.querySelectorAll("header details[open]").forEach(function (menu) {
+      if (!menu.contains(evenement.target)) menu.removeAttribute("open");
+    });
+  });
+</script>
 <div data-impression="masquer" class="h-[3px] bg-marine-700"></div>
 <!-- arbitraire : h-[3px], filet d'accent inférieur au pas de l'échelle. Hors
      de <header> (sinon le filet suivrait l'en-tête ondulant du fil

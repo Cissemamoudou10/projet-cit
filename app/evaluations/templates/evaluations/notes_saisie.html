@@ -27,11 +27,6 @@
       Aucun stagiaire actif dans le périmètre de cette évaluation.
     </p>
   {% else %}
-    {# US-IHM-03 (prompt 64) : recherche et filtre SANS PAGINATION — toutes
-       les lignes restent dans le formulaire, un script montre/masque
-       seulement leur affichage (data-stagiaire/data-renseigne), jamais le
-       sous-ensemble soumis : changer de filtre ne peut pas faire perdre
-       une note déjà saisie, rien n'est retiré du DOM ni de la requête. #}
     <div class="flex flex-wrap items-end gap-3 border-b border-gris-trait px-4 py-2.5">
       <div>
         <label for="filtre-recherche-notes"

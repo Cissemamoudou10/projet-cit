@@ -95,3 +95,21 @@ def test_la_barre_ne_se_deforme_pas_entre_les_rubriques(
 
     valeurs = set(hauteurs.values())
     assert len(valeurs) == 1, f"hauteurs de la barre selon la rubrique : {hauteurs}"
+
+
+def test_le_menu_du_compte_se_ferme_en_cliquant_ailleurs(
+    navigateur_chromium, live_server, utilisateur_direction
+):
+    """US-IHM-02 (prompt 64) : `<details>` natif ne ferme jamais seul sur un
+    clic extérieur — défaut réel signalé après livraison, corrigé par un
+    script minimal dans entete.html."""
+    page = navigateur_chromium.new_page()
+    _connecter(page, live_server.url, utilisateur_direction.username)
+    page.goto(f"{live_server.url}{reverse('noyau:accueil')}")
+    page.wait_for_load_state("networkidle")
+
+    page.click("header details > summary")
+    assert page.locator("header details[open]").count() == 1
+
+    page.click("body", position={"x": 10, "y": 300})
+    assert page.locator("header details[open]").count() == 0

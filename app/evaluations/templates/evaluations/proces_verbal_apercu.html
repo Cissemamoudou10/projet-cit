@@ -30,10 +30,6 @@
     </ul>
   </section>
 {% else %}
-  {# US-IHM-03 (prompt 64) : même composant que les autres listes — l'aperçu
-     est une consultation GET (idempotente), la sélection de l'évaluation
-     voyage en querystring pour que recherche/filtre/tri/pagination s'y
-     ajoutent, exactement comme moyennes.html. #}
   <form method="get"
         class="mt-4 flex flex-wrap items-end gap-3 border border-gris-trait bg-fond-bloc px-3 py-2.5">
     <input type="hidden" name="type_pv" value="{{ type_pv }}">

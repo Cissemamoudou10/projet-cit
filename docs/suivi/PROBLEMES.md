@@ -23,6 +23,16 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-82 — Menu du compte (US-IHM-02) : deux défauts trouvés par le chef de projet après la fusion
+**Date** 2026-11-14 · **Story** US-IHM-02 (prompt 64) · **État** : résolu
+**Symptôme** — après fusion et étiquetage (`recette-phase-6-c10`), le chef de projet signale en recette manuelle sur son propre poste : (1) le menu déroulant du compte ne s'ouvre pas directement sous la flèche, « Déconnexion » est à peine visible/tronqué ; (2) le menu reste ouvert après un clic ailleurs sur la page.
+**Cause** — Deux causes distinctes, vérifiées en direct via Claude in Chrome sur le poste du chef de projet (compte `exa.demo`, mot de passe de démonstration déjà en clair dans `jeu_demonstration/donnees.py`) : (1) **pas un défaut de code** — le navigateur du chef de projet servait une version mise en cache de `application.css` (349 règles), antérieure à la fusion, dépourvue des classes `absolute`/`right-0`/`z-30`/`min-w-48` posées pour ce menu (358 règles dans le fichier réel) ; un rechargement forcé (Ctrl+Maj+R) a suffi à faire disparaître entièrement le symptôme — confirmé par inspection de `document.styleSheets` avant/après. (2) **défaut réel** — `<details>` natif ne se ferme jamais tout seul sur un clic extérieur, quel que soit le CSS ; la story avait choisi « sans JavaScript » (charte 3.41) sans couvrir ce cas.
+**Résolution** — Pour (1) : aucun changement de code, rien à corriger — à surveiller si d'autres postes de recette signalent le même symptôme après une mise à jour (toujours penser au cache navigateur avant de chercher un défaut de code). Pour (2) : script minimal ajouté dans `noyau/templates/noyau/ossature/entete.html` (un seul `addEventListener("click", ...)`, ferme tout `<details open>` de l'en-tête dont la cible du clic est extérieure) — contredit la décision initiale « sans JavaScript », assumé : le confort reporté par un vrai utilisateur prime sur la pureté du composant. Test de non-régression ajouté (`noyau/tests/test_navigation_navigateur.py::test_le_menu_du_compte_se_ferme_en_cliquant_ailleurs`, marqueur `navigateur`).
+**Risque concerné** — aucun.
+**Leçon** — avant de corriger un défaut d'affichage signalé juste après une fusion touchant le CSS compilé, vérifier le cache navigateur du poste qui le rapporte (`document.styleSheets[...].cssRules.length` suffit) avant de chercher un défaut de code qui n'existe pas forcément.
+
+---
+
 ## P-81 — `EXPLOITATION.md` documente `compose/docker-compose.production.yml` et `compose/.env`, absents du dépôt à ces chemins
 **Date** 2026-11-13 · **Story** Prompt 64, hors story (`PLAFOND_HEBDOMADAIRE_COEFFICIENT`) · **État** : résolu — faux problème
 **Symptôme** — en ajoutant la procédure d'ajustement de `PLAFOND_HEBDOMADAIRE_COEFFICIENT` à `docs/exploitation/EXPLOITATION.md`, j'ai repris la convention de chemin déjà en place dans tout ce document (« Mettre à jour vers une nouvelle version » notamment) : `compose/docker-compose.production.yml`, `compose/.env`. Le dépôt git, lui, place `docker-compose.production.yml` et `.env.exemple` à la racine, pas sous `compose/`.
