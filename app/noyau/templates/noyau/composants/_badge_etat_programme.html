@@ -1,0 +1,37 @@
+{% load static %}
+{% if etat == "brouillon" %}
+  <span class="inline-flex items-center gap-1.5 rounded-pilule border border-dashed
+               border-gris-lecture bg-fond-bloc px-2.5 py-0.5 text-2xs font-semibold
+               tracking-wide text-gris-lecture">BROUILLON</span>
+{% elif etat == "soumis" %}
+  <span class="inline-flex items-center gap-1.5 rounded-pilule border border-etat-attention
+               bg-etat-attention-fond px-2.5 py-0.5 text-2xs font-semibold tracking-wide
+               text-etat-attention">
+    <span class="h-1.5 w-1.5 rounded-pilule bg-etat-attention"></span>SOUMIS
+  </span>
+{% elif etat == "valide" %}
+  <span class="inline-flex items-center gap-1.5 rounded-pilule bg-etat-conforme px-2.5 py-0.5
+               text-2xs font-semibold tracking-wide text-blanc">
+    <svg class="h-3 w-3 stroke-blanc" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#validation"></use>
+    </svg>VALIDÉ
+  </span>
+{% elif etat == "rejete" %}
+  <span class="inline-flex items-center gap-1.5 rounded-pilule border-2 border-etat-ecart
+               bg-fond-bloc px-2.5 py-0.5 text-2xs font-semibold tracking-wide text-etat-ecart">
+    <svg class="h-3 w-3 stroke-etat-ecart" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#rejet"></use>
+    </svg>REJETÉ
+  </span>
+{% elif etat == "affiche" %}
+  <span class="inline-flex items-center gap-1.5 rounded-pilule bg-marine-900 px-2.5 py-0.5
+               text-2xs font-semibold tracking-wide text-blanc">
+    <svg class="h-3 w-3 stroke-blanc" aria-hidden="true">
+      <use href="{% static 'icones/planche.svg' %}#document-valide"></use>
+    </svg>AFFICHÉ
+  </span>
+{% else %}
+  <span class="inline-flex items-center gap-1.5 rounded-pilule border border-dashed
+               border-gris-lecture bg-fond-bloc px-2.5 py-0.5 text-2xs font-semibold
+               tracking-wide text-gris-lecture">AUCUN PROGRAMME</span>
+{% endif %}

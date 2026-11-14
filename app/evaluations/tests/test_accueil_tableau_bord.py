@@ -15,13 +15,15 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
+from evaluations.tests.conftest import creer_brigade
 from organisation.models import Stagiaire
 from organisation.services.affectation import ServiceAffectation
 from organisation.services.brigade import ServiceBrigade
 from organisation.services.session import ServiceSession
-from planification.models import EtatProgramme, ProgrammeHebdomadaire
+from planification.models import EtatProgramme, LigneProgramme, ProgrammeHebdomadaire
 from referentiel.models import Matiere
-from ressources.models import Instructeur, Qualification, Statut
+from ressources.models import IndisponibiliteInstructeur, Instructeur, Lieu, Qualification, Statut
+from ressources.services.salle_attitree import ServiceSalleAttitree
 
 
 def _lundi_de_la_semaine(date):
@@ -114,8 +116,56 @@ def test_programme_de_la_semaine_courante_et_suivante(client, redacteur):
     reponse = client.get(reverse("noyau:accueil"))
 
     tableau = reponse.context["tableau"]
+    assert tableau.semaine_courante.etat == "valide"
     assert tableau.semaine_courante.etat_libelle == "Validé"
+    assert tableau.semaine_suivante.etat is None
     assert tableau.semaine_suivante.etat_libelle is None
+
+
+def test_detail_de_la_semaine_compte_les_seances_et_les_brigades(
+    client, redacteur, seance, brigade
+):
+    programme = seance.programme
+    programme.lundi_de_semaine = _lundi_de_la_semaine(timezone.localdate())
+    programme.save()
+    LigneProgramme.objects.create(seance=seance, brigade=brigade)
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("noyau:accueil"))
+
+    tableau = reponse.context["tableau"]
+    assert tableau.semaine_courante.nombre_seances == 1
+    assert tableau.semaine_courante.nombre_brigades == 1
+    assert tableau.semaine_suivante.nombre_seances == 0
+
+
+def test_brigades_sans_salle_attitree_est_compte(client, planificateur, redacteur, session):
+    creer_brigade(redacteur, session, "SANSSALLE")
+    brigade_avec_salle = creer_brigade(redacteur, session, "AVECSALLE")
+    lieu = Lieu.objects.create(intitule="Salle ACC1", capacite=20, categorie="salle_attitree")
+    ServiceSalleAttitree.attribuer(planificateur, brigade_avec_salle, lieu)
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("noyau:accueil"))
+
+    tableau = reponse.context["tableau"]
+    assert tableau.nombre_brigades_sans_salle >= 1
+
+
+def test_instructeurs_indisponibles_cette_semaine_est_compte(client, redacteur, instructeur):
+    lundi_courant = _lundi_de_la_semaine(timezone.localdate())
+    IndisponibiliteInstructeur.objects.create(
+        instructeur=instructeur,
+        debut=timezone.make_aware(datetime.datetime.combine(lundi_courant, datetime.time(8, 0))),
+        fin=timezone.make_aware(datetime.datetime.combine(lundi_courant, datetime.time(12, 0))),
+        motif="Mission extérieure",
+    )
+    client.force_login(redacteur)
+
+    reponse = client.get(reverse("noyau:accueil"))
+
+    tableau = reponse.context["tableau"]
+    assert tableau.nombre_instructeurs_indisponibles_semaine >= 1
 
 
 def _creer_session_avec_brigade_notee(redacteur, formation, suffixe):

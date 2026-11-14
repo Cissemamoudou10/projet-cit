@@ -10,93 +10,110 @@
 
 {% if tableau %}
   {% with t=tableau %}
-    {% if t.nombre_formations != None or t.nombre_instructeurs != None or t.nombre_lieux != None %}
+    {% if t.nombre_formations != None or t.nombre_instructeurs != None or t.nombre_lieux != None or t.nombre_sessions_en_cours != None %}
       <section class="mt-6">
         <p class="mb-2 font-titre text-xs font-semibold uppercase tracking-wide text-gris-lecture">
           Chiffres d'ensemble</p>
         <div class="grid grid-cols-4 gap-3">
           {% if t.nombre_formations != None %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Formations</p>
-              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_formations }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Formations</p>
+              <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ t.nombre_formations }}</span>
             </div>
           {% endif %}
           {% if t.nombre_matieres != None %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Matières</p>
-              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_matieres }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Matières</p>
+              <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ t.nombre_matieres }}</span>
             </div>
           {% endif %}
           {% if t.nombre_instructeurs != None %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Instructeurs</p>
-              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_instructeurs }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Instructeurs</p>
+              <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ t.nombre_instructeurs }}</span>
             </div>
           {% endif %}
           {% if t.nombre_lieux != None %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Lieux</p>
-              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_lieux }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Lieux</p>
+              <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ t.nombre_lieux }}</span>
             </div>
           {% endif %}
           {% if t.nombre_sessions_en_cours != None %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Sessions en cours</p>
-              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_sessions_en_cours }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Sessions en cours</p>
+              <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ t.nombre_sessions_en_cours }}</span>
             </div>
           {% endif %}
           {% if t.nombre_sessions_cloturees != None %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Sessions clôturées</p>
-              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_sessions_cloturees }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Sessions clôturées</p>
+              <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ t.nombre_sessions_cloturees }}</span>
             </div>
           {% endif %}
           {% if t.nombre_stagiaires_actifs != None %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">Stagiaires actifs</p>
-              <p class="font-titre text-xl font-bold tabular-nums">{{ t.nombre_stagiaires_actifs }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <p class="mb-1.5 text-2xs font-medium uppercase tracking-wide text-gris-lecture">Stagiaires actifs</p>
+              <span class="font-titre text-xl font-bold leading-none tabular-nums">{{ t.nombre_stagiaires_actifs }}</span>
             </div>
           {% endif %}
         </div>
       </section>
     {% endif %}
 
-    {% if t.nombre_matieres_sans_instructeur != None or t.nombre_alertes_ecart != None or t.nombre_programmes_en_attente != None or t.nombre_evaluations_non_pretes != None %}
+    {% if t.nombre_matieres_sans_instructeur != None or t.nombre_brigades_sans_salle != None or t.nombre_alertes_ecart != None or t.nombre_programmes_en_attente != None or t.nombre_evaluations_non_pretes != None or t.nombre_instructeurs_indisponibles_semaine != None %}
       <section class="mt-6">
         <p class="mb-2 font-titre text-xs font-semibold uppercase tracking-wide text-gris-lecture">
           Points d'attention</p>
         <ul class="divide-y divide-gris-trait border border-gris-trait bg-fond-bloc text-sm">
           {% if t.nombre_matieres_sans_instructeur != None %}
-            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_matieres_sans_instructeur > 0 %}bg-etat-ecart-fond{% endif %}">
+            <li class="flex items-center justify-between gap-4 px-4 py-2.5">
               <span>Matières sans instructeur qualifié</span>
-              <span class="font-semibold tabular-nums {% if t.nombre_matieres_sans_instructeur > 0 %}text-etat-ecart{% else %}text-gris-lecture{% endif %}">
-                {{ t.nombre_matieres_sans_instructeur }}</span>
+              <span class="flex items-center gap-3">
+                {% if t.nombre_matieres_sans_instructeur > 0 %}
+                  {% include "noyau/composants/_barre_douzieme.html" with douzieme=t.douzieme_matieres_sans_instructeur %}
+                {% endif %}
+                <span class="font-semibold tabular-nums {% if t.nombre_matieres_sans_instructeur > 0 %}text-etat-ecart{% else %}text-gris-lecture{% endif %}">
+                  {{ t.nombre_matieres_sans_instructeur }} / {{ t.nombre_matieres }}</span>
+              </span>
+            </li>
+          {% endif %}
+          {% if t.nombre_brigades_sans_salle != None %}
+            <li class="flex items-center justify-between gap-4 px-4 py-2.5">
+              <span>Brigades sans salle attitrée</span>
+              <span class="flex items-center gap-3">
+                {% if t.nombre_brigades_sans_salle > 0 %}
+                  {% include "noyau/composants/_barre_douzieme.html" with douzieme=t.douzieme_brigades_sans_salle %}
+                {% endif %}
+                <span class="font-semibold tabular-nums {% if t.nombre_brigades_sans_salle > 0 %}text-etat-ecart{% else %}text-gris-lecture{% endif %}">
+                  {{ t.nombre_brigades_sans_salle }}</span>
+              </span>
             </li>
           {% endif %}
           {% if t.nombre_alertes_ecart != None %}
-            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_alertes_ecart > 0 %}bg-etat-ecart-fond{% endif %}">
+            <li class="flex items-center justify-between px-4 py-2.5">
               <span>Alertes d'écart de volume horaire</span>
               {% if t.nombre_alertes_ecart > 0 %}
                 <a href="{% url 'planification:alertes_ecart' %}"
-                   class="font-semibold tabular-nums text-etat-ecart hover:underline">{{ t.nombre_alertes_ecart }}</a>
+                   class="font-semibold tabular-nums text-etat-attention hover:underline">{{ t.nombre_alertes_ecart }}</a>
               {% else %}
                 <span class="font-semibold tabular-nums text-gris-lecture">0</span>
               {% endif %}
             </li>
           {% endif %}
           {% if t.nombre_programmes_en_attente != None %}
-            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_programmes_en_attente > 0 %}bg-etat-ecart-fond{% endif %}">
+            <li class="flex items-center justify-between px-4 py-2.5">
               <span>Programmes en attente de validation ou de signature</span>
               {% if t.nombre_programmes_en_attente > 0 %}
                 <a href="{% url 'planification:attente_validation' %}"
-                   class="font-semibold tabular-nums text-etat-ecart hover:underline">{{ t.nombre_programmes_en_attente }}</a>
+                   class="font-semibold tabular-nums text-etat-attention hover:underline">{{ t.nombre_programmes_en_attente }}</a>
               {% else %}
                 <span class="font-semibold tabular-nums text-gris-lecture">0</span>
               {% endif %}
             </li>
           {% endif %}
           {% if t.nombre_evaluations_non_pretes != None %}
-            <li class="flex items-center justify-between px-4 py-2.5 {% if t.nombre_evaluations_non_pretes > 0 %}bg-etat-ecart-fond{% endif %}">
+            <li class="flex items-center justify-between px-4 py-2.5">
               <span>Évaluations à venir non prêtes</span>
               {% if t.nombre_evaluations_non_pretes > 0 %}
                 <a href="{% url 'evaluations:liste_evaluations' %}"
@@ -104,6 +121,13 @@
               {% else %}
                 <span class="font-semibold tabular-nums text-gris-lecture">0</span>
               {% endif %}
+            </li>
+          {% endif %}
+          {% if t.nombre_instructeurs_indisponibles_semaine != None %}
+            <li class="flex items-center justify-between px-4 py-2.5">
+              <span>Instructeurs indisponibles cette semaine</span>
+              <span class="font-semibold tabular-nums {% if t.nombre_instructeurs_indisponibles_semaine > 0 %}text-etat-attention{% else %}text-gris-lecture{% endif %}">
+                {{ t.nombre_instructeurs_indisponibles_semaine }} / {{ t.nombre_instructeurs }}</span>
             </li>
           {% endif %}
         </ul>
@@ -116,19 +140,29 @@
           Programme hebdomadaire</p>
         <div class="grid grid-cols-2 gap-3">
           {% if t.semaine_courante %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">
-                Semaine en cours — {{ t.semaine_courante.lundi|date:"d/m" }}</p>
-              <p class="font-titre text-base font-semibold">
-                {{ t.semaine_courante.etat_libelle|default:"Aucun programme" }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <div class="mb-2 flex items-center justify-between">
+                <p class="text-2xs uppercase tracking-wide text-gris-lecture">
+                  Semaine en cours — {{ t.semaine_courante.lundi|date:"d/m" }}</p>
+                {% include "noyau/composants/_badge_etat_programme.html" with etat=t.semaine_courante.etat %}
+              </div>
+              <p class="text-sm tabular-nums text-gris-lecture">
+                {{ t.semaine_courante.nombre_seances }} séance{{ t.semaine_courante.nombre_seances|pluralize }} —
+                {{ t.semaine_courante.nombre_brigades }} brigade{{ t.semaine_courante.nombre_brigades|pluralize }} couverte{{ t.semaine_courante.nombre_brigades|pluralize }}
+              </p>
             </div>
           {% endif %}
           {% if t.semaine_suivante %}
-            <div class="border border-gris-trait bg-fond-bloc px-4 py-3">
-              <p class="text-2xs uppercase tracking-wide text-gris-lecture">
-                Semaine suivante — {{ t.semaine_suivante.lundi|date:"d/m" }}</p>
-              <p class="font-titre text-base font-semibold">
-                {{ t.semaine_suivante.etat_libelle|default:"Aucun programme" }}</p>
+            <div class="border border-gris-trait bg-fond-bloc px-4 py-3.5">
+              <div class="mb-2 flex items-center justify-between">
+                <p class="text-2xs uppercase tracking-wide text-gris-lecture">
+                  Semaine suivante — {{ t.semaine_suivante.lundi|date:"d/m" }}</p>
+                {% include "noyau/composants/_badge_etat_programme.html" with etat=t.semaine_suivante.etat %}
+              </div>
+              <p class="text-sm tabular-nums text-gris-lecture">
+                {{ t.semaine_suivante.nombre_seances }} séance{{ t.semaine_suivante.nombre_seances|pluralize }} —
+                {{ t.semaine_suivante.nombre_brigades }} brigade{{ t.semaine_suivante.nombre_brigades|pluralize }} couverte{{ t.semaine_suivante.nombre_brigades|pluralize }}
+              </p>
             </div>
           {% endif %}
         </div>
