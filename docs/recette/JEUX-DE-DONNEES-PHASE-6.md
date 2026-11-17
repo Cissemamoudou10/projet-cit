@@ -310,9 +310,9 @@ docker run --rm --network developpement_default `
     apt-get update -qq &&
     apt-get install --no-install-recommends -y -qq libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 >/dev/null 2>&1 &&
     rm -rf /var/lib/apt/lists/* &&
-    pip install --no-cache-dir -q -r requirements.txt &&
+    pip install --no-cache-dir -q -r requirements-dev.txt &&
     cd app &&
-    python manage.py migrate --settings=config.settings.volume &&
+    BASE_UTILISATEUR=pfe_cit_migration BASE_MOT_DE_PASSE=developpement_local_migration python manage.py migrate --settings=config.settings.volume &&
     python manage.py initialiser_habilitations --settings=config.settings.volume &&
     python manage.py initialiser_gabarits_documents --settings=config.settings.volume &&
     python manage.py initialiser_natures_evenement --settings=config.settings.volume &&
@@ -321,6 +321,17 @@ docker run --rm --network developpement_default `
     python manage.py charger_jeu_volume --verifier --settings=config.settings.volume
   "
 ```
+
+**Corrigé (P-83)** : `migrate` seul tourne sous le rôle de migration
+(`BASE_UTILISATEUR`/`BASE_MOT_DE_PASSE` préfixés uniquement sur cette ligne,
+à l'intérieur du `bash -c` — jamais en `-e` sur `docker run`) ; tout le reste
+(`initialiser_*`, `charger_jeu_volume`, `--verifier`) tourne sous le rôle
+applicatif par défaut, `pfe_cit_app`, même principe que pour `pfe_cit_recette`.
+`requirements-dev.txt` remplace `requirements.txt` : `charger_jeu_volume`
+importe `freezegun` (horloge simulée pour dater les programmes passés),
+dépendance de développement absente de `requirements.txt`. Ni l'un ni
+l'autre n'avaient été vérifiés par une exécution réelle depuis leur
+rédaction — voir P-83.
 
 La base cible (`pfe_cit_volume`) doit déjà exister, créée au préalable par
 les commandes `psql` du § « Remise à zéro, chargement, vérification »
