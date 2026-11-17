@@ -12,7 +12,11 @@
 <body class="bg-blanc px-4 py-4 font-corps text-xs text-encre" data-impression="paysage" onload="window.print()">
   <!-- Vue dédiée (E-A1, prompt 65, R05-IMP-01) : ne contient QUE le programme, ni bouton ni
        menu ni historique ni rubrique d'écart — même à l'écran, pas seulement à l'impression.
-       `onload="window.print()"` : pas de bouton « Imprimer » ici, la vue s'ouvre pour imprimer. -->
+       `onload="window.print()"` : pas de bouton « Imprimer » ici, la vue s'ouvre pour imprimer.
+       `<header>` NICHÉ sous `<main>`, jamais enfant direct de `<body>` : `impression.css`
+       masque `body > header` (le bandeau de `noyau/base.html`), qui masquerait aussi le
+       nôtre s'il portait le même sélecteur (relecture `relecteur-conception`, prompt 65). -->
+  <main>
   <header class="mb-3 flex items-baseline justify-between gap-4 border-b border-gris-trait pb-2">
     <h1 class="font-titre text-sm font-semibold">Programme hebdomadaire du centre</h1>
     <p class="text-xs text-gris-lecture">
@@ -116,5 +120,6 @@
       </section>
     {% endfor %}
   {% endif %}
+  </main>
 </body>
 </html>
