@@ -1,0 +1,30 @@
+{% comment %}
+  Contenu de la rubrique « Historique » — extrait pour être inclus dans le
+  composant repliable générique (E-A2, prompt 65). Compte sur `historique`
+  dans le contexte parent, jamais passé explicitement (inclusion SANS
+  `only`, voir _rubrique_repliable.html).
+{% endcomment %}
+<table class="w-full border-collapse text-sm">
+  <thead>
+    <tr>
+      <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                             font-semibold uppercase tracking-wider text-blanc">Date</th>
+      <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                             font-semibold uppercase tracking-wider text-blanc">Transition</th>
+      <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                             font-semibold uppercase tracking-wider text-blanc">Auteur</th>
+      <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
+                             font-semibold uppercase tracking-wider text-blanc">Détail</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entree in historique %}
+      <tr class="border-t border-gris-trait">
+        <td class="px-3 py-2 tabular-nums">{{ entree.cree_le|date:"d/m/Y H:i" }}</td>
+        <td class="px-3 py-2">{{ entree.nature }}</td>
+        <td class="px-3 py-2">{{ entree.auteur|default:"—" }}</td>
+        <td class="px-3 py-2 text-gris-lecture">{{ entree.detail|default:"—" }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

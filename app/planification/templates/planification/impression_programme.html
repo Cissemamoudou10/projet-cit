@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Impression — Programme hebdomadaire du centre</title>
+  <link rel="stylesheet" href="{% static 'css/polices.css' %}">
+  <link rel="stylesheet" href="{% static 'css/application.css' %}">
+  <link rel="stylesheet" href="{% static 'css/impression.css' %}" media="print">
+</head>
+<body class="bg-blanc px-4 py-4 font-corps text-xs text-encre" data-impression="paysage" onload="window.print()">
+  <!-- Vue dédiée (E-A1, prompt 65, R05-IMP-01) : ne contient QUE le programme, ni bouton ni
+       menu ni historique ni rubrique d'écart — même à l'écran, pas seulement à l'impression.
+       `onload="window.print()"` : pas de bouton « Imprimer » ici, la vue s'ouvre pour imprimer. -->
+  <header class="mb-3 flex items-baseline justify-between gap-4 border-b border-gris-trait pb-2">
+    <h1 class="font-titre text-sm font-semibold">Programme hebdomadaire du centre</h1>
+    <p class="text-xs text-gris-lecture">
+      Semaine du {{ lundi|date:"d/m/Y" }} au {{ samedi|date:"d/m/Y" }}
+      {% if programme %}
+        —
+        <span class="border border-marine-700 px-1.5 py-px text-2xs font-semibold tracking-wide
+                     text-marine-700">{{ programme.get_etat_display|upper }}</span>
+        {% if programme.date_signature %}
+          — Signé par {{ programme.signataire }} le {{ programme.date_signature|date:"d/m/Y" }}
+        {% endif %}
+      {% endif %}
+    </p>
+  </header>
+
+  {% if not programme %}
+    <p class="text-sm text-gris-lecture">Aucun programme généré pour cette semaine.</p>
+  {% elif not jours %}
+    <p class="text-sm text-gris-lecture">Aucune séance cette semaine.</p>
+  {% else %}
+    {% for jour in jours %}
+      <section class="mb-4" data-impression="bloc">
+        <h2 class="mb-1 bg-fond-bande px-2 py-1 font-titre text-2xs font-semibold uppercase
+                   tracking-wide text-marine-900">
+          {{ jour.jour|capfirst }} {{ jour.date|date:"d/m/Y" }}
+        </h2>
+        <table class="w-full table-fixed border-collapse text-2xs">
+          <colgroup>
+            <col style="width:70px">
+            {% for creneau in jour.creneaux %}<col>{% endfor %}
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col" class="border border-gris-trait px-1.5 py-1 text-left">Groupe</th>
+              {% for creneau in jour.creneaux %}
+                <th scope="col" class="border border-gris-trait px-1.5 py-1 text-left">
+                  {{ creneau.heure_debut|time:"H:i" }}–{{ creneau.heure_fin|time:"H:i" }}
+                </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for groupe in jour.groupes %}
+              {% if jour.creneaux %}
+                <tr>
+                  <td colspan="{{ jour.creneaux|length|add:1 }}"
+                      class="border border-gris-trait px-1.5 py-0.5 font-semibold uppercase
+                             tracking-wide">
+                    {{ groupe.type_formation }}
+                  </td>
+                </tr>
+              {% endif %}
+              {% for ligne in groupe.lignes %}
+                {% if jour.creneaux %}
+                  <tr>
+                    <th scope="row" class="border border-gris-trait px-1.5 py-1 text-left
+                                           font-medium">
+                      {{ ligne.brigade.designation }}
+                    </th>
+                    {% for cellule in ligne.cellules %}
+                      <td class="border border-gris-trait px-1.5 py-1 align-top">
+                        {% if cellule.seance %}
+                          <p class="font-semibold">
+                            {% if cellule.seance.element_referentiel.matiere.code %}{{ cellule.seance.element_referentiel.matiere.code }}{% else %}{{ cellule.seance.element_referentiel.matiere }}{% endif %}
+                          </p>
+                          <p>{{ cellule.seance.instructeur.grade }} {{ cellule.seance.instructeur.nom }}</p>
+                          {% if cellule.seance.lieu %}<p>{{ cellule.seance.lieu }}</p>{% endif %}
+                        {% elif cellule.evenement_bloquant %}
+                          <p class="uppercase">{{ cellule.evenement_bloquant.nature.libelle }}</p>
+                        {% else %}
+                          <p class="text-gris-lecture">{{ cellule.libelle_vide }}</p>
+                        {% endif %}
+                      </td>
+                    {% endfor %}
+                  </tr>
+                {% endif %}
+                {% if ligne.hors_grille %}
+                  <tr>
+                    <th scope="row" class="border border-gris-trait px-1.5 py-1 text-left
+                                           font-medium">
+                      {{ ligne.brigade.designation }} — hors grille
+                    </th>
+                    <td colspan="{{ jour.creneaux|length|default:1 }}"
+                        class="border border-gris-trait px-1.5 py-1">
+                      {% for ligne_hg in ligne.hors_grille %}
+                        <p>
+                          {{ ligne_hg.seance.debut|date:"H:i" }}–{{ ligne_hg.seance.fin|date:"H:i" }}
+                          —
+                          {% if ligne_hg.seance.element_referentiel.matiere.code %}{{ ligne_hg.seance.element_referentiel.matiere.code }}{% else %}{{ ligne_hg.seance.element_referentiel.matiere }}{% endif %}
+                          — {{ ligne_hg.seance.instructeur.grade }} {{ ligne_hg.seance.instructeur.nom }}
+                          {% if ligne_hg.seance.lieu %}— {{ ligne_hg.seance.lieu }}{% endif %}
+                        </p>
+                      {% endfor %}
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    {% endfor %}
+  {% endif %}
+</body>
+</html>

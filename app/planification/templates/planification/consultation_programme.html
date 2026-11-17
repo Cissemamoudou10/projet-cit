@@ -17,14 +17,22 @@
         {% endif %}
       </p>
     </div>
-    <div class="flex shrink-0 gap-2">
+    <div class="flex shrink-0 items-center gap-2">
       {% if programme %}
-        <a href="#" onclick="window.print(); return false;"
+        <a href="{% url 'planification:impression_programme' %}?semaine={{ lundi|date:'Y-m-d' }}{% if request.GET.brigade %}&amp;brigade={{ request.GET.brigade }}{% endif %}{% if request.GET.session %}&amp;session={{ request.GET.session }}{% endif %}"
+           target="_blank" rel="noopener"
            class="inline-flex h-controle items-center gap-2 border border-gris-trait bg-fond-bloc px-3.5
                   text-sm font-medium text-encre no-underline transition-colors duration-survol
                   hover:border-marine-700">
           <svg class="h-3.5 w-3.5" aria-hidden="true"><use href="{% static 'icones/planche.svg' %}#impression"></use></svg>
           Imprimer
+        </a>
+        <!-- E-A1 (prompt 65) : le bouton principal ouvre désormais la vue dédiée ci-dessus
+             (toute la semaine) ; l'impression du seul jour affiché (D-157) reste disponible,
+             en lien secondaire — elle imprime cet écran tel quel (chrome compris). -->
+        <a href="#" onclick="window.print(); return false;"
+           class="px-1 text-2xs text-marine-700 underline-offset-2 hover:underline">
+          Imprimer ce jour
         </a>
         {% if perms.noyau.suivi_lecture %}
           <a href="{% url 'planification:progression_realisee' programme.pk %}"
@@ -200,64 +208,10 @@
 </section>
 {% endif %}
 {% if historique %}
-<section class="mt-4 border border-gris-trait bg-fond-bloc" aria-label="Historique du programme">
-  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold
-            uppercase tracking-wide text-marine-900">
-    Historique
-  </p>
-  <table class="w-full border-collapse text-sm">
-    <thead>
-      <tr>
-        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
-                               font-semibold uppercase tracking-wider text-blanc">Date</th>
-        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
-                               font-semibold uppercase tracking-wider text-blanc">Transition</th>
-        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
-                               font-semibold uppercase tracking-wider text-blanc">Auteur</th>
-        <th scope="col" class="bg-marine-900 px-3 py-2 text-left font-titre text-2xs
-                               font-semibold uppercase tracking-wider text-blanc">Détail</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for entree in historique %}
-        <tr class="border-t border-gris-trait">
-          <td class="px-3 py-2 tabular-nums">{{ entree.cree_le|date:"d/m/Y H:i" }}</td>
-          <td class="px-3 py-2">{{ entree.nature }}</td>
-          <td class="px-3 py-2">{{ entree.auteur|default:"—" }}</td>
-          <td class="px-3 py-2 text-gris-lecture">{{ entree.detail|default:"—" }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</section>
+  {% include "noyau/composants/_rubrique_repliable.html" with titre="Historique" resume=resume_historique contenu_template="planification/_fragments/_historique.html" %}
 {% endif %}
 {% if ecarts_volume_horaire %}
-<section class="mt-4 border border-gris-trait bg-fond-bloc" aria-label="Écarts de volume horaire">
-  <p class="border-b border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold
-            uppercase tracking-wide text-marine-900">
-    Écarts de volume horaire — prescrit / programmé
-  </p>
-  <ul class="divide-y divide-gris-trait text-sm">
-    {% for groupe in ecarts_volume_horaire %}
-      {% for ligne in groupe.lignes %}
-        <li class="flex items-center justify-between gap-3 px-4 py-1.5">
-          <span>{{ groupe.brigade }} — {{ ligne.element_referentiel.matiere }}
-            <span class="text-gris-lecture">
-              ({{ ligne.prescrit|floatformat:2 }} h prescrites, {{ ligne.programme|floatformat:2 }} h programmées)
-            </span>
-          </span>
-          {% if ligne.statut == "retard" %}
-            <span class="text-xs font-medium tabular-nums text-etat-ecart">
-              retard {{ ligne.ecart_pourcent|floatformat:0 }} %</span>
-          {% elif ligne.statut == "depassement" %}
-            <span class="text-xs font-medium tabular-nums text-etat-attention">
-              dépassement {{ ligne.ecart_pourcent|floatformat:0 }} %</span>
-          {% endif %}
-        </li>
-      {% endfor %}
-    {% endfor %}
-  </ul>
-</section>
+  {% include "noyau/composants/_rubrique_repliable.html" with titre="Écarts de volume horaire — prescrit / programmé" resume=resume_ecarts_volume_horaire contenu_template="planification/_fragments/_ecarts_volume_horaire.html" %}
 {% endif %}
 {% if not programme %}
   <p class="mt-4 border border-gris-trait bg-fond-bloc px-4 py-3 text-sm text-gris-lecture">

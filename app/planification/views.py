@@ -146,16 +146,41 @@ def _onglets_jours(jours, jour_actif, lundi):
     return onglets
 
 
+def _resume_nombre(nombre, mots):
+    """E-A2 (prompt 65) : texte du résumé affiché dans le titre d'une
+    rubrique repliable quand elle est fermée (« 3 écarts signalés »,
+    « 12 entrées ») — pluriel régulier en s, seul cas rencontré par les
+    deux rubriques concernées."""
+    suffixe = "" if nombre == 1 else "s"
+    return f"{nombre} " + " ".join(f"{mot}{suffixe}" for mot in mots)
+
+
 def _contexte_lecture(programme):
     """US-VAL-05, H1, et C1/C2 (correction de NC R00-GEN-03, prompt 53,
     Temps 3) : deux lectures qui n'existent que si le programme existe,
     aucune règle, regroupées pour tenir `vue_consultation_programme` sous
-    40 lignes (`.claude/rules/python.md`)."""
+    40 lignes (`.claude/rules/python.md`). `resume_historique` : E-A2,
+    prompt 65."""
     if not programme:
-        return {"historique": [], "derniere_generation": None}
+        return {"historique": [], "resume_historique": _resume_nombre(0, ["entrée"]), "derniere_generation": None}
+    historique = historique_du_programme(programme)
     return {
-        "historique": historique_du_programme(programme),
+        "historique": historique,
+        "resume_historique": _resume_nombre(len(historique), ["entrée"]),
         "derniere_generation": derniere_generation(programme),
+    }
+
+
+def _contexte_ecarts(brigades):
+    """E-A2 (prompt 65) : le résumé compte les LIGNES en écart (une brigade
+    peut porter plusieurs matières en écart), pas les groupes par brigade —
+    aucun calcul nouveau, `ecarts_volume_horaire` reste l'unique source
+    (US-PLAN-07, E2)."""
+    ecarts = ecarts_volume_horaire(brigades)
+    nombre = sum(len(groupe.lignes) for groupe in ecarts)
+    return {
+        "ecarts_volume_horaire": ecarts,
+        "resume_ecarts_volume_horaire": _resume_nombre(nombre, ["écart", "signalé"]),
     }
 
 
@@ -209,8 +234,58 @@ def vue_consultation_programme(request):
             "toutes_brigades": brigades_pour_filtre(),
             # US-PLAN-07, E2 : visible avant soumission, mêmes brigades que
             # la grille consultée — aucun calcul nouveau (E1).
-            "ecarts_volume_horaire": ecarts_volume_horaire(brigades),
+            **_contexte_ecarts(brigades),
             **_contexte_lecture(programme),
             **_contexte_suppression(programme),
         },
+    )
+
+
+def _jours_impression(programme, creneaux_semaine, brigades, jours, lundi):
+    """E-A1 (prompt 65) : un jour par entrée, SEULEMENT s'il porte un
+    créneau de la grille active ou une séance hors grille — jamais de
+    section vide pour un jour structurellement sans créneau (le samedi de
+    la grille Ordinaire, docs/recette/JEUX-DE-DONNEES-PHASE-6.md). Réutilise
+    `grille_consultation`, jamais un second calcul de la grille (§ 9)."""
+    jours_retenus = []
+    for jour in jours:
+        creneaux_du_jour = [c for c in creneaux_semaine if c.jour_semaine == jour]
+        groupes = grille_consultation(programme, creneaux_du_jour, brigades, jour)
+        if not creneaux_du_jour and not seances_hors_grille_existent(groupes):
+            continue
+        jours_retenus.append(
+            {
+                "jour": jour,
+                "date": lundi + datetime.timedelta(days=JOURS_OFFSET[jour]),
+                "creneaux": creneaux_du_jour,
+                "groupes": groupes,
+            }
+        )
+    return jours_retenus
+
+
+@exige_habilitation(PERMISSION_LECTURE)
+def vue_impression_programme(request):
+    """Vue d'impression dédiée du programme hebdomadaire (E-A1, prompt 65,
+    R05-IMP-01) — contient SEULEMENT le programme, toute la semaine et
+    toutes les brigades du filtre : jamais les boutons, l'historique ni les
+    écarts de volume horaire de l'écran de consultation. Gabarit autonome,
+    n'étend pas `noyau/base.html` (DECISIONS.md)."""
+    grille, creneaux_semaine = grille_active_avec_creneaux()
+    lundi = _lundi_depuis_parametre(request.GET.get("semaine"))
+    programme = programme_de_la_semaine(lundi)
+    brigades = list(
+        brigades_pour_filtre(
+            brigade_pk=request.GET.get("brigade"), session_pk=request.GET.get("session")
+        )
+    )
+    jours = (
+        _jours_impression(programme, creneaux_semaine, brigades, jours_disponibles(), lundi)
+        if programme
+        else []
+    )
+    return render(
+        request,
+        "planification/impression_programme.html",
+        {"programme": programme, "lundi": lundi, "samedi": lundi + datetime.timedelta(days=5), "jours": jours},
     )
