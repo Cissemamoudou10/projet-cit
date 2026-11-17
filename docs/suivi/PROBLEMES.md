@@ -23,6 +23,17 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-84 — Vue d'impression dédiée (E-A1) : l'en-tête disparaissait à l'impression réelle, masqué par une règle CSS préexistante
+
+**Date** 2026-11-17 · **Story** E-A1 (prompt 65, RECETTE-05, R05-IMP-01) · **État** : résolu — trouvé en relecture, avant fusion
+**Symptôme** — Relecture `relecteur-conception` du commit `977cc7a` : dans `planification/templates/planification/impression_programme.html`, le `<header>` portant l'en-tête requis (semaine, état, signataire) était un enfant DIRECT de `<body>`.
+**Cause** — `noyau/static/css/impression.css` porte une règle `body > header, body > footer, body > nav, form[method="get"], dialog { display: none !important; }`, écrite pour masquer le bandeau de `noyau/base.html` (où `entete.html` produit justement un `<header>` enfant direct de `<body>`). La nouvelle vue charge la MÊME feuille (`media="print"`), sans que son propre `<header>` de contenu ait été pensé par rapport à ce sélecteur : il tombait dans le même filet, invisible uniquement au moment où la page s'affiche réellement pour impression (`onload="window.print()"`). Les deux tests `navigateur` écrits pour cette vue laissaient un angle mort exact : l'un vérifiait le texte dans le DOM brut (`page.content()`, jamais affecté par le CSS d'impression), l'autre émulait bien le média `print` et produisait un vrai PDF, mais ne vérifiait jamais que le texte de l'en-tête y survivait.
+**Résolution** — `<header>` niché sous un `<main>` dans le gabarit (`main > header`, plus `body > header`). Le test concerné (`test_etat_signature_survivent_a_l_impression_reelle`, ex-`test_etat_signature_visibles_dans_l_entete_d_impression`) émule désormais le média `print`, produit un vrai PDF et vérifie le texte extrait — jamais seulement le DOM. `docs/suivi/DECISIONS.md` (D-314) corrigée : elle affirmait à tort « rien à masquer, par construction », ce qui ne vaut que pour le contenu (Circuit/Historique/Écarts, absents du gabarit), pas pour l'en-tête, qui a bien été piégé par une règle existante.
+**Risque concerné** — aucun du registre.
+**Leçon** — toute nouvelle page qui charge une feuille d'impression déjà écrite pour UN AUTRE gabarit doit être vérifiée contre CHACUN de ses sélecteurs `body > ...` — une balise sémantique (`<header>`, `<footer>`, `<nav>`) employée pour son sens, sans songer qu'une règle CSS globale la cible par position dans le DOM, est le piège précis. Et : un test qui lit `page.content()` ne prouve rien sur ce qui survit à l'impression — seul `page.emulate_media("print")` suivi d'un vrai rendu (`page.pdf()`) le prouve.
+
+---
+
 ## P-83 — Commande `docker run` de chargement du jeu volumineux : jamais rejouée telle qu'écrite, deux écarts à la même cause
 
 **Date** 2026-11-17 · **Story** aucune (rechargement de `pfe_cit_volume` pour RECETTE-05 § 7) · **État** : résolu
