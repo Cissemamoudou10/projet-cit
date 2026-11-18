@@ -13,19 +13,19 @@ Ce cahier se termine par la **synthèse des objectifs SMART**, qui conditionne l
 
 **Stories.** Toutes, vues sous l'angle transverse : US-ADM-03 et US-ADM-04 en premier lieu, BNF-01, 02, 04, 05, 09, 10, 14, 15.
 
-**Cadre.** Plan `PLAN-DE-TESTS-PHASE-6.md`. Jeu `complet` pour les sections 3 à 6, jeu **volumineux** pour la section 7. Joué **par les deux équipiers** (plan, § 7).
+**Cadre.** Plan `PLAN-DE-TESTS-PHASE-6.md`. Jeu `complet` pour les sections 3 à 6 bis, jeu **volumineux** pour la section 7. Joué **par les deux équipiers** (plan, § 7).
 
 | Date d'exécution | Recetteurs | Navigateur | Date système | Lundi de W0 |
 |---|---|---|---|---|
-| | | | | |
+| 16-17/11/2026, rejeu R05-IMP-01 le 18/11 | Binôme | — | Réelle | 16/11/2026 |
 
 ---
 
 ## 1. Préparation
 
-**Sections 3 à 6** : `.\outils\recette\reinitialiser_base_recette.ps1 -Etat complet`. Application sous Windows, ou dans le conteneur pour les contrôles **[PDF]** (`outils/recette/lancer_recette_conteneur.ps1`).
+**Sections 3 à 6 bis** : `.\outils\recette\reinitialiser_base_recette.ps1 -Etat complet`. Application sous Windows, ou dans le conteneur pour les contrôles **[PDF]** (`outils/recette/lancer_recette_conteneur.ps1`).
 
-**Section 7** : `.\outils\recette\reinitialiser_base_recette.ps1 -Etat volume`, puis lancement sur `config.settings.volume`. Les comptes du jeu volumineux sont `v_ped`, `v_plan`, `v_exa`, `v_df` et `v_adm`. Leur mot de passe est donné par le chargeur (`comptes_volume.py`) : notez-le ici ______.
+**Section 7** : `.\outils\recette\reinitialiser_base_recette.ps1 -Etat volume`, puis lancement sur `config.settings.volume`. Les comptes du jeu volumineux sont `v_ped`, `v_plan`, `v_exa`, `v_df` et `v_adm`. Leur mot de passe est donné par le chargeur (`comptes_volume.py`) : `Transmissions#2026` (comptes fictifs, base locale).
 
 **Le jeu volumineux et le jeu de recette sont deux bases différentes.** Pendant la section 7, aucune autre commande ne doit toucher PostgreSQL (leçon P-51).
 
@@ -57,28 +57,28 @@ Pour chaque ligne : ouvrir l'écran avec chaque profil, tenter une lecture, puis
 
 | Code | Écran | Attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R05-HAB-01 | Gestion des comptes | Seul `u_adm` | US-ADM-02 c.5 | ☐ | |
-| R05-HAB-02 | Référentiel de F6 | Conforme à la matrice | US-REF-07 | ☐ | |
-| R05-HAB-03 | Stagiaires de S1 | Conforme ; `u_exa` en lecture (saisie des notes) | US-SES-07 c.4 | ☐ | |
-| R05-HAB-04 | Matrice de qualification | `u_exa` refusé | matrice | ☐ | |
-| R05-HAB-05 | Indisponibilités | Écriture pour `u_plan` seulement | US-INS-03 | ☐ | |
-| R05-HAB-06 | Consultation du programme W0 | Conforme ; noter le comportement pour `u_exa` | D-280 | ☐ | |
-| R05-HAB-07 | Saisie des notes de E1 | Seule `u_exa` | US-EVAL-05 c.6 | ☐ | |
-| R05-HAB-08 | Sujets de E3 | Seule `u_exa`, **`u_df` refusée** | US-EVAL-03 c.6 | ☐ | |
-| R05-HAB-09 | Rapprochement de S1 | `u_ped`, `u_plan`, `u_exa`, `u_df` ; `u_adm` refusé | US-SUI-01 c.5 | ☐ | |
-| R05-HAB-10 | Avec chaque profil, examiner le menu de navigation | Chaque profil voit les rubriques auxquelles il a accès, et seulement celles-là | US-ADM-03 c.6 | ☐ | |
-| R05-HAB-11 | Avec `u_df`, parcourir tous les écrans accessibles | Aucune commande d'écriture nulle part, pas même grisée | US-ADM-03 c.2 | ☐ | |
-| R05-HAB-12 | Se déconnecter et appeler directement trois adresses d'écriture : générer, valider, saisir une note | Redirection vers l'authentification ; aucune action exécutée | US-ADM-03 c.6 | ☐ | |
-| R05-HAB-13 | `u_adm` : modifier dans l'écran des habilitations un droit de `u_plan` (retirer la lecture du référentiel), vérifier l'effet, puis rétablir | Effet immédiat, sans modifier le code ; chaque changement est journalisé | RG-02 bis, BF-ADM-03 | ☐ | |
+| R05-HAB-01 | Gestion des comptes | Seul `u_adm` | US-ADM-02 c.5 | C | |
+| R05-HAB-02 | Référentiel de F6 | Conforme à la matrice | US-REF-07 | C | |
+| R05-HAB-03 | Stagiaires de S1 | Conforme ; `u_exa` en lecture (saisie des notes) | US-SES-07 c.4 | C | |
+| R05-HAB-04 | Matrice de qualification | `u_exa` refusé | matrice | C | |
+| R05-HAB-05 | Indisponibilités | Écriture pour `u_plan` seulement | US-INS-03 | C | |
+| R05-HAB-06 | Consultation du programme W0 | Conforme ; noter le comportement pour `u_exa` | D-280 | C | — Joué : `u_exa` refusé |
+| R05-HAB-07 | Saisie des notes de E1 | Seule `u_exa` | US-EVAL-05 c.6 | C | |
+| R05-HAB-08 | Sujets de E3 | Seule `u_exa`, **`u_df` refusée** | US-EVAL-03 c.6 | C | |
+| R05-HAB-09 | Rapprochement de S1 | `u_ped`, `u_plan`, `u_exa`, `u_df` ; `u_adm` refusé | US-SUI-01 c.5 | C | |
+| R05-HAB-10 | Avec chaque profil, examiner le menu de navigation | Chaque profil voit les rubriques auxquelles il a accès, et seulement celles-là | US-ADM-03 c.6 | C | |
+| R05-HAB-11 | Avec `u_df`, parcourir tous les écrans accessibles | Aucune commande d'écriture nulle part, pas même grisée | US-ADM-03 c.2 | C | |
+| R05-HAB-12 | Se déconnecter et appeler directement trois adresses d'écriture : générer, valider, saisir une note | Redirection vers l'authentification ; aucune action exécutée | US-ADM-03 c.6 | C | |
+| R05-HAB-13 | `u_adm` : modifier dans l'écran des habilitations un droit de `u_plan` (retirer la lecture du référentiel), vérifier l'effet, puis rétablir | Effet immédiat, sans modifier le code ; chaque changement est journalisé | RG-02 bis, BF-ADM-03 | C | |
 
 ## 4. Journal
 
 | Code | Contrôle | Attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R05-JOU-01 | `u_adm` : vérifier les entrées des sections 3 et 5 de ce cahier | Chaque refus d'accès, chaque modification sensible : auteur et horodatage | RG-26, BNF-14 | ☐ | |
-| R05-JOU-02 | Avec chaque profil, `u_adm` compris, chercher à modifier ou supprimer une entrée | Impossible pour tous | RG-27, US-ADM-04 c.4 | ☐ | |
-| R05-JOU-03 | Chercher dans le journal le nom d'un stagiaire et la référence `SUJ-E3-A` | Absents : un import ou un export se journalise par un **nombre** de lignes, un sujet par son **rang** | BNF-02, données nominatives | ☐ | |
-| R05-JOU-04 | Journal de W-2 | Les entrées portent les dates simulées de la chronologie (jeudi, vendredi, samedi de W-3) | JEUX-DE-DONNEES § 2.4 | ☐ | Vérifie que l'horloge simulée a laissé une histoire cohérente |
+| R05-JOU-01 | `u_adm` : vérifier les entrées des sections 3 et 5 de ce cahier | Chaque refus d'accès, chaque modification sensible : auteur et horodatage | RG-26, BNF-14 | C | |
+| R05-JOU-02 | Avec chaque profil, `u_adm` compris, chercher à modifier ou supprimer une entrée | Impossible pour tous | RG-27, US-ADM-04 c.4 | C | |
+| R05-JOU-03 | Chercher dans le journal le nom d'un stagiaire et la référence `SUJ-E3-A` | Absents : un import ou un export se journalise par un **nombre** de lignes, un sujet par son **rang** | BNF-02, données nominatives | C | |
+| R05-JOU-04 | Journal de W-2 | Les entrées portent les dates simulées de la chronologie (jeudi, vendredi, samedi de W-3) | JEUX-DE-DONNEES § 2.4 | C | Vérifie que l'horloge simulée a laissé une histoire cohérente |
 
 ## 5. Documents imprimés et exportés
 
@@ -86,17 +86,17 @@ Chaque document est imprimé en aperçu. Pour chacun, on note le format naturel 
 
 | Code | Document | Format | Débordement | Lisible | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|---|---|
-| R05-IMP-01 | **Programme hebdomadaire W0** (trois brigades) | | | | RG-33 bis, D-155, D-157 | ☐ | Anomalie n° 1 **corrigée** (impression par journée, D-157, D-301) : vérifier qu'aucune journée ne déborde |
-| R05-IMP-02 | Liste des instructeurs | | | | K3 | ☐ | 168 px mesurés le 26/10 |
-| R05-IMP-03 | Liste des lieux | | | | K3 | ☐ | |
-| R05-IMP-04 | Fiche de composition de S1 | | | | D-63 | ☐ | |
-| R05-IMP-05 | Liste des stagiaires de S1 | | | | US-SES-07 | ☐ | |
-| R05-IMP-06 | Vue annuelle du calendrier | | | | US-PLAN-01 c.7 | ☐ | |
-| R05-IMP-07 | Fiche d'une grille horaire | | | | US-PLAN-12 | ☐ | |
-| R05-IMP-08 | Convocation de E3 | | | | US-EVAL-04 c.8 | ☐ | Aucune mention de sujet |
-| R05-IMP-09 | [PDF] Procès-verbal d'une évaluation | | | | US-EVAL-07 c.5 | ☐ | |
-| R05-IMP-10 | [PDF] Progression réalisée W-1 | | | | US-SUI-06 c.7 | ☐ | |
-| R05-IMP-11 | Export CSV des stagiaires, ouvert dans un tableur | | | | US-SES-07 c.3 | ☐ | Accents corrects |
+| R05-IMP-01 | **Programme hebdomadaire W0** (trois brigades) | | | | RG-33 bis, D-155, D-157 | C | Anomalie n° 1 **corrigée** (impression par journée, D-157, D-301) : vérifier qu'aucune journée ne déborde — **E-A1, NC mineur, corrigé** (prompt 65, `recette-phase-6-c11`, D-314, P-84) : l'impression reprenait l'interface (boutons, historique, écarts). Vue d'impression dédiée, semaine entière, A4 paysage : 2 pages pour 3 brigades, 15 pour 32. Rejoué le 18/11 : C |
+| R05-IMP-02 | Liste des instructeurs | | | | K3 | C | 168 px mesurés le 26/10 |
+| R05-IMP-03 | Liste des lieux | | | | K3 | C | |
+| R05-IMP-04 | Fiche de composition de S1 | | | | D-63 | C | |
+| R05-IMP-05 | Liste des stagiaires de S1 | | | | US-SES-07 | C | |
+| R05-IMP-06 | Vue annuelle du calendrier | | | | US-PLAN-01 c.7 | C | |
+| R05-IMP-07 | Fiche d'une grille horaire | | | | US-PLAN-12 | C | |
+| R05-IMP-08 | Convocation de E3 | | | | US-EVAL-04 c.8 | C | Aucune mention de sujet |
+| R05-IMP-09 | [PDF] Procès-verbal d'une évaluation | | | | US-EVAL-07 c.5 | C | |
+| R05-IMP-10 | [PDF] Progression réalisée W-1 | | | | US-SUI-06 c.7 | C | |
+| R05-IMP-11 | Export CSV des stagiaires, ouvert dans un tableur | | | | US-SES-07 c.3 | C | Accents corrects |
 
 ## 6. Scénario de bout en bout — une semaine de W+1, à travers les trois cellules
 
@@ -104,17 +104,17 @@ Il vérifie les **passages de relais** entre cellules, que les autres cahiers te
 
 | Code | Étape | Profil | Attendu | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R05-BEB-01 | Générer W+1 pour EXP1, EXP2, CDP1 | `u_plan` | Brouillon ; le contrôle E2 est conservé | ☐ | |
-| R05-BEB-02 | Créer une formative M6 pour EXP1 le jeudi de W+1 | `u_exa` | Séance verrouillée insérée dans W+1 ; elle apparaît chez `u_plan` | ☐ | |
-| R05-BEB-03 | Soumettre W+1 | `u_plan` | La cellule pédagogique est informée (compteur) | ☐ | |
-| R05-BEB-04 | Rejeter avec motif | `u_ped` | La planification voit le motif | ☐ | |
-| R05-BEB-05 | Corriger, resoumettre | `u_plan` | — | ☐ | |
-| R05-BEB-06 | Valider | `u_ped` | — | ☐ | |
-| R05-BEB-07 | Enregistrer la signature, afficher | `u_plan` | Affiché ; consultable par `u_df` | ☐ | |
-| R05-BEB-08 | Déclarer I1 indisponible le mercredi de W+1 ; traiter ses séances | `u_plan` | Remplacements avec avenant ; W+1 reste affiché | ☐ | |
-| R05-BEB-09 | Consulter le rapprochement de S1 | `u_ped` | Le programmé intègre W+1 ; le réalisé n'en tient pas encore compte (séances futures) | ☐ | |
-| R05-BEB-10 | Tableau de bord | `u_df` | Cohérent avec le rapprochement | ☐ | |
-| R05-BEB-11 | Journal du scénario | `u_adm` | Chaque relais apparaît dans l'ordre, avec son auteur | ☐ | |
+| R05-BEB-01 | Générer W+1 pour EXP1, EXP2, CDP1 | `u_plan` | Brouillon ; le contrôle E2 est conservé | C | |
+| R05-BEB-02 | Créer une formative M6 pour EXP1 le jeudi de W+1 | `u_exa` | Séance verrouillée insérée dans W+1 ; elle apparaît chez `u_plan` | C | |
+| R05-BEB-03 | Soumettre W+1 | `u_plan` | La cellule pédagogique est informée (compteur) | C | |
+| R05-BEB-04 | Rejeter avec motif | `u_ped` | La planification voit le motif | C | |
+| R05-BEB-05 | Corriger, resoumettre | `u_plan` | — | C | |
+| R05-BEB-06 | Valider | `u_ped` | — | C | |
+| R05-BEB-07 | Enregistrer la signature, afficher | `u_plan` | Affiché ; consultable par `u_df` | C | |
+| R05-BEB-08 | Déclarer I1 indisponible le mercredi de W+1 ; traiter ses séances | `u_plan` | Remplacements avec avenant ; W+1 reste affiché | C | |
+| R05-BEB-09 | Consulter le rapprochement de S1 | `u_ped` | Le programmé intègre W+1 ; le réalisé n'en tient pas encore compte (séances futures) | C | |
+| R05-BEB-10 | Tableau de bord | `u_df` | Cohérent avec le rapprochement | C | |
+| R05-BEB-11 | Journal du scénario | `u_adm` | Chaque relais apparaît dans l'ordre, avec son auteur | C | |
 
 ## 6 bis. Ergonomie — lot du 13 novembre (US-IHM-01 à 03, US-EVAL-12)
 
@@ -122,18 +122,18 @@ Contrôles ajoutés le 14 novembre après le prompt 64 (`recette-phase-6-c10`, c
 
 | Code | Action | Résultat attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R05-IHM-01 | Ouvrir la page de connexion | Le logo (ou le sigle « CIT ») est visible ; il apparaît aussi dans l'onglet du navigateur | US-IHM-02 c.1 | ☐ | |
-| R05-IHM-02 | Avec `u_plan`, passer par cinq rubriques différentes | Le logo est dans la barre ; la barre garde la même hauteur et la même disposition d'une rubrique à l'autre | US-IHM-02 c.1, c.3 | ☐ | |
-| R05-IHM-03 | Ouvrir le menu du compte, puis cliquer ailleurs dans la page | Le menu affiche le nom et le profil, la déconnexion et le changement de mot de passe, sans texte tronqué ; il se referme au clic extérieur ; les deux commandes fonctionnent | US-IHM-02 c.2, P-82 | ☐ | |
-| R05-IHM-04 | Se connecter successivement avec les cinq profils | Chacun arrive sur la page d'accueil, et non sur une page vide ; chiffres d'ensemble présents | US-IHM-01 c.1 | ☐ | |
-| R05-IHM-05 | Pour chaque profil, comparer les chiffres affichés aux écrans qu'il peut ouvrir | Aucun chiffre ne concerne un écran que ce profil ne peut pas ouvrir (notamment : `u_adm` ne voit rien des notes, `u_df` ne voit aucune commande d'écriture) | US-IHM-01 c.4, D-313 | ☐ | |
-| R05-IHM-06 | Avec `u_plan` puis `u_exa`, contrôler les points d'attention un par un | « Programmes en attente » = programmes soumis + validés non affichés ; « matières sans instructeur » = constat de la matrice de qualification ; « évaluations non prêtes » = épreuves **à venir** non prêtes ; chaque chiffre se retrouve dans l'écran correspondant | US-IHM-01 c.2, D-313 | ☐ | |
-| R05-IHM-07 | Comparer l'état du programme affiché à l'accueil pour W0 et W+1 | Identique à l'état visible dans l'écran du programme de chaque semaine | US-IHM-01 c.3 | ☐ | |
-| R05-IHM-08 | `u_exa` : moyennes de S1 ; chercher un nom, filtrer une brigade, trier par moyenne puis par rang, changer de page | Les quatre fonctions marchent et se combinent ; filtre et tri conservés au changement de page | US-IHM-03 c.1 | ☐ | |
-| R05-IHM-09 | Ouvrir le détail de la moyenne d'un stagiaire ; recalculer à la main sa moyenne générale | Notes formatives et certificatives, poids, note et coefficient de chaque module ; le calcul à la main donne exactement la moyenne affichée ; le rang est cohérent avec la liste | US-EVAL-12 c.1, c.2 | ☐ | Calcul : ______ |
-| R05-IHM-10 | Ouvrir ce détail avec `u_adm`, puis consulter le journal | `u_adm` refusé ; la consultation de `u_exa` figure au journal | US-EVAL-12 c.4 | ☐ | |
-| R05-IHM-11 | Aperçu d'un procès-verbal : recherche, filtre, tri, pagination ; puis produire le PDF | Les quatre fonctions marchent ; le PDF produit est inchangé par le filtre (document complet) | US-IHM-03 c.1, D-312 | ☐ | |
-| R05-IHM-12 | Saisie des notes de E1 : filtrer sur un nom, saisir une note ; retirer le filtre, saisir une seconde note ; enregistrer | Pas de pagination ; **les deux notes** sont enregistrées | US-IHM-03 c.2 | ☐ | |
+| R05-IHM-01 | Ouvrir la page de connexion | Le logo (ou le sigle « CIT ») est visible ; il apparaît aussi dans l'onglet du navigateur | US-IHM-02 c.1 | C | |
+| R05-IHM-02 | Avec `u_plan`, passer par cinq rubriques différentes | Le logo est dans la barre ; la barre garde la même hauteur et la même disposition d'une rubrique à l'autre | US-IHM-02 c.1, c.3 | C | |
+| R05-IHM-03 | Ouvrir le menu du compte, puis cliquer ailleurs dans la page | Le menu affiche le nom et le profil, la déconnexion et le changement de mot de passe, sans texte tronqué ; il se referme au clic extérieur ; les deux commandes fonctionnent | US-IHM-02 c.2, P-82 | C | |
+| R05-IHM-04 | Se connecter successivement avec les cinq profils | Chacun arrive sur la page d'accueil, et non sur une page vide ; chiffres d'ensemble présents | US-IHM-01 c.1 | C | |
+| R05-IHM-05 | Pour chaque profil, comparer les chiffres affichés aux écrans qu'il peut ouvrir | Aucun chiffre ne concerne un écran que ce profil ne peut pas ouvrir (notamment : `u_adm` ne voit rien des notes, `u_df` ne voit aucune commande d'écriture) | US-IHM-01 c.4, D-313 | C | |
+| R05-IHM-06 | Avec `u_plan` puis `u_exa`, contrôler les points d'attention un par un | « Programmes en attente » = programmes soumis + validés non affichés ; « matières sans instructeur » = constat de la matrice de qualification ; « évaluations non prêtes » = épreuves **à venir** non prêtes ; chaque chiffre se retrouve dans l'écran correspondant | US-IHM-01 c.2, D-313 | C | |
+| R05-IHM-07 | Comparer l'état du programme affiché à l'accueil pour W0 et W+1 | Identique à l'état visible dans l'écran du programme de chaque semaine | US-IHM-01 c.3 | C | |
+| R05-IHM-08 | `u_exa` : moyennes de S1 ; chercher un nom, filtrer une brigade, trier par moyenne puis par rang, changer de page | Les quatre fonctions marchent et se combinent ; filtre et tri conservés au changement de page | US-IHM-03 c.1 | C | |
+| R05-IHM-09 | Ouvrir le détail de la moyenne d'un stagiaire ; recalculer à la main sa moyenne générale | Notes formatives et certificatives, poids, note et coefficient de chaque module ; le calcul à la main donne exactement la moyenne affichée ; le rang est cohérent avec la liste | US-EVAL-12 c.1, c.2 | C | Calcul à la main conforme à la moyenne affichée |
+| R05-IHM-10 | Ouvrir ce détail avec `u_adm`, puis consulter le journal | `u_adm` refusé ; la consultation de `u_exa` figure au journal | US-EVAL-12 c.4 | C | |
+| R05-IHM-11 | Aperçu d'un procès-verbal : recherche, filtre, tri, pagination ; puis produire le PDF | Les quatre fonctions marchent ; le PDF produit est inchangé par le filtre (document complet) | US-IHM-03 c.1, D-312 | C | |
+| R05-IHM-12 | Saisie des notes de E1 : filtrer sur un nom, saisir une note ; retirer le filtre, saisir une seconde note ; enregistrer | Pas de pagination ; **les deux notes** sont enregistrées | US-IHM-03 c.2 | C | |
 
 ---
 
@@ -143,15 +143,15 @@ Base `pfe_cit_volume`. Il s'agit ici d'**observer**, pas de vérifier des valeur
 
 | Code | Observation | Attendu | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|
-| R05-VOL-01 | Liste des stagiaires (≈ 800), recherche, pagination | Moins de 2 s ; pagination et recherche fluides | BNF-05, BNF-15 | ☐ | Temps : ______ |
-| R05-VOL-02 | Consultation du programme W0 (32 brigades) | Moins de 2 s ; lisible à l'écran | BNF-05 | ☐ | Temps : ______ |
-| R05-VOL-03 | Générer W+4 pour les 32 brigades (`v_plan`) | Moins de 5 minutes ; le compte rendu reste exploitable | BNF-04 | ☐ | Temps : ______ ; non pourvues : ____ % |
-| R05-VOL-04 | Compte rendu de W+1 : relever les motifs des cases non pourvues | Les motifs nomment des instructeurs ou des lieux saturés (constat du prompt 51 bis) | MESURES-REFERENCE | ☐ | Matières et instructeurs les plus touchés : ______ |
-| R05-VOL-05 | Rapprochement de la plus grosse session ; tableau de bord des 32 brigades | Moins de 2 s ; tableau de bord lisible avec 32 brigades | BNF-05 | ☐ | |
-| R05-VOL-06 | Charge d'un instructeur très sollicité ; comparaison de plusieurs instructeurs | Moins de 2 s ; les dépassements de seuil sont visibles | BNF-05, US-INS-04 | ☐ | |
-| R05-VOL-07 | Impression du programme W0 (32 brigades) | Impression par journée : noter si une journée déborde à cette taille | R22, D-157 | ☐ | |
-| R05-VOL-08 | Navigation libre, chaque profil (dix minutes chacun) | Noter toute lenteur, incohérence ou écran inexploitable à cette taille | — | ☐ | |
-| R05-VOL-09 | Page d'accueil avec `v_df` puis `v_plan` | Moins de 2 s ; chiffres lisibles à la taille du centre | US-IHM-01 c.5, BNF-05 | ☐ | Temps : ______ |
+| R05-VOL-01 | Liste des stagiaires (≈ 800), recherche, pagination | Moins de 2 s ; pagination et recherche fluides | BNF-05, BNF-15 | C | Temps : moins d'une seconde |
+| R05-VOL-02 | Consultation du programme W0 (32 brigades) | Moins de 2 s ; lisible à l'écran | BNF-05 | C | Temps : moins d'une seconde |
+| R05-VOL-03 | Générer W+4 pour les 32 brigades (`v_plan`) | Moins de 5 minutes ; le compte rendu reste exploitable | BNF-04 | C | Temps : environ 10 s pour le centre entier ; non pourvues : non relevé |
+| R05-VOL-04 | Compte rendu de W+1 : relever les motifs des cases non pourvues | Les motifs nomment des instructeurs ou des lieux saturés (constat du prompt 51 bis) | MESURES-REFERENCE | C | Matières et instructeurs les plus touchés : ______ |
+| R05-VOL-05 | Rapprochement de la plus grosse session ; tableau de bord des 32 brigades | Moins de 2 s ; tableau de bord lisible avec 32 brigades | BNF-05 | C | — Moins d'une seconde |
+| R05-VOL-06 | Charge d'un instructeur très sollicité ; comparaison de plusieurs instructeurs | Moins de 2 s ; les dépassements de seuil sont visibles | BNF-05, US-INS-04 | C | — Moins d'une seconde |
+| R05-VOL-07 | Impression du programme W0 (32 brigades) | Impression par journée : noter si une journée déborde à cette taille | R22, D-157 | C | |
+| R05-VOL-08 | Navigation libre, chaque profil (dix minutes chacun) | Noter toute lenteur, incohérence ou écran inexploitable à cette taille | — | C | |
+| R05-VOL-09 | Page d'accueil avec `v_df` puis `v_plan` | Moins de 2 s ; chiffres lisibles à la taille du centre | US-IHM-01 c.5, BNF-05 | C | Temps : moins d'une seconde |
 
 **Réserve à écrire telle quelle au mémoire** : le jeu volumineux est calibré au plus contraint de la plage du terrain (80 instructeurs). La saturation constatée à partir de W+1 est une **propriété de ce calibrage**, et non un défaut. À 120 instructeurs, elle serait moindre ; elle n'a pas été mesurée.
 
@@ -159,7 +159,9 @@ Base `pfe_cit_volume`. Il s'agit ici d'**observer**, pas de vérifier des valeur
 
 Protocole (plan, § 9.2). **Une seule des deux branches est jouée.**
 
-**Branche A — séance avec la cellule planification (jeudi 29/10, si elle est accordée).**
+**Branche A — séance avec la cellule planification, lundi 16 novembre** (séance de recette avec les cellules, R29). La mesure ne se note pas en C ou NC : C3 peut être prononcé avant elle, et la ligne OS5 de la synthèse se complète le 16/11.
+
+> **Résultat : la séance du 16/11 n'a pas eu lieu** (R29 réalisé). La branche A n'est pas jouée ; une démonstration de l'application aux cellules est prévue, hors recette, et ses remarques seront traitées au titre de R11. **La branche B s'applique.**
 
 | Code | Étape | Mesure |
 |---|---|---|
@@ -173,9 +175,9 @@ Protocole (plan, § 9.2). **Une seule des deux branches est jouée.**
 
 | Code | Étape | Mesure |
 |---|---|---|
-| R05-OS5-B1 | Sur le jeu `complet` : de la sélection des brigades de W+1 jusqu'au programme soumis, ajustements compris, par un équipier qui ne connaît pas la semaine à l'avance | Temps : ______ |
-| R05-OS5-B2 | Même mesure sur le jeu volumineux (32 brigades, W+4) | Temps : ______ |
-| R05-OS5-B3 | Comparaison au point de départ **déclaré** par la cellule en phase 1 : « au moins une journée » | Conclusion, avec la limite : référence déclarative, non mesurée |
+| R05-OS5-B1 | Sur le jeu `complet` : de la sélection des brigades de W+1 jusqu'au programme soumis, ajustements compris, par un équipier qui ne connaît pas la semaine à l'avance | Temps : **10 min au plus, estimé** (non chronométré) |
+| R05-OS5-B2 | Même mesure sur le jeu volumineux (32 brigades, W+4) | Temps : **40 min au plus, estimé** (non chronométré) |
+| R05-OS5-B3 | Comparaison au point de départ **déclaré** par la cellule en phase 1 : « au moins une journée » | Conclusion, avec la limite : référence déclarative, non mesurée — **Cible atteinte sur estimation** : 40 min au plus pour le centre entier (32 brigades), soit moins de 2 h (cible OS5) et un gain d'au moins 92 % sur une journée de 8 h (K12 : au moins 50 %) |
 
 ## 9. Synthèse des objectifs SMART
 
@@ -183,12 +185,12 @@ Protocole (plan, § 9.2). **Une seule des deux branches est jouée.**
 
 | Objectif | Mesure prévue en phase 1 | Résultat observé | Source | Atteint ? |
 |---|---|---|---|---|
-| Principal | Trois cellules couvertes, besoins Must satisfaits | | Six cahiers | ☐ oui ☐ partiel ☐ non |
-| OS1 — Référentiel centralisé | Formations et matières consultables, sans double saisie | | RECETTE-00, R05-HAB | ☐ ☐ ☐ |
-| OS2 — Génération assistée | Programme sans violation de contrainte dure, validé avant affichage | | RECETTE-00, 01, R05-VOL | ☐ ☐ ☐ |
-| OS3 — Évaluations | Notes et résultats d'une formation test, accès restreint. *Deux circuits et non trois : écart déclaré* | | RECETTE-02 | ☐ ☐ ☐ |
-| OS4 — Prescrit et réalisé | Écart calculé et affiché par matière, avec alerte | | RECETTE-03 | ☐ ☐ ☐ |
-| OS5 — Gain de temps | Une semaine test : système contre méthode actuelle ; cible moins de 2 h | | § 8 | ☐ ☐ ☐ |
+| Principal | Trois cellules couvertes, besoins Must satisfaits | Six cahiers prononcés, toutes anomalies corrigées et rejouées ; recette jouée par le binôme, sans les utilisateurs (R29) | Six cahiers | ☒ oui |
+| OS1 — Référentiel centralisé | Formations et matières consultables, sans double saisie | Conforme | RECETTE-00, R05-HAB | ☒ oui |
+| OS2 — Génération assistée | Programme sans violation de contrainte dure, validé avant affichage | Conforme ; huit contraintes dures ; centre entier (32 brigades) généré en environ 10 s | RECETTE-00, 01, R05-VOL | ☒ oui |
+| OS3 — Évaluations | Notes et résultats d'une formation test, accès restreint. *Deux circuits et non trois : écart déclaré* | Conforme ; écart déclaré | RECETTE-02, R05-IHM | ☒ oui |
+| OS4 — Prescrit et réalisé | Écart calculé et affiché par matière, avec alerte | Conforme | RECETTE-03 | ☒ oui |
+| OS5 — Gain de temps | Une semaine test : système contre méthode actuelle ; cible moins de 2 h | Branche B, **estimée** par le binôme le 18/11 (non chronométrée) : 10 min au plus (3 brigades), 40 min au plus (32 brigades), dont environ 10 s de génération mesurées, contre « au moins une journée » déclarée ; **limites** : estimation et non mesure, référence déclarative, faite par un concepteur du système et non par la cellule | § 8 | ☒ oui, sur estimation |
 | OS6 — Suggestion de remplaçant | Liste ordonnée | **SO** : US-PLAN-10 en réserve ; liste non ordonnée livrée (US-PLAN-09) | RECETTE-01 | ☐ SO |
 
 ---
@@ -197,19 +199,19 @@ Protocole (plan, § 9.2). **Une seule des deux branches est jouée.**
 
 | Section | Contrôles | C | NC majeur | NC mineur | B | SO |
 |---|---|---|---|---|---|---|
-| 3. Habilitations | 13 | | | | | |
-| 4. Journal | 4 | | | | | |
-| 5. Documents | 11 | | | | | |
-| 6. Bout en bout | 11 | | | | | |
-| 6 bis. Ergonomie | 12 | | | | | |
-| 7. Jeu volumineux | 9 | | | | | |
-| **Total** | **60** | | | | | |
+| 3. Habilitations | 13 | 13 | | | | |
+| 4. Journal | 4 | 4 | | | | |
+| 5. Documents | 11 | 11 | | 1 corrigé (E-A1) | | |
+| 6. Bout en bout | 11 | 11 | | | | |
+| 6 bis. Ergonomie | 12 | 12 | | | | |
+| 7. Jeu volumineux | 9 | 9 | | | | |
+| **Total** | **60** | **60** | **0** | **1 corrigé** | | |
 
 La section 8 (OS5) et la section 9 (synthèse) sont des mesures : elles ne se notent pas en C ou NC.
 
-☐ Prononcée ☐ Prononcée sous réserve (rejeu le ______) ☐ Refusée
+☒ **Prononcée le 18/11/2026** ☐ Prononcée sous réserve ☐ Refusée
 
-**Observations :**
+**Observations :** 60 contrôles conformes après correction d'une non-conformité mineure (E-A1, impression du programme) et d'une demande d'ergonomie (E-A2, rubriques Écarts et Historique repliables), prompt 65, étiquette `recette-phase-6-c11` ; suite complète 2 437 tests, 0 échec. Deux écarts de la procédure de chargement du jeu volumineux (rôle de migration, dépendance `freezegun`) corrigés dans la documentation (P-83) : ils ne concernent pas le système livré. Séance avec les cellules non tenue (R29) : limite déclarée au mémoire. **Code gelé.**
 
 ## 11. Fiche d'anomalie
 
@@ -217,4 +219,4 @@ Modèle commun : `RECETTE-00-SOCLE.md`, § 12 (code `R05-…`).
 
 ---
 
-*RECETTE-05 — version 2 du 14 novembre 2026 (section 6 bis et R05-VOL-09 ajoutés après le prompt 64 ; impression mise à jour, anomalie n° 1 corrigée). Version 1 du 28 octobre 2026. Lot WBS 6.3, 6.5 et 6.6.*
+*RECETTE-05 — version 3 du 18 novembre 2026, jouée et prononcée. Version 2 du 14 novembre 2026 (section 6 bis et R05-VOL-09 ajoutés après le prompt 64 ; impression mise à jour, anomalie n° 1 corrigée). Version 1 du 28 octobre 2026. Lot WBS 6.3, 6.5 et 6.6.*

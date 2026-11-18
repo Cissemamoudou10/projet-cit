@@ -2,7 +2,7 @@
 
 User stories et critères d’acceptation · Système de gestion des activités de formation du CIT
 
-*Livrables 2 et 3 / 3 — Phase 2 · Version 12 du 8 novembre 2026 · Remplace la version 11 du 23 octobre 2026 · Artefact vivant*
+*Livrables 2 et 3 / 3 — Phase 2 · Version 13 du 18 novembre 2026 · Remplace la version 12 du 8 novembre 2026 · Artefact vivant*
 
 # **1. Méthode**
 
@@ -35,7 +35,7 @@ Les stories sont estimées en **points de complexité** selon la suite de Fibona
 | 8 | Élevée | Algorithme, workflow multi-états ou nombreuses interactions |
 | 13 | Très élevée | Complexité algorithmique forte ; à découper si possible |
 
-| **Clé de conversion et contrôle de cohérence — état au 23 octobre 2026, fin du développement** Le backlog totalisait **263 points** à la fin du développement, inchangé depuis la version 10 ; la version 12 y ajoute quatre stories d’ergonomie (13 points), soit 276. **Quatre sprints consécutifs ont livré cent pour cent de leur périmètre : 58 points sur 58, 61 sur 61, 50 sur 50, puis 55 sur 55.** L’estimation en points est validée par la mesure, et c’est désormais un résultat définitif : le développement est clos. La clé de conversion de 1,3 heure par point, en revanche, **ne sera jamais vérifiée par un relevé contemporain** : la colonne des heures humaines n’a été renseignée pour aucune des cinquante-deux stories livrées. Le relevé du sprint 4 mesure, comme celui du sprint 3, le temps de session de l’outil de développement, avec des interruptions non toujours notées. Le mémoire présentera donc l’estimation en points comme la seule mesure validée, et la clé de conversion comme une hypothèse de planification jamais vérifiée, avec la raison. Un relevé rétrospectif déclaratif reste possible, à condition d’être présenté comme tel. |
+| **Clé de conversion et contrôle de cohérence — état au 23 octobre 2026, fin du développement** Le backlog totalisait **263 points** à la fin du développement, inchangé depuis la version 10 ; la version 12 y ajoute quatre stories d’ergonomie (13 points), soit 276. **Ces quatre stories sont livrées le 13 novembre** : 56 stories et 237 points sont livrés, seule la réserve (9 stories, 39 points) ne l’est pas. **Quatre sprints consécutifs ont livré cent pour cent de leur périmètre : 58 points sur 58, 61 sur 61, 50 sur 50, puis 55 sur 55.** L’estimation en points est validée par la mesure, et c’est désormais un résultat définitif : le développement est clos. La clé de conversion de 1,3 heure par point, en revanche, **ne sera jamais vérifiée par un relevé contemporain** : la colonne des heures humaines n’a été renseignée pour aucune des cinquante-deux stories livrées. Le relevé du sprint 4 mesure, comme celui du sprint 3, le temps de session de l’outil de développement, avec des interruptions non toujours notées. Le mémoire présentera donc l’estimation en points comme la seule mesure validée, et la clé de conversion comme une hypothèse de planification jamais vérifiée, avec la raison. Un relevé rétrospectif déclaratif reste possible, à condition d’être présenté comme tel. |
 | --- |
 
 ## **1.4 Historique des versions**
@@ -51,9 +51,10 @@ Les encadrés d’évolution des versions 5 à 10 sont conservés dans les versi
 | 9 | 30/09 | Clôture du sprint 2 | 60 · 255 | Six stories précisées ; US-PLAN-08 déclassée ; trois principes d’arbitrage posés |
 | 10 | 10/10 | Clôture du sprint 3, jalon J2 | 61 · 263 | Neuf stories réécrites ; US-PLAN-05 et US-VAL-05 réestimées ; US-EVAL-11 créée |
 | 11 | 23/10 | Clôture du sprint 4, jalon J3 | 61 · 263 | Quatorze stories précisées ; architecture maintenue (validée le 22/10) |
-| **12** | **08/11** | **Recette de la phase 6 (RECETTE-00 à 04 prononcées)** | **65 · 276** | **Voir ci-dessous** |
+| 12 | 08/11 | Recette de la phase 6 (RECETTE-00 à 04 prononcées) | 65 · 276 | Quatre exigences manquantes ; lot d’ergonomie créé (quatre stories, 13 points) |
+| **13** | **18/11** | **Clôture de la phase 6 : RECETTE-05 et jalon C3 prononcés, code gelé** | **65 · 276** | **Voir ci-dessous** |
 
-| **Évolutions de la version 12 — recette de la phase 6** La version 12 reporte au backlog ce que la recette a appris. Cinq cahiers sur six sont prononcés au 8 novembre (RECETTE-00, 00 bis, 01, 02, 03 et 04) ; RECETTE-05, transverse, est prévue le 13 novembre. **Quatre exigences manquantes, découvertes par les scénarios de bout en bout, deviennent des critères** : l'étalement hebdomadaire d'une matière (RG-66, D-303), le dépassement de moins d'une séance pour qu'une matière s'achève (RG-39 a modifiée, D-304), l'interdiction de deux séances simultanées pour une même brigade (RG-67, D-305) et le type de lieu exigé par la matière comme contrainte dure (prompt 62). **Quatre précisions de portée** : le volume se compte par matière et par brigade (D-302) ; RG-05 est vérifiée par le contrôleur de contraintes sur tous les chemins (D-309, qui remplace D-306) ; un lot de remplacement porte sur une seule semaine (D-307) ; la saisie manuelle choisit un créneau de la grille active (RG-64 amendée, D-310). **Trois évolutions demandées par le chef de projet en recette** : la suppression d'un brouillon jamais soumis (D-298), le compte rendu de génération consultable et condensé (D-299), et le déplacement ou le retrait d'un stagiaire le jour même de son affectation (D-300). **Une correction documentaire** : le critère 5 d'US-SES-05 décrivait un import « jamais partiel » qui se lisait comme un blocage total ; il décrit désormais le comportement de CU-P3-05 et de RG-18. **Quatre stories créées**, de priorité Should, pour un lot d'ergonomie demandé en recette et planifié le 12 novembre : US-EVAL-12 (moyennes détaillées), US-IHM-01 (tableau de bord d'accueil), US-IHM-02 (identité visuelle et barre de navigation), US-IHM-03 (listes de stagiaires avec recherche, filtre et tri). Le périmètre passe à **65 stories et 276 points**. **Trois demandes reportées en perspective** (section 11.2). Chaque précision est signalée par une note v12 sous la story concernée. **Ce que la version 12 ne modifie pas** : les priorités et les estimations des stories existantes, la clé de conversion (section 1.3). |
+| **Évolutions de la version 13 — clôture de la recette, code gelé** La version 13 ferme la phase 6. **RECETTE-05 est prononcée le 18 novembre (60 contrôles sur 60), et avec elle le jalon C3** : les six cahiers sont prononcés et les objectifs SMART sont tranchés. **Les quatre stories du lot d’ergonomie sont livrées le 13 novembre** (prompt 64, étiquette `recette-phase-6-c10`) : US-IHM-01, US-IHM-02, US-IHM-03 et US-EVAL-12, soit 13 points ; deux décisions d’interprétation les accompagnent (D-312, aperçu du procès-verbal en GET ; D-313, habilitation du tableau de bord chiffre par chiffre). **RECETTE-05 a produit un dernier lot de corrections de présentation** (prompt 65, `recette-phase-6-c11`) : une vue d’impression dédiée du programme hebdomadaire, semaine entière en A4 paysage (D-314, P-84), et des rubriques Écarts et Historique repliables. **Le code est gelé** à `recette-phase-6-c11` (2 437 tests, 0 échec) : toute demande ultérieure, y compris celles d’une démonstration aux cellules, est traitée en perspective. **Ce que la version 13 ne modifie pas** : le périmètre (65 stories, 276 points), les priorités, les estimations et les critères d’acceptation. L’encadré détaillé de la version 12 est conservé dans la version archivée. |
 | --- |
 
 # **2. Vue d’ensemble des epics**
@@ -80,11 +81,13 @@ Les encadrés d’évolution des versions 5 à 10 sont conservés dans les versi
 | 3 | 28/09 – 10/10 | 11 / 11 | 50 / 50 | J2 — tenu le 10/10, éléments de pilotage produits le même jour |
 | 4 | 12/10 – 24/10 | 14 / 14 | 55 / 55 | J3 — atteint le 20/10, quatre jours d’avance ; étiquette `j3-fin-developpement` |
 | **Cumul** | | **52 / 52** | **224 / 224** | Périmètre planifié hors réserve entièrement livré |
+| Recette | 13/11 | 4 / 4 | 13 / 13 | Lot d’ergonomie (prompt 64), créé en version 12 |
+| **Total livré** | | **56 / 56** | **237 / 237** | Toutes les stories engagées sont livrées |
 | Réserve | non engagée | 0 / 9 | 0 / 39 | Non développée : la phase 6 n’ouvre aucune story |
 
 Les 194 points Must sont livrés depuis le 17 octobre, les 30 points Should du sprint 4 depuis le 20 octobre. Le plan des sprints et de la réserve est tenu au classeur de pilotage, seul document de référence pour l’ordonnancement. Le backlog porte les priorités et les estimations ; il n’affecte pas les stories aux sprints.
 
-## **2.2 État de la recette au 8 novembre 2026**
+## **2.2 État de la recette — close le 18 novembre 2026**
 
 | **Cahier** | **Objet** | **Contrôles** | **Verdict** |
 | --- | --- | --- | --- |
@@ -94,9 +97,9 @@ Les 194 points Must sont livrés depuis le 17 octobre, les 30 points Should du s
 | RECETTE-02 | Évaluations | 55 C + 2 SO | Prononcée le 07/11 |
 | RECETTE-03 | Suivi et traçabilité | 42 / 42 | Prononcée le 08/11 |
 | RECETTE-04 | Pilotage (stories Should) | 27 / 27 | Prononcée le 08/11 |
-| RECETTE-05 | Transverse : habilitations, journal, impressions, volumétrie | 47 | Prévue le 13/11 |
+| RECETTE-05 | Transverse : habilitations, journal, impressions, ergonomie, volumétrie, objectif OS5 | 60 / 60 | Prononcée le 18/11 ; jalon C3 |
 
-Les anomalies, leur cause et leur correction sont consignées dans les cahiers et dans `PROBLEMES.md` (P-53 à P-80) ; les décisions qui en découlent, dans `DECISIONS.md` (D-298 à D-311).
+Les anomalies, leur cause et leur correction sont consignées dans les cahiers et dans `PROBLEMES.md` (P-53 à P-84) ; les décisions qui en découlent, dans `DECISIONS.md` (D-298 à D-314). La recette a été jouée par le binôme : la séance prévue avec les cellules n’a pas eu lieu (risque R29), limite déclarée au mémoire.
 
 # **3. Epic E1 — Administration et sécurité**
 
@@ -1178,6 +1181,8 @@ Cet epic couvre les **deux** circuits d’évaluation identifiés lors de l’en
 | **US-EVAL-12** | **Détailler la moyenne d’un stagiaire** | **Should** | 3 pts | BF-EVAL-06 |
 | --- | --- | --- | --- | --- |
 
+*Note v13 : **livrée le 13/11** (prompt 64). Le détail réutilise les fonctions de `ServiceMoyenne` sans second calcul, garanti par un test d’architecture ; vérifié en recette par un calcul à la main (R05-IHM-09).*
+
 *En tant que membre de la cellule examens, je veux voir le détail de la moyenne de chaque stagiaire, afin de pouvoir la justifier et la vérifier.*
 
 **Story nouvelle en version 12**, demandée en recette (RECETTE-02).
@@ -1342,6 +1347,8 @@ Epic créé en version 12. Il regroupe les demandes d’ergonomie exprimées pen
 | **US-IHM-01** | **Accueillir chaque utilisateur sur un tableau de bord** | **Should** | 5 pts | BF-SUI-03 |
 | --- | --- | --- | --- | --- |
 
+*Note v13 : **livrée le 13/11** (prompt 64). Habilitation appliquée chiffre par chiffre et non par bloc ; « programmes en attente » couvre les programmes soumis et validés, « évaluations non prêtes » les seules épreuves à venir (D-313). Nombre de requêtes constant, prouvé par un test à deux volumes.*
+
 *En tant qu’utilisateur d’une cellule, je veux arriver sur une page de synthèse plutôt que sur une page vide, afin de voir d’emblée l’état du centre et ce qui demande mon attention.*
 
 **Critères d’acceptation :**
@@ -1359,6 +1366,8 @@ Epic créé en version 12. Il regroupe les demandes d’ergonomie exprimées pen
 | **US-IHM-02** | **Identité visuelle et barre de navigation** | **Should** | 2 pts | — |
 | --- | --- | --- | --- | --- |
 
+*Note v13 : **livrée le 13/11** (prompt 64), menu du compte corrigé le 14/11 (fermeture au clic extérieur, P-82).*
+
 *En tant qu’utilisateur, je veux une barre de navigation lisible et aux couleurs de l’école, afin de me repérer sans encombrement.*
 
 **Critères d’acceptation :**
@@ -1371,6 +1380,8 @@ Epic créé en version 12. Il regroupe les demandes d’ergonomie exprimées pen
 
 | **US-IHM-03** | **Rechercher, filtrer et trier les listes de stagiaires** | **Should** | 3 pts | BF-SES-07 |
 | --- | --- | --- | --- | --- |
+
+*Note v13 : **livrée le 13/11** (prompt 64). L’aperçu du procès-verbal passe en GET pour porter le filtre et le tri dans l’adresse (D-312).*
 
 *En tant que membre de la cellule examens, je veux retrouver un stagiaire rapidement dans les listes de notes, de moyennes et de procès-verbaux, afin de travailler sans faire défiler toute la brigade.*
 
@@ -1391,7 +1402,7 @@ Ces travaux ne sont pas des user stories : ils ne produisent aucun résultat dé
 | Ordre de verrouillage du traitement en lot | Problème P-42 | **Corrigé** en ouverture du sprint 4 : tri par programme avant l’écriture, test de reproduction |
 | Stabilité de la suite de tests | Revue du sprint 3 | **Mesurée** : cinq exécutions complètes consécutives, aucun échec. La cause des échecs antérieurs est établie — deux exécutions concurrentes sur la même base (P-51) — et bloquée par un verrou |
 | Présélection de la génération | Écart 25 du sprint 3 | **Mesurée, non modifiée** (D-290) : une candidate inutile, aucune requête supplémentaire. Dette assumée, sans échéance |
-| Impression du programme hebdomadaire | Décision D-155 | **Exemplaire produit** (D-291) : le programme déborde de la page A4 dès le troisième créneau. Traité en phase 6 comme anomalie de recette, et non comme story. **Résolu** : impression par journée (D-157), vérifiée par un test en navigateur réel (D-301) |
+| Impression du programme hebdomadaire | Décision D-155 | **Exemplaire produit** (D-291) : le programme déborde de la page A4 dès le troisième créneau. Traité en phase 6 comme anomalie de recette, et non comme story. **Résolu** : impression par journée (D-157), vérifiée par un test en navigateur réel (D-301) Complété en RECETTE-05 par une vue d’impression dédiée de la semaine entière, A4 paysage, sans élément d’interface (D-314) |
 | Relation facultative séance ↔ créneau type (RG-64) | Décision D-133 | **Limite consignée** (D-288) : aucun comportement observable n’en dépend |
 
 ## **11.2 Hors périmètre de la version courante (Won’t)**
@@ -1425,4 +1436,4 @@ Ce backlog constitue un artefact vivant et l’unique source de vérité du pér
 
 - **Version unique** : toute modification donne lieu à une nouvelle version datée remplaçant la précédente. Aucune version parallèle ne doit circuler.
 
-*Artefact vivant — version 12 du 8 novembre 2026. Remplace la version 11 du 23 octobre 2026. Intègre la recette de la phase 6 (RECETTE-00 à 04), les décisions D-298 à D-311, les onze écarts de la phase 6 et le lot d’ergonomie planifié le 12 novembre.*
+*Artefact vivant — version 13 du 18 novembre 2026. Remplace la version 12 du 8 novembre 2026. Clôture de la phase 6 : RECETTE-05 et jalon C3 prononcés, lot d’ergonomie livré, décisions D-312 à D-314, code gelé à `recette-phase-6-c11`.*
