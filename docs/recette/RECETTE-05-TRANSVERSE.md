@@ -5,6 +5,7 @@
 - le journal ;
 - tous les documents imprimés et exportés ;
 - un scénario de bout en bout qui traverse les trois cellules ;
+- l'ergonomie livrée le 13 novembre (accueil, navigation, listes, détail des moyennes) ;
 - la mesure de l'objectif OS5 ;
 - l'observation de l'application à la taille réelle du centre.
 
@@ -85,7 +86,7 @@ Chaque document est imprimé en aperçu. Pour chacun, on note le format naturel 
 
 | Code | Document | Format | Débordement | Lisible | Trace | Rés. | Obs. |
 |---|---|---|---|---|---|---|---|
-| R05-IMP-01 | **Programme hebdomadaire W0** (trois brigades) | | | | RG-33 bis, D-155 | ☐ | **Anomalie n° 1 connue** (R22, D-291) : déborde dès le 3ᵉ créneau. Mesurer en portrait **et** en paysage : c'est le critère de décision entre un simple passage en paysage et l'impression par journée |
+| R05-IMP-01 | **Programme hebdomadaire W0** (trois brigades) | | | | RG-33 bis, D-155, D-157 | ☐ | Anomalie n° 1 **corrigée** (impression par journée, D-157, D-301) : vérifier qu'aucune journée ne déborde |
 | R05-IMP-02 | Liste des instructeurs | | | | K3 | ☐ | 168 px mesurés le 26/10 |
 | R05-IMP-03 | Liste des lieux | | | | K3 | ☐ | |
 | R05-IMP-04 | Fiche de composition de S1 | | | | D-63 | ☐ | |
@@ -115,6 +116,27 @@ Il vérifie les **passages de relais** entre cellules, que les autres cahiers te
 | R05-BEB-10 | Tableau de bord | `u_df` | Cohérent avec le rapprochement | ☐ | |
 | R05-BEB-11 | Journal du scénario | `u_adm` | Chaque relais apparaît dans l'ordre, avec son auteur | ☐ | |
 
+## 6 bis. Ergonomie — lot du 13 novembre (US-IHM-01 à 03, US-EVAL-12)
+
+Contrôles ajoutés le 14 novembre après le prompt 64 (`recette-phase-6-c10`, correctifs `e78afcd`). **Avant de commencer : Ctrl+Maj+R** dans le navigateur, pour ne pas jouer une feuille de style en cache (P-82). Jeu `complet`.
+
+| Code | Action | Résultat attendu | Trace | Rés. | Obs. |
+|---|---|---|---|---|---|
+| R05-IHM-01 | Ouvrir la page de connexion | Le logo (ou le sigle « CIT ») est visible ; il apparaît aussi dans l'onglet du navigateur | US-IHM-02 c.1 | ☐ | |
+| R05-IHM-02 | Avec `u_plan`, passer par cinq rubriques différentes | Le logo est dans la barre ; la barre garde la même hauteur et la même disposition d'une rubrique à l'autre | US-IHM-02 c.1, c.3 | ☐ | |
+| R05-IHM-03 | Ouvrir le menu du compte, puis cliquer ailleurs dans la page | Le menu affiche le nom et le profil, la déconnexion et le changement de mot de passe, sans texte tronqué ; il se referme au clic extérieur ; les deux commandes fonctionnent | US-IHM-02 c.2, P-82 | ☐ | |
+| R05-IHM-04 | Se connecter successivement avec les cinq profils | Chacun arrive sur la page d'accueil, et non sur une page vide ; chiffres d'ensemble présents | US-IHM-01 c.1 | ☐ | |
+| R05-IHM-05 | Pour chaque profil, comparer les chiffres affichés aux écrans qu'il peut ouvrir | Aucun chiffre ne concerne un écran que ce profil ne peut pas ouvrir (notamment : `u_adm` ne voit rien des notes, `u_df` ne voit aucune commande d'écriture) | US-IHM-01 c.4, D-313 | ☐ | |
+| R05-IHM-06 | Avec `u_plan` puis `u_exa`, contrôler les points d'attention un par un | « Programmes en attente » = programmes soumis + validés non affichés ; « matières sans instructeur » = constat de la matrice de qualification ; « évaluations non prêtes » = épreuves **à venir** non prêtes ; chaque chiffre se retrouve dans l'écran correspondant | US-IHM-01 c.2, D-313 | ☐ | |
+| R05-IHM-07 | Comparer l'état du programme affiché à l'accueil pour W0 et W+1 | Identique à l'état visible dans l'écran du programme de chaque semaine | US-IHM-01 c.3 | ☐ | |
+| R05-IHM-08 | `u_exa` : moyennes de S1 ; chercher un nom, filtrer une brigade, trier par moyenne puis par rang, changer de page | Les quatre fonctions marchent et se combinent ; filtre et tri conservés au changement de page | US-IHM-03 c.1 | ☐ | |
+| R05-IHM-09 | Ouvrir le détail de la moyenne d'un stagiaire ; recalculer à la main sa moyenne générale | Notes formatives et certificatives, poids, note et coefficient de chaque module ; le calcul à la main donne exactement la moyenne affichée ; le rang est cohérent avec la liste | US-EVAL-12 c.1, c.2 | ☐ | Calcul : ______ |
+| R05-IHM-10 | Ouvrir ce détail avec `u_adm`, puis consulter le journal | `u_adm` refusé ; la consultation de `u_exa` figure au journal | US-EVAL-12 c.4 | ☐ | |
+| R05-IHM-11 | Aperçu d'un procès-verbal : recherche, filtre, tri, pagination ; puis produire le PDF | Les quatre fonctions marchent ; le PDF produit est inchangé par le filtre (document complet) | US-IHM-03 c.1, D-312 | ☐ | |
+| R05-IHM-12 | Saisie des notes de E1 : filtrer sur un nom, saisir une note ; retirer le filtre, saisir une seconde note ; enregistrer | Pas de pagination ; **les deux notes** sont enregistrées | US-IHM-03 c.2 | ☐ | |
+
+---
+
 ## 7. Jeu volumineux — l'application à la taille du centre
 
 Base `pfe_cit_volume`. Il s'agit ici d'**observer**, pas de vérifier des valeurs ligne à ligne. Les chronomètres se mesurent avec l'outil réseau du navigateur (temps de chargement de la page).
@@ -127,8 +149,9 @@ Base `pfe_cit_volume`. Il s'agit ici d'**observer**, pas de vérifier des valeur
 | R05-VOL-04 | Compte rendu de W+1 : relever les motifs des cases non pourvues | Les motifs nomment des instructeurs ou des lieux saturés (constat du prompt 51 bis) | MESURES-REFERENCE | ☐ | Matières et instructeurs les plus touchés : ______ |
 | R05-VOL-05 | Rapprochement de la plus grosse session ; tableau de bord des 32 brigades | Moins de 2 s ; tableau de bord lisible avec 32 brigades | BNF-05 | ☐ | |
 | R05-VOL-06 | Charge d'un instructeur très sollicité ; comparaison de plusieurs instructeurs | Moins de 2 s ; les dépassements de seuil sont visibles | BNF-05, US-INS-04 | ☐ | |
-| R05-VOL-07 | Impression du programme W0 (32 brigades) | Noter l'ampleur du débordement : elle dimensionne la correction de l'anomalie n° 1 | R22 | ☐ | |
+| R05-VOL-07 | Impression du programme W0 (32 brigades) | Impression par journée : noter si une journée déborde à cette taille | R22, D-157 | ☐ | |
 | R05-VOL-08 | Navigation libre, chaque profil (dix minutes chacun) | Noter toute lenteur, incohérence ou écran inexploitable à cette taille | — | ☐ | |
+| R05-VOL-09 | Page d'accueil avec `v_df` puis `v_plan` | Moins de 2 s ; chiffres lisibles à la taille du centre | US-IHM-01 c.5, BNF-05 | ☐ | Temps : ______ |
 
 **Réserve à écrire telle quelle au mémoire** : le jeu volumineux est calibré au plus contraint de la plage du terrain (80 instructeurs). La saturation constatée à partir de W+1 est une **propriété de ce calibrage**, et non un défaut. À 120 instructeurs, elle serait moindre ; elle n'a pas été mesurée.
 
@@ -178,8 +201,9 @@ Protocole (plan, § 9.2). **Une seule des deux branches est jouée.**
 | 4. Journal | 4 | | | | | |
 | 5. Documents | 11 | | | | | |
 | 6. Bout en bout | 11 | | | | | |
-| 7. Jeu volumineux | 8 | | | | | |
-| **Total** | **47** | | | | | |
+| 6 bis. Ergonomie | 12 | | | | | |
+| 7. Jeu volumineux | 9 | | | | | |
+| **Total** | **60** | | | | | |
 
 La section 8 (OS5) et la section 9 (synthèse) sont des mesures : elles ne se notent pas en C ou NC.
 
@@ -193,4 +217,4 @@ Modèle commun : `RECETTE-00-SOCLE.md`, § 12 (code `R05-…`).
 
 ---
 
-*RECETTE-05 — version 1 du 28 octobre 2026. Lot WBS 6.3, 6.5 et 6.6.*
+*RECETTE-05 — version 2 du 14 novembre 2026 (section 6 bis et R05-VOL-09 ajoutés après le prompt 64 ; impression mise à jour, anomalie n° 1 corrigée). Version 1 du 28 octobre 2026. Lot WBS 6.3, 6.5 et 6.6.*
