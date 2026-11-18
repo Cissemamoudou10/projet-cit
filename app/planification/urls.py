@@ -27,6 +27,11 @@ urlpatterns = [
         "planification/programme/", views.vue_consultation_programme, name="consultation_programme"
     ),
     path(
+        "planification/programme/impression/",
+        views.vue_impression_programme,
+        name="impression_programme",
+    ),
+    path(
         "planification/programmes/<int:pk>/seances/ajouter/",
         views_seance.ajouter_seance,
         name="ajouter_seance",

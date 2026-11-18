@@ -1,0 +1,32 @@
+{% load static %}
+{% comment %}
+  Rubrique repliable, repliée par défaut (E-A2, prompt 65) — même technique
+  que le menu du compte et le détail de génération (`<details>` natif, sans
+  script ni dépendance, charte § 3.15/3.41) : jamais `open` par défaut, le
+  titre et le résumé restent visibles fermée, pour qu'une alerte ne soit
+  jamais cachée sans trace.
+
+  Variables attendues :
+    titre            — libellé affiché dans le bandeau (ex. « Historique »)
+    resume           — texte bref affiché à droite, replié ou déplié
+                        (ex. « 12 entrées »)
+    contenu_template — chemin du gabarit à inclure comme contenu ; inclus
+                        SANS `only`, il voit tout le contexte de l'appelant
+                        (même composant pour plusieurs rubriques, chacune
+                        gardant ses propres variables de contexte).
+{% endcomment %}
+<details class="group mt-4 border border-gris-trait bg-fond-bloc" aria-label="{{ titre }}">
+  <summary class="flex cursor-pointer list-none items-center justify-between gap-2 border-b
+                  border-gris-trait bg-fond-bande px-4 py-2 font-titre text-xs font-semibold
+                  uppercase tracking-wide text-marine-900">
+    <span class="flex items-center gap-2">
+      <svg class="h-3 w-3 -rotate-90 stroke-gris-lecture transition-transform duration-notif
+                  group-open:rotate-0" aria-hidden="true">
+        <use href="{% static 'icones/planche.svg' %}#chevron-bas"></use>
+      </svg>
+      {{ titre }}
+    </span>
+    <span class="text-2xs font-normal normal-case tracking-normal text-gris-lecture">{{ resume }}</span>
+  </summary>
+  {% include contenu_template %}
+</details>

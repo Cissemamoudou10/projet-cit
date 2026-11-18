@@ -1,0 +1,26 @@
+{% comment %}
+  Contenu de la rubrique « Écarts de volume horaire » — extrait pour être
+  inclus dans le composant repliable générique (E-A2, prompt 65). Compte
+  sur `ecarts_volume_horaire` dans le contexte parent (inclusion SANS
+  `only`, voir _rubrique_repliable.html).
+{% endcomment %}
+<ul class="divide-y divide-gris-trait text-sm">
+  {% for groupe in ecarts_volume_horaire %}
+    {% for ligne in groupe.lignes %}
+      <li class="flex items-center justify-between gap-3 px-4 py-1.5">
+        <span>{{ groupe.brigade }} — {{ ligne.element_referentiel.matiere }}
+          <span class="text-gris-lecture">
+            ({{ ligne.prescrit|floatformat:2 }} h prescrites, {{ ligne.programme|floatformat:2 }} h programmées)
+          </span>
+        </span>
+        {% if ligne.statut == "retard" %}
+          <span class="text-xs font-medium tabular-nums text-etat-ecart">
+            retard {{ ligne.ecart_pourcent|floatformat:0 }} %</span>
+        {% elif ligne.statut == "depassement" %}
+          <span class="text-xs font-medium tabular-nums text-etat-attention">
+            dépassement {{ ligne.ecart_pourcent|floatformat:0 }} %</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  {% endfor %}
+</ul>
