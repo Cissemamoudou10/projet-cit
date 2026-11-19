@@ -23,6 +23,17 @@ Une entrée par problème, la plus récente en tête.
 
 ---
 
+## P-85 — `INSTALLATION.md` ne cite jamais `initialiser_gabarits_documents`, catalogue de référence requis en production
+
+**Date** 2026-11-19 · **Story** aucune (préparation prompt 66, réinstallation à la lettre sur VM) · **État** : résolu
+**Symptôme** — en préparant le rejeu à la lettre de `docs/exploitation/INSTALLATION.md` sur une VM neuve, la commande `python manage.py initialiser_gabarits_documents` n'apparaît à aucune étape du document, alors que sa docstring la qualifie explicitement de « catalogue de RÉFÉRENCE, nécessaire dans tout environnement, y compris en production sur le réseau isolé du CIT (BNF-06) » — même précédent que `initialiser_habilitations` (§ 8) et `initialiser_natures_evenement` (§ 8 bis), qui sont elles bien documentées.
+**Cause** — la commande a été ajoutée (prompt 45, P5, RG-58, US-SUI-06) sans que `INSTALLATION.md` soit mis à jour en conséquence ; aucun des deux documents n'est relu systématiquement à l'ajout d'une commande `initialiser_*`.
+**Résolution** — nouveau § 8 ter dans `INSTALLATION.md`, entre § 8 bis et § 9 (création du compte administrateur) : la commande ne dépend d'aucun compte, contrairement à `initialiser_grilles_horaires` (§ 9 bis), donc sa place suit le même principe que § 8/§ 8 bis. Vérification faite qu'aucune autre commande `initialiser_*` ou `charger_*` nécessaire en production n'est absente du document — seules `charger_jeu_recette` et `charger_jeu_volume` sont hors périmètre (jeux de données de recette, jamais joués en production).
+**Risque concerné** — aucun du registre.
+**Leçon** — toute commande `initialiser_*` nouvelle dont la docstring la qualifie de catalogue de référence requis en production doit entraîner, dans le même commit, l'ajout de l'étape correspondante dans `INSTALLATION.md` — sinon l'écart n'est trouvé qu'au moment, bien plus coûteux, du rejeu à la lettre.
+
+---
+
 ## P-84 — Vue d'impression dédiée (E-A1) : l'en-tête disparaissait à l'impression réelle, masqué par une règle CSS préexistante
 
 **Date** 2026-11-17 · **Story** E-A1 (prompt 65, RECETTE-05, R05-IMP-01) · **État** : résolu — trouvé en relecture, avant fusion

@@ -19,7 +19,7 @@ Durée prévue : 3 h à 4 h.
 ## 1. Avant de commencer (poste de développement)
 
 Fait par Claude Code (prompt 66) :
-- [ ] `INSTALLATION.md` complété (étape des gabarits de documents, voir P-xx).
+- [ ] `INSTALLATION.md` complété (étape des gabarits de documents, voir P-85).
 - [ ] Paquet reconstruit depuis le code gelé, avec `MANIFESTE.txt` (empreintes).
 - [ ] Script `verification-restauration/releve.sql` présent dans le paquet.
 
@@ -65,6 +65,7 @@ exemple un lieu nommé `TEMOIN-SAUVEGARDE`). Le noter : ________________
 set -a; . compose/.env; set +a
 docker compose -f compose/docker-compose.production.yml exec -T base \
     psql -U "$BASE_UTILISATEUR_MIGRATION" -d "$BASE_NOM" -At \
+    -v app_role="$BASE_UTILISATEUR" \
     < verification-restauration/releve.sql > releve_avant.txt
 ```
 

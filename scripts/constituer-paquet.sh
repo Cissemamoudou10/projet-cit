@@ -103,6 +103,10 @@ mkdir -p "$PAQUET/verification-pdf"
 cp "$RACINE/infra/verification-pdf/gabarit_demonstration.html" "$PAQUET/verification-pdf/"
 cp "$RACINE/infra/verification-pdf/generer_pdf_demonstration.py" "$PAQUET/verification-pdf/"
 
+# Relevé de vérification de restauration (sauvegarde/restauration, prompt 66)
+mkdir -p "$PAQUET/verification-restauration"
+cp "$RACINE/infra/verification-restauration/releve.sql" "$PAQUET/verification-restauration/"
+
 echo
 echo "== Poids du paquet =="
 du -sh "$PAQUET"
