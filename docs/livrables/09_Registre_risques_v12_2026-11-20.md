@@ -2,7 +2,7 @@
 
 Projet de fin d’études · Système de gestion des activités de formation du CIT
 
-*Livrable 5 / 6 — Phase 3 : Planification détaillée · Version 11 du 18 novembre 2026 · Remplace la version 10 du 9 novembre 2026 · Document vivant*
+*Livrable 5 / 6 — Phase 3 : Planification détaillée · Version 12 du 20 novembre 2026 · Remplace la version 11 du 18 novembre 2026 · Document vivant*
 
 # **1. Méthode de cotation**
 
@@ -31,7 +31,8 @@ Les sections d’évolution des versions 2 à 7 sont conservées dans les versio
 | 8 | 23/10 | Clôture du sprint 4, jalon J3 | 29 | R16 critique ; R26, R27, R6, R25, R8 éteints ; R29 nouveau |
 | 9 | 08/11 | Recette de la phase 6 (cinq cahiers sur six prononcés) | 32 | Voir section 3 |
 | 10 | 09/11 | Correction : séance avec les cellules planifiée | 32 | R29 n’est pas réalisé : de 8 à 6 ; R11 précisé. Voir section 3 bis |
-| **11** | **18/11** | **Clôture de la phase 6 : RECETTE-05 et C3 prononcés, code gelé** | **32** | **R29 réalisé ; R30 et R31 éteints ; deux leçons nouvelles. Voir section 3 ter** |
+| 11 | 18/11 | Clôture de la phase 6 : RECETTE-05 et C3 prononcés, code gelé | 32 | R29 réalisé ; R30 et R31 éteints ; deux leçons nouvelles. Voir section 3 ter |
+| **12** | **20/11** | **Correction des rôles : il n’y a pas de commanditaire distinct** | **32** | **R1 et R18 reformulés, cotations inchangées. Voir section 3 quater** |
 
 # **3. Évolutions depuis la version 8 — recette de la phase 6**
 
@@ -49,7 +50,7 @@ La recette a commencé le 29 octobre. Au 8 novembre, cinq cahiers sur six sont p
 
 **R9 — de 3 à 6.** Le paquet hors ligne n’a pas été réinstallé depuis le 12 septembre, alors que le code a reçu une centaine de commits et de nouvelles dépendances. Le protocole sur machine isolée est à rejouer en phase 7.
 
-**R1 — de 9 à 6.** Le commanditaire n’a toujours pas répondu sur les valeurs par défaut, et la recette en a ajouté deux (coefficient d’étalement 1,5, dépassement de moins d’une séance). Mais plus rien n’attend sa réponse : toutes sont paramétrables, documentées comme hypothèses, et le mémoire les présentera ainsi.
+**R1 — de 9 à 6.** L’encadrant académique n’a toujours pas répondu sur les valeurs par défaut, et la recette en a ajouté deux (coefficient d’étalement 1,5, dépassement de moins d’une séance). Mais plus rien n’attend sa réponse : toutes sont paramétrables, documentées comme hypothèses, et le mémoire les présentera ainsi.
 
 **Trois risques nouveaux.** R30, la non-régression des corrections de fin de recette ; R31, le lot d’ergonomie du 12 novembre ; R32, la marge calendaire consommée.
 
@@ -67,6 +68,20 @@ Les échéances externes sont également précisées : **dépôt du mémoire ent
 - **R30 et R31 sont éteints** : RECETTE-05 a vérifié l’ensemble en transverse sans régression ; le lot d’ergonomie a été livré le 13 novembre, sa seule anomalie (menu du compte) corrigée le lendemain.
 - **R32 est maintenu à 9** : C3 est prononcé le 18 novembre au lieu du 13, cinq jours de plus consommés par le lot d’ergonomie et un dernier lot de corrections d’impression. La date de dépôt n’est pas touchée.
 
+# **3 quater. Correction des rôles — version 12, 20 novembre 2026**
+
+La relecture du mémoire par le binôme a mis au jour une erreur présente depuis la phase 1. Les livrables décrivaient un « colonel commanditaire, encadrant entreprise et décideur, unique canal d’accès aux cellules », distinct de l’encadrant académique. L’étudiant a établi le 20 novembre que :
+
+- le sujet a été proposé par **le centre**, qui est le commanditaire au sens de la gestion de projet ;
+
+- le Colonel Janati Idrissi est **l’encadrant académique et le directeur de mémoire** du binôme ;
+
+- **aucun canal unique d’accès aux cellules n’a existé** : le binôme les rencontrait librement et directement.
+
+Conséquences sur le registre : R1 porte désormais sur l’encadrant académique, auquel les valeurs par défaut avaient été soumises ; sa cotation reste à 6. R18 ne prévoit plus de relecture « par le commanditaire ». Aucun autre risque n’est touché. Le risque de dépendance à un acteur unique, qui fondait R1 en phase 1, reposait sur une prémisse fausse : la ressource rare était la **disponibilité** des cellules, non leur **accès**.
+
+**Leçon L9 — une prémisse posée en phase 1 doit être revalidée explicitement.** L’erreur a traversé quatre mois et une douzaine de livrables parce qu’aucune relecture ne remettait en cause l’identité des acteurs, considérée comme acquise. Elle a été trouvée par une question naïve de relecture (« de qui parles-tu ? »). Les livrables historiques concernés sont signalés par un erratum plutôt que réécrits.
+
 # **4. Registre des risques actifs**
 
 | **Réf.** | **Risque** | **P** | **I** | **Crit.** | **Prévention** | **Atténuation si survenue** |
@@ -74,7 +89,7 @@ Les échéances externes sont également précisées : **dépôt du mémoire ent
 | **R16** | Déséquilibre de la maîtrise du système entre les deux équipiers, et absence de trace de la contribution de chacun | 4 | 3 | **12** | INCHANGÉ — CONSTATÉ. Le fichier `PORTEURS-RETROSPECTIF.md` existe depuis le 25 octobre (52 lignes, commits retrouvés), mais ses colonnes Porteur et Second sont **toujours vides**. **Avant la soutenance** : les remplir à deux, et répartir la rédaction du mémoire de façon lisible (proposition : chapitre 1 par le Lt Niangaly, chapitre 3 par le Lt Cissé, chapitre 4 par paquetage conduit) | Répartition de la soutenance par paquetage réellement conduit ; séances croisées de transfert ; préparation des questions du jury par les deux équipiers |
 | **R19** | Incohérence entre livrables : une décision ou une correction portée dans un document et non dans les autres | 3 | 3 | **9** | Occurrences de la phase 6 : l’écran et le serveur appliquaient deux définitions du type de lieu ; le registre des écarts citait encore D-306, remplacée par D-309 ; le chapitre 2 du mémoire, écrit le 2 novembre, est dépassé sur quatre points (RG-64, nombre de règles, de contraintes et de stories). **Mesures** : une seule fonction partagée par l’écran et le serveur (prompt 62) ; backlog v12 et registre v9 déposés dans le dépôt et la base de connaissances ; **une passe unique de mise à jour du chapitre 2 après RECETTE-05** | Diagramme de classes mis en conformité avant le chapitre de conception |
 | **R20** | Aucune procédure de sauvegarde définie ni attribuée pour les données de production | 3 | 3 | **9** | Procédure de sauvegarde et de restauration écrite et **essayée** au dossier d’exploitation pendant la phase 7 ; demande de désignation d’un responsable, d’une fréquence et d’un support à la direction, jointe au rapport d’avancement de fin octobre. Inchangé depuis la v5 : aucune action engagée | Reconstitution partielle depuis les documents papier des cellules ; sans sauvegarde, la perte des notes et procès-verbaux d’une session est définitive |
-| **R1** | Indisponibilité prolongée du commanditaire bloquant validations et arbitrages | 3 | 2 | **6** | EN BAISSE — plus rien n’attend sa réponse. Sept valeurs par défaut documentées comme hypothèses : seuil d’admission (10/20), absence comptée zéro, ex aequo au même rang, seuil de charge (24 h/semaine), seuil d’écart (10 %), coefficient d’étalement (1,5), dépassement de moins d’une séance | Présentées au mémoire comme hypothèses paramétrables, modifiables sans changer le code |
+| **R1** | Indisponibilité prolongée de l’encadrant académique (directeur de mémoire) bloquant validations et arbitrages | 3 | 2 | **6** | EN BAISSE — plus rien n’attend sa réponse. Sept valeurs par défaut documentées comme hypothèses : seuil d’admission (10/20), absence comptée zéro, ex aequo au même rang, seuil de charge (24 h/semaine), seuil d’écart (10 %), coefficient d’étalement (1,5), dépassement de moins d’une séance | Présentées au mémoire comme hypothèses paramétrables, modifiables sans changer le code |
 | **R32** | Marge calendaire consommée avant le dépôt | 3 | 3 | **9** | NOUVEAU. Le jalon C3, prévu le 2 novembre, est prononcé le 18 novembre : la marge de neuf jours ouvrés est consommée. **Plus aucune évolution après le 12 novembre** ; ordre des priorités : mémoire, puis phase 7 au strict nécessaire (déploiement sur la machine virtuelle, procédure, manuel) | Réduction de la phase 7 aux livrables exigés ; documentation technique en annexe du mémoire |
 | **R23** | Dispositif de pilotage : mesure du temps humain jamais tenue | 4 | 2 | **8** | RÉALISÉ, DÉFINITIF — aucune heure humaine en 52 stories. **Un seul relevé rétrospectif déclaratif**, sur les quatre sprints, établi une fois par l’étudiant et présenté comme tel ; aucune reconstitution ligne par ligne | Le mémoire présente l’estimation en points comme la seule mesure validée (quatre sprints à 100 %) et la clé de conversion comme une hypothèse jamais vérifiée, avec la cause. Présenté ainsi, c’est défendable ; découvert par le jury, ça ne l’est pas |
 | **R28** | Diffusion de données nominatives réelles dans les livrables | 2 | 4 | **8** | Dépôt vérifié ; jeux de recette entièrement fictifs. **À faire** : captures d’écran du mémoire prises sur le jeu `complet`, jamais sur des données réelles ; usage du logo de l’école dans l’application et les captures à faire confirmer par l’encadrant | Retrait immédiat du livrable diffusé ; remplacement ; signalement au commanditaire |
@@ -85,7 +100,7 @@ Les échéances externes sont également précisées : **dépôt du mémoire ent
 | **R5** | Disponibilité du binôme non tenue, par périodes entières sans production | 2 | 3 | **6** | EN BAISSE — des stories livrées presque chaque jour au sprint 4. L’impact baisse avec la fin du développement ; il reste sur la recette et le mémoire. Seuil d’alerte maintenu à cinq jours ouvrés sans livrable | Réduction du périmètre de la recette aux critères Must, puis report des documents secondaires de la phase 7 |
 | **R13** | Indisponibilité de l’encadrant académique aux points de passage obligés | 3 | 3 | **9** | EN HAUSSE — le mail du 1er novembre sur la forme du mémoire est sans réponse au 8 novembre. Relance écrite avec une réponse par défaut (cadre provisoire de la passation du 8 novembre : environ 80 pages, style IEEE, styles Word intégrés) | Mémoire produit dans le cadre provisoire, styles Word permettant de changer de modèle sans retoucher le texte |
 | **R17** | Reprises non planifiées issues des retours de la démonstration J2 | 3 | 2 | **6** | Aucun retour de J2 n’est consigné, et la tenue de la démonstration devant les cellules n’est pas confirmée. **À établir par l’étudiant à l’ouverture de la phase 6** | Inscription des demandes au backlog en Won’t ; arbitrage explicite (R11) |
-| **R18** | Format réglementaire des documents imprimables jamais communiqué | 3 | 2 | **6** | Gabarits paramétrables. Le texte des en-têtes et des mentions n’a été relu par personne du terrain : à relire par le binôme puis, si possible, par le commanditaire pendant la recette | Production sur gabarit standard présenté comme provisoire ; limite documentée au mémoire |
+| **R18** | Format réglementaire des documents imprimables jamais communiqué | 3 | 2 | **6** | Gabarits paramétrables. Le texte des en-têtes et des mentions n’a été relu par personne du terrain : à relire par le binôme puis, si possible, par la Direction de la formation | Production sur gabarit standard présenté comme provisoire ; limite documentée au mémoire |
 | **R22** | Défauts d’intégration entre présentation et services, non détectés par les tests | 3 | 2 | **6** | Survenu plusieurs fois en recette : impression (boutons visibles, orientation), séance hors grille invisible, type de lieu filtré à l’écran mais pas au serveur. Nouvelle occurrence en RECETTE-05 (l’impression reprenait boutons et historique), corrigée par une vue d’impression dédiée, vérifiée en navigateur réel (D-314). **Mesure appliquée** : tests en navigateur réel pour l’impression (D-301) ; une fonction unique partagée entre filtre d’écran et serveur | Recette manuelle de tous les documents imprimés (RECETTE-05) |
 | **R24** | Saturation des salles attitrées : 32 à 38 salles pour 30 à 35 brigades | 3 | 2 | **6** | Vérification du ratio réel avant le déploiement. Inchangé : aucune action engagée | Regroupement de brigades et catégorie « sans lieu » ; au-delà, arbitrage de la direction |
 | **R2** | Écart entre les besoins réels et les fonctionnalités développées | 2 | 3 | **6** | EN HAUSSE — survenu et rattrapé : quatre exigences manquantes découvertes par les scénarios de bout en bout de la recette, traitées et tracées au backlog v12 | Absorption sans refonte : chaque exigence est entrée comme règle de gestion et critère d’acceptation |
@@ -134,6 +149,7 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 | L6 | L’assistant de code a deux fois levé un garde-fou ou restreint une règle pour faire passer des tests | Optimisation locale de l’outil | Interdire explicitement la modification des permissions, et **exiger la justification de toute restriction de portée** (D-306 corrigée par D-309) |
 | L7 | La commande documentée de chargement du jeu volumineux a échoué deux fois (rôle de base, dépendance manquante) | La procédure avait été écrite, mais jamais rejouée telle qu’écrite (P-83) | **Une procédure n’est prouvée qu’une fois rejouée à la lettre**, par quelqu’un qui ne l’a pas écrite — à appliquer à la procédure de déploiement de la phase 7 |
 | L8 | L’objectif OS5 n’a pu être qu’estimé | Sa mesure dépendait d’une séance avec la cellule, programmée en fin de recette et non tenue | **Mesurer un objectif chiffré au plus tôt**, avec une branche de repli jouée sans attendre la séance externe |
+| L9 | Une erreur sur l’identité des acteurs a traversé tous les livrables depuis la phase 1 (colonel « commanditaire, canal unique » au lieu de l’encadrant académique ; accès en réalité direct aux cellules) | Prémisse de cadrage jamais revalidée, recopiée de livrable en livrable | **Revalider explicitement les prémisses de la phase 1 à chaque grande relecture** ; erratum pour les livrables figés |
 
 # **7. Registre des opportunités**
 
@@ -164,6 +180,8 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 | Éteints ou réalisés | 11 | R29 réalisé, R30, R31 (v11) ; R10, R15, R21 (v9) ; R26, R27, R6, R25, R8 (v8) | Archivés |
 | **Total** | **32** | **21 actifs, aucun nouveau en v11** | **—** |
 
+**Mouvements de la version 12 :** aucune cotation modifiée ; R1 et R18 reformulés (rôles corrigés) ; une leçon nouvelle (L9).
+
 **Mouvements de la version 11 :** une réalisation (R29) ; deux extinctions (R30, R31) ; une baisse (R11 de 6 à 4) ; deux leçons nouvelles (L7, L8).
 
 **Mouvements de la version 9 :** trois extinctions (R10, R15, R21) ; une baisse (R1 de 9 à 6) ; cinq hausses (R7 de 6 à 12, R13 de 6 à 9, R2 de 4 à 6, R11 de 4 à 6, R9 de 3 à 6) ; une réévaluation de R29 (de 9 à 8, puis de 8 à 6 en v10, voir section 3 bis) ; trois risques nouveaux.
@@ -182,4 +200,4 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 
 - Version unique : ce document est la seule source de vérité du registre. Toute modification donne lieu à une version datée qui remplace la précédente dans les connaissances du projet.
 
-*Document vivant — version 11 du 18 novembre 2026. Remplace la version 10 du 9 novembre 2026. Clôture de la phase 6 : RECETTE-05 et jalon C3 prononcés, code gelé, R29 réalisé, R30 et R31 éteints, leçons L7 et L8.*
+*Document vivant — version 12 du 20 novembre 2026. Remplace la version 11 du 18 novembre 2026. Correction des rôles (centre commanditaire, encadrant académique et directeur de mémoire, accès direct aux cellules) ; leçon L9.*
