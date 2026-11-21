@@ -1,0 +1,12 @@
+name                                 type              encoding         emb sub uni object ID
+------------------------------------ ----------------- ---------------- --- --- --- ---------
+LCROPP+Barlow-Bold                   CID TrueType      Identity-H       yes yes yes     22  0
+RLMMQV+IBM-Plex-Sans                 CID TrueType      Identity-H       yes yes yes     26  0
+PRUBHW+IBM-Plex-Mono                 CID TrueType      Identity-H       yes yes yes     30  0
+VOQTLP+Barlow-Semi-Bold              CID TrueType      Identity-H       yes yes yes     34  0
+HHABIE+Barlow                        CID TrueType      Identity-H       yes yes yes     38  0
+DQAYMO+Barlow-Medium                 CID TrueType      Identity-H       yes yes yes     42  0
+TNLYWL+IBM-Plex-Sans-Medium          CID TrueType      Identity-H       yes yes yes     46  0
+LCRRNU+IBM-Plex-Sans-Semi-Bold       CID TrueType      Identity-H       yes yes yes     50  0
+UUNZFJ+IBM-Plex-Mono-Medium          CID TrueType      Identity-H       yes yes yes     54  0
+BAWKYD+DejaVu-Serif                  CID TrueType      Identity-H       yes yes yes     58  0

@@ -1,0 +1,10 @@
+# Fichiers destinés à être exécutés ou interprétés (sourcés) par un shell
+# POSIX sur la machine cible (Debian 12) — jamais de CRLF, quel que soit
+# core.autocrlf sur le poste de développement (voir P-86, docs/suivi/PROBLEMES.md).
+# `.env.exemple` est sourcé tel quel (`. compose/.env`, INSTALLATION.md § 7 et
+# suivants) : un CRLF y est invisible à l'écran mais corrompt l'authentification.
+.env.exemple text eol=lf
+compose/docker-compose.production.yml text eol=lf
+docker-compose.production.yml text eol=lf
+docker-compose.yml text eol=lf
+*.sh text eol=lf
