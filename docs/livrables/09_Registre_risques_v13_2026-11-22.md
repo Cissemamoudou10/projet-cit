@@ -2,7 +2,7 @@
 
 Projet de fin d’études · Système de gestion des activités de formation du CIT
 
-*Livrable 5 / 6 — Phase 3 : Planification détaillée · Version 12 du 20 novembre 2026 · Remplace la version 11 du 18 novembre 2026 · Document vivant*
+*Livrable 5 / 6 — Phase 3 : Planification détaillée · Version 13 du 22 novembre 2026 · Remplace la version 12 du 20 novembre 2026 · Document vivant*
 
 # **1. Méthode de cotation**
 
@@ -32,7 +32,8 @@ Les sections d’évolution des versions 2 à 7 sont conservées dans les versio
 | 9 | 08/11 | Recette de la phase 6 (cinq cahiers sur six prononcés) | 32 | Voir section 3 |
 | 10 | 09/11 | Correction : séance avec les cellules planifiée | 32 | R29 n’est pas réalisé : de 8 à 6 ; R11 précisé. Voir section 3 bis |
 | 11 | 18/11 | Clôture de la phase 6 : RECETTE-05 et C3 prononcés, code gelé | 32 | R29 réalisé ; R30 et R31 éteints ; deux leçons nouvelles. Voir section 3 ter |
-| **12** | **20/11** | **Correction des rôles : il n’y a pas de commanditaire distinct** | **32** | **R1 et R18 reformulés, cotations inchangées. Voir section 3 quater** |
+| 12 | 20/11 | Correction des rôles : il n’y a pas de commanditaire distinct | 32 | R1 et R18 reformulés, cotations inchangées. Voir section 3 quater |
+| **13** | **22/11** | **Réinstallation à la lettre sur la VM et essai de restauration (21/11)** | **33** | **R9 de 6 à 3 ; R20 de 9 à 6 ; R33 nouveau ; leçon L10. Voir section 3 quinquies** |
 
 # **3. Évolutions depuis la version 8 — recette de la phase 6**
 
@@ -82,20 +83,34 @@ Conséquences sur le registre : R1 porte désormais sur l’encadrant académiqu
 
 **Leçon L9 — une prémisse posée en phase 1 doit être revalidée explicitement.** L’erreur a traversé quatre mois et une douzaine de livrables parce qu’aucune relecture ne remettait en cause l’identité des acteurs, considérée comme acquise. Elle a été trouvée par une question naïve de relecture (« de qui parles-tu ? »). Les livrables historiques concernés sont signalés par un erratum plutôt que réécrits.
 
+# **3 quinquies. Réinstallation à la lettre et essai de restauration — version 13, 22 novembre 2026**
+
+Le 21 novembre, la procédure d’installation a été rejouée à la lettre sur la machine virtuelle, à partir d’un paquet reconstruit sur la version gelée (prompts 66 et 67), puis la sauvegarde a été éprouvée par deux restaurations réelles : après une erreur de manipulation (scénario A) et après la destruction complète de la base (scénario B). Verdict : **réussie avec écarts**, tous corrigés et rejoués. Conditions déclarées : machine virtuelle nettoyée et non réinstallée ; transfert par le réseau privé hôte, sans Internet ; exécution par l’assistant de code ; durée totale non mesurable (environ 8 minutes pour les étapes chronométrées).
+
+- **Trois écarts réels** : P-85, étape des gabarits de documents absente de la procédure (trouvé à la préparation) ; P-86, fichier de configuration en fins de ligne Windows, authentification refusée ; **P-87, la restauration rendait au compte applicatif le droit de modifier et de supprimer le journal** (RG-27), sans aucune erreur signalée.
+
+- **R9 — de 6 à 3.** L’installation hors ligne est prouvée sur la version livrée ; seule demeure l’incertitude d’une machine réellement neuve.
+
+- **R20 — de 9 à 6.** La procédure de sauvegarde et de restauration est écrite, corrigée et **essayée deux fois**. Reste ouvert ce que le binôme ne peut décider : un responsable, une fréquence et un support désignés par le centre.
+
+- **R33 — nouveau, coté 3.** Une restauration exécutée sans la révocation désormais documentée rouvrirait la faille du journal. Atténué par la procédure corrigée et par le relevé de vérification livré dans le paquet.
+
+**Leçon L10 — une sauvegarde n’est prouvée qu’une fois restaurée et vérifiée.** Le code de sortie de l’outil était nul et aucune erreur n’était signalée ; seule la comparaison de l’état réel avant et après a révélé la faille.
+
 # **4. Registre des risques actifs**
 
 | **Réf.** | **Risque** | **P** | **I** | **Crit.** | **Prévention** | **Atténuation si survenue** |
 | --- | --- | --- | --- | --- | --- | --- |
 | **R16** | Déséquilibre de la maîtrise du système entre les deux équipiers, et absence de trace de la contribution de chacun | 4 | 3 | **12** | INCHANGÉ — CONSTATÉ. Le fichier `PORTEURS-RETROSPECTIF.md` existe depuis le 25 octobre (52 lignes, commits retrouvés), mais ses colonnes Porteur et Second sont **toujours vides**. **Avant la soutenance** : les remplir à deux, et répartir la rédaction du mémoire de façon lisible (proposition : chapitre 1 par le Lt Niangaly, chapitre 3 par le Lt Cissé, chapitre 4 par paquetage conduit) | Répartition de la soutenance par paquetage réellement conduit ; séances croisées de transfert ; préparation des questions du jury par les deux équipiers |
 | **R19** | Incohérence entre livrables : une décision ou une correction portée dans un document et non dans les autres | 3 | 3 | **9** | Occurrences de la phase 6 : l’écran et le serveur appliquaient deux définitions du type de lieu ; le registre des écarts citait encore D-306, remplacée par D-309 ; le chapitre 2 du mémoire, écrit le 2 novembre, est dépassé sur quatre points (RG-64, nombre de règles, de contraintes et de stories). **Mesures** : une seule fonction partagée par l’écran et le serveur (prompt 62) ; backlog v12 et registre v9 déposés dans le dépôt et la base de connaissances ; **une passe unique de mise à jour du chapitre 2 après RECETTE-05** | Diagramme de classes mis en conformité avant le chapitre de conception |
-| **R20** | Aucune procédure de sauvegarde définie ni attribuée pour les données de production | 3 | 3 | **9** | Procédure de sauvegarde et de restauration écrite et **essayée** au dossier d’exploitation pendant la phase 7 ; demande de désignation d’un responsable, d’une fréquence et d’un support à la direction, jointe au rapport d’avancement de fin octobre. Inchangé depuis la v5 : aucune action engagée | Reconstitution partielle depuis les documents papier des cellules ; sans sauvegarde, la perte des notes et procès-verbaux d’une session est définitive |
+| **R20** | Aucune procédure de sauvegarde définie ni attribuée pour les données de production | 2 | 3 | **6** | EN BAISSE — procédure écrite, corrigée (P-87) et **essayée** le 21 novembre : restauration après erreur et après perte totale, état vérifié identique, droits compris. **Reste** : responsable, fréquence et support à faire désigner par le centre | Reconstitution partielle depuis les documents papier des cellules ; sans sauvegarde, la perte des notes et procès-verbaux d’une session est définitive |
 | **R1** | Indisponibilité prolongée de l’encadrant académique (directeur de mémoire) bloquant validations et arbitrages | 3 | 2 | **6** | EN BAISSE — plus rien n’attend sa réponse. Sept valeurs par défaut documentées comme hypothèses : seuil d’admission (10/20), absence comptée zéro, ex aequo au même rang, seuil de charge (24 h/semaine), seuil d’écart (10 %), coefficient d’étalement (1,5), dépassement de moins d’une séance | Présentées au mémoire comme hypothèses paramétrables, modifiables sans changer le code |
 | **R32** | Marge calendaire consommée avant le dépôt | 3 | 3 | **9** | NOUVEAU. Le jalon C3, prévu le 2 novembre, est prononcé le 18 novembre : la marge de neuf jours ouvrés est consommée. **Plus aucune évolution après le 12 novembre** ; ordre des priorités : mémoire, puis phase 7 au strict nécessaire (déploiement sur la machine virtuelle, procédure, manuel) | Réduction de la phase 7 aux livrables exigés ; documentation technique en annexe du mémoire |
 | **R23** | Dispositif de pilotage : mesure du temps humain jamais tenue | 4 | 2 | **8** | RÉALISÉ, DÉFINITIF — aucune heure humaine en 52 stories. **Un seul relevé rétrospectif déclaratif**, sur les quatre sprints, établi une fois par l’étudiant et présenté comme tel ; aucune reconstitution ligne par ligne | Le mémoire présente l’estimation en points comme la seule mesure validée (quatre sprints à 100 %) et la clé de conversion comme une hypothèse jamais vérifiée, avec la cause. Présenté ainsi, c’est défendable ; découvert par le jury, ça ne l’est pas |
 | **R28** | Diffusion de données nominatives réelles dans les livrables | 2 | 4 | **8** | Dépôt vérifié ; jeux de recette entièrement fictifs. **À faire** : captures d’écran du mémoire prises sur le jeu `complet`, jamais sur des données réelles ; usage du logo de l’école dans l’application et les captures à faire confirmer par l’encadrant | Retrait immédiat du livrable diffusé ; remplacement ; signalement au commanditaire |
 | **R3** | Rejet du système par la cellule planification, un outil étant déjà en service | 2 | 4 | **8** | Séance de recette avec la cellule (R29) ; mise en avant de ce que l’outil existant ne fait pas : validation croisée, rapprochement prescrit-réalisé, duplication, alertes | Recentrage de la présentation sur ces fonctions ; prise en main guidée par le manuel utilisateur |
 | **R12** | Perte de données ou de code source | 2 | 4 | **8** | Versionnement Git avec dépôt distant ; étiquette `j3-fin-developpement` posée ; sauvegarde hebdomadaire du classeur et des livrables | Restauration depuis le dépôt distant ou l’étiquette |
-| **R7** | Sous-estimation du temps de rédaction du mémoire | 3 | 4 | **12** | INCHANGÉ — CRITIQUE. Au 18 novembre : chapitre 2 (v1), chapitre 3 (v3) et chapitre 4 (v2) rédigés ; restent les chapitres 1 et 5, la mise à jour du chapitre 2, l’introduction, la conclusion et les annexes, avant une relecture du 23 au 27 novembre et un dépôt visé le 1er décembre. La phase 6 étant close, tout le temps disponible va au mémoire | Report des annexes secondaires ; dépôt dans la fenêtre du 1er au 4 décembre |
+| **R7** | Sous-estimation du temps de rédaction du mémoire | 3 | 4 | **12** | INCHANGÉ — CRITIQUE. Au 20 novembre : les cinq chapitres sont rédigés (chapitre 1 v2, chapitre 2 v3, chapitres 3 et 4 v3, chapitre 5 v1) et relus par le binôme ; restent l’introduction, la conclusion, les pages liminaires, les annexes, les captures d’écran et l’assemblage (21-22 novembre), avant une relecture de l’encadrant du 23 au 27 novembre et un dépôt visé le 1er décembre | Report des annexes secondaires ; dépôt dans la fenêtre du 1er au 4 décembre |
 | **R4** | Non-conformité aux attentes du jury | 2 | 3 | **6** | Grille d’évaluation à demander à l’encadrant. **Ajout v8 : défense de l’architecture devant le jury**, demandée par l’encadrant — argumentaire et réponses préparés aux objections attendues (« pourquoi pas une architecture séparée ? », « pourquoi pas le solveur ? ») | Ajustement du mémoire et de la soutenance selon les retours |
 | **R5** | Disponibilité du binôme non tenue, par périodes entières sans production | 2 | 3 | **6** | EN BAISSE — des stories livrées presque chaque jour au sprint 4. L’impact baisse avec la fin du développement ; il reste sur la recette et le mémoire. Seuil d’alerte maintenu à cinq jours ouvrés sans livrable | Réduction du périmètre de la recette aux critères Must, puis report des documents secondaires de la phase 7 |
 | **R13** | Indisponibilité de l’encadrant académique aux points de passage obligés | 3 | 3 | **9** | EN HAUSSE — le mail du 1er novembre sur la forme du mémoire est sans réponse au 8 novembre. Relance écrite avec une réponse par défaut (cadre provisoire de la passation du 8 novembre : environ 80 pages, style IEEE, styles Word intégrés) | Mémoire produit dans le cadre provisoire, styles Word permettant de changer de modèle sans retoucher le texte |
@@ -106,7 +121,8 @@ Conséquences sur le registre : R1 porte désormais sur l’encadrant académiqu
 | **R2** | Écart entre les besoins réels et les fonctionnalités développées | 2 | 3 | **6** | EN HAUSSE — survenu et rattrapé : quatre exigences manquantes découvertes par les scénarios de bout en bout de la recette, traitées et tracées au backlog v12 | Absorption sans refonte : chaque exigence est entrée comme règle de gestion et critère d’acceptation |
 | **R11** | Évolution des besoins en cours de projet | 2 | 2 | **4** | EN BAISSE — **gel effectif le 18 novembre** (C3). Toutes les demandes de la recette ont été arbitrées : livrées (lot d’ergonomie, impression), ou reportées en perspective. Les remarques de la démonstration aux cellules seront consignées en perspective, sans retour dans le code | Toute demande nouvelle va aux perspectives du mémoire |
 | **R14** | Concentration de la connaissance du cœur algorithmique sur un seul équipier | 2 | 2 | **4** | Lié à R16 : la génération et les contraintes sont à présenter par les deux équipiers lors des séances de transfert | Reprise sur la base de l’étude écrite et des décisions |
-| **R9** | Échec du déploiement sur réseau isolé | 2 | 3 | **6** | EN HAUSSE — paquet non réinstallé depuis le 12 septembre, une centaine de commits et des dépendances ajoutées depuis. Protocole complet à rejouer sur la machine virtuelle de la phase 7 (D-295) | Reconstitution du paquet ; procédure du 7 septembre |
+| **R9** | Échec du déploiement sur réseau isolé | 1 | 3 | **3** | EN BAISSE — procédure rejouée à la lettre le 21 novembre sur la version gelée, sans Internet ; trois écarts corrigés et rejoués (P-85, P-86, P-87). Limite : machine nettoyée, non réinstallée | Reconstitution du paquet (`scripts/constituer-paquet.sh`, `MANIFESTE.txt`) ; relevé `REINSTALLATION-VM.md` |
+| **R33** | Restauration d’une sauvegarde sans la révocation des droits sur le journal (P-87) : faille d’intégrité de RG-27 | 1 | 3 | **3** | NOUVEAU — révocation systématique inscrite à la procédure de restauration ; relevé de vérification `releve.sql` livré dans le paquet | Rejouer la révocation et le relevé dès que l’écart est constaté |
 
 # **5. Risques éteints ou réalisés (versions 8 à 11)**
 
@@ -149,6 +165,7 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 | L6 | L’assistant de code a deux fois levé un garde-fou ou restreint une règle pour faire passer des tests | Optimisation locale de l’outil | Interdire explicitement la modification des permissions, et **exiger la justification de toute restriction de portée** (D-306 corrigée par D-309) |
 | L7 | La commande documentée de chargement du jeu volumineux a échoué deux fois (rôle de base, dépendance manquante) | La procédure avait été écrite, mais jamais rejouée telle qu’écrite (P-83) | **Une procédure n’est prouvée qu’une fois rejouée à la lettre**, par quelqu’un qui ne l’a pas écrite — à appliquer à la procédure de déploiement de la phase 7 |
 | L8 | L’objectif OS5 n’a pu être qu’estimé | Sa mesure dépendait d’une séance avec la cellule, programmée en fin de recette et non tenue | **Mesurer un objectif chiffré au plus tôt**, avec une branche de repli jouée sans attendre la séance externe |
+| L10 | Une restauration réussie selon l’outil (code 0, aucune erreur) avait rendu au compte applicatif le droit de modifier le journal | La sauvegarde enregistre les droits accordés, jamais les droits retirés ; la table recréée reprend les droits par défaut | **Une sauvegarde n’est prouvée qu’une fois restaurée et vérifiée** par comparaison de l’état réel, droits compris |
 | L9 | Une erreur sur l’identité des acteurs a traversé tous les livrables depuis la phase 1 (colonel « commanditaire, canal unique » au lieu de l’encadrant académique ; accès en réalité direct aux cellules) | Prémisse de cadrage jamais revalidée, recopiée de livrable en livrable | **Revalider explicitement les prémisses de la phase 1 à chaque grande relecture** ; erratum pour les livrables figés |
 
 # **7. Registre des opportunités**
@@ -174,11 +191,13 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 | **Niveau** | **Nombre** | **Références** | **Suivi** |
 | --- | --- | --- | --- |
 | Critique | 2 | R16, R7 | Quotidien jusqu’au dépôt |
-| Élevé | 4 | R19, R20, R13, R32 | À chaque jalon |
-| Modéré | 13 | R23, R28, R3, R12, R4, R5, R17, R18, R22, R24, R1, R2, R9 | Périodique |
-| Faible | 2 | R14, R11 | Surveillance simple |
+| Élevé | 3 | R19, R13, R32 | À chaque jalon |
+| Modéré | 13 | R20, R23, R28, R3, R12, R4, R5, R17, R18, R22, R24, R1, R2 | Périodique |
+| Faible | 4 | R9, R33, R14, R11 | Surveillance simple |
 | Éteints ou réalisés | 11 | R29 réalisé, R30, R31 (v11) ; R10, R15, R21 (v9) ; R26, R27, R6, R25, R8 (v8) | Archivés |
-| **Total** | **32** | **21 actifs, aucun nouveau en v11** | **—** |
+| **Total** | **33** | **22 actifs, R33 nouveau en v13** | **—** |
+
+**Mouvements de la version 13 :** deux baisses (R9 de 6 à 3, R20 de 9 à 6) ; un risque nouveau (R33) ; une leçon nouvelle (L10).
 
 **Mouvements de la version 12 :** aucune cotation modifiée ; R1 et R18 reformulés (rôles corrigés) ; une leçon nouvelle (L9).
 
@@ -196,8 +215,8 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 
 - À chaque jalon : revue complète des risques de criticité supérieure ou égale à 9 avec l’encadrant.
 
-- **Réévaluations programmées :** R7, R13 et R32 chaque jour jusqu’au dépôt ; R16 avant la soutenance ; R20 et R9 pendant la phase 7 (procédure de déploiement et de sauvegarde rejouée à la lettre, L7) ; R17 à clore en déclarant l’absence de retours consignés de J2 ; R20, R9 et R24 pendant la phase 7 ; R28 avant les captures d’écran du mémoire.
+- **Réévaluations programmées :** R7, R13 et R32 chaque jour jusqu’au dépôt ; R16 avant la soutenance ; R17 à clore en déclarant l’absence de retours consignés de J2 ; R20 (désignation d’un responsable par le centre) et R24 avant la démonstration ; R28 avant les captures d’écran du mémoire.
 
 - Version unique : ce document est la seule source de vérité du registre. Toute modification donne lieu à une version datée qui remplace la précédente dans les connaissances du projet.
 
-*Document vivant — version 12 du 20 novembre 2026. Remplace la version 11 du 18 novembre 2026. Correction des rôles (centre commanditaire, encadrant académique et directeur de mémoire, accès direct aux cellules) ; leçon L9.*
+*Document vivant — version 13 du 22 novembre 2026. Remplace la version 12 du 20 novembre 2026. Réinstallation à la lettre et essai de restauration du 21 novembre : R9 et R20 en baisse, R33 nouveau, leçon L10.*

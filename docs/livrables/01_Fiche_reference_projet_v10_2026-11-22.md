@@ -2,7 +2,7 @@
 
 > **Document de référence permanent.** À conserver dans la base de connaissances du projet et à mettre à jour à chaque fin de phase et à chaque décision structurante. Il donne le contexte courant sans avoir à charger l'ensemble des livrables.
 >
-> **Version 9 — 20 novembre 2026** · Dernière mise à jour : **correction des rôles** (le centre est le commanditaire ; le Colonel Janati Idrissi est l'encadrant académique et le directeur de mémoire ; accès direct aux cellules), registre v12, cinq chapitres rédigés et relecture du binôme en cours (chapitre 1 v2, chapitre 2 v3)
+> **Version 10 — 22 novembre 2026** · Dernière mise à jour : **réinstallation à la lettre et essai de restauration réussis le 21/11** (jalon C4, P-85 à P-87, registre v13, chapitre 5 v2) · Version 9 : **correction des rôles** (le centre est le commanditaire ; le Colonel Janati Idrissi est l'encadrant académique et le directeur de mémoire ; accès direct aux cellules), registre v12, cinq chapitres rédigés et relecture du binôme en cours (chapitre 1 v2, chapitre 2 v3)
 
 ---
 
@@ -53,13 +53,13 @@
 
 ### 2.2 Points ouverts au 8 novembre 2026
 
-- **Mémoire** : chapitre 1 (v2, 20/11), chapitre 2 (v3, 20/11), chapitre 3 (v3, 12/11), chapitre 4 (v3, 18/11), chapitre 5 (v1, 18/11) ; relecture du binôme en cours, questions et réponses tracées dans `claude/21_Journal_questions_lecture_memoire.md` ; restent l'introduction, la conclusion, les pages liminaires, les annexes, les captures d'écran et l'assemblage — risque R7, critique. Fichiers dans `C:\Users\cisse\dev\MVP\Projet_CIT\memoire`.
+- **Mémoire** : chapitre 1 (v2, 20/11), chapitre 2 (v3, 20/11), chapitre 3 (v3, 12/11), chapitre 4 (v3, 18/11), chapitre 5 (v2, 22/11) ; relecture du binôme en cours, questions et réponses tracées dans `claude/21_Journal_questions_lecture_memoire.md` ; restent l'introduction, la conclusion, les pages liminaires, les annexes, les captures d'écran et l'assemblage — risque R7, critique. Fichiers dans `C:\Users\cisse\dev\MVP\Projet_CIT\memoire`.
 - **Contribution de chaque équipier** : colonnes Porteur et Second de `PORTEURS-RETROSPECTIF.md` toujours vides (R16, critique).
 - **Sept valeurs par défaut** à présenter comme hypothèses : seuil d'admission 10/20, absence comptée zéro, ex aequo au même rang, seuil de charge 24 h/semaine, seuil d'écart 10 %, coefficient d'étalement 1,5, dépassement de moins d'une séance.
 - **Lot d'ergonomie** : livré le 13/11 (prompt 64), avec le coefficient du plafond transmis en production ; corrections d'impression et rubriques repliables le 17/11 (prompt 65, D-314).
-- **Phase 7, à ne pas oublier** : sauvegarde et restauration de la base (volume `donnees_pfe_cit`, `pg_dump` hors du volume) dans la procédure de déploiement ; reprises différées des livrables de conception (section dédiée).
+- **Phase 7, à ne pas oublier** : manuel utilisateur, documentation technique, bilan de clôture ; reprises différées des livrables de conception (section dédiée) ; faire désigner par le centre un responsable, une fréquence et un support de sauvegarde (R20).
 - **Séance avec les cellules du 16/11 non tenue** (R29 réalisé) : limite déclarée au mémoire ; démonstration prévue hors recette, remarques en perspective (R11). **OS5 estimé** par le binôme : 10 min au plus (3 brigades), 40 min au plus (32 brigades), contre au moins une journée déclarée — présenté comme une estimation.
-- **Réinstallation à la lettre et test de sauvegarde/restauration** (R9, R20) : paquet reconstruit depuis le code gelé le 19/11 (prompt 66, P-85, `MANIFESTE.txt`) ; exécution sur VM neuve à faire par l'étudiant (`docs/recette/REINSTALLATION-VM.md`), résultat au § 5.7 du chapitre 5.
+- **Réinstallation à la lettre et sauvegarde/restauration : faites le 21/11** (prompt 67, commit `0c83022`) — réussie avec écarts corrigés et rejoués : P-86 (fins de ligne Windows du `.env`), **P-87 (la restauration rendait au compte applicatif le droit de modifier le journal)** ; VM nettoyée et non réinstallée, transfert par réseau privé hôte ; relevé dans `docs/recette/REINSTALLATION-VM.md`, résultat au § 5.7.4 du chapitre 5 (v2).
 - **Retours de J2** jamais consignés (R17) : à clore en le déclarant.
 - **Diagramme de classes** à mettre en conformité avec le modèle implanté avant le chapitre de conception (R19).
 
@@ -148,7 +148,7 @@ Les décisions des versions 1 à 5 restent valides : démarche UML sans MCD Meri
 | Performance mesurée | Génération d'une semaine sur le jeu de volumétrie : 7,8 s ; affichage d'un programme : moins de 0,5 s |
 | Clé de conversion | 1,3 h par point — **jamais vérifiée** ; l'estimation en points est la seule mesure validée |
 | Marge | **Consommée** : C3 du 02/11 au 18/11 (R32) ; date de dépôt inchangée |
-| Risques | **32** au registre v12, dont 21 actifs ; 2 critiques (**R7** mémoire, **R16** contribution de chacun) ; 4 élevés (R19, R20, R13, R32) ; R29 réalisé |
+| Risques | **33** au registre v13, dont 22 actifs ; 2 critiques (**R7** mémoire, **R16** contribution de chacun) ; 3 élevés (R19, R13, R32) ; R29 réalisé |
 
 **Objectifs SMART :** OS1 centraliser le référentiel · OS2 assister la génération du programme · OS3 gérer les évaluations · OS4 tracer le prescrit et le réalisé · OS5 réduire le temps de construction du programme (cible ≥ 50 %, mesure en RECETTE-05) · OS6 suggérer un remplaçant. **Bilan au 18/11** : objectif principal et OS1 à OS4 atteints ; OS5 atteint **sur estimation** (non chronométré, séance non tenue) ; OS6 sans objet (US-PLAN-10 en réserve).
 
@@ -164,7 +164,7 @@ Les décisions des versions 1 à 5 restent valides : démarche UML sans MCD Meri
 | J2 | Démonstration de mi-parcours | 10/10 | Tenu le 10/10 |
 | J3 | Fin de développement | 24/10 | **Atteint le 20/10**, quatre jours d'avance |
 | C3 | Recette validée | 02/11 | **Prononcé le 18/11** |
-| C4 | Système déployé sur la VM, bilan de clôture | 10/11 | **Replanifié au 20/11** |
+| C4 | Système déployé sur la VM, bilan de clôture | 10/11 | **Déploiement fait le 21/11** ; bilan de clôture à faire |
 | J4 | Dépôt du mémoire | **01/12 → 04/12** | Échéance externe ; cible 01/12 |
 | J5 | Soutenance | **20/12 → 25/12** | Échéance externe, date exacte à communiquer |
 
@@ -173,17 +173,16 @@ Les décisions des versions 1 à 5 restent valides : démarche UML sans MCD Meri
 ## 8. Artefacts et où les trouver
 
 ### Dans la base de connaissances
-Note de cadrage · Objectifs SMART · Parties prenantes · Cahier des charges v8 · **Backlog produit v13** · **Registre des risques v12** · **Erratum sur les rôles (22)** · **Journal des questions de relecture (21)** · Étude de faisabilité · WBS, Gantt, allocation et KPIs, plan de communication · les sept livrables de la phase 4 · **les cahiers de recette prononcés et le plan de tests** · la passation du mémoire · la présente fiche.
+Note de cadrage · Objectifs SMART · Parties prenantes · Cahier des charges v8 · **Backlog produit v13** · **Registre des risques v13** · **Erratum sur les rôles (22)** · **Journal des questions de relecture (21)** · Étude de faisabilité · WBS, Gantt, allocation et KPIs, plan de communication · les sept livrables de la phase 4 · **les cahiers de recette prononcés et le plan de tests** · la passation du mémoire · la présente fiche.
 
 > **Ce qui ne va jamais dans la base de connaissances** : le classeur de pilotage et les fichiers de suivi du dépôt (`AVANCEMENT.md`, `DECISIONS.md`, `PROBLEMES.md`, `ECARTS-*.md`). Ils se lisent directement dans le dépôt, désormais accessible à la discussion.
 
-**Remplacements à opérer au 20 novembre 2026**
+**Remplacements à opérer au 22 novembre 2026**
 
 | Sort | Entre |
 |---|---|
-| `claude/09_Registre_risques_v11_2026-11-18.md` | `claude/09_Registre_risques_v12_2026-11-20.md` |
-| `claude/01_Fiche_reference_projet_v8_2026-11-18.md` | `claude/01_Fiche_reference_projet_v9_2026-11-20.md` |
-| — | `claude/22_Erratum_roles_parties_prenantes_2026-11-20.md` (nouveau) |
+| `claude/09_Registre_risques_v12_2026-11-20.md` | `claude/09_Registre_risques_v13_2026-11-22.md` |
+| `claude/01_Fiche_reference_projet_v9_2026-11-20.md` | `claude/01_Fiche_reference_projet_v10_2026-11-22.md` |
 
 **Reprises différées, à traiter avant le mémoire** : diagramme de classes (modèle réellement implanté, écarts des sprints 2 à 4 et de la phase 6) ; cas d'utilisation (RG-66, RG-67, RG-64 amendée, RG-39 a) ; dossier d'architecture (compte des contraintes). Sources : `docs/suivi/ECARTS-LIVRABLES-*.md`.
 
@@ -211,4 +210,5 @@ Note de cadrage · Objectifs SMART · Parties prenantes · Cahier des charges v8
 | 6 | 08/11/2026 | Développement clos (J3) ; recette de la phase 6, cinq cahiers prononcés ; déploiement sur VM (D-295) ; backlog v12 (65 stories, 276 points) ; registre v9 (32 risques) ; douze décisions ajoutées ; glossaire corrigé (deux types d'évaluation, modes de partage, plafond hebdomadaire) ; dépôt du mémoire au 4 décembre |
 | 7 | 09/11/2026 | Échéances précisées (dépôt 1er-4/12, soutenance 20-25/12, rapport d'avancement 13/11) ; séance avec les cellules le 16/11 (R29 non réalisé) ; registre v10 ; chapitre 3 rédigé ; dossier memoire créé sur le poste |
 | 8 | 18/11/2026 | Phase 6 close : RECETTE-05 (60/60) et C3 prononcés, code gelé ; lot d'ergonomie livré ; R29 réalisé ; OS5 estimé ; backlog v13 ; registre v11 |
-| **9** | **20/11/2026** | **Correction des rôles (centre commanditaire ; Colonel Janati Idrissi encadrant académique et directeur de mémoire ; accès direct aux cellules) ; registre v12 ; erratum 22 ; état du mémoire ; paquet de déploiement reconstruit (P-85)** |
+| 9 | 20/11/2026 | Correction des rôles (centre commanditaire ; Colonel Janati Idrissi encadrant académique et directeur de mémoire ; accès direct aux cellules) ; registre v12 ; erratum 22 ; état du mémoire ; paquet de déploiement reconstruit (P-85) |
+| **10** | **22/11/2026** | **Réinstallation à la lettre et essai de restauration réussis le 21/11 (C4) ; P-86, P-87 ; registre v13 ; chapitre 5 v2** |
