@@ -79,9 +79,9 @@ réelle.
 
 | Code | Titre | Points | Commit de clôture | Porteur | Second | Observations |
 |---|---|---|---|---|---|---|
-| US-SUI-05 | Déclarer la non-exécution d'une séance | 2 | `0f6d63a` | | | |
+| US-SUI-05 | Déclarer la non-exécution d'une séance | 2 | `0f6d63a` | Lt Cissé | | Absente du plan de phase 3 — attribuée au Lt Cissé (R16) |
 | US-SUI-01 | Consulter le rapprochement prescrit et réalisé | 5 | `987201c` | | | |
-| US-SUI-06 | Éditer la progression réalisée hebdomadaire | 3 | `bddf365` | | | |
+| US-SUI-06 | Éditer la progression réalisée hebdomadaire | 3 | `bddf365` | Lt Cissé | | Absente du plan de phase 3 — attribuée au Lt Cissé (R16) |
 | US-EVAL-05 | Saisir et vérifier les notes | 5 | `0a03465` | | | |
 | US-EVAL-06 | Calculer moyennes et classement | 5 | `297171c` | | | |
 | US-EVAL-07 | Générer les procès-verbaux de résultats | 5 | `3b0609e` | | | |
@@ -94,10 +94,28 @@ réelle.
 | US-REF-09 | Historiser les modifications du référentiel | 3 | `81a1dcb` | | | |
 | US-PLAN-11 | Dupliquer un programme hebdomadaire | 5 | `6527068` | | | |
 
+## Hors sprint — lot d'ergonomie E9 (prompt 64, phase 6) — 4 stories
+
+Quatre stories créées après la clôture du sprint 4 (backlog v13, § 10 bis et
+§ Évaluations), jamais comptées dans les quatre sprints de développement
+(`AVANCEMENT.md` : 52 stories, 224 points) ni dans un sprint numéroté — réalisées
+en phase 6, lors du prompt 64, dans l'ordre imposé par ce prompt. Absentes du
+plan de phase 3 — attribuées au Lt Cissé (R16).
+
+| Code | Titre | Points | Commit de clôture | Porteur | Second | Observations |
+|---|---|---|---|---|---|---|
+| US-IHM-02 | Identité visuelle et barre de navigation | 2 | `b8200b2` | Lt Cissé | | Absente du plan de phase 3 — attribuée au Lt Cissé (R16) |
+| US-IHM-03 | Rechercher, filtrer et trier les listes de stagiaires | 3 | `d702472` | Lt Cissé | | Absente du plan de phase 3 — attribuée au Lt Cissé (R16) |
+| US-EVAL-12 | Détailler la moyenne d'un stagiaire | 3 | `0164d25` | Lt Cissé | | Absente du plan de phase 3 — attribuée au Lt Cissé (R16) |
+| US-IHM-01 | Accueillir chaque utilisateur sur un tableau de bord | 5 | `006d5bf` | Lt Cissé | | Absente du plan de phase 3 — attribuée au Lt Cissé (R16) |
+
 ## Contrôle de cohérence
 
-**52 lignes : 15 + 12 + 11 + 14.** Confirmé par comptage des quatre
-tableaux ci-dessus.
+**56 lignes : 15 + 12 + 11 + 14 (quatre sprints) + 4 (hors sprint, lot
+d'ergonomie E9).** Confirmé par comptage des cinq tableaux ci-dessus. Total
+de points : 224 (quatre sprints, `AVANCEMENT.md`) + 13 (hors sprint, backlog
+v13) = 237 — concorde avec le total de la répartition globale (R16,
+section suivante).
 
 **Codes que `git log` n'a pas retrouvés littéralement (17) :** US-ADM-01,
 US-ADM-02, US-ADM-04, US-REF-00, US-REF-03 (livraison d'origine —
@@ -114,3 +132,31 @@ identifiant.
 
 **Rappel : les colonnes Porteur et Second attendent le binôme.** Rien dans
 le dépôt ne permet de les remplir de façon fiable.
+
+## Répartition globale (R16)
+
+Totaux établis a posteriori par le binôme depuis l'onglet « Gantt Sprints »
+du classeur de suivi, le 23/11/2026 — seule source de la répartition
+réelle (voir « Méthode » en tête de ce document : rien dans le dépôt ne
+permet de la reconstituer). Les 56 stories sont les 52 des quatre sprints
+plus les 4 stories hors sprint listées ci-dessus ; US-SUI-05 et US-SUI-06
+(sprint 4), elles aussi absentes du plan de phase 3, sont comptées dans ce
+total sans déplacement de ligne.
+
+| Porteur | Stories | Points |
+|---|---|---|
+| Lt Cissé | 22 | 90 |
+| Lt Niangaly | 26 | 100 |
+| À deux | 8 | 47 |
+| **Total** | **56** | **237** |
+
+**Stories hors plan de phase 3, attribuées au Lt Cissé** : US-SUI-05,
+US-SUI-06, US-IHM-01, US-IHM-02, US-IHM-03, US-EVAL-12 — 6 stories, 18
+points, comprises dans les 22 stories / 90 points ci-dessus.
+
+**Répartition ligne par ligne des 50 stories restantes** : non reconstituée
+dans ce document — seul le classeur (onglet Gantt Sprints) porte le détail
+retenu par le binôme. Les colonnes Porteur/Second de ces 50 lignes restent
+vides dans les tableaux ci-dessus, comme prévu par la méthode ; seules les
+6 stories nommées ont été reportées individuellement ici, parce que
+désignées explicitement par le binôme.

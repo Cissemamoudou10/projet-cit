@@ -2,7 +2,7 @@
 
 Projet de fin d’études · Système de gestion des activités de formation du CIT
 
-*Livrable 5 / 6 — Phase 3 : Planification détaillée · Version 13 du 22 novembre 2026 · Remplace la version 12 du 20 novembre 2026 · Document vivant*
+*Livrable 5 / 6 — Phase 3 : Planification détaillée · Version 14 du 22 novembre 2026 (soir) · Remplace la version 13 du 22 novembre 2026 · Document vivant*
 
 # **1. Méthode de cotation**
 
@@ -33,7 +33,8 @@ Les sections d’évolution des versions 2 à 7 sont conservées dans les versio
 | 10 | 09/11 | Correction : séance avec les cellules planifiée | 32 | R29 n’est pas réalisé : de 8 à 6 ; R11 précisé. Voir section 3 bis |
 | 11 | 18/11 | Clôture de la phase 6 : RECETTE-05 et C3 prononcés, code gelé | 32 | R29 réalisé ; R30 et R31 éteints ; deux leçons nouvelles. Voir section 3 ter |
 | 12 | 20/11 | Correction des rôles : il n’y a pas de commanditaire distinct | 32 | R1 et R18 reformulés, cotations inchangées. Voir section 3 quater |
-| **13** | **22/11** | **Réinstallation à la lettre sur la VM et essai de restauration (21/11)** | **33** | **R9 de 6 à 3 ; R20 de 9 à 6 ; R33 nouveau ; leçon L10. Voir section 3 quinquies** |
+| 13 | 22/11 | Réinstallation à la lettre sur la VM et essai de restauration (21/11) | 33 | R9 de 6 à 3 ; R20 de 9 à 6 ; R33 nouveau ; leçon L10. Voir section 3 quinquies |
+| **14** | **22/11** | **Répartition des stories établie au mémoire ; captures d’écran prises sur données fictives, logo conservé** | **33** | **R16 de 12 à 6 ; R28 de 8 à 4** |
 
 # **3. Évolutions depuis la version 8 — recette de la phase 6**
 
@@ -101,13 +102,13 @@ Le 21 novembre, la procédure d’installation a été rejouée à la lettre sur
 
 | **Réf.** | **Risque** | **P** | **I** | **Crit.** | **Prévention** | **Atténuation si survenue** |
 | --- | --- | --- | --- | --- | --- | --- |
-| **R16** | Déséquilibre de la maîtrise du système entre les deux équipiers, et absence de trace de la contribution de chacun | 4 | 3 | **12** | INCHANGÉ — CONSTATÉ. Le fichier `PORTEURS-RETROSPECTIF.md` existe depuis le 25 octobre (52 lignes, commits retrouvés), mais ses colonnes Porteur et Second sont **toujours vides**. **Avant la soutenance** : les remplir à deux, et répartir la rédaction du mémoire de façon lisible (proposition : chapitre 1 par le Lt Niangaly, chapitre 3 par le Lt Cissé, chapitre 4 par paquetage conduit) | Répartition de la soutenance par paquetage réellement conduit ; séances croisées de transfert ; préparation des questions du jury par les deux équipiers |
+| **R16** | Déséquilibre de la maîtrise du système entre les deux équipiers, et absence de trace de la contribution de chacun | 2 | 3 | **6** | EN BAISSE — répartition des 56 stories établie a posteriori à partir du plan de sprint du classeur de pilotage, confirmée par les deux auteurs et publiée au mémoire (chapitre 4, tableau 4.3 : Lt Cissé 22 stories et 90 points, Lt Niangaly 26 et 100, à deux 8 et 47). **Reste** : reporter cette répartition dans `PORTEURS-RETROSPECTIF.md`, et préparer la soutenance de sorte que chacun présente l’ensemble du système | Chacun présente aussi la partie de l’autre lors des répétitions de soutenance |
 | **R19** | Incohérence entre livrables : une décision ou une correction portée dans un document et non dans les autres | 3 | 3 | **9** | Occurrences de la phase 6 : l’écran et le serveur appliquaient deux définitions du type de lieu ; le registre des écarts citait encore D-306, remplacée par D-309 ; le chapitre 2 du mémoire, écrit le 2 novembre, est dépassé sur quatre points (RG-64, nombre de règles, de contraintes et de stories). **Mesures** : une seule fonction partagée par l’écran et le serveur (prompt 62) ; backlog v12 et registre v9 déposés dans le dépôt et la base de connaissances ; **une passe unique de mise à jour du chapitre 2 après RECETTE-05** | Diagramme de classes mis en conformité avant le chapitre de conception |
 | **R20** | Aucune procédure de sauvegarde définie ni attribuée pour les données de production | 2 | 3 | **6** | EN BAISSE — procédure écrite, corrigée (P-87) et **essayée** le 21 novembre : restauration après erreur et après perte totale, état vérifié identique, droits compris. **Reste** : responsable, fréquence et support à faire désigner par le centre | Reconstitution partielle depuis les documents papier des cellules ; sans sauvegarde, la perte des notes et procès-verbaux d’une session est définitive |
 | **R1** | Indisponibilité prolongée de l’encadrant académique (directeur de mémoire) bloquant validations et arbitrages | 3 | 2 | **6** | EN BAISSE — plus rien n’attend sa réponse. Sept valeurs par défaut documentées comme hypothèses : seuil d’admission (10/20), absence comptée zéro, ex aequo au même rang, seuil de charge (24 h/semaine), seuil d’écart (10 %), coefficient d’étalement (1,5), dépassement de moins d’une séance | Présentées au mémoire comme hypothèses paramétrables, modifiables sans changer le code |
 | **R32** | Marge calendaire consommée avant le dépôt | 3 | 3 | **9** | NOUVEAU. Le jalon C3, prévu le 2 novembre, est prononcé le 18 novembre : la marge de neuf jours ouvrés est consommée. **Plus aucune évolution après le 12 novembre** ; ordre des priorités : mémoire, puis phase 7 au strict nécessaire (déploiement sur la machine virtuelle, procédure, manuel) | Réduction de la phase 7 aux livrables exigés ; documentation technique en annexe du mémoire |
 | **R23** | Dispositif de pilotage : mesure du temps humain jamais tenue | 4 | 2 | **8** | RÉALISÉ, DÉFINITIF — aucune heure humaine en 52 stories. **Un seul relevé rétrospectif déclaratif**, sur les quatre sprints, établi une fois par l’étudiant et présenté comme tel ; aucune reconstitution ligne par ligne | Le mémoire présente l’estimation en points comme la seule mesure validée (quatre sprints à 100 %) et la clé de conversion comme une hypothèse jamais vérifiée, avec la cause. Présenté ainsi, c’est défendable ; découvert par le jury, ça ne l’est pas |
-| **R28** | Diffusion de données nominatives réelles dans les livrables | 2 | 4 | **8** | Dépôt vérifié ; jeux de recette entièrement fictifs. **À faire** : captures d’écran du mémoire prises sur le jeu `complet`, jamais sur des données réelles ; usage du logo de l’école dans l’application et les captures à faire confirmer par l’encadrant | Retrait immédiat du livrable diffusé ; remplacement ; signalement au commanditaire |
+| **R28** | Diffusion de données nominatives réelles dans les livrables | 1 | 4 | **4** | EN BAISSE — captures d’écran du mémoire prises le 22 novembre sur les jeux de recette et de volumétrie, entièrement fictifs ; une capture montrant un nom de compte réel a été écartée. Logo de l’école conservé dans l’application et les captures, sur décision des auteurs | Retrait immédiat du livrable diffusé ; remplacement ; signalement à l’encadrant |
 | **R3** | Rejet du système par la cellule planification, un outil étant déjà en service | 2 | 4 | **8** | Séance de recette avec la cellule (R29) ; mise en avant de ce que l’outil existant ne fait pas : validation croisée, rapprochement prescrit-réalisé, duplication, alertes | Recentrage de la présentation sur ces fonctions ; prise en main guidée par le manuel utilisateur |
 | **R12** | Perte de données ou de code source | 2 | 4 | **8** | Versionnement Git avec dépôt distant ; étiquette `j3-fin-developpement` posée ; sauvegarde hebdomadaire du classeur et des livrables | Restauration depuis le dépôt distant ou l’étiquette |
 | **R7** | Sous-estimation du temps de rédaction du mémoire | 3 | 4 | **12** | INCHANGÉ — CRITIQUE. Au 20 novembre : les cinq chapitres sont rédigés (chapitre 1 v2, chapitre 2 v3, chapitres 3 et 4 v3, chapitre 5 v1) et relus par le binôme ; restent l’introduction, la conclusion, les pages liminaires, les annexes, les captures d’écran et l’assemblage (21-22 novembre), avant une relecture de l’encadrant du 23 au 27 novembre et un dépôt visé le 1er décembre | Report des annexes secondaires ; dépôt dans la fenêtre du 1er au 4 décembre |
@@ -147,7 +148,7 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 | **R7 — Le mémoire (criticité 12, critique)** Le produit est prêt avant le texte qui le présente. Quatre chapitres sur cinq restent à écrire, et le jury jugera d’abord le mémoire. **Ce qui rend le délai tenable :** la matière est déjà écrite ailleurs — décisions, problèmes, revues de sprint, cahiers de recette — et le cadre est fixé par la passation du 8 novembre (plan, volume, règles d’écriture). **Mesure :** un chapitre par jour du 9 au 13 novembre, chacun envoyé à l’encadrant dès qu’il est prêt ; aucune évolution du produit après le 12 novembre. |
 | --- |
 
-| **R16 — Contribution de chaque équipier (criticité 12, critique)** Le fichier d’attribution rétrospective existe, mais ses colonnes de porteurs sont vides. C’est toujours le seul risque qu’un jury vérifiera en ouvrant le dépôt, et le seul qui touche la note individuelle. **Mesure :** remplir les porteurs à deux avant la soutenance, et faire de la répartition du mémoire une preuve lisible de la contribution de chacun. |
+| **R16 — Contribution de chaque équipier (de 12 à 6)** La répartition des stories est désormais publiée au chapitre 4 (tableau 4.3). Il reste à la reporter dans le fichier d’attribution du dépôt, qu’un jury peut ouvrir, et à préparer la soutenance pour que chacun présente aussi la partie de l’autre. |
 | --- |
 
 | **R32 et R13 — Le calendrier et les consignes (criticité 9)** La marge est consommée et le cadre de forme n’est pas confirmé. Les deux se traitent ensemble : écrire maintenant dans le cadre provisoire, avec des styles Word qui permettent de changer de modèle sans retoucher le texte, et relancer le directeur avec une réponse par défaut. |
@@ -190,12 +191,14 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 
 | **Niveau** | **Nombre** | **Références** | **Suivi** |
 | --- | --- | --- | --- |
-| Critique | 2 | R16, R7 | Quotidien jusqu’au dépôt |
+| Critique | 1 | R7 | Quotidien jusqu’au dépôt |
 | Élevé | 3 | R19, R13, R32 | À chaque jalon |
-| Modéré | 13 | R20, R23, R28, R3, R12, R4, R5, R17, R18, R22, R24, R1, R2 | Périodique |
-| Faible | 4 | R9, R33, R14, R11 | Surveillance simple |
+| Modéré | 13 | R16, R20, R23, R3, R12, R4, R5, R17, R18, R22, R24, R1, R2 | Périodique |
+| Faible | 5 | R9, R28, R33, R14, R11 | Surveillance simple |
 | Éteints ou réalisés | 11 | R29 réalisé, R30, R31 (v11) ; R10, R15, R21 (v9) ; R26, R27, R6, R25, R8 (v8) | Archivés |
 | **Total** | **33** | **22 actifs, R33 nouveau en v13** | **—** |
+
+**Mouvements de la version 14 :** deux baisses (R16 de 12 à 6, R28 de 8 à 4) ; R16 n’est plus critique, R7 reste le seul risque critique.
 
 **Mouvements de la version 13 :** deux baisses (R9 de 6 à 3, R20 de 9 à 6) ; un risque nouveau (R33) ; une leçon nouvelle (L10).
 
@@ -215,8 +218,8 @@ Les risques conservent leur numérotation d’origine pour préserver la traçab
 
 - À chaque jalon : revue complète des risques de criticité supérieure ou égale à 9 avec l’encadrant.
 
-- **Réévaluations programmées :** R7, R13 et R32 chaque jour jusqu’au dépôt ; R16 avant la soutenance ; R17 à clore en déclarant l’absence de retours consignés de J2 ; R20 (désignation d’un responsable par le centre) et R24 avant la démonstration ; R28 avant les captures d’écran du mémoire.
+- **Réévaluations programmées :** R7, R13 et R32 chaque jour jusqu’au dépôt ; R16 aux répétitions de soutenance ; R17 à clore en déclarant l’absence de retours consignés de J2 ; R20 (désignation d’un responsable par le centre) et R24 avant la démonstration.
 
 - Version unique : ce document est la seule source de vérité du registre. Toute modification donne lieu à une version datée qui remplace la précédente dans les connaissances du projet.
 
-*Document vivant — version 13 du 22 novembre 2026. Remplace la version 12 du 20 novembre 2026. Réinstallation à la lettre et essai de restauration du 21 novembre : R9 et R20 en baisse, R33 nouveau, leçon L10.*
+*Document vivant — version 14 du 22 novembre 2026. Remplace la version 13 du même jour. Répartition des stories publiée au mémoire (R16), captures sur données fictives et logo conservé (R28). Version 13 : Réinstallation à la lettre et essai de restauration du 21 novembre : R9 et R20 en baisse, R33 nouveau, leçon L10.*
